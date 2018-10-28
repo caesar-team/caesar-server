@@ -1,0 +1,7 @@
+dev:
+    hostname: api.dev.caesarapp.io
+    deploy_path: /var/www/api.dev.caesarapp.io
+    branch: develop
+    user: deploy
+    stage: dev
+    bin/php: /usr/bin/php7.2

@@ -1,0 +1,12 @@
+fos_user:
+    db_driver: orm
+    user_class: App\Entity\User
+    firewall_name: main
+    from_email:
+        address: "%noemail%"
+        sender_name: "%noemail_from%"
+    registration:
+        confirmation:
+            enabled: true
+        form:
+            type: App\Form\RegistrationType

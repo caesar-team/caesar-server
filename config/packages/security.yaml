@@ -1,0 +1,38 @@
+security:
+    encoders:
+        FOS\UserBundle\Model\UserInterface: bcrypt
+
+    providers:
+        fos_userbundle:
+            id: fos_user.user_provider.username_email
+        hwi_oauth.user.provider:
+            id: hwi_oauth.user.provider
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        api:
+            pattern: ^/api
+            provider:  fos_userbundle
+            stateless: true
+            guard:
+                authenticators:
+                    - lexik_jwt_authentication.jwt_token_authenticator
+        main:
+            pattern: ^/
+            form_login:
+                provider: fos_userbundle
+            logout: true
+            stateless: false
+            context: api
+            anonymous: true
+            oauth:
+                resource_owners:
+                    google: google_login
+                login_path: /login
+                success_handler: App\Security\JwtRedirectHandler
+                provider: hwi_oauth.user.provider
+                oauth_user_provider:
+                    service: App\Security\FOSUBUserProvider
+    access_control:
+        - { path: ^/api, roles: [ROLE_USER]}

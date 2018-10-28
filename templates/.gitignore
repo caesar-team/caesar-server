@@ -1,0 +1,17 @@
+.idea
+
+###> symfony/framework-bundle ###
+/.env
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> friendsofphp/php-cs-fixer ###
+/.php_cs
+/.php_cs.cache
+###< friendsofphp/php-cs-fixer ###
+!/public/static/images/.gitignore
+/public/static/images/
+!/public/static/documents/.gitignore
+/public/static/documents/

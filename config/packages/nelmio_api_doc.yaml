@@ -1,0 +1,40 @@
+nelmio_api_doc:
+    areas:
+        path_patterns:
+            - ^/api
+    documentation:
+        securityDefinitions:
+            api_key:
+                type: apiKey
+                description: Your JWT
+                name:  Authorization
+                in: header
+        security:
+            - api_key: []
+        info:
+            title: Caesar app
+            description: 'Crypto vault'
+            version: 0.0.3
+        paths:
+            /connect/google:
+                get:
+                    tags:
+                        - register
+                    description: Here is flow for auth through google ouath2 |
+                        <div>1. From frontend go to <a href="#">/connect/google?redirect_uri=https://front_redirect_uri.com</a></div>
+                        <div>2. Redirect to https://accounts.google.com/o/oauth2/auth with get parameters(and ask user access first time)</div>
+                        <div>3. Redirect to <a href="#">/login/google</a> with token in get parameter</div>
+                        <div>4. Redirect to frontend link setted on step 1 with jwt token in get parameter and flag <b>master_created</b> if master password has created</div>
+                    security: []
+                    parameters:
+                        - name: redirect_uri
+                          in: query
+                          description: Must be in valid uri list. See <b>parameters.frontend_uris</b>
+                          example: https://dev.caesarapp.io/login
+                    responses:
+                        200:
+                            description:
+                        400:
+                            description: Wrong redirect uri
+                        404:
+                            description: Redirect uri not found

@@ -1,0 +1,4 @@
+swiftmailer:
+    url: '%env(MAILER_URL)%'
+    local_domain: "127.0.0.1"
+    spool: { type: 'memory' }

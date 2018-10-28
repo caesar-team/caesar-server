@@ -1,0 +1,11 @@
+fos_rest:
+    param_fetcher_listener:  true
+    allowed_methods_listener:  true
+    body_listener: true
+    routing_loader: true
+    view:
+        view_response_listener:  'force'
+    format_listener:
+        rules:
+            - { path: '^/api', prefer_extension: true, fallback_format: json, priorities: [ json ] }
+            - { path: '^/', fallback_format: ~, prefer_extension: true, priorities: [ 'html', '*/*']}

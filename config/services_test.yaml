@@ -1,0 +1,11 @@
+services:
+    _defaults:
+        public: true
+    App\DataFixtures\:
+        resource: '../src/DataFixtures'
+        tags: [doctrine.fixture.orm]
+    test.client:
+        class: 'App\Tests\Client'
+        arguments:
+            - '@kernel'
+            - ['@test.client.history']

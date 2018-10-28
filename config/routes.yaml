@@ -1,0 +1,4 @@
+google_login:
+    path: /login/google
+google_connect:
+    path: /connect/google
