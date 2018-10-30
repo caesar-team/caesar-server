@@ -1,16 +1,27 @@
 security:
     encoders:
         FOS\UserBundle\Model\UserInterface: bcrypt
-
+        Symfony\Component\Security\Core\User\User: bcrypt
     providers:
         fos_userbundle:
             id: fos_user.user_provider.username_email
         hwi_oauth.user.provider:
             id: hwi_oauth.user.provider
+        in_memory:
+            memory:
+                users:
+                    admin:
+                        password:            '%env(SUPERADMIN_PASS)%'
+                        roles:               ROLE_ADMIN
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        doc:
+            pattern: ^/doc
+            http_basic: ~
+            anonymous: ~
+            provider: in_memory
         api:
             pattern: ^/api
             provider:  fos_userbundle
@@ -24,7 +35,6 @@ security:
                 provider: fos_userbundle
             logout: true
             stateless: false
-            context: api
             anonymous: true
             oauth:
                 resource_owners:
@@ -36,3 +46,4 @@ security:
                     service: App\Security\FOSUBUserProvider
     access_control:
         - { path: ^/api, roles: [ROLE_USER]}
+        - { path: ^/doc, roles: [ROLE_ADMIN]}

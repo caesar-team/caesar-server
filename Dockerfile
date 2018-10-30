@@ -23,8 +23,7 @@ FROM base AS release
 COPY --from=dependencies /var/www/html/vendor ./vendor
 COPY . .
 COPY entrypoint.sh /usr/local/bin/
-COPY ./config/docker/php/symfony.pool.conf /usr/local/etc/php-fpm.d/
-COPY ./config/docker/php/symfony.ini /usr/local/etc/php/conf.d
+COPY ./www.conf /usr/local/etc/php-fpm.d/
 RUN bin/console assets:install public
 # expose port and define CMD
 EXPOSE 9000

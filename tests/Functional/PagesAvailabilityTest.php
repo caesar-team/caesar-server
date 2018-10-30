@@ -30,7 +30,7 @@ class PagesAvailabilityTest extends WebTestCase
     private function urlsToTest(): array
     {
         return [
-            '/doc', // to catch errors in swagger annotations
+            '/status',
         ];
     }
 }
