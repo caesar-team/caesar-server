@@ -172,4 +172,11 @@ class User extends FOSUser
     {
         $this->masterCreated = $masterCreated;
     }
+
+    public function getDomain(): string
+    {
+        $explodeEmail = explode('@', $this->getEmailCanonical());
+
+        return end($explodeEmail);
+    }
 }
