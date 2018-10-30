@@ -31,8 +31,5 @@ framework:
     assets:
         version: 1
 parameters:
-    noemail: 'noemail@caesar.4xxi.com'
-    noemail_from: 'Caesar'
     locale: 'en'
-    environment: '%env(APP_ENV)%'
-    frontend_uris: ['/^http:\/\/caesar.tk/', '/^http:\/\/dev.caesarapp.io/', '/^http:\/\/caesarapp.loc:3000/', '%env(ALLOW_FRONT_REDIRECT)%']
+    frontend_uris: ['%env(ALLOW_FRONT_REDIRECT_PATTERN)%']
