@@ -2,13 +2,17 @@ version: '3.2'
 
 services:
     php:
-        image: 51a5f9467b2a
+        build: ./config/docker/php
+        volumes:
+            - .:/var/www/html
+            - trash:/var/www/
         expose:
-        - 9000
+            - 9000
         environment:
-        - APP_ENV=prod
-        env_file:
-        - .env
+            - PARENT_USER_ID
+            - APP_ENV
+        entrypoint:
+            - "./config/docker/php/docker-entrypoint.sh"
     nginx:
         image: 4xxi/nginx:flex
         depends_on:
@@ -21,7 +25,7 @@ services:
     db:
         image: postgres:9
         ports:
-            - "5432:5432"
+            - "${POSTGRES_EXTERNAL_PORT}:5432"
         volumes:
             - db:/var/lib/postgresql/data
         environment:
