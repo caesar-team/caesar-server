@@ -46,9 +46,10 @@ class UserRepository extends EntityRepository
     public function getByQuery(UserQuery $query): PaginatedList
     {
         $qb = $this->createQueryBuilder('user');
-
         $qb
             ->where($qb->expr()->neq('user', ':userId'))
+            ->andWhere('user.email LIKE :domain')
+            ->setParameter('domain', '%@'.$query->getUser()->getDomain())
             ->setParameter('userId', $query->getUser())
             ->setMaxResults($query->getPerPage())
             ->setFirstResult($query->getFirstResult());
