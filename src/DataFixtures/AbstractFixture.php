@@ -38,7 +38,7 @@ abstract class AbstractFixture extends DoctrineAbstractFixture implements ORMFix
      */
     public function setContainer(ContainerInterface $container = null)
     {
-        $this->environment = $container->getParameter('environment');
+        $this->environment = $container->getParameter('kernel.environment');
     }
 
     protected function loadTest(ObjectManager $manager)
