@@ -3,8 +3,8 @@ fos_user:
     user_class: App\Entity\User
     firewall_name: main
     from_email:
-        address: "%noemail%"
-        sender_name: "%noemail_from%"
+        address: "%env(ROBOT_EMAIL_ADDRESS)%"
+        sender_name: "%env(ROBOT_EMAIL_NAME)%"
     registration:
         confirmation:
             enabled: true
