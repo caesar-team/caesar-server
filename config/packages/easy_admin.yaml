@@ -12,7 +12,7 @@ easy_admin:
           - 'avatar'
           - 'username'
           - 'email'
-          - 'createdAt'
+          - 'lastLogin'
           - 'userDomain'
           - 'enabled'
       form:
