@@ -81,6 +81,13 @@ class User extends FOSUser
     protected $masterCreated = false;
 
     /**
+     * @var string|null
+     *
+     * @ORM\Column(nullable=true)
+     */
+    protected $domain;
+
+    /**
      * User constructor.
      */
     public function __construct()
@@ -173,10 +180,24 @@ class User extends FOSUser
         $this->masterCreated = $masterCreated;
     }
 
-    public function getDomain(): string
+    /**
+     * @param null|string $domain
+     */
+    public function setDomain(?string $domain): void
     {
-        $explodeEmail = explode('@', $this->getEmailCanonical());
+        $this->domain = $domain;
+    }
 
-        return end($explodeEmail);
+    public function getDomain(): ?string
+    {
+        return $this->domain;
+    }
+
+    public function getUserDomain(): string
+    {
+        $emailDomain = explode('@', $this->getEmailCanonical());
+        $emailDomain = end($emailDomain);
+
+        return $this->getDomain() ?: $emailDomain;
     }
 }

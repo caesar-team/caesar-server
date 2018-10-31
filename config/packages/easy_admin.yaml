@@ -1,0 +1,23 @@
+easy_admin:
+  site_name: 'Caesar App'
+  entities:
+    User:
+      controller: App\Controller\Admin\UserController
+      class: App\Entity\User
+      label: 'User'
+      list:
+        title: 'Users'
+        fields:
+          - 'id'
+          - 'avatar'
+          - 'username'
+          - 'email'
+          - 'lastLogin'
+          - 'userDomain'
+          - 'enabled'
+      form:
+        fields:
+          - enabled
+          - username
+          - email
+          - domain
