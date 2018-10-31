@@ -49,6 +49,7 @@ security:
                 provider: hwi_oauth.user.provider
                 oauth_user_provider:
                     service: App\Security\FOSUBUserProvider
+                failure_handler: App\Security\Authentication\OAuthFailureHandler
     access_control:
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/doc, roles: [ROLE_ADMIN]}

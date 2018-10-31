@@ -10,12 +10,18 @@ use App\Entity\User;
 use App\Model\Query\UserQuery;
 use App\Model\Response\PaginatedList;
 use App\Traits\PaginatorTrait;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 
-class UserRepository extends EntityRepository
+class UserRepository extends ServiceEntityRepository
 {
     use PaginatorTrait;
+
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, User::class);
+    }
 
     public function getByPost(Post $post): ?User
     {
