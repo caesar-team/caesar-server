@@ -30,21 +30,21 @@ class Directory
     /**
      * @var Collection|Directory[]
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList")
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList", cascade={"remove"})
      */
     protected $childLists;
 
     /**
      * @var Directory|null
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childLists")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childLists", cascade={"remove"})
      */
     protected $parentList;
 
     /**
      * @var Collection|Post[]
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Post", mappedBy="parentList")
+     * @ORM\OneToMany(targetEntity="App\Entity\Post", mappedBy="parentList", cascade={"remove"})
      */
     protected $childPosts;
 

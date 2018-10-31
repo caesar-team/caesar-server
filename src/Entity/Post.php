@@ -28,7 +28,7 @@ class Post
     /**
      * @var Directory
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childPosts")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childPosts", cascade={"remove"})
      * @ORM\JoinColumn(nullable=false)
      */
     protected $parentList;
@@ -50,7 +50,7 @@ class Post
     /**
      * @var Post|null
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Post", inversedBy="sharedPosts")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Post", inversedBy="sharedPosts", cascade={"remove"})
      */
     protected $originalPost;
 

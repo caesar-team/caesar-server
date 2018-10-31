@@ -2,9 +2,9 @@ easy_admin:
   site_name: 'Caesar App'
   entities:
     User:
-      label: 'User'
+      controller: App\Controller\Admin\UserController
       class: App\Entity\User
-      disabled_actions: ['delete', 'new']
+      label: 'User'
       list:
         title: 'Users'
         fields:
@@ -18,6 +18,6 @@ easy_admin:
       form:
         fields:
           - enabled
-          - { property: 'username', type_options: { attr: { readonly : true } }}
-          - { property: 'email', type_options: { attr: { readonly : true } }}
+          - username
+          - email
           - domain

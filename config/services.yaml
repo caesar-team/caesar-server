@@ -49,3 +49,7 @@ services:
         class: Doctrine\ORM\EntityRepository
         factory: ['@doctrine', getRepository]
         arguments: [ 'App\Entity\User' ]
+
+    App\Controller\Admin\UserController:
+        arguments:
+            $userManager: '@fos_user.user_manager'
