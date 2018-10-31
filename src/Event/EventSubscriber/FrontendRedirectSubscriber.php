@@ -44,6 +44,7 @@ class FrontendRedirectSubscriber implements EventSubscriberInterface
             $uri = $request->query->get('redirect_uri');
             $this->frontendUriHandler->validateUri($uri);
             $this->frontendUri = $uri;
+            $request->getSession()->set('current_frontend_uri', $uri);
         }
     }
 
