@@ -48,8 +48,9 @@ class UserRepository extends EntityRepository
         $qb = $this->createQueryBuilder('user');
         $qb
             ->where($qb->expr()->neq('user', ':userId'))
-            ->andWhere('user.email LIKE :domain')
+            ->andWhere('user.email LIKE :domain OR user.domain = :user_domain')
             ->setParameter('domain', '%@'.$query->getUser()->getUserDomain())
+            ->setParameter('user_domain', $query->getUser()->getUserDomain())
             ->setParameter('userId', $query->getUser())
             ->setMaxResults($query->getPerPage())
             ->setFirstResult($query->getFirstResult());
