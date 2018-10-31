@@ -37,6 +37,13 @@ class SecretView
     public $note;
 
     /**
+     * @var string|null
+     *
+     * @SWG\Property(example="https://example.com")
+     */
+    public $website;
+
+    /**
      * @var AttachmentView[]
      */
     public $attachments = [];
