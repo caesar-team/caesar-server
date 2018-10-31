@@ -41,6 +41,8 @@ class FOSUBUserProvider extends BaseUserProvider
         } catch (AccountNotLinkedException $e) {
             $user = $this->userManager->findUserByEmail($response->getEmail());
 
+            $this->checkEmailDomain($response->getEmail());
+
             if (!$user) {
                 /** @var User $user */
                 $user = $this->userManager->createUser();
@@ -65,5 +67,19 @@ class FOSUBUserProvider extends BaseUserProvider
         $accessor->setValue($user, ucfirst($serviceName).'Id', $response->getUsername());
 
         return $user;
+    }
+
+    /**
+     * @param string|null $email
+     *
+     * @throws AuthenticationException
+     */
+    private function checkEmailDomain(?string $email): void
+    {
+        preg_match('/(?<=@)(.+)$/', $email, $matches);
+        $domain = $matches[1];
+        if (!in_array($domain, explode(',', getenv('OAUTH_ALLOWED_DOMAINS')), true)) {
+            throw new AuthenticationException($this->translator->trans('authentication.email_domain_restriction', ['%domain%' => $domain]));
+        }
     }
 }
