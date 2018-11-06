@@ -28,7 +28,7 @@ class Post
     /**
      * @var Directory
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childPosts", cascade={"remove"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childPosts", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      */
     protected $parentList;
