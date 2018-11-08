@@ -50,7 +50,7 @@ class Post
     /**
      * @var Post|null
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Post", inversedBy="sharedPosts", cascade={"remove"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\Post", inversedBy="sharedPosts", cascade={"persist"})
      */
     protected $originalPost;
 
