@@ -6,6 +6,7 @@ namespace App\Security;
 
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -19,9 +20,14 @@ class FrontendUriHandler
      * @var array
      */
     private $validUriCollection;
+    /**
+     * @var RequestStack
+     */
+    private $requestStack;
 
-    public function __construct(array $validUriCollection)
+    public function __construct(RequestStack $requestStack, array $validUriCollection)
     {
+        $this->requestStack = $requestStack;
         $this->validUriCollection = $validUriCollection;
     }
 
@@ -31,13 +37,19 @@ class FrontendUriHandler
             throw new NotFoundHttpException('Empty frontend uri');
         }
 
+        $redirectUri = parse_url($uri);
+        $redirectUri = $redirectUri['host'].($redirectUri['port'] ? ':'.$redirectUri['port'] : '');
+        if ($this->requestStack->getCurrentRequest()->getHttpHost() === $redirectUri) {
+            return true;
+        }
+
         foreach ($this->validUriCollection as $validUri) {
             if (preg_match($validUri, $uri)) {
                 return true;
             }
         }
 
-        throw new BadRequestHttpException('Frontend uri not in valid uri scope');
+        throw new BadRequestHttpException(sprintf('Frontend uri "%s" not in valid uri scope', $uri));
     }
 
     public function persistUri(Response $response, string $uri)

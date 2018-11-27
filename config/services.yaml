@@ -48,3 +48,12 @@ services:
     App\Controller\Admin\UserController:
         arguments:
             $userManager: '@fos_user.user_manager'
+
+
+    Scheb\TwoFactorBundle\Security\TwoFactor\Trusted\TrustedDeviceManagerInterface: '@App\Security\Trusted\TrustedDeviceManager'
+
+    App\Security\Trusted\TrustedDeviceTokenStorage:
+        arguments:
+            $jwtTokenEncoder: '@scheb_two_factor.trusted_jwt_encoder'
+            $trustedTokenLifetime: '%scheb_two_factor.trusted_device.lifetime%'
+

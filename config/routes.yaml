@@ -2,3 +2,6 @@ google_login:
     path: /login/google
 google_connect:
     path: /connect/google
+
+_security_logout:
+    path: /logout
