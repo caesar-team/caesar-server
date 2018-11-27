@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class DefaultController extends AbstractController
@@ -24,6 +26,18 @@ class DefaultController extends AbstractController
         return [
             'database' => $this->checkDB(),
         ];
+    }
+
+    /**
+     * @Route("/query2json", name="query2json")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function query2Json(Request $request)
+    {
+        return new JsonResponse($request->query->all());
     }
 
     private function checkDB(): bool

@@ -8,6 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 use FOS\UserBundle\Model\User as FOSUser;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
+use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
 
 /**
  * User.
@@ -15,7 +17,7 @@ use Ramsey\Uuid\UuidInterface;
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
-class User extends FOSUser
+class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 {
     /**
      * @var UuidInterface
@@ -86,6 +88,20 @@ class User extends FOSUser
      * @ORM\Column(nullable=true)
      */
     protected $domain;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(name="google_authenticator_secret", type="string", nullable=true)
+     */
+    protected $googleAuthenticatorSecret;
+
+    /**
+     * @var int|null
+     *
+     * @ORM\Column(name="trusted_version", type="integer")
+     */
+    protected $trustedVersion = 0;
 
     /**
      * User constructor.
@@ -199,5 +215,49 @@ class User extends FOSUser
         $emailDomain = end($emailDomain);
 
         return $this->getDomain() ?: $emailDomain;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isGoogleAuthenticatorEnabled(): bool
+    {
+        return $this->googleAuthenticatorSecret ? true : false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getGoogleAuthenticatorSecret(): string
+    {
+        return (string) $this->googleAuthenticatorSecret;
+    }
+
+    public function setGoogleAuthenticatorSecret(?string $googleAuthenticatorSecret): void
+    {
+        $this->googleAuthenticatorSecret = $googleAuthenticatorSecret;
+    }
+
+    public function getGoogleAuthenticatorUsername(): string
+    {
+        return $this->getEmail();
+    }
+
+    public function getTrustedVersion()
+    {
+        return $this->trustedVersion;
+    }
+
+    public function setTrustedVersion($trustedVersion): void
+    {
+        $this->trustedVersion = $trustedVersion;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTrustedTokenVersion(): int
+    {
+        return $this->trustedVersion;
     }
 }

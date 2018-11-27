@@ -31,6 +31,12 @@ security:
             pattern: ^/api
             provider:  fos_userbundle
             stateless: true
+            two_factor:
+                check_path: /api/2fa_check
+                provider: fos_userbundle
+                success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
+                failure_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
+                authentication_required_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
@@ -45,11 +51,11 @@ security:
                 resource_owners:
                     google: google_login
                 login_path: /login
-                success_handler: App\Security\JwtRedirectHandler
                 provider: hwi_oauth.user.provider
                 oauth_user_provider:
                     service: App\Security\FOSUBUserProvider
                 failure_handler: App\Security\Authentication\OAuthFailureHandler
+                success_handler: App\Security\JwtRedirectHandler
     access_control:
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/doc, roles: [ROLE_ADMIN]}

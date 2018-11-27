@@ -344,6 +344,15 @@
             "ref": "f7895777cd673fcefbc321a9063077a24e5df646"
         }
     },
+    "scheb/two-factor-bundle": {
+        "version": "3.16",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "3.16",
+            "ref": "b5789cd9710e2ee555bf361079b991068a0f640b"
+        }
+    },
     "sebastian/code-unit-reverse-lookup": {
         "version": "1.0.1"
     },
@@ -394,6 +403,9 @@
             "version": "4.0",
             "ref": "421933bf8f0e75546ac8e00cb3eb12904fa2ac1a"
         }
+    },
+    "sonata-project/google-authenticator": {
+        "version": "2.2.0"
     },
     "stof/doctrine-extensions-bundle": {
         "version": "1.2",

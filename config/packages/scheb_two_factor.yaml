@@ -1,0 +1,12 @@
+# See the configuration reference at https://github.com/scheb/two-factor-bundle/blob/master/Resources/doc/configuration.md
+scheb_two_factor:
+    trusted_device:
+        enabled: true                 # If the trusted device feature should be enabled
+        lifetime: 5184000              # Lifetime of the trusted device token
+        extend_lifetime: false
+        manager: App\Security\Trusted\TrustedDeviceManager
+    security_tokens:
+        - Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken
+    google:
+        server_name: '%env(TWO_FACTOR_SERVER_NAME)%'
+        enabled: true
