@@ -43,4 +43,9 @@ class PostView extends NodeView
      * @var bool
      */
     public $owner;
+
+    /**
+     * @var bool
+     */
+    public $favorite = false;
 }

@@ -99,7 +99,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @var int|null
      *
-     * @ORM\Column(name="trusted_version", type="integer")
+     * @ORM\Column(name="trusted_version", type="integer", options={"default"=0})
      */
     protected $trustedVersion = 0;
 

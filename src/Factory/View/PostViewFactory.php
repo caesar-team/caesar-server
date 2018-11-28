@@ -33,6 +33,7 @@ class PostViewFactory
 
         $view->secret = $this->getSecret($post->getSecret());
         $view->shared = $this->getSharedCollection($post);
+        $view->favorite = $post->isFavorite();
 
         return $view;
     }

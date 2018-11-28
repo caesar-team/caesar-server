@@ -61,6 +61,13 @@ class Post
      */
     protected $sharedPosts;
 
+    /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean", options={"default"="false"})
+     */
+    protected $favorite = false;
+
     public function __construct()
     {
         $this->id = Uuid::uuid4();
@@ -155,5 +162,21 @@ class Post
     public function setSharedPosts(Collection $sharedPosts)
     {
         $this->sharedPosts = $sharedPosts;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFavorite(): bool
+    {
+        return $this->favorite;
+    }
+
+    /**
+     * @param bool $favorite
+     */
+    public function setFavorite(bool $favorite): void
+    {
+        $this->favorite = $favorite;
     }
 }
