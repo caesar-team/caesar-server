@@ -36,7 +36,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class PostController extends Controller
 {
     /**
-     * @SWG\Tag(name="post")
+     * @SWG\Tag(name="Post")
      *
      * @SWG\Response(
      *     response=200,
@@ -67,7 +67,7 @@ class PostController extends Controller
     }
 
     /**
-     * @SWG\Tag(name="post")
+     * @SWG\Tag(name="Post")
      *
      * @SWG\Parameter(
      *     name="listId",
@@ -121,7 +121,7 @@ class PostController extends Controller
     }
 
     /**
-     * @SWG\Tag(name="post")
+     * @SWG\Tag(name="Post")
      *
      * @SWG\Response(
      *     response=200,
@@ -160,7 +160,7 @@ class PostController extends Controller
     }
 
     /**
-     * @SWG\Tag(name="post")
+     * @SWG\Tag(name="Post")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -223,7 +223,7 @@ class PostController extends Controller
     }
 
     /**
-     * @SWG\Tag(name="post")
+     * @SWG\Tag(name="Post")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -297,7 +297,7 @@ class PostController extends Controller
     }
 
     /**
-     * @SWG\Tag(name="post")
+     * @SWG\Tag(name="Post")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -381,7 +381,7 @@ class PostController extends Controller
     }
 
     /**
-     * @SWG\Tag(name="post")
+     * @SWG\Tag(name="Post")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -453,7 +453,7 @@ class PostController extends Controller
     }
 
     /**
-     * @SWG\Tag(name="post")
+     * @SWG\Tag(name="Post")
      *
      * @SWG\Response(
      *     response=204,
@@ -495,8 +495,6 @@ class PostController extends Controller
      *
      * @param Post                   $post
      * @param EntityManagerInterface $manager
-     *
-     * @return null
      */
     public function deletePostAction(Post $post, EntityManagerInterface $manager)
     {
@@ -509,5 +507,85 @@ class PostController extends Controller
         $manager->flush();
 
         return null;
+    }
+
+    /**
+     * Get list of favourite posts.
+     *
+     * @SWG\Tag(name="Post")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="List of favourite posts"
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not owner of this post"
+     * )
+     *
+     * @Route(
+     *     path="/api/posts/favorite",
+     *     name="api_favorites_post",
+     *     methods={"GET"}
+     * )
+     *
+     * @param PostListViewFactory $viewFactory
+     *
+     * @return PostView[]|FormInterface
+     */
+    public function favorite(PostListViewFactory $viewFactory)
+    {
+        $postCollection = $this->getDoctrine()->getRepository(Post::class)->getFavoritesPosts($this->getUser());
+
+        return $viewFactory->create($postCollection);
+    }
+
+    /**
+     * Toggle favorite post.
+     *
+     * @SWG\Tag(name="Post")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Set favorite is on or off"
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not owner of this post"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such post"
+     * )
+     *
+     * @Route(
+     *     path="/api/post/{id}/favorite",
+     *     name="api_favorite_post_toggle",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Post                   $post
+     * @param EntityManagerInterface $entityManager
+     * @param PostViewFactory        $factory
+     *
+     * @return PostView
+     */
+    public function favoriteToggle(Post $post, EntityManagerInterface $entityManager, PostViewFactory $factory)
+    {
+        $this->denyAccessUnlessGranted(PostVoter::SHOW_POST, $post);
+
+        $post->setFavorite(!$post->isFavorite());
+        $entityManager->persist($post);
+        $entityManager->flush();
+
+        return $factory->create($post);
     }
 }
