@@ -57,3 +57,14 @@ services:
             $jwtTokenEncoder: '@scheb_two_factor.trusted_jwt_encoder'
             $trustedTokenLifetime: '%scheb_two_factor.trusted_device.lifetime%'
 
+    App\Security\Voter\TwoFactorInProgressVoter:
+        tags:
+            - {name: security.voter, priority: 249 }
+
+    App\Security\TwoFactor\GoogleAuthenticatorTwoFactorProvider:
+        decorates: "scheb_two_factor.security.google.provider"
+        arguments:
+            $authenticator: "@scheb_two_factor.security.google_authenticator"
+            $formRenderer: "@scheb_two_factor.security.google.form_renderer"
+
+

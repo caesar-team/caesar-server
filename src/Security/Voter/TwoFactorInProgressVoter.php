@@ -34,10 +34,8 @@ class TwoFactorInProgressVoter implements VoterInterface
         if ($token->getAuthenticatedToken() instanceof JWTUserToken) {
             $data = $this->jwtEncoder->decode($token->getAuthenticatedToken()->getCredentials());
             if (isset($data[self::CHECK_KEY_NAME])) {
-                return VoterInterface::ACCESS_ABSTAIN;
+                return VoterInterface::ACCESS_DENIED;
             }
-
-            return VoterInterface::ACCESS_GRANTED;
         }
 
         return VoterInterface::ACCESS_ABSTAIN;
