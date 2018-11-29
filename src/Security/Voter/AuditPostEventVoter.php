@@ -44,9 +44,12 @@ class AuditPostEventVoter extends Voter
         /** @var User $user */
         $user = $token->getUser();
         if (self::SHOW === $attribute && $subject instanceof PostEvent) {
-            $postOwner = $this->userRepository->getByPost($subject->getPost());
+            $postOwner[] = $this->userRepository->getByPost($subject->getPost());
+            if ($subject->getPost()->getOriginalPost()) {
+                $postOwner[] = $this->userRepository->getByPost($subject->getPost()->getOriginalPost());
+            }
 
-            return $postOwner === $user;
+            return in_array($user, $postOwner);
         }
 
         if (self::CREATE === $attribute && $subject instanceof Post) {
