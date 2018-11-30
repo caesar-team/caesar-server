@@ -33,8 +33,8 @@ class CreatePostType extends AbstractType
                 ],
                 'choices' => [
                     NodeEnumType::TYPE_CRED,
+                    NodeEnumType::TYPE_DOCUMENT,
                 ],
-                'mapped' => false,
             ])
             ->add('secret', TextType::class, [
                 'constraints' => [

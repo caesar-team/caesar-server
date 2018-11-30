@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Factory\View;
 
-use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Post;
 use App\Model\View\CredentialsList\PostView;
 use App\Model\View\CredentialsList\SecretView;
@@ -26,7 +25,7 @@ class PostViewFactory
         $view = new PostView();
 
         $view->id = $post->getId();
-        $view->type = NodeEnumType::TYPE_CRED;
+        $view->type = $post->getType();
         $view->owner = null === $post->getOriginalPost();
         $view->lastUpdated = $post->getLastUpdated();
         $view->listId = $post->getParentList()->getId()->toString();

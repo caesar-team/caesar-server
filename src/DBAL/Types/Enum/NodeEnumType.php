@@ -12,6 +12,7 @@ class NodeEnumType extends AbstractEnumType
     public const TYPE_INBOX = 'inbox';
     public const TYPE_TRASH = 'trash';
     public const TYPE_CRED = 'credentials';
+    public const TYPE_DOCUMENT = 'document';
 
     /** @var array */
     protected static $choices = [
