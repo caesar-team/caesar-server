@@ -35,7 +35,7 @@ class AuditPostEventRepository extends ServiceEntityRepository
             ->where('user.id = :user')
             ->orWhere('sharedUser.id = :user')
             ->setParameter('user', $query->getUser())
-            ->orderBy('event.createdAt', 'ASC')
+            ->orderBy('event.createdAt', 'DESC')
             ->setMaxResults($query->getPerPage())
             ->setFirstResult($query->getFirstResult())
         ;
@@ -44,6 +44,30 @@ class AuditPostEventRepository extends ServiceEntityRepository
             $queryBuilder
                 ->andWhere('event.post = :post OR post.originalPost = :post')
                 ->setParameter('post', $query->getPost())
+            ;
+        }
+
+        if (AuditEventsQuery::TAB_SHARED === $query->getTab()) {
+            $queryBuilder->andWhere('post.originalPost is not null');
+        } elseif (AuditEventsQuery::TAB_PERSONAL === $query->getTab()) {
+            $queryBuilder->andWhere('post.originalPost is null');
+        }
+
+        if ($query->getDateFrom() && $query->getDateTo()) {
+            $queryBuilder
+                ->andWhere('event.createdAt BETWEEN :dateFrom AND :dateTo')
+                ->setParameter('dateFrom', $query->getDateFrom())
+                ->setParameter('dateTo', $query->getDateTo())
+            ;
+        } elseif ($query->getDateFrom()) {
+            $queryBuilder
+                ->andWhere('event.createdAt >= :dateFrom')
+                ->setParameter('dateFrom', $query->getDateFrom())
+            ;
+        } elseif ($query->getDateTo()) {
+            $queryBuilder
+                ->andWhere('event.createdAt <= :dateFrom')
+                ->setParameter('dateTo', $query->getDateTo())
             ;
         }
 
