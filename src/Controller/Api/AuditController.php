@@ -164,6 +164,29 @@ class AuditController extends Controller
      *     type="integer"
      * )
      *
+     * @SWG\Parameter(
+     *     name="tab",
+     *     in="query",
+     *     description="Filter by type credentials (shared|personal)",
+     *     type="string",
+     *     enum={App\Model\Query\AuditEventsQuery::TAB_SHARED,App\Model\Query\AuditEventsQuery::TAB_PERSONAL}
+     * )
+     *
+     * @SWG\Parameter(
+     *     name="date_from",
+     *     in="query",
+     *     description="Filter by date from (d-m-Y | d-m-Y H:i)",
+     *     type="string",
+     *     format="d-m-Y | d-m-Y H:i"
+     * )
+     * @SWG\Parameter(
+     *     name="date_to",
+     *     in="query",
+     *     description="Filter by date to (d-m-Y | d-m-Y H:i)",
+     *     type="string",
+     *     format="d-m-Y | d-m-Y H:i"
+     * )
+     *
      * @SWG\Response(
      *     response=200,
      *     description="Audit events list",
@@ -258,6 +281,20 @@ class AuditController extends Controller
      *     in="query",
      *     description="Count items per page",
      *     type="integer"
+     * )
+     * @SWG\Parameter(
+     *     name="date_from",
+     *     in="query",
+     *     description="Filter by date from (d-m-Y | d-m-Y H:i)",
+     *     type="string",
+     *     format="d-m-Y | d-m-Y H:i"
+     * )
+     * @SWG\Parameter(
+     *     name="date_to",
+     *     in="query",
+     *     description="Filter by date to (d-m-Y | d-m-Y H:i)",
+     *     type="string",
+     *     format="d-m-Y | d-m-Y H:i"
      * )
      *
      * @SWG\Response(
