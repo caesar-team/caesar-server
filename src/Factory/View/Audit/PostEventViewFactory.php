@@ -13,6 +13,10 @@ class PostEventViewFactory extends AbstractEventViewFactory
     {
         $eventView = new PostEventView();
         $eventView->post = $event->getPost()->getId();
+        $eventView->originalPost = $event->getPost()->getOriginalPost()
+            ? $event->getPost()->getOriginalPost()->getId()
+            : null
+        ;
 
         $this->injectDataEvent($eventView, $event);
 

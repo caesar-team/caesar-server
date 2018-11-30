@@ -8,7 +8,7 @@ use App\Entity\Post;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\AuditPostEventRepository")
  * @ORM\Table(name="audit_events")
  */
 class PostEvent extends AbstractEvent

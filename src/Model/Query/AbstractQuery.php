@@ -30,7 +30,7 @@ abstract class AbstractQuery
      */
     public function getPage(): int
     {
-        return $this->page ?? static::FIRST_PAGE;
+        return $this->page > 0 ? $this->page : static::FIRST_PAGE;
     }
 
     /**
@@ -46,7 +46,7 @@ abstract class AbstractQuery
      */
     public function getPerPage(): int
     {
-        return $this->perPage ?? static::PER_PAGE;
+        return $this->perPage > 0 ? $this->perPage : static::PER_PAGE;
     }
 
     /**
