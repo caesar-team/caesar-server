@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\DBAL\Types\Enum\NodeEnumType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -36,9 +37,16 @@ class Post
     /**
      * @var array
      *
-     * @ORM\Column(type="json", nullable=false, options={"jsonb": true})
+     * @ORM\Column(type="json", options={"jsonb": true})
      */
     protected $secret;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="string", options={"default"=\App\DBAL\Types\Enum\NodeEnumType::TYPE_CRED})
+     */
+    protected $type;
 
     /**
      * @var \DateTime
@@ -72,6 +80,7 @@ class Post
     {
         $this->id = Uuid::uuid4();
         $this->originalPost = null;
+        $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedPosts = new ArrayCollection();
     }
 
@@ -178,5 +187,21 @@ class Post
     public function setFavorite(bool $favorite): void
     {
         $this->favorite = $favorite;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param string $type
+     */
+    public function setType(string $type): void
+    {
+        $this->type = $type;
     }
 }
