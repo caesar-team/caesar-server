@@ -29,6 +29,7 @@ class PostViewFactory
         $view->owner = null === $post->getOriginalPost();
         $view->lastUpdated = $post->getLastUpdated();
         $view->listId = $post->getParentList()->getId()->toString();
+        $view->tags = array_map('strval', $post->getTags()->toArray());
 
         $view->secret = $this->getSecret($post->getSecret());
         $view->shared = $this->getSharedCollection($post);
