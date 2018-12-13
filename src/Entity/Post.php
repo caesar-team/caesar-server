@@ -44,7 +44,7 @@ class Post
     /**
      * @var string
      *
-     * @ORM\Column(type="string", options={"default"=\App\DBAL\Types\Enum\NodeEnumType::TYPE_CRED})
+     * @ORM\Column(type="string", options={"default": \App\DBAL\Types\Enum\NodeEnumType::TYPE_CRED})
      */
     protected $type;
 
@@ -72,7 +72,7 @@ class Post
     /**
      * @var bool
      *
-     * @ORM\Column(type="boolean", options={"default"="false"})
+     * @ORM\Column(type="boolean", options={"default": false})
      */
     protected $favorite = false;
 

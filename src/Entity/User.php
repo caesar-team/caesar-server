@@ -76,6 +76,13 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $trash;
 
     /**
+     * @var array|null
+     *
+     * @ORM\Column(type="json", options={"jsonb": true}, nullable=true)
+     */
+    protected $keys;
+
+    /**
      * @var string|null
      *
      * @ORM\Column(nullable=true)
@@ -92,7 +99,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @var int|null
      *
-     * @ORM\Column(name="trusted_version", type="integer", options={"default"=0})
+     * @ORM\Column(name="trusted_version", type="integer", options={"default": 0})
      */
     protected $trustedVersion = 0;
 
@@ -173,17 +180,17 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->trash;
     }
 
+    public function getDomain(): ?string
+    {
+        return $this->domain;
+    }
+
     /**
      * @param null|string $domain
      */
     public function setDomain(?string $domain): void
     {
         $this->domain = $domain;
-    }
-
-    public function getDomain(): ?string
-    {
-        return $this->domain;
     }
 
     public function getUserDomain(): string
@@ -236,5 +243,15 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getTrustedTokenVersion(): int
     {
         return $this->trustedVersion;
+    }
+
+    public function getKeys(): ?array
+    {
+        return $this->keys;
+    }
+
+    public function setKeys(array $keys): void
+    {
+        $this->keys = $keys;
     }
 }

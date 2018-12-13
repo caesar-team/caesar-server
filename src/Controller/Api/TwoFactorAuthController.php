@@ -11,14 +11,14 @@ use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
 use Swagger\Annotations as SWG;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-final class TwoFactorAuthController extends Controller
+class TwoFactorAuthController extends AbstractController
 {
     /**
      * Enable 2FA on your account.
@@ -114,13 +114,13 @@ final class TwoFactorAuthController extends Controller
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
-     *          type="object",
-     *          properties={
-     *              @SWG\Property(
-     *                  property="_auth_code",
-     *                  type="integer"
-     *              )
-     *          }
+     *         type="object",
+     *         properties={
+     *             @SWG\Property(
+     *                 property="_auth_code",
+     *                 type="integer"
+     *             )
+     *         }
      *     )
      * )
      * @SWG\Response(
@@ -232,18 +232,18 @@ final class TwoFactorAuthController extends Controller
      *     in="body",
      *     required=true,
      *     @SWG\Schema(
-     *          type="object",
-     *          properties={
-     *              @SWG\Property(
-     *                  property="_auth_code",
-     *                  type="integer"
-     *              ),
-     *              @SWG\Property(
-     *                  property="_trusted",
-     *                  description="Set if we need trusted device token",
-     *                  type="boolean"
-     *              )
-     *          }
+     *         type="object",
+     *         properties={
+     *             @SWG\Property(
+     *                 property="_auth_code",
+     *                 type="integer"
+     *             ),
+     *             @SWG\Property(
+     *                 property="_trusted",
+     *                 description="Set if we need trusted device token",
+     *                 type="boolean"
+     *             )
+     *         }
      *     )
      * )
      * @SWG\Response(
