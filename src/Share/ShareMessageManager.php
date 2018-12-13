@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Share;
 
-use App\Model\Message;
+use App\Model\DTO\ShareMessage;
 use Predis\Client;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -30,15 +30,15 @@ class ShareMessageManager
     }
 
     /**
-     * @param Message $message
+     * @param ShareMessage $message
      *
-     * @return Message
+     * @return ShareMessage
      */
-    public function create(Message $message)
+    public function create(ShareMessage $message): ShareMessage
     {
         $id = bin2hex(random_bytes(20));
         $message->setId($id);
-        $message->setupExpiration();
+        $message->initExpiration();
 
         $redisId = $this->buildRedisId($message->getId());
         $limitId = $this->buildLimitId($message->getId());
@@ -53,9 +53,9 @@ class ShareMessageManager
     /**
      * @param string $id
      *
-     * @return Message|null
+     * @return ShareMessage|null
      */
-    public function get($id)
+    public function get($id): ?ShareMessage
     {
         $json = $this->redis->get($this->buildRedisId($id));
         if (is_null($json)) {
@@ -71,11 +71,11 @@ class ShareMessageManager
     }
 
     /**
-     * @param Message $message
+     * @param ShareMessage $message
      *
      * @return int
      */
-    protected function decreaseLimit(Message $message)
+    protected function decreaseLimit(ShareMessage $message)
     {
         $res = $this->redis->decr($this->buildLimitId($message->getId()));
 
@@ -85,11 +85,11 @@ class ShareMessageManager
     /**
      * Returns true if it is last attempt (based on requestsLimit), false - in opposite case.
      *
-     * @param Message $message
+     * @param ShareMessage $message
      *
      * @return bool
      */
-    protected function deleteIfLastAttempt(Message $message)
+    protected function deleteIfLastAttempt(ShareMessage $message)
     {
         $limit = (int) $this->redis->get($this->buildLimitId($message->getId()));
 
@@ -124,11 +124,11 @@ class ShareMessageManager
     }
 
     /**
-     * @param Message $message
+     * @param ShareMessage $message
      *
      * @return string
      */
-    public function serialize(Message $message)
+    public function serialize(ShareMessage $message)
     {
         return $this->serializer->serialize($message, 'json');
     }
@@ -140,6 +140,6 @@ class ShareMessageManager
      */
     public function deserialize($data)
     {
-        return $this->serializer->deserialize($data, Message::class, 'json');
+        return $this->serializer->deserialize($data, ShareMessage::class, 'json');
     }
 }

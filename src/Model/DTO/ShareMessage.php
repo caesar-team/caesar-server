@@ -50,7 +50,7 @@ class ShareMessage
     /**
      * @return $this
      */
-    public function setupExpiration()
+    public function initExpiration()
     {
         $secondsLimit = $this->secondsLimit;
         if (is_null($secondsLimit)) {
