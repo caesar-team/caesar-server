@@ -76,13 +76,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $trash;
 
     /**
-     * @var bool
-     *
-     * @ORM\Column(type="boolean", options={"default": false})
-     */
-    protected $masterCreated = false;
-
-    /**
      * @var string|null
      *
      * @ORM\Column(nullable=true)
@@ -178,22 +171,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getTrash(): Directory
     {
         return $this->trash;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isMasterCreated(): bool
-    {
-        return $this->masterCreated;
-    }
-
-    /**
-     * @param bool $masterCreated
-     */
-    public function setMasterCreated(bool $masterCreated): void
-    {
-        $this->masterCreated = $masterCreated;
     }
 
     /**

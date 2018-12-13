@@ -54,10 +54,6 @@ class JwtRedirectHandler implements AuthenticationSuccessHandlerInterface
     {
         $uri = $this->frontendUriHandler->extractUri($request);
 
-        if ($user->isMasterCreated()) {
-            return \sprintf('%s?jwt=%s&master_created=1', $uri, $jwt);
-        }
-
         return \sprintf('%s?jwt=%s', $uri, $jwt);
     }
 }
