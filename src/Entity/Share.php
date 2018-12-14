@@ -28,7 +28,7 @@ class Share
      * @var User
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="shares", cascade={"persist"})
-     * @ORM\JoinColumn(name="owner_id", columnDefinition="id", nullable=false, onDelete="CASCADE")
+     * @ORM\JoinColumn(name="owner_id", nullable=false, onDelete="CASCADE")
      */
     private $owner;
 
@@ -36,7 +36,7 @@ class Share
      * @var User
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="availableShares", cascade={"persist"})
-     * @ORM\JoinColumn(name="user_id", columnDefinition="id", nullable=false, onDelete="CASCADE")
+     * @ORM\JoinColumn(name="user_id", nullable=false, onDelete="CASCADE")
      */
     private $user;
 
