@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Form\FormErrorSerializer;
 use App\Form\Request\ShareMessageType;
 use App\Model\DTO\ShareMessage;
 use App\Share\ShareMessageManager;
@@ -76,12 +75,11 @@ final class ShareMessageController extends Controller
      *
      * @Route("/api/share/messages", name="messages_create", methods={"POST"})
      *
-     * @param Request             $request
-     * @param FormErrorSerializer $formErrorSerializer
+     * @param Request $request
      *
      * @return JsonResponse|Response
      */
-    public function create(Request $request, FormErrorSerializer $formErrorSerializer)
+    public function create(Request $request)
     {
         $message = new ShareMessage();
         $form = $this->createForm(ShareMessageType::class, $message);
@@ -95,8 +93,6 @@ final class ShareMessageController extends Controller
             return new Response($this->shareMessageManager->serialize($message));
         }
 
-        $errors = $formErrorSerializer->getFormErrorsAsArray($form);
-
-        return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+        return $form;
     }
 }
