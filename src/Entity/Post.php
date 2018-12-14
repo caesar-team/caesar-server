@@ -83,6 +83,17 @@ class Post
      */
     protected $favorite = false;
 
+    /**
+     * @var Tag[]|Collection
+     *
+     * @ORM\ManyToMany(targetEntity="App\Entity\Tag", cascade={"persist"})
+     * @ORM\JoinTable(name="post_tags",
+     *      joinColumns={@ORM\JoinColumn(name="post_id", referencedColumnName="id", onDelete="CASCADE")},
+     *      inverseJoinColumns={@ORM\JoinColumn(name="tag_id", referencedColumnName="id", onDelete="CASCADE")}
+     *  )
+     */
+    protected $tags;
+
     public function __construct()
     {
         $this->id = Uuid::uuid4();
@@ -90,6 +101,7 @@ class Post
         $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedPosts = new ArrayCollection();
         $this->externalSharedPosts = new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     /**
@@ -235,5 +247,33 @@ class Post
     public function setExternalSharedPosts(Collection $externalSharedPosts): void
     {
         $this->externalSharedPosts = $externalSharedPosts;
+    }
+
+    /**
+     * @return Collection|Tag[]
+     */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    /**
+     * @param iterable|Tag[] $tags
+     */
+    public function setTags(iterable $tags): void
+    {
+        $this->tags = $tags;
+    }
+
+    public function addTag(Tag $tag): void
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+        }
+    }
+
+    public function removeTag(Tag $tag): void
+    {
+        $this->tags->removeElement($tag);
     }
 }
