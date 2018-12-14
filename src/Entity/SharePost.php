@@ -33,7 +33,7 @@ class SharePost
     /**
      * @var Share
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Share", inversedBy="sharedPosts")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Share", inversedBy="sharedPosts")
      * @ORM\JoinColumn(name="share_id", nullable=false, onDelete="CASCADE")
      */
     private $share;
