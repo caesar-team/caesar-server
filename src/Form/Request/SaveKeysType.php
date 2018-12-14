@@ -16,11 +16,6 @@ class SaveKeysType extends AbstractType
     {
         parent::buildForm($builder, $options);
         $builder
-            ->add('masterKey', TextType::class, [
-                'constraints' => [
-                    new NotBlank(),
-                ],
-            ])
             ->add('encryptedPrivateKey', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
