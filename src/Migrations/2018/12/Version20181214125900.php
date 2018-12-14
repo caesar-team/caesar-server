@@ -21,7 +21,7 @@ final class Version20181214125900 extends AbstractMigration
         $this->addSql('COMMENT ON COLUMN shares.user_id IS \'(DC2Type:uuid)\'');
         $this->addSql('CREATE TABLE share_post (id UUID NOT NULL, post_id UUID NOT NULL, share_id UUID NOT NULL, secret TEXT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_E74D61144B89032C ON share_post (post_id)');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_E74D61142AE63FDB ON share_post (share_id)');
+        $this->addSql('CREATE INDEX IDX_E74D61142AE63FDB ON share_post (share_id)');
         $this->addSql('COMMENT ON COLUMN share_post.id IS \'(DC2Type:uuid)\'');
         $this->addSql('COMMENT ON COLUMN share_post.post_id IS \'(DC2Type:uuid)\'');
         $this->addSql('COMMENT ON COLUMN share_post.share_id IS \'(DC2Type:uuid)\'');
