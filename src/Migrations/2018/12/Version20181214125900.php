@@ -13,13 +13,13 @@ final class Version20181214125900 extends AbstractMigration
     {
         $this->abortIf('postgresql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'postgresql\'.');
 
-        $this->addSql('CREATE TABLE shares (id UUID NOT NULL, owner_id id, user_id id, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE shares (id UUID NOT NULL, owner_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_905F717C7E3C61F9 ON shares (owner_id)');
         $this->addSql('CREATE INDEX IDX_905F717CA76ED395 ON shares (user_id)');
         $this->addSql('COMMENT ON COLUMN shares.id IS \'(DC2Type:uuid)\'');
         $this->addSql('COMMENT ON COLUMN shares.owner_id IS \'(DC2Type:uuid)\'');
         $this->addSql('COMMENT ON COLUMN shares.user_id IS \'(DC2Type:uuid)\'');
-        $this->addSql('CREATE TABLE share_post (id UUID NOT NULL, post_id id, share_id id, secret TEXT NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE share_post (id UUID NOT NULL, post_id UUID NOT NULL, share_id UUID NOT NULL, secret TEXT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_E74D61144B89032C ON share_post (post_id)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_E74D61142AE63FDB ON share_post (share_id)');
         $this->addSql('COMMENT ON COLUMN share_post.id IS \'(DC2Type:uuid)\'');
