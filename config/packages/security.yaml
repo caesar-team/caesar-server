@@ -31,6 +31,7 @@ security:
             pattern: ^/api
             provider:  fos_userbundle
             stateless: true
+            anonymous: ~
             two_factor:
                 check_path: /api/2fa_check
                 provider: fos_userbundle
@@ -57,6 +58,7 @@ security:
                 failure_handler: App\Security\Authentication\OAuthFailureHandler
                 success_handler: App\Security\JwtRedirectHandler
     access_control:
+        - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/doc, roles: [ROLE_ADMIN]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}

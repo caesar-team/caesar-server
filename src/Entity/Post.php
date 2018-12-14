@@ -70,11 +70,29 @@ class Post
     protected $sharedPosts;
 
     /**
+     * @var SharePost[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\SharePost", mappedBy="post", orphanRemoval=true)
+     */
+    protected $externalSharedPosts;
+
+    /**
      * @var bool
      *
      * @ORM\Column(type="boolean", options={"default": false})
      */
     protected $favorite = false;
+
+    /**
+     * @var Tag[]|Collection
+     *
+     * @ORM\ManyToMany(targetEntity="App\Entity\Tag", cascade={"persist"})
+     * @ORM\JoinTable(name="post_tags",
+     *     joinColumns={@ORM\JoinColumn(name="post_id", referencedColumnName="id", onDelete="CASCADE")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="tag_id", referencedColumnName="id", onDelete="CASCADE")}
+     * )
+     */
+    protected $tags;
 
     public function __construct()
     {
@@ -82,6 +100,8 @@ class Post
         $this->originalPost = null;
         $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedPosts = new ArrayCollection();
+        $this->externalSharedPosts = new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     /**
@@ -203,5 +223,57 @@ class Post
     public function setType(string $type): void
     {
         $this->type = $type;
+    }
+
+    /**
+     * @return SharePost[]|Collection
+     */
+    public function getExternalSharedPosts(): Collection
+    {
+        return $this->externalSharedPosts;
+    }
+
+    public function addExternalSharePost(SharePost $sharePost): void
+    {
+        if (!$this->externalSharedPosts->contains($sharePost)) {
+            $this->externalSharedPosts->add($sharePost);
+            $sharePost->setPost(this);
+        }
+    }
+
+    /**
+     * @param SharePost[]|Collection $externalSharedPosts
+     */
+    public function setExternalSharedPosts(Collection $externalSharedPosts): void
+    {
+        $this->externalSharedPosts = $externalSharedPosts;
+    }
+
+    /**
+     * @return Collection|Tag[]
+     */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    /**
+     * @param iterable|Tag[] $tags
+     */
+    public function setTags(iterable $tags): void
+    {
+        $this->tags = $tags;
+    }
+
+    public function addTag(Tag $tag): void
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+        }
+    }
+
+    public function removeTag(Tag $tag): void
+    {
+        $this->tags->removeElement($tag);
     }
 }

@@ -67,4 +67,8 @@ services:
             $authenticator: "@scheb_two_factor.security.google_authenticator"
             $formRenderer: "@scheb_two_factor.security.google.form_renderer"
 
+    App\Share\ShareMessageManager:
+        arguments:
+            $redis: '@snc_redis.default'
+
 

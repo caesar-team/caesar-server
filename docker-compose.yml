@@ -41,6 +41,14 @@ services:
             - POSTGRES_DB
             - POSTGRES_USER
             - POSTGRES_PASSWORD
+    redis:
+        image: 'redis:alpine'
+        environment:
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+        volumes:
+            - 'redis:/etc/redis/database/caesarapp'
 volumes:
     db:
     trash:
+    redis:

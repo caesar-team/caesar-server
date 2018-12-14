@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use FOS\UserBundle\Model\User as FOSUser;
 use Ramsey\Uuid\Uuid;
@@ -33,6 +35,20 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * @ORM\Column(nullable=true)
      */
     protected $googleId;
+
+    /**
+     * @var Share[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\Share", mappedBy="owner")
+     */
+    protected $shares;
+
+    /**
+     * @var Share[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\Share", mappedBy="user")
+     */
+    protected $availableShares;
 
     /**
      * @var Avatar|null
@@ -104,6 +120,13 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $trustedVersion = 0;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(name="guest", type="boolean", options={"default": false})
+     */
+    protected $guest = false;
+
+    /**
      * User constructor.
      */
     public function __construct()
@@ -113,6 +136,8 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->inbox = Directory::createInbox();
         $this->lists = Directory::createRootList();
         $this->trash = Directory::createTrash();
+        $this->shares = new ArrayCollection();
+        $this->availableShares = new ArrayCollection();
     }
 
     /**
@@ -253,5 +278,52 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setKeys(array $keys): void
     {
         $this->keys = $keys;
+    }
+
+    /**
+     * @return Share[]|Collection
+     */
+    public function getShares(): Collection
+    {
+        return $this->shares;
+    }
+
+    public function addShare(Share $share): void
+    {
+        if (!$this->shares->contains($share)) {
+            $this->shares->add($share);
+            $share->setOwner($this);
+        }
+    }
+
+    public function removeShare(Share $share): void
+    {
+        $this->shares->removeElement($share);
+    }
+
+    /**
+     * @return Share[]|Collection
+     */
+    public function getAvailableShares(): Collection
+    {
+        return $this->availableShares;
+    }
+
+    public function addAvailableShares(Share $availableShare): void
+    {
+        if ($this->availableShares->contains($availableShare)) {
+            $this->availableShares->add($availableShare);
+            $availableShare->setUser($this);
+        }
+    }
+
+    public function isGuest(): bool
+    {
+        return $this->guest;
+    }
+
+    public function setGuest(bool $guest): void
+    {
+        $this->guest = $guest;
     }
 }
