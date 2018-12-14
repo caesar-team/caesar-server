@@ -86,16 +86,13 @@ final class ShareMessageController extends Controller
         $message = new ShareMessage();
         $form = $this->createForm(ShareMessageType::class, $message);
 
-        if ($request->isMethod('POST')) {
-            $messageArray = json_decode($request->getContent(), true);
-            $form->submit($messageArray);
+        $messageArray = json_decode($request->getContent(), true);
+        $form->submit($messageArray);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $message = $form->getData();
+            $message = $this->shareMessageManager->create($message);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $message = $form->getData();
-                $message = $this->shareMessageManager->create($message);
-
-                return new Response($this->shareMessageManager->serialize($message));
-            }
+            return new Response($this->shareMessageManager->serialize($message));
         }
 
         $errors = $formErrorSerializer->getFormErrorsAsArray($form);
