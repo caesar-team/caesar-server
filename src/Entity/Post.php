@@ -44,7 +44,7 @@ class Post
     /**
      * @var string
      *
-     * @ORM\Column(type="string", options={"default"=\App\DBAL\Types\Enum\NodeEnumType::TYPE_CRED})
+     * @ORM\Column(type="string", options={"default": \App\DBAL\Types\Enum\NodeEnumType::TYPE_CRED})
      */
     protected $type;
 
@@ -70,9 +70,16 @@ class Post
     protected $sharedPosts;
 
     /**
+     * @var SharePost[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\SharePost", mappedBy="post", orphanRemoval=true)
+     */
+    protected $externalSharedPosts;
+
+    /**
      * @var bool
      *
-     * @ORM\Column(type="boolean", options={"default"="false"})
+     * @ORM\Column(type="boolean", options={"default": false})
      */
     protected $favorite = false;
 
@@ -82,6 +89,7 @@ class Post
         $this->originalPost = null;
         $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedPosts = new ArrayCollection();
+        $this->externalSharedPosts = new ArrayCollection();
     }
 
     /**
@@ -203,5 +211,29 @@ class Post
     public function setType(string $type): void
     {
         $this->type = $type;
+    }
+
+    /**
+     * @return SharePost[]|Collection
+     */
+    public function getExternalSharedPosts(): Collection
+    {
+        return $this->externalSharedPosts;
+    }
+
+    public function addExternalSharePost(SharePost $sharePost): void
+    {
+        if (!$this->externalSharedPosts->contains($sharePost)) {
+            $this->externalSharedPosts->add($sharePost);
+            $sharePost->setPost(this);
+        }
+    }
+
+    /**
+     * @param SharePost[]|Collection $externalSharedPosts
+     */
+    public function setExternalSharedPosts(Collection $externalSharedPosts): void
+    {
+        $this->externalSharedPosts = $externalSharedPosts;
     }
 }

@@ -60,7 +60,7 @@ abstract class AbstractEvent
     /**
      * @var bool
      *
-     * @ORM\Column(type="boolean", options={"default"="false"})
+     * @ORM\Column(type="boolean", options={"default": false})
      */
     private $verify = false;
 
