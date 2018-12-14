@@ -7,10 +7,12 @@ namespace App\Form\Request;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Post;
+use App\Form\EventListener\InjectTagListener;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -18,6 +20,16 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class CreatePostType extends AbstractType
 {
+    /**
+     * @var InjectTagListener
+     */
+    private $injectTagListener;
+
+    public function __construct(?InjectTagListener $injectTagListener = null)
+    {
+        $this->injectTagListener = $injectTagListener;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         parent::buildForm($builder, $options);
@@ -42,7 +54,18 @@ class CreatePostType extends AbstractType
                 ],
             ])
             ->add('favorite', CheckboxType::class)
+            ->add('tags', CollectionType::class, [
+                'entry_type' => TextType::class,
+                'entry_options' => ['label' => false],
+                'allow_add' => true,
+                'allow_delete' => true,
+                'mapped' => false,
+            ])
         ;
+
+        if ($this->injectTagListener) {
+            $builder->addEventSubscriber($this->injectTagListener);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver)
