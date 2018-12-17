@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Functional;
+namespace App\Tests\Functional\Api;
 
 use App\Tests\Client;
 use App\Tests\WebTestCase;
@@ -55,14 +55,14 @@ class KeysTest extends WebTestCase
         $this->assertKeysStored($client);
     }
 
-//    private function assertKeysStored(Client $client)
-//    {
-//        $client->request(
-//            'GET',
-//            '/api/keys'
-//        );
-//
-//        $this->assertEquals(Response::HTTP_OK, $client->getResponseCode());
-//        dump($client->getJsonResponse());
-//    }
+    private function assertKeysStored(Client $client)
+    {
+        $client->request(
+            'GET',
+            '/api/keys'
+        );
+
+        $this->assertEquals(Response::HTTP_OK, $client->getResponseCode());
+        $this->assertEquals(static::VALID_KEYS, $client->getJsonResponse());
+    }
 }
