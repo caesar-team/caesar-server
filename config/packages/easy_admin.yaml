@@ -14,10 +14,12 @@ easy_admin:
           - 'email'
           - 'lastLogin'
           - 'userDomain'
+          - 'guest'
           - 'enabled'
       form:
         fields:
           - enabled
+          - guest
           - username
           - email
           - domain

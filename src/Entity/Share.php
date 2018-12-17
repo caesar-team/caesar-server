@@ -7,15 +7,19 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="shares")
+ * @ORM\HasLifecycleCallbacks
  */
 class Share
 {
+    use TimestampableEntity;
+
     /**
      * @var UuidInterface
      *
@@ -43,7 +47,7 @@ class Share
     /**
      * @var SharePost[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\SharePost", mappedBy="share", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\SharePost", mappedBy="share", cascade={"persist"}, orphanRemoval=true)
      */
     private $sharedPosts;
 
@@ -86,7 +90,7 @@ class Share
         return $this->sharedPosts;
     }
 
-    public function addSharePost(SharePost $sharePost): void
+    public function addSharedPost(SharePost $sharePost): void
     {
         if (!$this->sharedPosts->contains($sharePost)) {
             $this->sharedPosts->add($sharePost);
@@ -94,16 +98,8 @@ class Share
         }
     }
 
-    public function removeSharePost(SharePost $sharePost): void
+    public function removeSharedPost(SharePost $sharePost): void
     {
         $this->sharedPosts->removeElement($sharePost);
-    }
-
-    /**
-     * @param SharePost[]|Collection $sharedPosts
-     */
-    public function setSharedPosts(Collection $sharedPosts): void
-    {
-        $this->sharedPosts = $sharedPosts;
     }
 }

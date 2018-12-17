@@ -1,1 +1,2 @@
-authentication.email_domain_restriction: 'Domain% domain% is not allowed.'
+authentication.email_domain_restriction: 'Domain %domain% is not allowed.'
+authentication.user_restriction: 'User %email% is not allowed.'
