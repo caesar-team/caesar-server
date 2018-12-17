@@ -324,53 +324,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->guest = $guest;
     }
 
-    /**
-     * @return Share[]|Collection
-     */
-    public function getShares(): Collection
-    {
-        return $this->shares;
-    }
-
-    public function addShare(Share $share): void
-    {
-        if (!$this->shares->contains($share)) {
-            $this->shares->add($share);
-            $share->setOwner($this);
-        }
-    }
-
-    public function removeShare(Share $share): void
-    {
-        $this->shares->removeElement($share);
-    }
-
-    /**
-     * @return Share[]|Collection
-     */
-    public function getAvailableShares(): Collection
-    {
-        return $this->availableShares;
-    }
-
-    public function addAvailableShares(Share $availableShare): void
-    {
-        if ($this->availableShares->contains($availableShare)) {
-            $this->availableShares->add($availableShare);
-            $availableShare->setUser($this);
-        }
-    }
-
-    public function isGuest(): bool
-    {
-        return $this->guest;
-    }
-
-    public function setGuest(bool $guest): void
-    {
-        $this->guest = $guest;
-    }
-
     public function getEncryptedPrivateKey(): ?string
     {
         return $this->encryptedPrivateKey;
