@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
+use App\DataFixtures\UserFixtures;
+use App\Entity\User;
 use Doctrine\ORM\EntityRepository;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Client as SymfonyClient;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase as SymfonyTestCase;
 use Symfony\Component\HttpFoundation\Response;
@@ -49,13 +52,31 @@ class WebTestCase extends SymfonyTestCase
             $client = static::createClient();
         }
 
-
         $client->request('GET', '/doc', [], [], [
             'PHP_AUTH_USER' => 'admin',
             'PHP_AUTH_PW' => $_ENV['ADMIN_PASS'],
         ]);
 
         $this->assertEquals(Response::HTTP_OK, $client->getResponseCode());
+
+        return $client;
+    }
+
+    /**
+     * @param string $username
+     *
+     * @return Client
+     */
+    protected function authenticateApi(string $username = UserFixtures::API_CLIENT_NAME): Client
+    {
+        $user = $this->getRepository(User::class)->findOneBy(['username' => $username]);
+
+        $jwtTokenManager = self::$kernel->getContainer()->get(JWTTokenManagerInterface::class);
+        $token = $jwtTokenManager->create($user);
+
+        /** @var Client $client */
+        $client = static::createClient();
+        $client->setServerParameter('HTTP_Authorization', sprintf('Bearer %s', $token));
 
         return $client;
     }
