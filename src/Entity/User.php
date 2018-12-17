@@ -94,6 +94,20 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @var string|null
      *
+     * @ORM\Column(length=65525, nullable=true)
+     */
+    protected $encryptedPrivateKey;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(length=65525, nullable=true)
+     */
+    protected $publicKey;
+
+    /**
+     * @var string|null
+     *
      * @ORM\Column(nullable=true)
      */
     protected $domain;
@@ -198,17 +212,17 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->trash;
     }
 
+    public function getDomain(): ?string
+    {
+        return $this->domain;
+    }
+
     /**
      * @param null|string $domain
      */
     public function setDomain(?string $domain): void
     {
         $this->domain = $domain;
-    }
-
-    public function getDomain(): ?string
-    {
-        return $this->domain;
     }
 
     public function getUserDomain(): string
@@ -308,5 +322,72 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setGuest(bool $guest): void
     {
         $this->guest = $guest;
+    }
+
+    /**
+     * @return Share[]|Collection
+     */
+    public function getShares(): Collection
+    {
+        return $this->shares;
+    }
+
+    public function addShare(Share $share): void
+    {
+        if (!$this->shares->contains($share)) {
+            $this->shares->add($share);
+            $share->setOwner($this);
+        }
+    }
+
+    public function removeShare(Share $share): void
+    {
+        $this->shares->removeElement($share);
+    }
+
+    /**
+     * @return Share[]|Collection
+     */
+    public function getAvailableShares(): Collection
+    {
+        return $this->availableShares;
+    }
+
+    public function addAvailableShares(Share $availableShare): void
+    {
+        if ($this->availableShares->contains($availableShare)) {
+            $this->availableShares->add($availableShare);
+            $availableShare->setUser($this);
+        }
+    }
+
+    public function isGuest(): bool
+    {
+        return $this->guest;
+    }
+
+    public function setGuest(bool $guest): void
+    {
+        $this->guest = $guest;
+    }
+
+    public function getEncryptedPrivateKey(): ?string
+    {
+        return $this->encryptedPrivateKey;
+    }
+
+    public function setEncryptedPrivateKey(?string $encryptedPrivateKey): void
+    {
+        $this->encryptedPrivateKey = $encryptedPrivateKey;
+    }
+
+    public function getPublicKey(): ?string
+    {
+        return $this->publicKey;
+    }
+
+    public function setPublicKey(?string $publicKey): void
+    {
+        $this->publicKey = $publicKey;
     }
 }

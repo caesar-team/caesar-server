@@ -169,7 +169,7 @@ class AuditController extends Controller
      *     in="query",
      *     description="Filter by type credentials (shared|personal)",
      *     type="string",
-     *     enum={App\Model\Query\AuditEventsQuery::TAB_SHARED,App\Model\Query\AuditEventsQuery::TAB_PERSONAL}
+     *     enum={App\Model\Query\AuditEventsQuery::TAB_SHARED, App\Model\Query\AuditEventsQuery::TAB_PERSONAL}
      * )
      *
      * @SWG\Parameter(
@@ -195,8 +195,8 @@ class AuditController extends Controller
      *         @SWG\Property(
      *             type="array",
      *             property="data",
-     *              @SWG\Items(
-     *                  @Model(type=App\Model\View\Audit\PostEventView::class)
+     *             @SWG\Items(
+     *                 @Model(type=App\Model\View\Audit\PostEventView::class)
      *             )
      *         ),
      *         @SWG\Property(
@@ -305,8 +305,8 @@ class AuditController extends Controller
      *         @SWG\Property(
      *             type="array",
      *             property="data",
-     *              @SWG\Items(
-     *                  @Model(type=App\Model\View\Audit\PostEventView::class)
+     *             @SWG\Items(
+     *                 @Model(type=App\Model\View\Audit\PostEventView::class)
      *             )
      *         ),
      *         @SWG\Property(

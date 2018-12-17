@@ -8,18 +8,20 @@ easy_admin:
       list:
         title: 'Users'
         fields:
-          - 'id'
-          - 'avatar'
-          - 'username'
-          - 'email'
-          - 'lastLogin'
-          - 'userDomain'
-          - 'guest'
-          - 'enabled'
+          - id
+          - avatar
+          - username
+          - email
+          - lastLogin
+          - userDomain
+          - guest
+          - enabled
       form:
         fields:
           - enabled
           - guest
           - username
           - email
-          - domain
+          - userDomain
+          - encryptedPrivateKey
+          - publicKey
