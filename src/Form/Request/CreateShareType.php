@@ -12,7 +12,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Count;
 
-final class ShareType extends AbstractType
+class CreateShareType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {

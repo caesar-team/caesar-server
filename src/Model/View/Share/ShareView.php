@@ -14,7 +14,7 @@ class ShareView
      *
      * @SWG\Property(example="a68833af-ab0f-4db3-acde-fccc47641b9e")
      *
-     * @Groups({"share_create", "share_read", "user_read"})
+     * @Groups({"share_edit", "share_create", "share_read", "user_read"})
      */
     public $id;
 
@@ -28,7 +28,7 @@ class ShareView
     /**
      * @var \DateTime
      *
-     * @Groups({"share_read", "user_read"})
+     * @Groups({"share_edit", "share_read", "user_read"})
      */
     public $updatedAt;
 
