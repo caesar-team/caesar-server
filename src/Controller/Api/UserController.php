@@ -24,7 +24,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class UserController extends AbstractController
+final class UserController extends AbstractController
 {
     /**
      * @SWG\Tag(name="User")

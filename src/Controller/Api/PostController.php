@@ -33,7 +33,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
-class PostController extends AbstractController
+final class PostController extends AbstractController
 {
     /**
      * @SWG\Tag(name="Post")

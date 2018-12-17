@@ -23,7 +23,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Routing\Annotation\Route;
 
-class AuditController extends Controller
+final class AuditController extends Controller
 {
     /**
      * Create event by post.

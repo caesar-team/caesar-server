@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class TwoFactorAuthController extends AbstractController
+final class TwoFactorAuthController extends AbstractController
 {
     /**
      * Enable 2FA on your account.
