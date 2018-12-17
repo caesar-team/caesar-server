@@ -92,11 +92,18 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $trash;
 
     /**
-     * @var array|null
+     * @var string|null
      *
-     * @ORM\Column(type="json", options={"jsonb": true}, nullable=true)
+     * @ORM\Column(length=65525, nullable=true)
      */
-    protected $keys;
+    protected $encryptedPrivateKey;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(length=65525, nullable=true)
+     */
+    protected $publicKey;
 
     /**
      * @var string|null
@@ -270,16 +277,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->trustedVersion;
     }
 
-    public function getKeys(): ?array
-    {
-        return $this->keys;
-    }
-
-    public function setKeys(array $keys): void
-    {
-        $this->keys = $keys;
-    }
-
     /**
      * @return Share[]|Collection
      */
@@ -325,5 +322,25 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setGuest(bool $guest): void
     {
         $this->guest = $guest;
+    }
+
+    public function getEncryptedPrivateKey(): ?string
+    {
+        return $this->encryptedPrivateKey;
+    }
+
+    public function setEncryptedPrivateKey(?string $encryptedPrivateKey): void
+    {
+        $this->encryptedPrivateKey = $encryptedPrivateKey;
+    }
+
+    public function getPublicKey(): ?string
+    {
+        return $this->publicKey;
+    }
+
+    public function setPublicKey(?string $publicKey): void
+    {
+        $this->publicKey = $publicKey;
     }
 }

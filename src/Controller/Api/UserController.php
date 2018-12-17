@@ -160,13 +160,12 @@ class UserController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        $form = $this->createForm(SaveKeysType::class);
+        $form = $this->createForm(SaveKeysType::class, $user);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        $user->setKeys($form->getData());
         $entityManager->flush();
 
         return null;
