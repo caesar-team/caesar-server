@@ -6,10 +6,12 @@ namespace App\Controller\Api;
 
 use App\Entity\User;
 use App\Factory\View\SelfUserInfoViewFactory;
+use App\Factory\View\UserKeysViewFactory;
 use App\Factory\View\UserListViewFactory;
 use App\Form\Query\UserQueryType;
 use App\Form\Request\SaveKeysType;
 use App\Model\Query\UserQuery;
+use App\Model\View\User\UserKeysView;
 use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserView;
 use Doctrine\ORM\EntityManagerInterface;
@@ -100,7 +102,8 @@ class UserController extends AbstractController
      *
      * @SWG\Response(
      *     response=200,
-     *     description="List of user keys"
+     *     description="List of user keys",
+     *     @Model(type="\App\Model\View\User\UserKeysView")
      * )
      * @SWG\Response(
      *     response=204,
@@ -117,14 +120,16 @@ class UserController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @return array|null
+     * @param UserKeysViewFactory $viewFactory
+     *
+     * @return UserKeysView|null
      */
-    public function keyListAction()
+    public function keyListAction(UserKeysViewFactory $viewFactory)
     {
         /** @var User $user */
         $user = $this->getUser();
 
-        return $user->getKeys();
+        return $viewFactory->create($user);
     }
 
     /**
