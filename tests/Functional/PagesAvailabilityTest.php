@@ -17,6 +17,7 @@ class PagesAvailabilityTest extends WebTestCase
     public function pagesAreAvailable()
     {
         $client = static::createClient();
+        $this->authenticateAdmin($client);
 
         foreach ($this->urlsToTest() as $url) {
             $client->request('GET', $url);
@@ -31,6 +32,8 @@ class PagesAvailabilityTest extends WebTestCase
     {
         return [
             '/status',
+            '/doc',
+            '/admin/?action=list&entity=User',
         ];
     }
 }
