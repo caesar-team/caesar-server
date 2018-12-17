@@ -18,6 +18,8 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class UserController extends Controller
 {
@@ -27,7 +29,7 @@ class UserController extends Controller
      * @SWG\Response(
      *     response=200,
      *     description="User information response",
-     *     @Model(type="\App\Model\View\User\SelfUserInfoView")
+     *     @Model(type="\App\Model\View\User\SelfUserInfoView", groups={"user_read"})
      * )
      * @SWG\Response(
      *     response=401,
@@ -40,16 +42,17 @@ class UserController extends Controller
      *     methods={"GET"}
      * )
      *
-     * @param SelfUserInfoViewFactory $viewFactory
+     * @param SelfUserInfoViewFactory        $viewFactory
+     * @param SerializerInterface|Serializer $serializer
      *
      * @return SelfUserInfoView|array
      */
-    public function userInfoAction(SelfUserInfoViewFactory $viewFactory)
+    public function userInfoAction(SelfUserInfoViewFactory $viewFactory, SerializerInterface $serializer)
     {
         /** @var User $user */
         $user = $this->getUser();
 
-        return $viewFactory->create($user);
+        return $serializer->normalize($viewFactory->create($user), 'array', ['groups' => ['user_read']]);
     }
 
     /**

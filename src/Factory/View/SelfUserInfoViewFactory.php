@@ -6,10 +6,21 @@ namespace App\Factory\View;
 
 use App\Entity\Avatar;
 use App\Entity\User;
+use App\Factory\View\Share\ShareViewFactory;
 use App\Model\View\User\SelfUserInfoView;
 
 class SelfUserInfoViewFactory
 {
+    /**
+     * @var ShareViewFactory
+     */
+    private $shareViewFactory;
+
+    public function __construct(ShareViewFactory $shareViewFactory)
+    {
+        $this->shareViewFactory = $shareViewFactory;
+    }
+
     /**
      * @param User $user
      *
@@ -22,6 +33,9 @@ class SelfUserInfoViewFactory
         $view->id = $user->getId();
         $view->email = $user->getEmail();
         $view->avatar = $this->getImage($user->getAvatar());
+        foreach ($user->getShares() as $share) {
+            $view->shares[] = $this->shareViewFactory->create($share);
+        }
 
         return $view;
     }
