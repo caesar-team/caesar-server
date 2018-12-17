@@ -71,4 +71,8 @@ services:
         arguments:
             $redis: '@snc_redis.default'
 
+    App\Share\Subscriber\ShareSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber }
+
 
