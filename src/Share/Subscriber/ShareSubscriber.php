@@ -17,10 +17,10 @@ final class ShareSubscriber implements EventSubscriber
      */
     public function getSubscribedEvents()
     {
-        return array(
+        return [
             Events::preRemove,
             Events::postRemove,
-        );
+        ];
     }
 
     public function preRemove(LifecycleEventArgs $args)

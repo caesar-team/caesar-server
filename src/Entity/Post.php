@@ -35,9 +35,9 @@ class Post
     protected $parentList;
 
     /**
-     * @var array
+     * @var string|null
      *
-     * @ORM\Column(type="json", options={"jsonb": true})
+     * @ORM\Column(length=65525)
      */
     protected $secret;
 
@@ -129,17 +129,17 @@ class Post
     }
 
     /**
-     * @return array|null
+     * @return string|null
      */
-    public function getSecret(): ?array
+    public function getSecret(): ?string
     {
         return $this->secret;
     }
 
     /**
-     * @param array|null $secret
+     * @param string|null $secret
      */
-    public function setSecret(array $secret)
+    public function setSecret(?string $secret)
     {
         $this->secret = $secret;
     }
@@ -237,7 +237,7 @@ class Post
     {
         if (!$this->externalSharedPosts->contains($sharePost)) {
             $this->externalSharedPosts->add($sharePost);
-            $sharePost->setPost(this);
+            $sharePost->setPost($this);
         }
     }
 

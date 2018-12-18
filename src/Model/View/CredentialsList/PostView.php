@@ -16,7 +16,9 @@ class PostView extends NodeView
     public $listId;
 
     /**
-     * @var SecretView
+     * @var string
+     *
+     * @SWG\Property(example="-----BEGIN PGP MESSAGE----- Version: OpenPGP.js v4.2.2 ....")
      */
     public $secret;
 
