@@ -139,7 +139,7 @@ class Post
     /**
      * @param string|null $secret
      */
-    public function setSecret(?string $secret)
+    public function setSecret(string $secret)
     {
         $this->secret = $secret;
     }
