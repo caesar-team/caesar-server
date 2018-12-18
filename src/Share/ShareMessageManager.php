@@ -50,6 +50,13 @@ class ShareMessageManager
         return $message;
     }
 
+    public function has(string $id): bool
+    {
+        $json = $this->redis->get($this->buildRedisId($id));
+
+        return null !== $json;
+    }
+
     /**
      * @param string $id
      *

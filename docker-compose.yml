@@ -48,6 +48,11 @@ services:
             - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
         volumes:
             - 'redis:/etc/redis/database/caesarapp'
+    mailer:
+        image: schickling/mailcatcher
+        ports:
+            - "${MAILER_PORT_1080}:1080"
+            - "${MAILER_PORT_1025}:1025"
 volumes:
     db:
     trash:

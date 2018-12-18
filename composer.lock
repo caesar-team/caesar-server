@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cf4b9aa38f8ddb0e06cb66ed8d5cbd36",
+    "content-hash": "2d75a7c8866046a4a3ababb2a73be2c8",
     "packages": [
         {
             "name": "behat/transliterator",
@@ -4759,6 +4759,132 @@
                 "mailer"
             ],
             "time": "2018-09-11T07:12:52+00:00"
+        },
+        {
+            "name": "sylius/mailer",
+            "version": "v1.3.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Sylius/Mailer.git",
+                "reference": "5f39e488199f402ee8a0f520bb17ad8a8d372b69"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Sylius/Mailer/zipball/5f39e488199f402ee8a0f520bb17ad8a8d372b69",
+                "reference": "5f39e488199f402ee8a0f520bb17ad8a8d372b69",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2",
+                "webmozart/assert": "^1.0"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "^4.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.3-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Sylius\\Component\\Mailer\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Community contributions",
+                    "homepage": "http://github.com/Sylius/Sylius/contributors"
+                },
+                {
+                    "name": "Paweł Jędrzejewski",
+                    "homepage": "http://pjedrzejewski.com"
+                },
+                {
+                    "name": "Sylius project",
+                    "homepage": "http://sylius.com"
+                }
+            ],
+            "description": "Mails management and sending abstraction.",
+            "homepage": "http://sylius.com",
+            "keywords": [
+                "email",
+                "mails",
+                "notifications"
+            ],
+            "time": "2018-10-03T08:07:33+00:00"
+        },
+        {
+            "name": "sylius/mailer-bundle",
+            "version": "v1.3.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Sylius/SyliusMailerBundle.git",
+                "reference": "6a2a1df5e5087ef86383d0e98c5be6032e31ae1a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Sylius/SyliusMailerBundle/zipball/6a2a1df5e5087ef86383d0e98c5be6032e31ae1a",
+                "reference": "6a2a1df5e5087ef86383d0e98c5be6032e31ae1a",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2",
+                "sylius/mailer": "^1.2",
+                "symfony/framework-bundle": "^3.4|^4.1.1"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "^4.0",
+                "phpunit/phpunit": "^6.5",
+                "polishsymfonycommunity/symfony-mocker-container": "^1.0",
+                "symfony/browser-kit": "^3.4|^4.1.1",
+                "symfony/dependency-injection": "^3.4|^4.1.1",
+                "symfony/swiftmailer-bundle": "^3.1",
+                "symfony/templating": "^3.4|^4.1.1",
+                "symfony/twig-bundle": "^3.4|^4.1.1"
+            },
+            "type": "symfony-bundle",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.3-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Sylius\\Bundle\\MailerBundle\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Community contributions",
+                    "homepage": "http://github.com/Sylius/Sylius/contributors"
+                },
+                {
+                    "name": "Paweł Jędrzejewski",
+                    "homepage": "http://pjedrzejewski.com"
+                },
+                {
+                    "name": "Sylius project",
+                    "homepage": "http://sylius.com"
+                }
+            ],
+            "description": "Mailers and e-mail template management for Symfony projects.",
+            "homepage": "http://sylius.com",
+            "keywords": [
+                "email",
+                "mailer",
+                "swiftmailer"
+            ],
+            "time": "2018-10-03T08:07:33+00:00"
         },
         {
             "name": "symfony/asset",

@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Form\Request\ShareMessageType;
+use App\Form\Request\ShareSendMessageType;
+use App\Mailer\MailRegistry;
 use App\Model\DTO\ShareMessage;
+use App\Model\Request\ShareSendMessageRequest;
 use App\Share\ShareMessageManager;
+use Sylius\Component\Mailer\Sender\SenderInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -91,6 +96,66 @@ final class ShareMessageController extends Controller
             $message = $this->shareMessageManager->create($message);
 
             return new Response($this->shareMessageManager->serialize($message));
+        }
+
+        return $form;
+    }
+
+    /**
+     * Send share message to email.
+     *
+     * @SWG\Tag(name="Share")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type="\App\Form\Request\ShareSendMessageType")
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success share message send"
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns send mail errors",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="object",
+     *             property="errors",
+     *             @Model(type="\App\Form\Request\ShareSendMessageType")
+     *         )
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route("/api/share/messages/{id}/send", name="api_share_send_message", methods={"POST"})
+     *
+     * @param string          $id
+     * @param Request         $request
+     * @param SenderInterface $sender
+     *
+     * @return \Symfony\Component\Form\FormInterface
+     */
+    public function sendMessage(string $id, Request $request, SenderInterface $sender)
+    {
+        $message = $this->shareMessageManager->has($id);
+        if (!$message) {
+            throw new NotFoundHttpException();
+        }
+
+        $sendRequest = new ShareSendMessageRequest();
+
+        $form = $this->createForm(ShareSendMessageType::class, $sendRequest);
+        $form->submit($request->request->all());
+        if ($form->isValid()) {
+            $sender->send(MailRegistry::SHARE_SEND_MESSAGE, [$sendRequest->getEmail()], [
+                'message' => $sendRequest->getMessage(),
+            ]);
+
+            return null;
         }
 
         return $form;

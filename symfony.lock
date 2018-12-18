@@ -434,6 +434,12 @@
     "swiftmailer/swiftmailer": {
         "version": "v6.1.2"
     },
+    "sylius/mailer": {
+        "version": "v1.3.2"
+    },
+    "sylius/mailer-bundle": {
+        "version": "v1.3.2"
+    },
     "symfony/asset": {
         "version": "v4.1.1"
     },
