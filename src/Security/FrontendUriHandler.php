@@ -38,7 +38,7 @@ class FrontendUriHandler
         }
 
         $redirectUri = parse_url($uri);
-        $redirectUri = $redirectUri['host'].($redirectUri['port'] ? ':'.$redirectUri['port'] : '');
+        $redirectUri = $redirectUri['host'].(isset($redirectUri['port']) ? ':'.$redirectUri['port'] : '');
         if ($this->requestStack->getCurrentRequest()->getHttpHost() === $redirectUri) {
             return true;
         }

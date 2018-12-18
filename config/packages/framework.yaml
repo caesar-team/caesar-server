@@ -27,9 +27,10 @@ framework:
 
         # APCu (not recommended with heavy random-write workloads as memory fragmentation can cause perf issues)
         #app: cache.adapter.apcu
-    ide: 'phpstorm://open?url=file://%%f&line=%%l'
+    ide: '%env(IDE_STRING)%'
     assets:
         version: 1
 parameters:
+    env(PROJECT_PATH): ''
     locale: 'en'
     frontend_uris: ['%env(ALLOW_FRONT_REDIRECT_PATTERN)%']
