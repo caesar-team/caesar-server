@@ -6,9 +6,7 @@ namespace App\Factory\View;
 
 use App\Entity\Post;
 use App\Model\View\CredentialsList\PostView;
-use App\Model\View\CredentialsList\SecretView;
 use App\Repository\UserRepository;
-use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class PostViewFactory
 {
@@ -31,21 +29,9 @@ class PostViewFactory
         $view->listId = $post->getParentList()->getId()->toString();
         $view->tags = array_map('strval', $post->getTags()->toArray());
 
-        $view->secret = $this->getSecret($post->getSecret());
+        $view->secret = $post->getSecret();
         $view->shared = $this->getSharedCollection($post);
         $view->favorite = $post->isFavorite();
-
-        return $view;
-    }
-
-    protected function getSecret(array $rawSecret): SecretView
-    {
-        $view = new SecretView();
-        $accessor = PropertyAccess::createPropertyAccessor();
-
-        foreach ($rawSecret as $name => $field) {
-            $accessor->setValue($view, $name, $field);
-        }
 
         return $view;
     }

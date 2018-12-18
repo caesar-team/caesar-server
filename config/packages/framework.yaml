@@ -31,6 +31,6 @@ framework:
     assets:
         version: 1
 parameters:
-    env(PROJECT_PATH): ''
+    env(IDE_STRING): ''
     locale: 'en'
     frontend_uris: ['%env(ALLOW_FRONT_REDIRECT_PATTERN)%']
