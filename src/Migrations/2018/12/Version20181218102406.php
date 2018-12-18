@@ -13,7 +13,7 @@ final class Version20181218102406 extends AbstractMigration
     {
         $this->abortIf('postgresql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'postgresql\'.');
 
-        $this->addSql('ALTER TABLE post ALTER secret TYPE VARCHAR(65525)');
+        $this->addSql('ALTER TABLE post ALTER secret TYPE TEXT');
         $this->addSql('ALTER TABLE post ALTER secret DROP DEFAULT');
     }
 
@@ -21,7 +21,6 @@ final class Version20181218102406 extends AbstractMigration
     {
         $this->abortIf('postgresql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'postgresql\'.');
 
-        $this->addSql('ALTER TABLE post ALTER secret TYPE JSONB');
         $this->addSql('ALTER TABLE post ALTER secret DROP DEFAULT');
         $this->addSql('ALTER TABLE post ALTER secret TYPE JSONB');
     }

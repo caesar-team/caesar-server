@@ -37,7 +37,7 @@ class Post
     /**
      * @var string|null
      *
-     * @ORM\Column(length=65525)
+     * @ORM\Column(type="text")
      */
     protected $secret;
 
