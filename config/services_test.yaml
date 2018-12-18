@@ -9,3 +9,4 @@ services:
         arguments:
             - '@kernel'
             - ['@test.client.history']
+    'Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface': '@lexik_jwt_authentication.jwt_manager'

@@ -21,11 +21,13 @@ security:
             pattern: ^/doc
             http_basic: ~
             anonymous: ~
+            context: admin
             provider: in_memory
         admin:
             pattern: ^/admin
             http_basic: ~
             anonymous: ~
+            context: admin
             provider: in_memory
         api:
             pattern: ^/api

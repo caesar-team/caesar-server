@@ -12,11 +12,7 @@
         <env name="KERNEL_CLASS" value="App\Kernel" />
         <env name="APP_ENV" value="test" />
         <env name="APP_DEBUG" value="1" />
-
-        <!-- ###+ snc/redis-bundle ### -->
-        <!-- passwords that contain special characters (@, %, :, +) must be urlencoded -->
-        <env name="REDIS_URL" value="redis://localhost"/>
-        <!-- ###- snc/redis-bundle ### -->
+        <env name="ADMIN_PASS" value="your_admin_pass" />
     </php>
     <testsuites>
         <testsuite name="Project Test Suite">
