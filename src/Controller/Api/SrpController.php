@@ -11,8 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 
 final class SrpController extends AbstractController
 {
@@ -36,6 +36,7 @@ final class SrpController extends AbstractController
         $user->setEmail($request->request->get('email'));
         $user->setUsername($request->request->get('email'));
         $user->setPlainPassword(uniqid());
+        $user->setEnabled(true);
 
         $user->getSrp()->setSeed($request->request->get('seed'));
         $user->getSrp()->setVerifier($request->request->get('verifier'));
@@ -65,12 +66,12 @@ final class SrpController extends AbstractController
         $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
         $srp = $user->getSrp();
 
-        $b = $srpHandler->getRandomSeed();
-        $publicEphemeralValue = $srpHandler->generatePublicServerEphemeral($b, $srp->getVerifier());
+        $privateEphemeral = $srpHandler->getRandomSeed();
+        $publicEphemeralValue = $srpHandler->generatePublicServerEphemeral($privateEphemeral, $srp->getVerifier());
 
         $srp->setPublicClientEphemeralValue($request->request->get('publicEphemeralValue'));
         $srp->setPublicServerEphemeralValue($publicEphemeralValue);
-        $srp->setPrivateServerEphemeralValue($b);
+        $srp->setPrivateServerEphemeralValue($privateEphemeral);
 
         $entityManager->persist($srp);
         $entityManager->flush();
@@ -115,11 +116,16 @@ final class SrpController extends AbstractController
         );
 
         if ($matcher !== $request->request->get('matcher')) {
-            throw new BadRequestHttpException('Matchers are not equals');
+            throw new BadCredentialsException('Matchers are not equals');
         }
 
+//        dump($S);
         $k = $srpHandler->generateSessionKey($S); //This is session key
-        dump($k);
+//        dump($k);
+        $user->setToken($k);
+        $entityManager->flush();
+//        $user->setSessionKey($k);
+//        dump($k);
 
         $m2 = $srpHandler->generateSecondMatcher(
             $srp->getPublicClientEphemeralValue(),

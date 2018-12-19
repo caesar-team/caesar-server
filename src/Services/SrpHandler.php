@@ -43,14 +43,19 @@ class SrpHandler
 
     public function getRandomSeed($length = self::RAND_LENGTH): string
     {
-        srand((int) microtime() * 1000000);
-        $result = '';
+        srand();
+        $result = bin2hex(random_bytes($length));
         while (strlen($result) < $length) {
             $result = $result.$this->dec2base(rand());
         }
         $result = substr($result, 0, $length);
 
         return $result;
+    }
+
+    public function generateToken(): string
+    {
+        return $this->getRandomSeed(64);
     }
 
     public function generateFirstMatcher(string $publicClientEphemeral, string $publiceServerEphemeral, string $session): string

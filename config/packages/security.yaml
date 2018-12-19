@@ -3,7 +3,9 @@ security:
         FOS\UserBundle\Model\UserInterface: bcrypt
         Symfony\Component\Security\Core\User\User: bcrypt
     providers:
-        fos_userbundle:
+        token_provider:
+            id: App\Security\TokenUserProvider
+        fos.user.provider:
             id: fos_user.user_provider.username_email
         hwi_oauth.user.provider:
             id: hwi_oauth.user.provider
@@ -31,7 +33,7 @@ security:
             provider: in_memory
         share:
             pattern: "^/api/share/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-            provider:  fos_userbundle
+            provider:  fos.user.provider
             stateless: true
             anonymous: ~
             logout: ~
@@ -40,22 +42,23 @@ security:
                     - App\Security\ShareAuthenticator
         api:
             pattern: ^/api
-            provider:  fos_userbundle
+            provider: token_provider
             stateless: true
             anonymous: true
             two_factor:
                 check_path: /api/2fa_check
-                provider: fos_userbundle
+                provider: fos.user.provider
                 success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
                 failure_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
                 authentication_required_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
             guard:
                 authenticators:
-                    - lexik_jwt_authentication.jwt_token_authenticator
+#                    - lexik_jwt_authentication.jwt_token_authenticator
+                    - App\Security\Guard\TokenAuthenticator
         main:
             pattern: ^/
             form_login:
-                provider: fos_userbundle
+                provider: fos.user.provider
             logout: true
             stateless: false
             anonymous: true

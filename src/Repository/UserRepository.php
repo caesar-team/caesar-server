@@ -69,4 +69,15 @@ class UserRepository extends ServiceEntityRepository
 
         return $this->createPaginatedList($qb, $query);
     }
+
+    public function findByToken(string $token): ?User
+    {
+        $qb = $this->createQueryBuilder('user');
+
+        return $qb
+            ->where($qb->expr()->eq('user.token', ':token'))
+            ->setParameter('token', $token)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
