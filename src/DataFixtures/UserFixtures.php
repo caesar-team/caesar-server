@@ -30,6 +30,7 @@ class UserFixtures extends AbstractFixture implements FixtureInterface
         $user->setEmail(self::API_CLIENT_NAME.'@4xxi.com');
         $user->setEnabled(true);
         $user->setPlainPassword('asdfwq3ayaq345626tasd');
+        $user->setToken('aw934utpegasighdjasdgasdgasdfhadf');
 
         $manager->persist($user);
         $manager->flush();

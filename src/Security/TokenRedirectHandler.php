@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
 
-class JwtRedirectHandler implements AuthenticationSuccessHandlerInterface
+class TokenRedirectHandler implements AuthenticationSuccessHandlerInterface
 {
     /**
      * @var SrpHandler

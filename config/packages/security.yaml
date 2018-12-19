@@ -53,7 +53,6 @@ security:
                 authentication_required_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
             guard:
                 authenticators:
-#                    - lexik_jwt_authentication.jwt_token_authenticator
                     - App\Security\Guard\TokenAuthenticator
         main:
             pattern: ^/
@@ -70,7 +69,7 @@ security:
                 oauth_user_provider:
                     service: App\Security\FOSUBUserProvider
                 failure_handler: App\Security\Authentication\OAuthFailureHandler
-                success_handler: App\Security\JwtRedirectHandler
+                success_handler: App\Security\TokenRedirectHandler
     access_control:
         - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/srp, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
