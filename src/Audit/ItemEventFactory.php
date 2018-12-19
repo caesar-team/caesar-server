@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Audit;
 
 use App\Entity\Audit\AbstractEvent;
-use App\Entity\Audit\PostEvent;
-use App\Entity\Post;
+use App\Entity\Audit\ItemEvent;
+use App\Entity\Item;
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\Security;
 
-class PostEventFactory implements EventFactoryInterface
+class ItemEventFactory implements EventFactoryInterface
 {
     /**
      * @var Security
@@ -26,7 +26,7 @@ class PostEventFactory implements EventFactoryInterface
 
     /**
      * @param Request $request
-     * @param Post    $target
+     * @param Item    $target
      *
      * @return AbstractEvent
      */
@@ -37,10 +37,10 @@ class PostEventFactory implements EventFactoryInterface
             throw new UsernameNotFoundException();
         }
 
-        $event = new PostEvent();
+        $event = new ItemEvent();
         $event->setIp($request->getClientIp());
         $event->setBlame($user->getEmail());
-        $event->setPost($target);
+        $event->setItem($target);
 
         return $event;
     }

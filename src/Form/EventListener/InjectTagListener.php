@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\EventListener;
 
-use App\Entity\Post;
+use App\Entity\Item;
 use App\Entity\Tag;
 use App\Repository\TagRepository;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -35,9 +35,8 @@ final class InjectTagListener implements EventSubscriberInterface
 
     public function injectTags(FormEvent $event)
     {
-        /** @var Post $post */
-        $post = $event->getData();
-        if ($post instanceof  Post && $event->getForm()->has('tags')) {
+        $item = $event->getData();
+        if ($item instanceof Item && $event->getForm()->has('tags')) {
             $tags = $event->getForm()->get('tags')->getData();
 
             $names = [];
@@ -53,7 +52,7 @@ final class InjectTagListener implements EventSubscriberInterface
                 $tags[] = $existTags[$tag] ?? new Tag($tag);
             }
 
-            $post->setTags($tags);
+            $item->setTags($tags);
         }
     }
 }

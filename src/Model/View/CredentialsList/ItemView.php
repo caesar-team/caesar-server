@@ -6,7 +6,7 @@ namespace App\Model\View\CredentialsList;
 
 use Swagger\Annotations as SWG;
 
-class PostView extends NodeView
+class ItemView extends NodeView
 {
     /**
      * @var string

@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Security;
 
-use App\Entity\Post;
+use App\Entity\Item;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-class PostVoter extends Voter
+class ItemVoter extends Voter
 {
-    public const DELETE_POST = 'delete_post';
-    public const CREATE_POST = 'create_post';
-    public const EDIT_POST = 'edit_post';
-    public const SHOW_POST = 'show_post';
+    public const DELETE_ITEM = 'delete_item';
+    public const CREATE_ITEM = 'create_item';
+    public const EDIT_ITEM = 'edit_item';
+    public const SHOW_ITEM = 'show_item';
 
     /** @var UserRepository */
     private $userRepository;
@@ -36,11 +36,11 @@ class PostVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::DELETE_POST, self::CREATE_POST, self::SHOW_POST, self::EDIT_POST])) {
+        if (!in_array($attribute, [self::DELETE_ITEM, self::CREATE_ITEM, self::SHOW_ITEM, self::EDIT_ITEM])) {
             return false;
         }
 
-        if (!$subject instanceof Post) {
+        if (!$subject instanceof Item) {
             return false;
         }
 
@@ -62,10 +62,10 @@ class PostVoter extends Voter
         /** @var User $user */
         $user = $token->getUser();
 
-        if (in_array($attribute, [self::DELETE_POST, self::CREATE_POST, self::SHOW_POST, self::EDIT_POST])) {
-            $postOwner = $this->userRepository->getByPost($subject);
+        if (in_array($attribute, [self::DELETE_ITEM, self::CREATE_ITEM, self::SHOW_ITEM, self::EDIT_ITEM])) {
+            $itemOwner = $this->userRepository->getByItem($subject);
 
-            return $postOwner === $user;
+            return $itemOwner === $user;
         }
 
         throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');

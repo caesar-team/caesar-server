@@ -6,7 +6,7 @@ namespace App\Model\Query;
 
 use App\Entity\Directory;
 
-class PostListQuery
+class ItemListQuery
 {
     /**
      * @var Directory

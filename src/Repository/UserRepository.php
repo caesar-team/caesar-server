@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Directory;
-use App\Entity\Post;
+use App\Entity\Item;
 use App\Entity\User;
 use App\Model\Query\UserQuery;
 use App\Model\Response\PaginatedList;
@@ -23,9 +23,9 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
-    public function getByPost(Post $post): ?User
+    public function getByItem(Item $item): ?User
     {
-        $list = $post->getParentList();
+        $list = $item->getParentList();
 
         return $this->getByList($list);
     }

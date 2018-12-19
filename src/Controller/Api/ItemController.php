@@ -5,23 +5,23 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\DBAL\Types\Enum\NodeEnumType;
-use App\Entity\Post;
-use App\Factory\View\CreatedPostViewFactory;
+use App\Entity\Item;
+use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ListTreeViewFactory;
-use App\Factory\View\PostListViewFactory;
-use App\Factory\View\PostViewFactory;
-use App\Form\Query\PostListQueryType;
-use App\Form\Request\CreatePostType;
-use App\Form\Request\SharePostRequestType;
-use App\Model\Query\PostListQuery;
-use App\Form\Request\EditPostType;
-use App\Form\Request\MovePostType;
-use App\Model\Request\SharePostRequest;
-use App\Model\View\CredentialsList\CreatedPostView;
+use App\Factory\View\ItemListViewFactory;
+use App\Factory\View\ItemViewFactory;
+use App\Form\Query\ItemListQueryType;
+use App\Form\Request\CreateItemType;
+use App\Form\Request\ShareItemRequestType;
+use App\Model\Query\ItemListQuery;
+use App\Form\Request\EditItemType;
+use App\Form\Request\MoveItemType;
+use App\Model\Request\ShareItemRequest;
+use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ListView;
-use App\Model\View\CredentialsList\PostView;
+use App\Model\View\CredentialsList\ItemView;
 use App\Security\ListVoter;
-use App\Security\PostVoter;
+use App\Security\ItemVoter;
 use App\Services\SharesHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -33,14 +33,14 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
-final class PostController extends AbstractController
+final class ItemController extends AbstractController
 {
     /**
-     * @SWG\Tag(name="Post")
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Response(
      *     response=200,
-     *     description="Full list tree with posts",
+     *     description="Full list tree with items",
      *     @SWG\Schema(
      *         type="array",
      *         @Model(type="\App\Model\View\CredentialsList\ListView")
@@ -67,7 +67,7 @@ final class PostController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="Post")
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Parameter(
      *     name="listId",
@@ -77,10 +77,10 @@ final class PostController extends AbstractController
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Post collection",
+     *     description="Item collection",
      *     @SWG\Schema(
      *         type="array",
-     *         @Model(type="\App\Model\View\CredentialsList\PostView")
+     *         @Model(type="\App\Model\View\CredentialsList\ItemView")
      *     )
      * )
      * @SWG\Response(
@@ -93,40 +93,40 @@ final class PostController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/post",
-     *     name="api_user_posts",
+     *     path="/api/item",
+     *     name="api_user_items",
      *     methods={"GET"}
      * )
      *
      * @param Request             $request
-     * @param PostListViewFactory $viewFactory
+     * @param ItemListViewFactory $viewFactory
      *
-     * @return PostView[]|FormInterface
+     * @return ItemView[]|FormInterface
      */
-    public function postListAction(Request $request, PostListViewFactory $viewFactory)
+    public function itemListAction(Request $request, ItemListViewFactory $viewFactory)
     {
-        $postListQuery = new PostListQuery();
+        $itemListQuery = new ItemListQuery();
 
-        $form = $this->createForm(PostListQueryType::class, $postListQuery);
+        $form = $this->createForm(ItemListQueryType::class, $itemListQuery);
         $form->submit($request->query->all());
 
         if (!$form->isValid()) {
             return $form;
         }
-        $this->denyAccessUnlessGranted(ListVoter::SHOW_POSTS, $postListQuery->list);
+        $this->denyAccessUnlessGranted(ListVoter::SHOW_ITEMS, $itemListQuery->list);
 
-        $postCollection = $this->getDoctrine()->getRepository(Post::class)->getByQuery($postListQuery);
+        $itemCollection = $this->getDoctrine()->getRepository(Item::class)->getByQuery($itemListQuery);
 
-        return $viewFactory->create($postCollection);
+        return $viewFactory->create($itemCollection);
     }
 
     /**
-     * @SWG\Tag(name="Post")
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Response(
      *     response=200,
-     *     description="Post data",
-     *     @Model(type="\App\Model\View\CredentialsList\PostView")
+     *     description="Item data",
+     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
      * )
      * @SWG\Response(
      *     response=401,
@@ -134,42 +134,42 @@ final class PostController extends AbstractController
      * )
      * @SWG\Response(
      *     response=403,
-     *     description="You are not owner of this post"
+     *     description="You are not owner of this item"
      * )
      * @SWG\Response(
      *     response=404,
-     *     description="No such post"
+     *     description="No such item"
      * )
      *
      * @Route(
-     *     path="/api/post/{id}",
-     *     name="api_show_post",
+     *     path="/api/item/{id}",
+     *     name="api_show_item",
      *     methods={"GET"}
      * )
      *
-     * @param Post            $post
-     * @param PostViewFactory $factory
+     * @param Item            $item
+     * @param ItemViewFactory $factory
      *
-     * @return PostView
+     * @return ItemView
      */
-    public function postShowAction(Post $post, PostViewFactory $factory)
+    public function itemShowAction(Item $item, ItemViewFactory $factory)
     {
-        $this->denyAccessUnlessGranted(PostVoter::SHOW_POST, $post);
+        $this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
 
-        return $factory->create($post);
+        return $factory->create($item);
     }
 
     /**
-     * @SWG\Tag(name="Post")
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\CreatePostType::class)
+     *     @Model(type=\App\Form\Request\CreateItemType::class)
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Success post created",
+     *     description="Success item created",
      *     @SWG\Schema(
      *         type="object",
      *         @SWG\Property(
@@ -194,49 +194,49 @@ final class PostController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/post",
-     *     name="api_create_post",
+     *     path="/api/item",
+     *     name="api_create_item",
      *     methods={"POST"}
      * )
      *
      * @param Request                $request
      * @param EntityManagerInterface $manager
-     * @param CreatedPostViewFactory $viewFactory
+     * @param CreatedItemViewFactory $viewFactory
      *
-     * @return CreatedPostView|FormInterface
+     * @return CreatedItemView|FormInterface
      */
-    public function createPostAction(Request $request, EntityManagerInterface $manager, CreatedPostViewFactory $viewFactory)
+    public function createItemAction(Request $request, EntityManagerInterface $manager, CreatedItemViewFactory $viewFactory)
     {
-        $post = new Post();
-        $form = $this->createForm(CreatePostType::class, $post);
+        $item = new Item();
+        $form = $this->createForm(CreateItemType::class, $item);
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
-        $this->denyAccessUnlessGranted(PostVoter::CREATE_POST, $post);
+        $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
 
-        $manager->persist($post);
+        $manager->persist($item);
         $manager->flush();
 
-        return $viewFactory->create($post);
+        return $viewFactory->create($item);
     }
 
     /**
-     * @SWG\Tag(name="Post")
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\MovePostType::class)
+     *     @Model(type=\App\Form\Request\MoveItemType::class)
      * )
      * @SWG\Response(
      *     response=204,
-     *     description="Success post moved"
+     *     description="Success item moved"
      * )
      * @SWG\Response(
      *     response=400,
-     *     description="Returns post move error",
+     *     description="Returns item move error",
      *     @SWG\Schema(
      *         type="object",
      *         @SWG\Property(
@@ -259,54 +259,54 @@ final class PostController extends AbstractController
      * )
      * @SWG\Response(
      *     response=403,
-     *     description="You are not owner of list or post"
+     *     description="You are not owner of list or item"
      * )
      * @SWG\Response(
      *     response=404,
-     *     description="No such post"
+     *     description="No such item"
      * )
      *
      * @Route(
-     *     path="/api/post/{id}/move",
-     *     name="api_move_post",
+     *     path="/api/item/{id}/move",
+     *     name="api_move_item",
      *     methods={"PATCH"}
      * )
      *
-     * @param Post                   $post
+     * @param Item                   $item
      * @param Request                $request
      * @param EntityManagerInterface $manager
      *
      * @return FormInterface|JsonResponse
      */
-    public function movePostAction(Post $post, Request $request, EntityManagerInterface $manager)
+    public function moveItemAction(Item $item, Request $request, EntityManagerInterface $manager)
     {
-        $this->denyAccessUnlessGranted(PostVoter::EDIT_POST, $post);
+        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
-        $form = $this->createForm(MovePostType::class, $post);
+        $form = $this->createForm(MoveItemType::class, $item);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        $this->denyAccessUnlessGranted(ListVoter::EDIT, $post->getParentList());
+        $this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
 
-        $manager->persist($post);
+        $manager->persist($item);
         $manager->flush();
 
         return null;
     }
 
     /**
-     * @SWG\Tag(name="Post")
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\EditPostType::class)
+     *     @Model(type=\App\Form\Request\EditItemType::class)
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Success post edited",
+     *     description="Success item edited",
      *     @SWG\Schema(
      *         type="object",
      *         @SWG\Property(
@@ -318,7 +318,7 @@ final class PostController extends AbstractController
      * )
      * @SWG\Response(
      *     response=400,
-     *     description="Returns post edit error",
+     *     description="Returns item edit error",
      *     @SWG\Schema(
      *         type="object",
      *         @SWG\Property(
@@ -341,60 +341,60 @@ final class PostController extends AbstractController
      * )
      * @SWG\Response(
      *     response=403,
-     *     description="You are not owner of post"
+     *     description="You are not owner of item"
      * )
      * @SWG\Response(
      *     response=404,
-     *     description="No such post"
+     *     description="No such item"
      * )
      *
      * @Route(
-     *     path="/api/post/{id}",
-     *     name="api_edit_post",
+     *     path="/api/item/{id}",
+     *     name="api_edit_item",
      *     methods={"PATCH"}
      * )
      *
-     * @param Post          $post
+     * @param Item          $item
      * @param Request       $request
      * @param SharesHandler $sharesHandler
      *
      * @return array|FormInterface
      */
-    public function editPostAction(Post $post, Request $request, SharesHandler $sharesHandler)
+    public function editItemAction(Item $item, Request $request, SharesHandler $sharesHandler)
     {
-        $this->denyAccessUnlessGranted(PostVoter::EDIT_POST, $post);
-        if (null !== $post->getOriginalPost()) {
-            throw new BadRequestHttpException('Read only post. You are not owner');
+        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        if (null !== $item->getOriginalItem()) {
+            throw new BadRequestHttpException('Read only item. You are not owner');
         }
 
-        $form = $this->createForm(EditPostType::class, $post);
+        $form = $this->createForm(EditItemType::class, $item);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        $sharesHandler->savePostWithShares($post);
+        $sharesHandler->saveItemWithShares($item);
 
         return [
-            'lastUpdated' => $post->getLastUpdated(),
+            'lastUpdated' => $item->getLastUpdated(),
         ];
     }
 
     /**
-     * @SWG\Tag(name="Post")
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\SharePostRequestType::class)
+     *     @Model(type=\App\Form\Request\ShareItemRequestType::class)
      * )
      * @SWG\Response(
      *     response=204,
-     *     description="Success post shared"
+     *     description="Success item shared"
      * )
      * @SWG\Response(
      *     response=400,
-     *     description="Returns post share error",
+     *     description="Returns item share error",
      *     @SWG\Schema(
      *         type="object",
      *         @SWG\Property(
@@ -417,51 +417,51 @@ final class PostController extends AbstractController
      * )
      * @SWG\Response(
      *     response=403,
-     *     description="You are not owner of post"
+     *     description="You are not owner of item"
      * )
      * @SWG\Response(
      *     response=404,
-     *     description="No such post"
+     *     description="No such item"
      * )
      *
      * @Route(
-     *     path="/api/post/{id}/share",
-     *     name="api_share_post",
+     *     path="/api/item/{id}/share",
+     *     name="api_share_item",
      *     methods={"PATCH"}
      * )
      *
-     * @param Post          $post
+     * @param Item          $item
      * @param Request       $request
      * @param SharesHandler $sharesHandler
      *
      * @return FormInterface|JsonResponse
      */
-    public function sharePostAction(Post $post, Request $request, SharesHandler $sharesHandler)
+    public function shareItemAction(Item $item, Request $request, SharesHandler $sharesHandler)
     {
-        $this->denyAccessUnlessGranted(PostVoter::EDIT_POST, $post);
-        $sharePostRequest = new SharePostRequest($post);
+        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        $shareItemRequest = new ShareItemRequest($item);
 
-        $form = $this->createForm(SharePostRequestType::class, $sharePostRequest);
+        $form = $this->createForm(ShareItemRequestType::class, $shareItemRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        $sharesHandler->sharePost($sharePostRequest);
+        $sharesHandler->shareItem($shareItemRequest);
 
         return null;
     }
 
     /**
-     * @SWG\Tag(name="Post")
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Response(
      *     response=204,
-     *     description="Success post deleted"
+     *     description="Success item deleted"
      * )
      * @SWG\Response(
      *     response=400,
-     *     description="Returns post deletion error",
+     *     description="Returns item deletion error",
      *     @SWG\Schema(
      *         type="object",
      *         @SWG\Property(
@@ -469,7 +469,7 @@ final class PostController extends AbstractController
      *             property="errors",
      *             @SWG\Items(
      *                 type="string",
-     *                 example="You can fully delete post only from trash"
+     *                 example="You can fully delete item only from trash"
      *             )
      *         )
      *     )
@@ -480,43 +480,45 @@ final class PostController extends AbstractController
      * )
      * @SWG\Response(
      *     response=403,
-     *     description="You are not owner of this post"
+     *     description="You are not owner of this item"
      * )
      * @SWG\Response(
      *     response=404,
-     *     description="No such post"
+     *     description="No such item"
      * )
      *
      * @Route(
-     *     path="/api/post/{id}",
-     *     name="api_delete_post",
+     *     path="/api/item/{id}",
+     *     name="api_delete_item",
      *     methods={"DELETE"}
      * )
      *
-     * @param Post                   $post
+     * @param Item                   $item
      * @param EntityManagerInterface $manager
+     *
+     * @return null
      */
-    public function deletePostAction(Post $post, EntityManagerInterface $manager)
+    public function deleteItemAction(Item $item, EntityManagerInterface $manager)
     {
-        $this->denyAccessUnlessGranted(PostVoter::DELETE_POST, $post);
-        if (NodeEnumType::TYPE_TRASH !== $post->getParentList()->getType()) {
-            throw new BadRequestHttpException('You can fully delete post only from trash');
+        $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
+        if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
+            throw new BadRequestHttpException('You can fully delete item only from trash');
         }
 
-        $manager->remove($post);
+        $manager->remove($item);
         $manager->flush();
 
         return null;
     }
 
     /**
-     * Get list of favourite posts.
+     * Get list of favourite items.
      *
-     * @SWG\Tag(name="Post")
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Response(
      *     response=200,
-     *     description="List of favourite posts"
+     *     description="List of favourite items"
      * )
      * @SWG\Response(
      *     response=401,
@@ -524,30 +526,30 @@ final class PostController extends AbstractController
      * )
      * @SWG\Response(
      *     response=403,
-     *     description="You are not owner of this post"
+     *     description="You are not owner of this item"
      * )
      *
      * @Route(
-     *     path="/api/posts/favorite",
-     *     name="api_favorites_post",
+     *     path="/api/items/favorite",
+     *     name="api_favorites_item",
      *     methods={"GET"}
      * )
      *
-     * @param PostListViewFactory $viewFactory
+     * @param ItemListViewFactory $viewFactory
      *
-     * @return PostView[]|FormInterface
+     * @return ItemView[]|FormInterface
      */
-    public function favorite(PostListViewFactory $viewFactory)
+    public function favorite(ItemListViewFactory $viewFactory)
     {
-        $postCollection = $this->getDoctrine()->getRepository(Post::class)->getFavoritesPosts($this->getUser());
+        $itemCollection = $this->getDoctrine()->getRepository(Item::class)->getFavoritesItems($this->getUser());
 
-        return $viewFactory->create($postCollection);
+        return $viewFactory->create($itemCollection);
     }
 
     /**
-     * Toggle favorite post.
+     * Toggle favorite item.
      *
-     * @SWG\Tag(name="Post")
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Response(
      *     response=200,
@@ -559,33 +561,33 @@ final class PostController extends AbstractController
      * )
      * @SWG\Response(
      *     response=403,
-     *     description="You are not owner of this post"
+     *     description="You are not owner of this item"
      * )
      * @SWG\Response(
      *     response=404,
-     *     description="No such post"
+     *     description="No such item"
      * )
      *
      * @Route(
-     *     path="/api/post/{id}/favorite",
-     *     name="api_favorite_post_toggle",
+     *     path="/api/item/{id}/favorite",
+     *     name="api_favorite_item_toggle",
      *     methods={"POST"}
      * )
      *
-     * @param Post                   $post
+     * @param Item                   $item
      * @param EntityManagerInterface $entityManager
-     * @param PostViewFactory        $factory
+     * @param ItemViewFactory        $factory
      *
-     * @return PostView
+     * @return ItemView
      */
-    public function favoriteToggle(Post $post, EntityManagerInterface $entityManager, PostViewFactory $factory)
+    public function favoriteToggle(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
-        $this->denyAccessUnlessGranted(PostVoter::SHOW_POST, $post);
+        $this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
 
-        $post->setFavorite(!$post->isFavorite());
-        $entityManager->persist($post);
+        $item->setFavorite(!$item->isFavorite());
+        $entityManager->persist($item);
         $entityManager->flush();
 
-        return $factory->create($post);
+        return $factory->create($item);
     }
 }

@@ -9,7 +9,7 @@ use Swagger\Annotations as SWG;
 class ListView extends NodeView
 {
     /**
-     * @var PostView[]
+     * @var ItemView[]
      */
     public $children;
 

@@ -42,9 +42,9 @@ class ShareView
     public $email;
 
     /**
-     * @var SharePostView[]
+     * @var ShareItemView[]
      *
      * @Groups({"share_read"})
      */
-    public $sharedPosts = [];
+    public $sharedItems = [];
 }

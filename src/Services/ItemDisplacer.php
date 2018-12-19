@@ -8,7 +8,7 @@ use App\Entity\Directory;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
-class PostDisplacer
+class ItemDisplacer
 {
     /** @var EntityManagerInterface */
     private $entityManager;
@@ -18,13 +18,13 @@ class PostDisplacer
         $this->entityManager = $entityManager;
     }
 
-    public function moveChildPostsToTrash(Directory $directory, User $user)
+    public function moveChildItemsToTrash(Directory $directory, User $user)
     {
         $trash = $user->getTrash();
 
-        foreach ($directory->getChildPosts() as $post) {
-            $post->setParentList($trash);
-            $this->entityManager->persist($post);
+        foreach ($directory->getChildItems() as $item) {
+            $item->setParentList($trash);
+            $this->entityManager->persist($item);
         }
 
         $this->entityManager->flush();

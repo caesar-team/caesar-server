@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Share\Subscriber;
 
 use App\Entity\Share;
-use App\Entity\SharePost;
+use App\Entity\ShareItem;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
@@ -41,12 +41,12 @@ final class ShareSubscriber implements EventSubscriber
     public function postRemove(LifecycleEventArgs $args)
     {
         $entity = $args->getObject();
-        if (!$entity instanceof SharePost) {
+        if (!$entity instanceof ShareItem) {
             return;
         }
 
         $entityManager = $args->getObjectManager();
-        if (0 === $entity->getShare()->getSharedPosts()->count()) {
+        if (0 === $entity->getShare()->getSharedItems()->count()) {
             $entityManager->remove($entity->getShare());
         }
     }

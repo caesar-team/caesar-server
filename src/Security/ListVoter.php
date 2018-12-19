@@ -13,7 +13,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class ListVoter extends Voter
 {
-    public const SHOW_POSTS = 'show_posts';
+    public const SHOW_ITEMS = 'show_items';
     public const EDIT = 'edit_list';
     public const DELETE_LIST = 'delete_list';
 
@@ -35,7 +35,7 @@ class ListVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::SHOW_POSTS, self::EDIT, self::DELETE_LIST])) {
+        if (!in_array($attribute, [self::SHOW_ITEMS, self::EDIT, self::DELETE_LIST])) {
             return false;
         }
 
@@ -61,10 +61,10 @@ class ListVoter extends Voter
         /** @var User $user */
         $user = $token->getUser();
 
-        if (in_array($attribute, [self::SHOW_POSTS, self::EDIT, self::DELETE_LIST])) {
-            $postOwner = $this->userRepository->getByList($subject);
+        if (in_array($attribute, [self::SHOW_ITEMS, self::EDIT, self::DELETE_LIST])) {
+            $itemOwner = $this->userRepository->getByList($subject);
 
-            return $postOwner === $user;
+            return $itemOwner === $user;
         }
 
         throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');

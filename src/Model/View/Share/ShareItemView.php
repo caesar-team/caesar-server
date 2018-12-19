@@ -7,7 +7,7 @@ namespace App\Model\View\Share;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-class SharePostView
+class ShareItemView
 {
     /**
      * @var string

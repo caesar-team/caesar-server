@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\DataFixtures;
 
 use App\Entity\Directory;
-use App\Entity\Post;
+use App\Entity\Item;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\ORMFixtureInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture as DoctrineAbstractFixture;
@@ -59,7 +59,7 @@ abstract class AbstractFixture extends DoctrineAbstractFixture implements ORMFix
      * @param string $className
      * @param string $uniqueName
      *
-     * @return User|Directory|Post|object
+     * @return User|Directory|Item|object
      */
     protected function getRef(string $className, string $uniqueName)
     {

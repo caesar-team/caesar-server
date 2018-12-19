@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\Entity\Post;
+use App\Entity\Item;
 use App\Entity\User;
-use App\Model\Query\PostListQuery;
+use App\Model\Query\ItemListQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 
-class PostRepository extends EntityRepository
+class ItemRepository extends EntityRepository
 {
-    public function getByQuery(PostListQuery $query): array
+    public function getByQuery(ItemListQuery $query): array
     {
-        $qb = $this->createQueryBuilder('post');
+        $qb = $this->createQueryBuilder('item');
 
         return $qb
-            ->join('post.parentList', 'parentList')
+            ->join('item.parentList', 'parentList')
             ->where($qb->expr()->eq('parentList', ':list'))
             ->setParameter('list', $query->list)
             ->getQuery()
@@ -27,16 +27,16 @@ class PostRepository extends EntityRepository
     /**
      * @param User $user
      *
-     * @return Post[]|iterable
+     * @return Item[]|iterable
      */
-    public function getFavoritesPosts(User $user): iterable
+    public function getFavoritesItems(User $user): iterable
     {
-        $queryBuilder = $this->createQueryBuilder('post');
+        $queryBuilder = $this->createQueryBuilder('item');
         $queryBuilder
-            ->innerJoin('post.parentList', 'list')
+            ->innerJoin('item.parentList', 'list')
             ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list')
             ->where('user.id = :user')
-            ->andWhere('post.favorite = true')
+            ->andWhere('item.favorite = true')
             ->setParameter('user', $user->getId())
         ;
 
