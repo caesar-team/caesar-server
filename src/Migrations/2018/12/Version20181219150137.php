@@ -9,9 +9,9 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version20181219150137 extends AbstractMigration
 {
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'postgresql', 'Migration can only be executed safely on \'postgresql\'.');
+        $this->abortIf('postgresql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'postgresql\'.');
 
         $this->addSql('CREATE TABLE srp (id UUID NOT NULL, seed VARCHAR(255) NOT NULL, verifier VARCHAR(255) NOT NULL, public_client_ephemeral_value VARCHAR(255) DEFAULT NULL, public_server_ephemeral_value VARCHAR(255) DEFAULT NULL, private_server_ephemeral_value VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('COMMENT ON COLUMN srp.id IS \'(DC2Type:uuid)\'');
@@ -24,9 +24,9 @@ final class Version20181219150137 extends AbstractMigration
         $this->addSql('CREATE UNIQUE INDEX UNIQ_957A64794D59D1DD ON fos_user (srp_id)');
     }
 
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'postgresql', 'Migration can only be executed safely on \'postgresql\'.');
+        $this->abortIf('postgresql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'postgresql\'.');
 
         $this->addSql('ALTER TABLE fos_user DROP CONSTRAINT FK_957A64794D59D1DD');
         $this->addSql('DROP TABLE srp');

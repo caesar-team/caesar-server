@@ -67,7 +67,6 @@
             let sessionKey = srp.generateK(data.S);
 
             console.log(sessionKey);
-            // console.log(matcher2);
         }
 
         function generateMatcher(data) {
@@ -100,6 +99,11 @@
             let seed = srp.getRandomSeed();
             let x = srp.generateX(seed, email, password);
             let verifier = srp.generateV(x);
+            console.log({
+                'email': email,
+                'seed': seed,
+                'verifier': verifier
+            });
 
             axios.post(
                 this.action, {
@@ -153,7 +157,6 @@
 
             return false;
         }
-
     </script>
 {% endblock %}
 </body>

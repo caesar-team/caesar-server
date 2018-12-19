@@ -6,17 +6,52 @@ namespace App\Controller\Api;
 
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Form\Request\Srp\RegistrationType;
 use App\Services\SrpHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
+use Swagger\Annotations as SWG;
 
 final class SrpController extends AbstractController
 {
     /**
+     * @SWG\Tag(name="Srp")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\Srp\RegistrationType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success registration"
+     * )
+     *
+     * @SWG\Response(
+     *     response=400,
+     *     description="Error in user input",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="object",
+     *             property="errors",
+     *             @SWG\Property(
+     *                 type="array",
+     *                 property="email",
+     *                 @SWG\Items(
+     *                     type="string",
+     *                     example="This value already used"
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     *
      * @Route(
      *     path="/api/srp/registration",
      *     name="api_srp_registration",
@@ -30,16 +65,13 @@ final class SrpController extends AbstractController
      */
     public function registerAction(Request $request, UserManagerInterface $manager)
     {
-        dump($request);
         $user = new User(new Srp());
 
-        $user->setEmail($request->request->get('email'));
-        $user->setUsername($request->request->get('email'));
-        $user->setPlainPassword(uniqid());
-        $user->setEnabled(true);
-
-        $user->getSrp()->setSeed($request->request->get('seed'));
-        $user->getSrp()->setVerifier($request->request->get('verifier'));
+        $form = $this->createForm(RegistrationType::class, $user); //TODO email confirmation
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
 
         $manager->updateUser($user);
 
