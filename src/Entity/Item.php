@@ -13,10 +13,10 @@ use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Table
- * @ORM\Entity(repositoryClass="App\Repository\PostRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\ItemRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class Post
+class Item
 {
     /**
      * @var UuidInterface
@@ -29,7 +29,7 @@ class Post
     /**
      * @var Directory
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childPosts", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childItems", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      */
     protected $parentList;
@@ -56,25 +56,25 @@ class Post
     protected $lastUpdated;
 
     /**
-     * @var Post|null
+     * @var Item|null
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Post", inversedBy="sharedPosts", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\Item", inversedBy="sharedItems", cascade={"persist"})
      */
-    protected $originalPost;
+    protected $originalItem;
 
     /**
-     * @var Post[]|Collection
+     * @var Item[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Post", mappedBy="originalPost", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="originalItem", orphanRemoval=true)
      */
-    protected $sharedPosts;
+    protected $sharedItems;
 
     /**
-     * @var SharePost[]|Collection
+     * @var ShareItem[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\SharePost", mappedBy="post", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\ShareItem", mappedBy="item", orphanRemoval=true)
      */
-    protected $externalSharedPosts;
+    protected $externalSharedItems;
 
     /**
      * @var bool
@@ -87,8 +87,8 @@ class Post
      * @var Tag[]|Collection
      *
      * @ORM\ManyToMany(targetEntity="App\Entity\Tag", cascade={"persist"})
-     * @ORM\JoinTable(name="post_tags",
-     *     joinColumns={@ORM\JoinColumn(name="post_id", referencedColumnName="id", onDelete="CASCADE")},
+     * @ORM\JoinTable(name="item_tags",
+     *     joinColumns={@ORM\JoinColumn(name="item_id", referencedColumnName="id", onDelete="CASCADE")},
      *     inverseJoinColumns={@ORM\JoinColumn(name="tag_id", referencedColumnName="id", onDelete="CASCADE")}
      * )
      */
@@ -97,10 +97,10 @@ class Post
     public function __construct()
     {
         $this->id = Uuid::uuid4();
-        $this->originalPost = null;
+        $this->originalItem = null;
         $this->type = NodeEnumType::TYPE_CRED;
-        $this->sharedPosts = new ArrayCollection();
-        $this->externalSharedPosts = new ArrayCollection();
+        $this->sharedItems = new ArrayCollection();
+        $this->externalSharedItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
     }
 
@@ -162,35 +162,35 @@ class Post
     }
 
     /**
-     * @return Post|null
+     * @return Item|null
      */
-    public function getOriginalPost(): ?Post
+    public function getOriginalItem(): ?Item
     {
-        return $this->originalPost;
+        return $this->originalItem;
     }
 
     /**
-     * @param Post|null $originalPost
+     * @param Item|null $originalItem
      */
-    public function setOriginalPost(Post $originalPost): void
+    public function setOriginalItem(Item $originalItem): void
     {
-        $this->originalPost = $originalPost;
+        $this->originalItem = $originalItem;
     }
 
     /**
-     * @return Post[]|Collection
+     * @return Item[]|Collection
      */
-    public function getSharedPosts(): Collection
+    public function getSharedItems(): Collection
     {
-        return $this->sharedPosts;
+        return $this->sharedItems;
     }
 
     /**
-     * @param Collection $sharedPosts
+     * @param Collection $sharedItems
      */
-    public function setSharedPosts(Collection $sharedPosts)
+    public function setSharedItems(Collection $sharedItems)
     {
-        $this->sharedPosts = $sharedPosts;
+        $this->sharedItems = $sharedItems;
     }
 
     /**
@@ -226,27 +226,27 @@ class Post
     }
 
     /**
-     * @return SharePost[]|Collection
+     * @return ShareItem[]|Collection
      */
-    public function getExternalSharedPosts(): Collection
+    public function getExternalSharedItems(): Collection
     {
-        return $this->externalSharedPosts;
+        return $this->externalSharedItems;
     }
 
-    public function addExternalSharePost(SharePost $sharePost): void
+    public function addExternalShareItem(ShareItem $shareItem): void
     {
-        if (!$this->externalSharedPosts->contains($sharePost)) {
-            $this->externalSharedPosts->add($sharePost);
-            $sharePost->setPost($this);
+        if (!$this->externalSharedItems->contains($shareItem)) {
+            $this->externalSharedItems->add($shareItem);
+            $shareItem->setItem($this);
         }
     }
 
     /**
-     * @param SharePost[]|Collection $externalSharedPosts
+     * @param ShareItem[]|Collection $externalSharedItems
      */
-    public function setExternalSharedPosts(Collection $externalSharedPosts): void
+    public function setExternalSharedItems(Collection $externalSharedItems): void
     {
-        $this->externalSharedPosts = $externalSharedPosts;
+        $this->externalSharedItems = $externalSharedItems;
     }
 
     /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Validator\Constraints;
 
-use App\Entity\Post;
+use App\Entity\Item;
 use App\Entity\User;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
-class PostOwnerValidator extends ConstraintValidator
+class ItemOwnerValidator extends ConstraintValidator
 {
     /**
      * @var Security
@@ -41,17 +41,17 @@ class PostOwnerValidator extends ConstraintValidator
             return;
         }
 
-        if (!$constraint instanceof PostOwner) {
-            throw new UnexpectedTypeException($constraint, PostOwner::class);
+        if (!$constraint instanceof ItemOwner) {
+            throw new UnexpectedTypeException($constraint, ItemOwner::class);
         }
 
         /** @var User $user */
         $user = $this->security->getUser();
         $userRepository = $this->entityManager->getRepository(User::class);
-        foreach ($value as $post) {
-            if ($post instanceof Post) {
-                $postUser = $userRepository->getByPost($post);
-                if (null === $user || $user !== $postUser) {
+        foreach ($value as $item) {
+            if ($item instanceof Item) {
+                $itemUser = $userRepository->getByItem($item);
+                if (null === $user || $user !== $itemUser) {
                     $this->context
                         ->buildViolation($constraint->message)
                         ->addViolation()

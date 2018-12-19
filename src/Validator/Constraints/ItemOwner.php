@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraint;
 /**
  * @Annotation
  */
-class PostOwner extends Constraint
+class ItemOwner extends Constraint
 {
-    public $message = 'You do not have access to this post.';
+    public $message = 'You do not have access to this item.';
 }

@@ -20,8 +20,8 @@ class CreateShareType extends AbstractType
             ->add('email', EmailType::class, [
                 'mapped' => false,
             ])
-            ->add('sharedPosts', CollectionType::class, [
-                'entry_type' => SharePostType::class,
+            ->add('sharedItems', CollectionType::class, [
+                'entry_type' => ShareItemType::class,
                 'allow_add' => true,
                 'allow_delete' => true,
                 'delete_empty' => true,

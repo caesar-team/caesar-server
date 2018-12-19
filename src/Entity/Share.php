@@ -45,16 +45,16 @@ class Share
     private $user;
 
     /**
-     * @var SharePost[]|Collection
+     * @var ShareItem[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\SharePost", mappedBy="share", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="ShareItem", mappedBy="share", cascade={"persist"}, orphanRemoval=true)
      */
-    private $sharedPosts;
+    private $sharedItems;
 
     public function __construct()
     {
         $this->id = Uuid::uuid4();
-        $this->sharedPosts = new ArrayCollection();
+        $this->sharedItems = new ArrayCollection();
     }
 
     public function getId(): UuidInterface
@@ -83,23 +83,23 @@ class Share
     }
 
     /**
-     * @return SharePost[]|Collection
+     * @return ShareItem[]|Collection
      */
-    public function getSharedPosts(): Collection
+    public function getSharedItems(): Collection
     {
-        return $this->sharedPosts;
+        return $this->sharedItems;
     }
 
-    public function addSharedPost(SharePost $sharePost): void
+    public function addSharedItem(ShareItem $shareItem): void
     {
-        if (!$this->sharedPosts->contains($sharePost)) {
-            $this->sharedPosts->add($sharePost);
-            $sharePost->setShare($this);
+        if (!$this->sharedItems->contains($shareItem)) {
+            $this->sharedItems->add($shareItem);
+            $shareItem->setShare($this);
         }
     }
 
-    public function removeSharedPost(SharePost $sharePost): void
+    public function removeSharedItem(ShareItem $shareItem): void
     {
-        $this->sharedPosts->removeElement($sharePost);
+        $this->sharedItems->removeElement($shareItem);
     }
 }

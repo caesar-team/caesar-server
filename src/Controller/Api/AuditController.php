@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Audit\PostEventFactory;
-use App\Entity\Audit\PostEvent;
-use App\Entity\Post;
-use App\Factory\View\Audit\ListPostEventViewFactory;
-use App\Factory\View\Audit\PostEventViewFactory;
+use App\Audit\ItemEventFactory;
+use App\Entity\Audit\ItemEvent;
+use App\Entity\Item;
+use App\Factory\View\Audit\ListItemEventViewFactory;
+use App\Factory\View\Audit\ItemEventViewFactory;
 use App\Form\Request\AuditEventType;
 use App\Model\Query\AuditEventsQuery;
-use App\Model\View\Audit\PostEventView;
-use App\Repository\AuditPostEventRepository;
-use App\Security\PostVoter;
-use App\Security\Voter\AuditPostEventVoter;
+use App\Model\View\Audit\ItemEventView;
+use App\Repository\AuditItemEventRepository;
+use App\Security\ItemVoter;
+use App\Security\Voter\AuditItemEventVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -26,7 +26,7 @@ use Symfony\Component\Routing\Annotation\Route;
 final class AuditController extends Controller
 {
     /**
-     * Create event by post.
+     * Create event by item.
      *
      * @SWG\Tag(name="Audit")
      *
@@ -38,7 +38,7 @@ final class AuditController extends Controller
      * @SWG\Response(
      *     response=200,
      *     description="Success audit event created",
-     *     @Model(type=App\Model\View\Audit\PostEventView::class)
+     *     @Model(type=App\Model\View\Audit\ItemEventView::class)
      * )
      * @SWG\Response(
      *     response=400,
@@ -69,50 +69,50 @@ final class AuditController extends Controller
      * )
      *
      * @Route(
-     *     path="/api/audit/post/{id}",
-     *     name="api_create_audit_post_event",
+     *     path="/api/audit/item/{id}",
+     *     name="api_create_audit_item_event",
      *     methods={"POST"}
      * )
      *
-     * @param Post                   $post
+     * @param Item                   $item
      * @param Request                $request
      * @param EntityManagerInterface $manager
-     * @param PostEventFactory       $postEventFactory
-     * @param PostEventViewFactory   $postEventViewFactory
+     * @param ItemEventFactory       $itemEventFactory
+     * @param ItemEventViewFactory   $itemEventViewFactory
      *
-     * @return PostEventView|FormInterface
+     * @return ItemEventView|FormInterface
      */
-    public function createPostEventAction(
-        Post $post,
+    public function createItemEventAction(
+        Item $item,
         Request $request,
         EntityManagerInterface $manager,
-        PostEventFactory $postEventFactory,
-        PostEventViewFactory $postEventViewFactory
+        ItemEventFactory $itemEventFactory,
+        ItemEventViewFactory $itemEventViewFactory
     ) {
-        $this->denyAccessUnlessGranted(AuditPostEventVoter::CREATE, $post);
+        $this->denyAccessUnlessGranted(AuditItemEventVoter::CREATE, $item);
 
-        $event = $postEventFactory->create($request, $post);
+        $event = $itemEventFactory->create($request, $item);
         $form = $this->createForm(AuditEventType::class, $event);
         $form->submit($request->request->all());
         if ($form->isValid()) {
             $manager->persist($event);
             $manager->flush();
 
-            return $postEventViewFactory->create($event);
+            return $itemEventViewFactory->create($event);
         }
 
         return $form;
     }
 
     /**
-     * Get event of post by event id.
+     * Get event of item by event id.
      *
      * @SWG\Tag(name="Audit")
      *
      * @SWG\Response(
      *     response=200,
      *     description="Success audit event created",
-     *     @Model(type=App\Model\View\Audit\PostEventView::class)
+     *     @Model(type=App\Model\View\Audit\ItemEventView::class)
      * )
      * @SWG\Response(
      *     response=401,
@@ -128,25 +128,25 @@ final class AuditController extends Controller
      * )
      *
      * @Route(
-     *     path="/api/audit/post/event/{id}",
+     *     path="/api/audit/item/event/{id}",
      *     name="api_get_audit_event",
      *     methods={"GET"}
      * )
      *
-     * @param PostEvent            $postEvent
-     * @param PostEventViewFactory $postEventViewFactory
+     * @param ItemEvent            $itemEvent
+     * @param ItemEventViewFactory $itemEventViewFactory
      *
-     * @return PostEventView
+     * @return ItemEventView
      */
-    public function eventAction(PostEvent $postEvent, PostEventViewFactory $postEventViewFactory)
+    public function eventAction(ItemEvent $itemEvent, ItemEventViewFactory $itemEventViewFactory)
     {
-        $this->denyAccessUnlessGranted(AuditPostEventVoter::SHOW, $postEvent);
+        $this->denyAccessUnlessGranted(AuditItemEventVoter::SHOW, $itemEvent);
 
-        return $postEventViewFactory->create($postEvent);
+        return $itemEventViewFactory->create($itemEvent);
     }
 
     /**
-     * Get list of events for posts.
+     * Get list of events for items.
      *
      * @SWG\Tag(name="Audit")
      *
@@ -196,7 +196,7 @@ final class AuditController extends Controller
      *             type="array",
      *             property="data",
      *             @SWG\Items(
-     *                 @Model(type=App\Model\View\Audit\PostEventView::class)
+     *                 @Model(type=App\Model\View\Audit\ItemEventView::class)
      *             )
      *         ),
      *         @SWG\Property(
@@ -241,31 +241,31 @@ final class AuditController extends Controller
      * )
      *
      * @Route(
-     *     path="/api/audit/events/post",
-     *     name="api_list_audit_events_post",
+     *     path="/api/audit/events/item",
+     *     name="api_list_audit_events_item",
      *     methods={"GET"}
      * )
      *
      * @param Request                  $request
-     * @param AuditPostEventRepository $auditPostEventRepository
-     * @param ListPostEventViewFactory $listPostEventViewFactory
+     * @param AuditItemEventRepository $auditItemEventRepository
+     * @param ListItemEventViewFactory $listItemEventViewFactory
      *
      * @return \App\Model\Response\PaginatedList
      */
     public function listEvent(
         Request $request,
-        AuditPostEventRepository $auditPostEventRepository,
-        ListPostEventViewFactory $listPostEventViewFactory
+        AuditItemEventRepository $auditItemEventRepository,
+        ListItemEventViewFactory $listItemEventViewFactory
     ) {
-        return $listPostEventViewFactory->create(
-            $auditPostEventRepository->getEventsByQuery(
+        return $listItemEventViewFactory->create(
+            $auditItemEventRepository->getEventsByQuery(
                 AuditEventsQuery::fromRequest($this->getUser(), $request)
             )
         );
     }
 
     /**
-     * Get list of events by post.
+     * Get list of events by item.
      *
      * @SWG\Tag(name="Audit")
      *
@@ -306,7 +306,7 @@ final class AuditController extends Controller
      *             type="array",
      *             property="data",
      *             @SWG\Items(
-     *                 @Model(type=App\Model\View\Audit\PostEventView::class)
+     *                 @Model(type=App\Model\View\Audit\ItemEventView::class)
      *             )
      *         ),
      *         @SWG\Property(
@@ -351,30 +351,30 @@ final class AuditController extends Controller
      * )
      *
      * @Route(
-     *     path="/api/audit/events/post/{id}",
-     *     name="api_list_audit_events_by_post",
+     *     path="/api/audit/events/item/{id}",
+     *     name="api_list_audit_events_by_item",
      *     methods={"GET"}
      * )
      *
-     * @param Post                     $post
+     * @param Item                     $item
      * @param Request                  $request
-     * @param AuditPostEventRepository $auditPostEventRepository
-     * @param ListPostEventViewFactory $listPostEventViewFactory
+     * @param AuditItemEventRepository $auditItemEventRepository
+     * @param ListItemEventViewFactory $listItemEventViewFactory
      *
      * @return \App\Model\Response\PaginatedList
      */
-    public function listByPostEvent(
-        Post $post,
+    public function listByItemEvent(
+        Item $item,
         Request $request,
-        AuditPostEventRepository $auditPostEventRepository,
-        ListPostEventViewFactory $listPostEventViewFactory
+        AuditItemEventRepository $auditItemEventRepository,
+        ListItemEventViewFactory $listItemEventViewFactory
     ) {
-        $this->denyAccessUnlessGranted(PostVoter::SHOW_POST, $post);
+        $this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
         $query = AuditEventsQuery::fromRequest($this->getUser(), $request);
-        $query->setPost($post);
+        $query->setItem($item);
 
-        return $listPostEventViewFactory->create(
-            $auditPostEventRepository->getEventsByQuery($query)
+        return $listItemEventViewFactory->create(
+            $auditItemEventRepository->getEventsByQuery($query)
         );
     }
 }

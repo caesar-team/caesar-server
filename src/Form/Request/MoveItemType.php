@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Form\Request;
 
 use App\Entity\Directory;
-use App\Entity\Post;
+use App\Entity\Item;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class MovePostType extends AbstractType
+class MoveItemType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -28,7 +28,7 @@ class MovePostType extends AbstractType
     {
         parent::configureOptions($resolver);
         $resolver->setDefaults([
-            'data_class' => Post::class,
+            'data_class' => Item::class,
         ]);
     }
 }

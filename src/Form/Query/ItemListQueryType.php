@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Form\Query;
 
 use App\Entity\Directory;
-use App\Model\Query\PostListQuery;
+use App\Model\Query\ItemListQuery;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class PostListQueryType extends AbstractType
+class ItemListQueryType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -32,7 +32,7 @@ class PostListQueryType extends AbstractType
     {
         parent::configureOptions($resolver);
         $resolver->setDefaults([
-            'data_class' => PostListQuery::class,
+            'data_class' => ItemListQuery::class,
         ]);
     }
 }

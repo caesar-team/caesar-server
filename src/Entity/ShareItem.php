@@ -10,9 +10,9 @@ use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="share_post")
+ * @ORM\Table(name="share_item")
  */
-class SharePost
+class ShareItem
 {
     /**
      * @var UuidInterface
@@ -23,17 +23,17 @@ class SharePost
     private $id;
 
     /**
-     * @var Post
+     * @var Item
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Post", inversedBy="externalSharedPosts", cascade={"persist"})
-     * @ORM\JoinColumn(name="post_id", columnDefinition="id", nullable=false, onDelete="CASCADE")
+     * @ORM\ManyToOne(targetEntity="Item", inversedBy="externalSharedItems", cascade={"persist"})
+     * @ORM\JoinColumn(name="item_id", columnDefinition="id", nullable=false, onDelete="CASCADE")
      */
-    private $post;
+    private $item;
 
     /**
      * @var Share
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Share", inversedBy="sharedPosts")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Share", inversedBy="sharedItems")
      * @ORM\JoinColumn(name="share_id", nullable=false, onDelete="CASCADE")
      */
     private $share;
@@ -55,14 +55,14 @@ class SharePost
         return $this->id;
     }
 
-    public function getPost(): ?Post
+    public function getItem(): ?Item
     {
-        return $this->post;
+        return $this->item;
     }
 
-    public function setPost(Post $post): void
+    public function setItem(Item $item): void
     {
-        $this->post = $post;
+        $this->item = $item;
     }
 
     public function getSecret(): ?string

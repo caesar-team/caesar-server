@@ -114,7 +114,7 @@ final class ShareController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager
     ) {
-        if (0 === $share->getSharedPosts()->count()) {
+        if (0 === $share->getSharedItems()->count()) {
             $entityManager->remove($share);
             $entityManager->flush();
 
@@ -145,7 +145,7 @@ final class ShareController extends AbstractController
      *     description="No such share"
      * )
      *
-     * @Route("/api/share/{id}", name="api_share_delete", methods={"DELETE"})
+     * @Route("/api/shares/{id}", name="api_share_delete", methods={"DELETE"})
      *
      * @param Share                  $share
      * @param EntityManagerInterface $entityManager
@@ -201,7 +201,7 @@ final class ShareController extends AbstractController
      *     description="No such share"
      * )
      *
-     * @Route("/api/share/{id}", name="api_share_edit", methods={"PATCH"})
+     * @Route("/api/shares/{id}", name="api_share_edit", methods={"PATCH"})
      *
      * @param Request                $request
      * @param Share                  $share

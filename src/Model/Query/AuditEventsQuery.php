@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Model\Query;
 
-use App\Entity\Post;
+use App\Entity\Item;
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -32,9 +32,9 @@ class AuditEventsQuery extends AbstractQuery
     private $user;
 
     /**
-     * @var Post
+     * @var Item
      */
-    private $post;
+    private $item;
 
     /**
      * @var string|null
@@ -96,14 +96,14 @@ class AuditEventsQuery extends AbstractQuery
         return $this->user;
     }
 
-    public function getPost(): ?Post
+    public function getItem(): ?Item
     {
-        return $this->post;
+        return $this->item;
     }
 
-    public function setPost(?Post $post): void
+    public function setItem(?Item $item): void
     {
-        $this->post = $post;
+        $this->item = $item;
     }
 
     public function getTab(): ?string

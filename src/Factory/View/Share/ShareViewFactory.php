@@ -10,13 +10,13 @@ use App\Model\View\Share\ShareView;
 final class ShareViewFactory
 {
     /**
-     * @var SharePostViewFactory
+     * @var ShareItemViewFactory
      */
-    private $sharePostViewFactory;
+    private $shareItemViewFactory;
 
-    public function __construct(SharePostViewFactory $sharePostViewFactory)
+    public function __construct(ShareItemViewFactory $shareItemViewFactory)
     {
-        $this->sharePostViewFactory = $sharePostViewFactory;
+        $this->shareItemViewFactory = $shareItemViewFactory;
     }
 
     public function create(Share $share): ShareView
@@ -27,8 +27,8 @@ final class ShareViewFactory
         $view->email = $share->getUser()->getEmail();
         $view->createdAt = $share->getCreatedAt();
         $view->updatedAt = $share->getUpdatedAt();
-        foreach ($share->getSharedPosts() as $sharePost) {
-            $view->sharedPosts[] = $this->sharePostViewFactory->create($sharePost);
+        foreach ($share->getSharedItems() as $sharedItem) {
+            $view->sharedItems[] = $this->shareItemViewFactory->create($sharedItem);
         }
 
         return $view;

@@ -6,23 +6,23 @@ namespace App\Factory\View\Audit;
 
 use App\Model\Response\PaginatedList;
 
-class ListPostEventViewFactory extends AbstractEventViewFactory
+class ListItemEventViewFactory extends AbstractEventViewFactory
 {
     /**
-     * @var PostEventViewFactory
+     * @var ItemEventViewFactory
      */
-    private $postEventViewFactory;
+    private $itemEventViewFactory;
 
-    public function __construct(PostEventViewFactory $postEventViewFactory)
+    public function __construct(ItemEventViewFactory $itemEventViewFactory)
     {
-        $this->postEventViewFactory = $postEventViewFactory;
+        $this->itemEventViewFactory = $itemEventViewFactory;
     }
 
     public function create(PaginatedList $paginatedList): PaginatedList
     {
         $list = [];
         foreach ($paginatedList->getData() as $event) {
-            $list[] = $this->postEventViewFactory->create($event);
+            $list[] = $this->itemEventViewFactory->create($event);
         }
 
         return new PaginatedList($list, $paginatedList->getTotalPages(), $paginatedList->getTotal());

@@ -14,7 +14,7 @@ use Ramsey\Uuid\UuidInterface;
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn(name="type", type="string")
  * @ORM\DiscriminatorMap({
- *     PostEvent::class: PostEvent::class
+ *     ItemEvent::class: ItemEvent::class
  * })
  */
 abstract class AbstractEvent

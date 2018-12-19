@@ -9,7 +9,7 @@ use App\Form\Request\CreateListType;
 use App\Form\Request\EditListType;
 use App\Model\View\Error\SingleError;
 use App\Security\ListVoter;
-use App\Services\PostDisplacer;
+use App\Services\ItemDisplacer;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -33,7 +33,7 @@ final class ListController extends AbstractController
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Success post created",
+     *     description="Success item created",
      *     @SWG\Schema(
      *         type="object",
      *         @SWG\Property(
@@ -217,12 +217,12 @@ final class ListController extends AbstractController
      * )
      *
      * @param Directory              $list
-     * @param PostDisplacer          $postDisplacer
+     * @param ItemDisplacer          $itemDisplacer
      * @param EntityManagerInterface $manager
      *
      * @return null
      */
-    public function deleteListAction(Directory $list, PostDisplacer $postDisplacer, EntityManagerInterface $manager)
+    public function deleteListAction(Directory $list, ItemDisplacer $itemDisplacer, EntityManagerInterface $manager)
     {
         $this->denyAccessUnlessGranted(ListVoter::DELETE_LIST, $list);
 
@@ -230,7 +230,7 @@ final class ListController extends AbstractController
             throw new BadRequestHttpException('You can`t delete root list');
         }
 
-        $postDisplacer->moveChildPostsToTrash($list, $this->getUser());
+        $itemDisplacer->moveChildItemsToTrash($list, $this->getUser());
 
         $manager->remove($list);
         $manager->flush();

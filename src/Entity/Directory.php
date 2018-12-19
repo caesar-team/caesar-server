@@ -42,11 +42,11 @@ class Directory
     protected $parentList;
 
     /**
-     * @var Collection|Post[]
+     * @var Collection|Item[]
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Post", mappedBy="parentList", cascade={"remove"})
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="parentList", cascade={"remove"})
      */
-    protected $childPosts;
+    protected $childItems;
 
     /**
      * @var string
@@ -66,7 +66,7 @@ class Directory
     {
         $this->id = Uuid::uuid4();
         $this->childLists = new ArrayCollection();
-        $this->childPosts = new ArrayCollection();
+        $this->childItems = new ArrayCollection();
         if (null !== $label) {
             $this->label = $label;
         }
@@ -105,24 +105,24 @@ class Directory
     }
 
     /**
-     * @return Post[]|Collection
+     * @return Item[]|Collection
      */
-    public function getChildPosts()
+    public function getChildItems()
     {
-        return $this->childPosts;
+        return $this->childItems;
     }
 
-    public function addChildPost(Post $post)
+    public function addChildItem(Item $item)
     {
-        if (false === $this->childPosts->contains($post)) {
-            $this->childPosts->add($post);
-            $post->setParentList($this);
+        if (false === $this->childItems->contains($item)) {
+            $this->childItems->add($item);
+            $item->setParentList($this);
         }
     }
 
-    public function removeChildPost(Post $post)
+    public function removeChildItem(Item $item)
     {
-        $this->childPosts->removeElement($post);
+        $this->childItems->removeElement($item);
     }
 
     /**

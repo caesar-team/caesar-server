@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Model\Request;
 
-use App\Entity\Post;
+use App\Entity\Item;
 use App\Entity\User;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
-class SharePostRequest
+class ShareItemRequest
 {
     /**
      * @var User[]|Collection
@@ -17,13 +17,13 @@ class SharePostRequest
     protected $users;
 
     /**
-     * @var Post
+     * @var Item
      */
-    protected $post;
+    protected $item;
 
-    public function __construct(Post $post)
+    public function __construct(Item $item)
     {
-        $this->post = $post;
+        $this->item = $item;
         $this->users = new ArrayCollection();
     }
 
@@ -48,10 +48,10 @@ class SharePostRequest
     }
 
     /**
-     * @return Post
+     * @return Item
      */
-    public function getPost(): Post
+    public function getItem(): Item
     {
-        return $this->post;
+        return $this->item;
     }
 }

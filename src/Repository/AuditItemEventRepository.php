@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\Entity\Audit\PostEvent;
+use App\Entity\Audit\ItemEvent;
 use App\Entity\User;
 use App\Model\Query\AuditEventsQuery;
 use App\Model\Response\PaginatedList;
@@ -13,25 +13,25 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 
-class AuditPostEventRepository extends ServiceEntityRepository
+class AuditItemEventRepository extends ServiceEntityRepository
 {
     use PaginatorTrait;
 
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, PostEvent::class);
+        parent::__construct($registry, ItemEvent::class);
     }
 
     public function getEventsByQuery(AuditEventsQuery $query): PaginatedList
     {
         $queryBuilder = $this
             ->createQueryBuilder('event')
-            ->innerJoin('event.post', 'post')
-            ->innerJoin('post.parentList', 'list')
+            ->innerJoin('event.item', 'item')
+            ->innerJoin('item.parentList', 'list')
             ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list')
-            ->leftJoin('post.originalPost', 'sharedPosts')
-            ->leftJoin('sharedPosts.parentList', 'sharedPostList')
-            ->leftJoin(User::class, 'sharedUser', Join::WITH, 'sharedUser.lists = sharedPostList OR sharedUser.inbox = sharedPostList OR sharedUser.trash = sharedPostList')
+            ->leftJoin('item.originalItem', 'sharedItems')
+            ->leftJoin('sharedItems.parentList', 'sharedItemList')
+            ->leftJoin(User::class, 'sharedUser', Join::WITH, 'sharedUser.lists = sharedItemList OR sharedUser.inbox = sharedItemList OR sharedUser.trash = sharedItemList')
             ->where('user.id = :user')
             ->orWhere('sharedUser.id = :user')
             ->setParameter('user', $query->getUser())
@@ -40,17 +40,17 @@ class AuditPostEventRepository extends ServiceEntityRepository
             ->setFirstResult($query->getFirstResult())
         ;
 
-        if (null !== $query->getPost()) {
+        if (null !== $query->getItem()) {
             $queryBuilder
-                ->andWhere('event.post = :post OR post.originalPost = :post')
-                ->setParameter('post', $query->getPost())
+                ->andWhere('event.item = :item OR item.originalItem = :item')
+                ->setParameter('item', $query->getItem())
             ;
         }
 
         if (AuditEventsQuery::TAB_SHARED === $query->getTab()) {
-            $queryBuilder->andWhere('post.originalPost is not null');
+            $queryBuilder->andWhere('item.originalItem is not null');
         } elseif (AuditEventsQuery::TAB_PERSONAL === $query->getTab()) {
-            $queryBuilder->andWhere('post.originalPost is null');
+            $queryBuilder->andWhere('item.originalItem is null');
         }
 
         if ($query->getDateFrom() && $query->getDateTo()) {

@@ -12,11 +12,11 @@ use App\Model\View\CredentialsList\ListView;
 class ListTreeViewFactory
 {
     /**
-     * @var PostViewFactory
+     * @var ItemViewFactory
      */
     private $secretViewFactory;
 
-    public function __construct(PostViewFactory $secretViewFactory)
+    public function __construct(ItemViewFactory $secretViewFactory)
     {
         $this->secretViewFactory = $secretViewFactory;
     }
@@ -66,7 +66,7 @@ class ListTreeViewFactory
     {
         return array_merge(
             array_map([$this, 'createListView'], $directory->getChildLists()->toArray()),
-            array_map([$this->secretViewFactory, 'create'], $directory->getChildPosts()->toArray())
+            array_map([$this->secretViewFactory, 'create'], $directory->getChildItems()->toArray())
         );
     }
 }
