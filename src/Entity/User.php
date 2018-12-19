@@ -134,9 +134,22 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $guest = false;
 
     /**
-     * User constructor.
+     * @var Srp|null
+     *
+     * @ORM\OneToOne(
+     *     targetEntity="App\Entity\Srp",
+     *     orphanRemoval=true,
+     *     cascade={"persist", "remove"}
+     * )
      */
-    public function __construct()
+    protected $srp;
+
+    /**
+     * User constructor.
+     *
+     * @param Srp|null $srp
+     */
+    public function __construct(Srp $srp = null)
     {
         parent::__construct();
         $this->id = Uuid::uuid4();
@@ -145,6 +158,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->trash = Directory::createTrash();
         $this->shares = new ArrayCollection();
         $this->availableShares = new ArrayCollection();
+        if (null !== $srp) {
+            $this->srp = $srp;
+        }
     }
 
     /**
@@ -342,5 +358,10 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setPublicKey(?string $publicKey): void
     {
         $this->publicKey = $publicKey;
+    }
+
+    public function getSrp(): ?Srp
+    {
+        return $this->srp;
     }
 }
