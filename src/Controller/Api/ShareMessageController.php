@@ -10,16 +10,16 @@ use App\Mailer\MailRegistry;
 use App\Model\DTO\ShareMessage;
 use App\Model\Request\ShareSendMessageRequest;
 use App\Share\ShareMessageManager;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Swagger\Annotations as SWG;
 use Sylius\Component\Mailer\Sender\SenderInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use App\Model\Message;
-use Swagger\Annotations as SWG;
-use Nelmio\ApiDocBundle\Annotation\Model;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Annotation\Route;
 
 final class ShareMessageController extends Controller
 {
@@ -82,23 +82,22 @@ final class ShareMessageController extends Controller
      *
      * @param Request $request
      *
-     * @return JsonResponse|Response
+     * @return FormInterface|Response
      */
     public function create(Request $request)
     {
         $message = new ShareMessage();
         $form = $this->createForm(ShareMessageType::class, $message);
 
-        $messageArray = json_decode($request->getContent(), true);
-        $form->submit($messageArray);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $message = $form->getData();
-            $message = $this->shareMessageManager->create($message);
-
-            return new Response($this->shareMessageManager->serialize($message));
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
         }
 
-        return $form;
+        $message = $form->getData();
+        $message = $this->shareMessageManager->create($message);
+
+        return new Response($this->shareMessageManager->serialize($message));
     }
 
     /**
@@ -137,7 +136,7 @@ final class ShareMessageController extends Controller
      * @param Request         $request
      * @param SenderInterface $sender
      *
-     * @return \Symfony\Component\Form\FormInterface
+     * @return FormInterface
      */
     public function sendMessage(string $id, Request $request, SenderInterface $sender)
     {

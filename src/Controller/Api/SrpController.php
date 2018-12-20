@@ -6,16 +6,21 @@ namespace App\Controller\Api;
 
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Factory\View\Srp\SrpPrepareViewFactory;
+use App\Form\Request\Srp\LoginPrepareType;
 use App\Form\Request\Srp\RegistrationType;
+use App\Model\View\Srp\PreparedSrpView;
 use App\Services\SrpHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
-use Swagger\Annotations as SWG;
 
 final class SrpController extends AbstractController
 {
@@ -79,45 +84,83 @@ final class SrpController extends AbstractController
     }
 
     /**
+     * @SWG\Tag(name="Srp")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\Srp\LoginPrepareType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success login prepared",
+     *     @Model(type=\App\Model\View\Srp\PreparedSrpView::class)
+     * )
+     *
+     * @SWG\Response(
+     *     response=400,
+     *     description="Error in user input",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="object",
+     *             property="errors",
+     *             @SWG\Property(
+     *                 type="array",
+     *                 property="email",
+     *                 @SWG\Items(
+     *                     type="string",
+     *                     example="This value already used"
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     *
      * @Route(
-     *     path="/api/srp/login1",
-     *     name="api_srp_login1",
+     *     path="/api/srp/login_prepare",
+     *     name="api_srp_login_prepare",
      *     methods={"POST"}
      * )
      *
      * @param Request                $request
      * @param EntityManagerInterface $entityManager
      * @param SrpHandler             $srpHandler
+     * @param SrpPrepareViewFactory  $viewFactory
      *
-     * @return null
+     * @return PreparedSrpView|FormInterface
      */
-    public function loginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler)
+    public function prepareLoginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler, SrpPrepareViewFactory $viewFactory)
     {
         $email = $request->request->get('email');
         /** @var User $user */
         $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
+        if (null === $user) {
+            throw new BadRequestHttpException('No such user');
+        }
         $srp = $user->getSrp();
+
+        $form = $this->createForm(LoginPrepareType::class, $srp);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
 
         $privateEphemeral = $srpHandler->getRandomSeed();
         $publicEphemeralValue = $srpHandler->generatePublicServerEphemeral($privateEphemeral, $srp->getVerifier());
-
-        $srp->setPublicClientEphemeralValue($request->request->get('publicEphemeralValue'));
         $srp->setPublicServerEphemeralValue($publicEphemeralValue);
         $srp->setPrivateServerEphemeralValue($privateEphemeral);
 
         $entityManager->persist($srp);
         $entityManager->flush();
 
-        return [
-            'seed' => $srp->getSeed(),
-            'publicEphemeralValue' => $publicEphemeralValue,
-        ];
+        return $viewFactory->create($srp);
     }
 
     /**
      * @Route(
-     *     path="/api/srp/login2",
-     *     name="api_srp_login2",
+     *     path="/api/srp/login",
+     *     name="api_srp_login",
      *     methods={"POST"}
      * )
      *
