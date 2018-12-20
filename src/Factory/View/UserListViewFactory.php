@@ -26,6 +26,7 @@ class UserListViewFactory
             $view->name = $user->getUsername();
             $view->avatar = null === $user->getAvatar() ? null : $user->getAvatar()->getLink();
             $view->publicKey = $user->getPublicKey();
+            $view->email = $user->getEmail();
 
             $userViewCollection[] = $view;
         }
