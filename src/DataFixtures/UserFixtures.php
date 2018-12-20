@@ -40,6 +40,7 @@ class UserFixtures extends AbstractFixture implements FixtureInterface
         $user = new User();
         $user->setUsername($name);
         $user->setEmail("$name@4xxi.com");
+        $user->setDomain('4xxi.com');
         $user->setSuperAdmin(true);
         $user->setEnabled(true);
         $user->setPlainPassword(uniqid('pass_', true));
