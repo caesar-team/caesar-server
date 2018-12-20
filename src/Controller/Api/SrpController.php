@@ -8,9 +8,12 @@ use App\Entity\Srp;
 use App\Entity\User;
 use App\Factory\View\Srp\SrpPrepareViewFactory;
 use App\Form\Request\Srp\LoginPrepareType;
+use App\Form\Request\Srp\LoginType;
 use App\Form\Request\Srp\RegistrationType;
+use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
 use App\Services\SrpHandler;
+use App\Services\SrpUserManager;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -18,9 +21,9 @@ use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 
 final class SrpController extends AbstractController
 {
@@ -158,58 +161,76 @@ final class SrpController extends AbstractController
     }
 
     /**
+     * @SWG\Tag(name="Srp")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\Srp\LoginPrepareType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success login prepared",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="string",
+     *             property="secondMatcher",
+     *             example="129466c0cc982d254c6712e0a5155b1a7fed06eea59b3d7b4620442e54d38ec2"
+     *         )
+     *     )
+     * )
+     *
+     * @SWG\Response(
+     *     response=400,
+     *     description="Error in user input",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="object",
+     *             property="errors",
+     *             @SWG\Property(
+     *                 type="array",
+     *                 property="email",
+     *                 @SWG\Items(
+     *                     type="string",
+     *                     example="This value should not be blank."
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     *
      * @Route(
      *     path="/api/srp/login",
      *     name="api_srp_login",
      *     methods={"POST"}
      * )
      *
-     * @param Request                $request
-     * @param EntityManagerInterface $entityManager
-     * @param SrpHandler             $srpHandler
+     * @param Request        $request
+     * @param SrpUserManager $srpUserManager
      *
-     * @return null
+     * @return array|FormInterface
      */
-    public function login2Action(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler)
+    public function loginAction(Request $request, SrpUserManager $srpUserManager)
     {
-        $email = $request->request->get('email');
-        /** @var User $user */
-        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
-        $srp = $user->getSrp();
-
-        $S = $srpHandler->generateSessionServer(
-            $srp->getPublicClientEphemeralValue(),
-            $srp->getPublicServerEphemeralValue(),
-            $srp->getPrivateServerEphemeralValue(),
-            $srp->getVerifier()
-        );
-
-        $matcher = $srpHandler->generateFirstMatcher(
-            $srp->getPublicClientEphemeralValue(),
-            $srp->getPublicServerEphemeralValue(),
-            $S
-        );
-
-        if ($matcher !== $request->request->get('matcher')) {
-            throw new BadCredentialsException('Matchers are not equals');
+        $loginRequest = new LoginRequest();
+        $form = $this->createForm(LoginType::class, $loginRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
         }
 
-//        dump($S);
-        $k = $srpHandler->generateSessionKey($S); //This is session key
-//        dump($k);
-        $user->setToken($k);
-        $entityManager->flush();
-//        $user->setSessionKey($k);
-//        dump($k);
+        $sessionMatcher = $srpUserManager->getMatcherSession($loginRequest);
 
-        $m2 = $srpHandler->generateSecondMatcher(
-            $srp->getPublicClientEphemeralValue(),
-            $matcher,
-            $S
-        );
+        if ($sessionMatcher->getMatcher() !== $loginRequest->getMatcher()) {
+            throw new BadRequestHttpException('Matchers are not equals');
+        }
+
+        $secondMatcher = $srpUserManager->generateSecondMatcher($loginRequest, $sessionMatcher);
 
         return [
-            'matcher2' => $m2,
+            'secondMatcher' => $secondMatcher,
         ];
     }
 
@@ -219,6 +240,8 @@ final class SrpController extends AbstractController
      *     name="srp_form",
      *     methods={"GET"}
      * )
+     *
+     * @return Response
      */
     public function srpFormAction()
     {

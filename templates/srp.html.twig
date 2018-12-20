@@ -29,7 +29,7 @@
     <span>
         Login
     </span>
-    <form method="POST" action="{{ path('api_srp_login1') }}" id="login">
+    <form method="POST" action="{{ path('api_srp_login_prepare') }}" id="login">
         <div>
             <label>
                 Email:
@@ -60,7 +60,7 @@
             console.log(data);
             let matcher2 = srp.generateM2(data.A, data.matcher, data.S);
             if (matcher2 !== data.matcher2) {
-                alert('error, server is compromised');
+                alert('Invalid password');
                 return;
             }
 
@@ -77,13 +77,13 @@
             data.S = S;
             data.matcher = M1;
             axios.post(
-                '/api/srp/login2', {
+                '/api/srp/login', {
                     'matcher': M1,
                     'email': data.email
                 })
                 .then(function (response) {
                     console.log(response);
-                    data.matcher2 = response.data.matcher2;
+                    data.matcher2 = response.data.secondMatcher;
 
                     generateSession(data);
                 })
