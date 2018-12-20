@@ -7,22 +7,22 @@ namespace App\Controller\Api;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use App\Factory\View\CreatedItemViewFactory;
-use App\Factory\View\ListTreeViewFactory;
 use App\Factory\View\ItemListViewFactory;
 use App\Factory\View\ItemViewFactory;
+use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
 use App\Form\Request\CreateItemType;
-use App\Form\Request\ShareItemRequestType;
-use App\Model\Query\ItemListQuery;
 use App\Form\Request\EditItemType;
+use App\Form\Request\Invite\InviteCollectionRequestType;
 use App\Form\Request\MoveItemType;
-use App\Model\Request\ShareItemRequest;
+use App\Model\Query\ItemListQuery;
+use App\Model\Request\InviteCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
-use App\Model\View\CredentialsList\ListView;
 use App\Model\View\CredentialsList\ItemView;
-use App\Security\ListVoter;
+use App\Model\View\CredentialsList\ListView;
 use App\Security\ItemVoter;
-use App\Services\SharesHandler;
+use App\Security\ListVoter;
+use App\Services\InviteHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -354,13 +354,13 @@ final class ItemController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @param Item          $item
-     * @param Request       $request
-     * @param SharesHandler $sharesHandler
+     * @param Item                   $item
+     * @param Request                $request
+     * @param EntityManagerInterface $entityManager
      *
      * @return array|FormInterface
      */
-    public function editItemAction(Item $item, Request $request, SharesHandler $sharesHandler)
+    public function editItemAction(Item $item, Request $request, EntityManagerInterface $entityManager)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
         if (null !== $item->getOriginalItem()) {
@@ -373,7 +373,8 @@ final class ItemController extends AbstractController
             return $form;
         }
 
-        $sharesHandler->saveItemWithShares($item);
+        $entityManager->persist($item);
+        $entityManager->flush();
 
         return [
             'lastUpdated' => $item->getLastUpdated(),
@@ -386,7 +387,7 @@ final class ItemController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\ShareItemRequestType::class)
+     *     @Model(type=\App\Form\Request\Invite\InviteCollectionRequestType::class)
      * )
      * @SWG\Response(
      *     response=204,
@@ -402,7 +403,7 @@ final class ItemController extends AbstractController
      *             property="errors",
      *             @SWG\Property(
      *                 type="array",
-     *                 property="userIds",
+     *                 property="userId",
      *                 @SWG\Items(
      *                     type="string",
      *                     example="This value is not valid"
@@ -425,29 +426,29 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/item/{id}/share",
-     *     name="api_share_item",
-     *     methods={"PATCH"}
+     *     path="/api/invite/{id}",
+     *     name="api_invite_to_item",
+     *     methods={"POST"}
      * )
      *
      * @param Item          $item
      * @param Request       $request
-     * @param SharesHandler $sharesHandler
+     * @param InviteHandler $inviteHandler
      *
-     * @return FormInterface|JsonResponse
+     * @return FormInterface|null
      */
-    public function shareItemAction(Item $item, Request $request, SharesHandler $sharesHandler)
+    public function shareItemAction(Item $item, Request $request, InviteHandler $inviteHandler)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-        $shareItemRequest = new ShareItemRequest($item);
 
-        $form = $this->createForm(ShareItemRequestType::class, $shareItemRequest);
+        $inviteCollectionRequest = new InviteCollectionRequest($item);
+        $form = $this->createForm(InviteCollectionRequestType::class, $inviteCollectionRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        $sharesHandler->shareItem($shareItemRequest);
+        $inviteHandler->inviteToItem($inviteCollectionRequest);
 
         return null;
     }
