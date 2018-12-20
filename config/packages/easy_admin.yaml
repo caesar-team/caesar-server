@@ -23,5 +23,3 @@ easy_admin:
           - username
           - email
           - domain
-          - encryptedPrivateKey
-          - publicKey
