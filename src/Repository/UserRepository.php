@@ -54,7 +54,11 @@ class UserRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('user');
         $qb
             ->where($qb->expr()->neq('user', ':userId'))
-            ->andWhere('user.email LIKE :domain OR user.domain = :user_domain')
+            ->andWhere($qb->expr()->orX(
+                $qb->expr()->like('user.email', ':domain'),
+                $qb->expr()->like('user.domain', ':user_domain')
+            ))
+            ->andWhere($qb->expr()->isNotNull('user.publicKey'))
             ->setParameter('domain', '%@'.$query->getUser()->getUserDomain())
             ->setParameter('user_domain', $query->getUser()->getUserDomain())
             ->setParameter('userId', $query->getUser())

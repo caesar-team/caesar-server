@@ -13,7 +13,7 @@ easy_admin:
           - username
           - email
           - lastLogin
-          - userDomain
+          - domain
           - guest
           - enabled
       form:
@@ -22,6 +22,4 @@ easy_admin:
           - guest
           - username
           - email
-          - userDomain
-          - encryptedPrivateKey
-          - publicKey
+          - domain
