@@ -16,6 +16,7 @@ use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserView;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -56,6 +57,37 @@ final class UserController extends AbstractController
         $user = $this->getUser();
 
         return $serializer->normalize($viewFactory->create($user), 'array', ['groups' => ['user_read']]);
+    }
+
+    /**
+     * @SWG\Tag(name="User")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="User keys information response",
+     *     @Model(type="\App\Model\View\User\SelfUserInfoView", groups={"user_read"})
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/keys/{email}",
+     *     name="api_user_get_keys",
+     *     methods={"GET"}
+     * )
+     * @ParamConverter("user", options={"mapping": {"email": "email"}})
+     *
+     * @param User                           $user
+     * @param UserKeysViewFactory            $viewFactory
+     * @param SerializerInterface|Serializer $serializer
+     *
+     * @return SelfUserInfoView|array
+     */
+    public function userKeysAction(User $user, UserKeysViewFactory $viewFactory, SerializerInterface $serializer)
+    {
+        return $serializer->normalize($viewFactory->create($user), 'array', ['groups' => ['key_read']]);
     }
 
     /**
