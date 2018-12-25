@@ -14,11 +14,11 @@ class ListTreeViewFactory
     /**
      * @var ItemViewFactory
      */
-    private $secretViewFactory;
+    private $itemViewFactory;
 
-    public function __construct(ItemViewFactory $secretViewFactory)
+    public function __construct(ItemViewFactory $itemViewFactory)
     {
-        $this->secretViewFactory = $secretViewFactory;
+        $this->itemViewFactory = $itemViewFactory;
     }
 
     /**
@@ -66,7 +66,7 @@ class ListTreeViewFactory
     {
         return array_merge(
             array_map([$this, 'createListView'], $directory->getChildLists()->toArray()),
-            array_map([$this->secretViewFactory, 'create'], $directory->getChildItems()->toArray())
+            array_map([$this->itemViewFactory, 'create'], $directory->getChildItems()->toArray())
         );
     }
 }

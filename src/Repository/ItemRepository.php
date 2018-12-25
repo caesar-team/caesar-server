@@ -37,8 +37,7 @@ class ItemRepository extends EntityRepository
             ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list')
             ->where('user.id = :user')
             ->andWhere('item.favorite = true')
-            ->setParameter('user', $user->getId())
-        ;
+            ->setParameter('user', $user->getId());
 
         return $queryBuilder->getQuery()->getResult();
     }
