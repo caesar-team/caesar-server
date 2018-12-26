@@ -6,6 +6,8 @@ namespace App\Controller\Api;
 
 use App\Entity\Share;
 use App\Factory\View\Share\ShareViewFactory;
+use App\Form\Request\BatchCreateShareType;
+use App\Form\Request\BatchEditShareType;
 use App\Form\Request\CreateShareType;
 use App\Form\Request\EditShareType;
 use App\Security\Voter\ShareVoter;
@@ -76,9 +78,76 @@ final class ShareController extends AbstractController
 
         $form->submit($request->request->all());
         if ($form->isValid()) {
-            $share = $shareManager->updateShare($share, $form->get('email')->getData());
+            $share = $shareManager->updateShare($share, $form->get('user')->getData());
 
             return $serializer->normalize($shareViewFactory->create($share), 'array', ['groups' => 'share_create']);
+        }
+
+        return $form;
+    }
+
+    /**
+     * Batch create share by email.
+     *
+     * @SWG\Tag(name="Share")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type="\App\Form\Request\BatchCreateShareType")
+     * )
+     * @SWG\Response(
+     *     response=201,
+     *     description="Success share created",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="\App\Model\View\Share\ShareView", groups={"share_create"})
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns share errors",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="object",
+     *             property="errors",
+     *             @Model(type="\App\Form\Request\BatchCreateShareType")
+     *         )
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route("/api/shares", name="api_share_batch_create", methods={"POST"})
+     *
+     * @param Request                        $request
+     * @param ShareManager                   $shareManager
+     * @param ShareViewFactory               $shareViewFactory
+     * @param SerializerInterface|Serializer $serializer
+     *
+     * @return array|\Symfony\Component\Form\FormInterface
+     */
+    public function batchCreate(
+        Request $request,
+        ShareManager $shareManager,
+        ShareViewFactory $shareViewFactory,
+        SerializerInterface $serializer
+    ) {
+        $form = $this->createForm(BatchCreateShareType::class);
+
+        $form->submit($request->request->all());
+        if ($form->isValid()) {
+            $shares = [];
+            foreach ($form->get('shares') as $item) {
+                $share = $shareManager->updateShare($item->getData(), $item->get('user')->getData());
+
+                $shares[] = $serializer->normalize($shareViewFactory->create($share), 'array', ['groups' => 'share_create']);
+            }
+
+            return $shares;
         }
 
         return $form;
@@ -228,6 +297,80 @@ final class ShareController extends AbstractController
             $entityManager->flush();
 
             return $serializer->normalize($shareViewFactory->create($share), 'array', ['groups' => 'share_create']);
+        }
+
+        return $form;
+    }
+
+    /**
+     * Batch edit shares.
+     *
+     * @SWG\Tag(name="Share")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type="\App\Form\Request\BatchEditShareType")
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success shares updated",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="\App\Model\View\Share\ShareView", groups={"share_edit"})
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns share errors",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="object",
+     *             property="errors",
+     *             @Model(type="\App\Form\Request\BatchEditShareType")
+     *         )
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not owner of this share"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such share"
+     * )
+     *
+     * @Route("/api/shares", name="api_batch_shares_edit", methods={"PATCH"})
+     *
+     * @param Request             $request
+     * @param ShareManager        $shareManager
+     * @param ShareViewFactory    $shareViewFactory
+     * @param SerializerInterface $serializer
+     *
+     * @return \Symfony\Component\Form\FormInterface
+     */
+    public function batchEdit(
+        Request $request,
+        ShareManager $shareManager,
+        ShareViewFactory $shareViewFactory,
+        SerializerInterface $serializer
+    ) {
+        $form = $this->createForm(BatchEditShareType::class);
+
+        $form->submit($request->request->all());
+        if ($form->isValid()) {
+            $shares = [];
+            foreach ($form->get('shares') as $item) {
+                $share = $shareManager->editShare($item->get('id')->getData(), $item->getData());
+
+                $shares[] = $serializer->normalize($shareViewFactory->create($share), 'array', ['groups' => 'share_create']);
+            }
+
+            return $shares;
         }
 
         return $form;

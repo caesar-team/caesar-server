@@ -102,4 +102,12 @@ class Share
     {
         $this->sharedItems->removeElement($shareItem);
     }
+
+    /**
+     * @param ShareItem[]|Collection $sharedItems
+     */
+    public function setSharedItems($sharedItems): void
+    {
+        $this->sharedItems = $sharedItems;
+    }
 }
