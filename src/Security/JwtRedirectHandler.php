@@ -15,7 +15,6 @@ class JwtRedirectHandler implements AuthenticationSuccessHandlerInterface
 {
     /** @var JWTTokenManagerInterface */
     private $jwtTokenManager;
-
     /** @var FrontendUriHandler */
     private $frontendUriHandler;
 
@@ -38,7 +37,7 @@ class JwtRedirectHandler implements AuthenticationSuccessHandlerInterface
     {
         $user = $token->getUser();
         $jwt = $this->jwtTokenManager->create($user);
-        $url = $this->generateFrontendUri($request, $jwt, $user);
+        $url = $this->generateFrontendUri($request, $jwt);
 
         return new RedirectResponse($url);
     }
@@ -50,7 +49,7 @@ class JwtRedirectHandler implements AuthenticationSuccessHandlerInterface
      *
      * @return string
      */
-    private function generateFrontendUri(Request $request, string $jwt, User $user): string
+    private function generateFrontendUri(Request $request, string $jwt): string
     {
         $uri = $this->frontendUriHandler->extractUri($request);
 

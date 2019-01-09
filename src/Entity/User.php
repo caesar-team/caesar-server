@@ -12,12 +12,14 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * User.
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
+ * @UniqueEntity(fields={"email"})
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 {
@@ -134,9 +136,27 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $guest = false;
 
     /**
-     * User constructor.
+     * @var Srp|null
+     *
+     * @ORM\OneToOne(
+     *     targetEntity="App\Entity\Srp",
+     *     orphanRemoval=true,
+     *     cascade={"persist", "remove"}
+     * )
      */
-    public function __construct()
+    protected $srp;
+
+    /**
+     * @var bool
+     */
+    private $credentialsNonExpired = true;
+
+    /**
+     * User constructor.
+     *
+     * @param Srp|null $srp
+     */
+    public function __construct(Srp $srp = null)
     {
         parent::__construct();
         $this->id = Uuid::uuid4();
@@ -145,6 +165,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->trash = Directory::createTrash();
         $this->shares = new ArrayCollection();
         $this->availableShares = new ArrayCollection();
+        if (null !== $srp) {
+            $this->srp = $srp;
+        }
     }
 
     /**
@@ -342,5 +365,20 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setPublicKey(?string $publicKey): void
     {
         $this->publicKey = $publicKey;
+    }
+
+    public function getSrp(): ?Srp
+    {
+        return $this->srp;
+    }
+
+    public function isCredentialsNonExpired(): bool
+    {
+        return $this->credentialsNonExpired;
+    }
+
+    public function setCredentialNonExpired(bool $flag)
+    {
+        $this->credentialsNonExpired = $flag;
     }
 }

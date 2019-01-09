@@ -3,7 +3,9 @@ security:
         FOS\UserBundle\Model\UserInterface: bcrypt
         Symfony\Component\Security\Core\User\User: bcrypt
     providers:
-        fos_userbundle:
+#        token_provider:
+#            id: App\Security\TokenUserProvider
+        fos.user.provider:
             id: fos_user.user_provider.username_email
         hwi_oauth.user.provider:
             id: hwi_oauth.user.provider
@@ -31,21 +33,26 @@ security:
             provider: in_memory
         share:
             pattern: "^/api/share/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-            provider:  fos_userbundle
+            provider:  fos.user.provider
             stateless: true
             anonymous: ~
             logout: ~
             guard:
                 authenticators:
                     - App\Security\ShareAuthenticator
+        srp:
+            pattern: ^/api/srp
+            stateless: true
+            context: srp
+            anonymous: true
         api:
             pattern: ^/api
-            provider:  fos_userbundle
+            provider: fos.user.provider
             stateless: true
             anonymous: ~
             two_factor:
                 check_path: /api/2fa_check
-                provider: fos_userbundle
+                provider: fos.user.provider
                 success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
                 failure_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
                 authentication_required_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
@@ -55,7 +62,7 @@ security:
         main:
             pattern: ^/
             form_login:
-                provider: fos_userbundle
+                provider: fos.user.provider
             logout: true
             stateless: false
             anonymous: true
@@ -70,6 +77,7 @@ security:
                 success_handler: App\Security\JwtRedirectHandler
     access_control:
         - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api/srp, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/doc, roles: [ROLE_ADMIN]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}
