@@ -45,7 +45,6 @@ class SrpUserManager
         );
 
         return new SessionMatcher($serverSession, $matcher);
-//        return [$serverSession, $matcher];
     }
 
     public function generateSecondMatcher(LoginRequest $request, SessionMatcher $sessionMatcher): string

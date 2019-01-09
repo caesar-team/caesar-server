@@ -7,6 +7,7 @@ namespace App\Tests;
 use App\DataFixtures\UserFixtures;
 use App\Entity\User;
 use Doctrine\ORM\EntityRepository;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Client as SymfonyClient;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase as SymfonyTestCase;
 use Symfony\Component\HttpFoundation\Response;
@@ -70,9 +71,12 @@ class WebTestCase extends SymfonyTestCase
     {
         $user = $this->getRepository(User::class)->findOneBy(['username' => $username]);
 
+        $jwtTokenManager = self::$kernel->getContainer()->get(JWTTokenManagerInterface::class);
+        $token = $jwtTokenManager->create($user);
+
         /** @var Client $client */
         $client = static::createClient();
-        $client->setServerParameter('HTTP_Authorization', sprintf('Bearer %s', $user->getToken()));
+        $client->setServerParameter('HTTP_Authorization', sprintf('Bearer %s', $token));
 
         return $client;
     }

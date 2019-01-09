@@ -56,7 +56,7 @@
     <script type="text/javascript">
         var srp = new srp();
 
-        function generateSession(data) {
+        function generateTemporarySession(data) {
             console.log(data);
             let matcher2 = srp.generateM2(data.A, data.matcher, data.S);
             if (matcher2 !== data.matcher2) {
@@ -65,8 +65,23 @@
             }
 
             let sessionKey = srp.generateK(data.S);
-
             console.log(sessionKey);
+
+            axios.get(
+                '/api/srp/jwt', {
+                    'headers': {
+                        Authorization: 'Bearer '+sessionKey
+                    }
+                })
+                .then(function (response) {
+                    console.log(response);
+
+                    alert('JWT: '  + response.data.jwt);
+
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
         }
 
         function generateMatcher(data) {
@@ -85,7 +100,7 @@
                     console.log(response);
                     data.matcher2 = response.data.secondMatcher;
 
-                    generateSession(data);
+                    generateTemporarySession(data);
                 })
                 .catch(function (error) {
                     console.log(error);
