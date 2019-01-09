@@ -147,20 +147,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $srp;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(nullable=true)
-     */
-    protected $token;
-
-    /**
-     * @var \DateTimeImmutable|null
-     *
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
-    protected $tokenUpdated;
-
-    /**
      * @var bool
      */
     private $credentialsNonExpired = true;
@@ -384,31 +370,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getSrp(): ?Srp
     {
         return $this->srp;
-    }
-
-    /**
-     * @return string
-     */
-    public function getToken(): string
-    {
-        return $this->token;
-    }
-
-    /**
-     * @param string $token
-     */
-    public function setToken(string $token): void
-    {
-        $this->tokenUpdated = new \DateTimeImmutable();
-        $this->token = $token;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function getTokenUpdated(): ?\DateTimeImmutable
-    {
-        return $this->tokenUpdated;
     }
 
     public function isCredentialsNonExpired(): bool
