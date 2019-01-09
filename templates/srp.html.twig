@@ -58,8 +58,8 @@
 
         function generateTemporarySession(data) {
             console.log(data);
-            let matcher2 = srp.generateM2(data.A, data.matcher, data.S);
-            if (matcher2 !== data.matcher2) {
+            let secondMatcher = srp.generateM2(data.A, data.matcher, data.S);
+            if (secondMatcher !== data.secondMatcher) {
                 alert('Invalid password');
                 return;
             }
@@ -67,21 +67,9 @@
             let sessionKey = srp.generateK(data.S);
             console.log(sessionKey);
 
-            axios.get(
-                '/api/srp/jwt', {
-                    'headers': {
-                        Authorization: 'Bearer '+sessionKey
-                    }
-                })
-                .then(function (response) {
-                    console.log(response);
+            let jwt = data.jwt;
 
-                    alert('JWT: '  + response.data.jwt);
-
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
+            alert('JWT: '  + jwt);
         }
 
         function generateMatcher(data) {
@@ -98,7 +86,8 @@
                 })
                 .then(function (response) {
                     console.log(response);
-                    data.matcher2 = response.data.secondMatcher;
+                    data.secondMatcher = response.data.secondMatcher;
+                    data.jwt = response.data.jwt;
 
                     generateTemporarySession(data);
                 })

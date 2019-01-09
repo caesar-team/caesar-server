@@ -178,6 +178,11 @@ final class SrpController extends AbstractController
      *             type="string",
      *             property="secondMatcher",
      *             example="129466c0cc982d254c6712e0a5155b1a7fed06eea59b3d7b4620442e54d38ec2"
+     *         ),
+     *         @SWG\Property(
+     *             type="string",
+     *             property="jwt",
+     *             example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE1NDcwMjU4NjAsImV4cCI6MTU0NzExMjI2MCwicm9sZXMiOlsiUk9MRV9VU0VSIl0sInVzZXJuYW1lIjoiaXBvcG92KzZANHh4aS5jb20ifQ.WTL0Wsd6eQieq2xlukeRZvyoRW6dMhoXqFW7JTXia9-VZIHaWoTGPWZytOlY_VOhJ2NGYZ5LI3XD-_wtAmYpgUTutiV5DVl-zGrVmzEKtb2VagNggj0SQeo-4gSgTlrDxZW1iP3VU_FAN8-DCWion7M2WJxhQ1UHZaUALTdLVOOE-AWPWA9-ue5b5XgQ6-noaa6XtaI_vhnyR6C39O0OVV0VgfqXiKuhzknGWr5WrLYgFM1CGso3OIltvY8LZZqlhmBXF5hV7hgTKhPdWUxrMNLmJNAwhSLoWpbZGDuJzRCqC8p5wDv8Q6LSDFK5iG0Vueg5VBecGhVuyhVA9qaVHJRK1amfFweTSQ4RHd3Ly11FsEoUn5yB_sRlFHRyiVswvbjfkVaLusYy8RosOnCm3r8B_FR08ylCtDdEvj56EAag9W3dA1VCG8zcEbUwTqwsnPC97teCUbEseP2qpq-8Wic8DViuRv9z4x5yFrio1R7sCz4-5TI4lmwE002GbN_whd5YHDrRsdu6_9RxR7iuI_9OOdLLe7iVGtWd1RE_NqaOv-ymD5mhKDnZlOjXgsKbhDrvaTZ9s7v4l9H2EmJsTpjNRnaQ6yNmtYMyWR8UQP0cilwoHBSwo3L70kVwfMu0T4WTezd8hgTO6VoX9UG8tLpNcNaoMt6et8Rdsp7uQQU"
      *         )
      *     )
      * )
@@ -208,12 +213,13 @@ final class SrpController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request        $request
-     * @param SrpUserManager $srpUserManager
+     * @param Request                  $request
+     * @param SrpUserManager           $srpUserManager
+     * @param JWTTokenManagerInterface $jwtManager
      *
      * @return array|FormInterface
      */
-    public function loginAction(Request $request, SrpUserManager $srpUserManager)
+    public function loginAction(Request $request, SrpUserManager $srpUserManager, JWTTokenManagerInterface $jwtManager)
     {
         $loginRequest = new LoginRequest();
         $form = $this->createForm(LoginType::class, $loginRequest);
@@ -232,61 +238,7 @@ final class SrpController extends AbstractController
 
         return [
             'secondMatcher' => $secondMatcher,
-        ];
-    }
-
-    /**
-     * @SWG\Tag(name="Srp")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="Success login prepared",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="string",
-     *             property="jwt",
-     *             example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE1NDcwMjU4NjAsImV4cCI6MTU0NzExMjI2MCwicm9sZXMiOlsiUk9MRV9VU0VSIl0sInVzZXJuYW1lIjoiaXBvcG92KzZANHh4aS5jb20ifQ.WTL0Wsd6eQieq2xlukeRZvyoRW6dMhoXqFW7JTXia9-VZIHaWoTGPWZytOlY_VOhJ2NGYZ5LI3XD-_wtAmYpgUTutiV5DVl-zGrVmzEKtb2VagNggj0SQeo-4gSgTlrDxZW1iP3VU_FAN8-DCWion7M2WJxhQ1UHZaUALTdLVOOE-AWPWA9-ue5b5XgQ6-noaa6XtaI_vhnyR6C39O0OVV0VgfqXiKuhzknGWr5WrLYgFM1CGso3OIltvY8LZZqlhmBXF5hV7hgTKhPdWUxrMNLmJNAwhSLoWpbZGDuJzRCqC8p5wDv8Q6LSDFK5iG0Vueg5VBecGhVuyhVA9qaVHJRK1amfFweTSQ4RHd3Ly11FsEoUn5yB_sRlFHRyiVswvbjfkVaLusYy8RosOnCm3r8B_FR08ylCtDdEvj56EAag9W3dA1VCG8zcEbUwTqwsnPC97teCUbEseP2qpq-8Wic8DViuRv9z4x5yFrio1R7sCz4-5TI4lmwE002GbN_whd5YHDrRsdu6_9RxR7iuI_9OOdLLe7iVGtWd1RE_NqaOv-ymD5mhKDnZlOjXgsKbhDrvaTZ9s7v4l9H2EmJsTpjNRnaQ6yNmtYMyWR8UQP0cilwoHBSwo3L70kVwfMu0T4WTezd8hgTO6VoX9UG8tLpNcNaoMt6et8Rdsp7uQQU"
-     *         )
-     *     )
-     * )
-     *
-     * @SWG\Response(
-     *     response=400,
-     *     description="Error in user input",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="object",
-     *             property="errors",
-     *             @SWG\Property(
-     *                 type="array",
-     *                 property="email",
-     *                 @SWG\Items(
-     *                     type="string",
-     *                     example="This value should not be blank."
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     *
-     * @Route(
-     *     path="/api/srp/jwt",
-     *     name="api_srp_get_jwt",
-     *     methods={"GET"}
-     * )
-     *
-     * @param JWTTokenManagerInterface $JWTManager
-     *
-     * @return array|FormInterface
-     */
-    public function getJWTAction(JWTTokenManagerInterface $JWTManager)
-    {
-        $user = $this->getUser();
-
-        return [
-            'jwt' => $JWTManager->create($user),
+            'jwt' => $jwtManager->create($loginRequest->getUser()),
         ];
     }
 

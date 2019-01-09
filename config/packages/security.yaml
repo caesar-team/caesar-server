@@ -3,8 +3,8 @@ security:
         FOS\UserBundle\Model\UserInterface: bcrypt
         Symfony\Component\Security\Core\User\User: bcrypt
     providers:
-        token_provider:
-            id: App\Security\TokenUserProvider
+#        token_provider:
+#            id: App\Security\TokenUserProvider
         fos.user.provider:
             id: fos_user.user_provider.username_email
         hwi_oauth.user.provider:
@@ -42,12 +42,9 @@ security:
                     - App\Security\ShareAuthenticator
         srp:
             pattern: ^/api/srp
-            provider: token_provider
             stateless: true
+            context: srp
             anonymous: true
-            guard:
-                authenticators:
-                    - App\Security\Guard\TokenAuthenticator
         api:
             pattern: ^/api
             provider: fos.user.provider
@@ -81,7 +78,6 @@ security:
     access_control:
         - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/srp, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
-        - { path: ^/api/srp/jwt, roles: [ROLE_USER]}
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/doc, roles: [ROLE_ADMIN]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}
