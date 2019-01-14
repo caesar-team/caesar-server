@@ -13,6 +13,8 @@ use Symfony\Component\Security\Core\Security;
 
 class SignatureSubscriber implements EventSubscriberInterface
 {
+    private const SIGNATURE_ROUTE = '/api';
+
     /**
      * @var Security
      */
@@ -42,6 +44,11 @@ class SignatureSubscriber implements EventSubscriberInterface
     public function onKernelRequest(GetResponseEvent $event)
     {
         $request = $event->getRequest();
+
+        if (false === strpos($request->getRequestUri(), self::SIGNATURE_ROUTE)) {
+            return;
+        }
+
         if (('false' === getenv('AVAILABLE_REQUEST_SIGNATURE') && 'false' === getenv('STRICT_AUDIT_TRAIL'))
             || $this->requestVerifier->verifyRequest($request, $this->getPublicKey())
         ) {
