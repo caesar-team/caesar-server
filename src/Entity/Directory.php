@@ -74,7 +74,7 @@ class Directory
 
     public static function createTrash()
     {
-        $trashList = new self('TRASH');
+        $trashList = new self('trash');
         $trashList->type = NodeEnumType::TYPE_TRASH;
 
         return $trashList;
@@ -82,7 +82,7 @@ class Directory
 
     public static function createRootList()
     {
-        $trashList = new self('LISTS');
+        $trashList = new self('lists');
         $trashList->type = NodeEnumType::TYPE_LIST;
 
         return $trashList;
@@ -90,7 +90,7 @@ class Directory
 
     public static function createInbox()
     {
-        $trashList = new self('INBOX');
+        $trashList = new self('inbox');
         $trashList->type = NodeEnumType::TYPE_LIST;
 
         return $trashList;
