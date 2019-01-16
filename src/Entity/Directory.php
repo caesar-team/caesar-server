@@ -37,7 +37,7 @@ class Directory
     /**
      * @var Directory|null
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childLists", cascade={"remove"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childLists")
      */
     protected $parentList;
 
