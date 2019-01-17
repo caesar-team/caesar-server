@@ -21,6 +21,7 @@ RUN composer install --prefer-dist --no-progress --no-suggest --no-interaction -
 FROM base AS release
 # copy production vendors
 COPY --from=dependencies /var/www/html/vendor ./vendor
+RUN apt-get install -y libgpgme11-dev && pecl install gnupg && docker-php-ext-enable gnupg
 COPY . .
 COPY entrypoint.sh /usr/local/bin/
 COPY ./www.conf /usr/local/etc/php-fpm.d/
