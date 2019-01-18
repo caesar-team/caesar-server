@@ -72,6 +72,7 @@ class WebTestCase extends SymfonyTestCase
         $user = $this->getRepository(User::class)->findOneBy(['username' => $username]);
 
         $jwtTokenManager = self::$kernel->getContainer()->get(JWTTokenManagerInterface::class);
+        $user->setGoogleAuthenticatorSecret(null); //need to workaround 2fa
         $token = $jwtTokenManager->create($user);
 
         /** @var Client $client */
