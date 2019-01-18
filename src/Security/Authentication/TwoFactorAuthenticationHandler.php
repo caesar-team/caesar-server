@@ -22,6 +22,7 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
      * @var JWTEncoderInterface
      */
     private $jwtEncoder;
+
     /**
      * @var TrustedDeviceTokenStorage
      */
@@ -70,6 +71,6 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
      */
     public function onAuthenticationRequired(Request $request, TokenInterface $token): Response
     {
-        return new JsonResponse([TwoFactorInProgressVoter::CHECK_KEY_NAME => true], Response::HTTP_UNAUTHORIZED);
+        return new JsonResponse([TwoFactorInProgressVoter::CHECK_KEY_NAME => TwoFactorInProgressVoter::FLAG_NOT_PASSED], Response::HTTP_UNAUTHORIZED);
     }
 }
