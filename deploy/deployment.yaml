@@ -1,0 +1,130 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+    name: caesarapp-server
+    namespace: default
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            workload.user.cattle.io/workloadselector: deployment-default-caesar
+    strategy:
+        rollingUpdate:
+            maxSurge: 1
+            maxUnavailable: 0
+        type: RollingUpdate
+    template:
+        metadata:
+            annotations:
+                field.cattle.io/ports: '[[{"containerPort":9000,"dnsName":"caesar-nodeport","kind":"NodePort","name":"9000tcp01","protocol":"TCP","sourcePort":0}],[{"containerPort":80,"dnsName":"caesarapp-server-nodeport","kind":"NodePort","name":"80tcp01","protocol":"TCP","sourcePort":0}]]'
+            creationTimestamp: null
+            labels:
+                app: caesarapp-server
+                com.centurylinklabs.watchtower.enable: "true"
+                workload.user.cattle.io/workloadselector: deployment-default-caesar
+        spec:
+            containers:
+            - env:
+              - name: ALLOW_FRONT_REDIRECT_PATTERN
+                value: /^http[s]*:\/\/(dev.caesar.team|localhost:3000)/
+              - name: AVAILABLE_REQUEST_SIGNATURE
+                value: "false"
+              - name: DB_VERSION
+                value: "9.6"
+              - name: HTTPS
+                value: "on"
+              - name: HTTP_X_FORWARDED_PROTO
+                value: https
+              - name: JWT_TOKEN_TTL
+                value: "86400"
+              - name: MAILER_URL
+                value: null://localhost
+              - name: OAUTH_ALLOWED_DOMAINS
+                value: 4xxi.com
+              - name: STRICT_AUDIT_TRAIL
+                value: "false"
+              - name: APP_SECRET
+                valueFrom:
+                    secretKeyRef:
+                        key: APP_SECRET
+                        name: caesarapp-server
+                        optional: false
+              - name: DATABASE_URL
+                valueFrom:
+                    secretKeyRef:
+                        key: DATABASE_URL
+                        name: caesarapp-server
+                        optional: false
+              - name: GOOGLE_ID
+                valueFrom:
+                    secretKeyRef:
+                        key: GOOGLE_ID
+                        name: caesarapp-server
+                        optional: false
+              - name: GOOGLE_SECRET
+                valueFrom:
+                    secretKeyRef:
+                        key: GOOGLE_SECRET
+                        name: caesarapp-server
+                        optional: false
+              - name: JWT_PASSPHRASE
+                valueFrom:
+                    secretKeyRef:
+                        key: JWT_PASSPHRASE
+                        name: caesarapp-server
+                        optional: false
+              - name: SUPERADMIN_PASS
+                valueFrom:
+                    secretKeyRef:
+                        key: SUPERADMIN_PASS
+                        name: caesarapp-server
+                        optional: false
+              - name: TWO_FACTOR_SERVER_NAME
+                valueFrom:
+                    secretKeyRef:
+                        key: TWO_FACTOR_SERVER_NAME
+                        name: caesarapp-server
+                        optional: false
+              image: caesarteam/caesar-server:${CICD_GIT_BRANCH}
+              imagePullPolicy: Always
+              name: caesarapp-server
+              ports:
+              - containerPort: 9000
+                name: 9000tcp01
+                protocol: TCP
+              resources: {}
+              volumeMounts:
+              - mountPath: /var/www/html/public
+                name: caesar-shared-static
+            - image: nginx:alpine
+              imagePullPolicy: IfNotPresent
+              name: nginx
+              ports:
+              - containerPort: 80
+                name: 80tcp01
+                protocol: TCP
+              resources: {}
+              volumeMounts:
+              - mountPath: /etc/nginx/nginx.conf
+                name: nginx-config-volume
+                subPath: nginx.conf
+              - mountPath: /var/www/html/public
+                name: caesar-shared-static
+            dnsPolicy: ClusterFirst
+            imagePullSecrets:
+            - name: dockerhub
+            - name: dockerhub
+            restartPolicy: Always
+            schedulerName: default-scheduler
+            securityContext: {}
+            terminationGracePeriodSeconds: 30
+            volumes:
+            - name: caesar-shared-static
+              persistentVolumeClaim:
+                  claimName: caesar-shared-static
+            - configMap:
+                  defaultMode: 256
+                  name: nginx-config
+                  optional: false
+              name: nginx-config-volume
+status: {}
