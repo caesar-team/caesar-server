@@ -1,0 +1,105 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+    name: caesarapp-server
+    namespace: default
+spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+        matchLabels:
+            workload.user.cattle.io/workloadselector: deployment-default-caesar
+    strategy:
+        rollingUpdate:
+            maxSurge: 1
+            maxUnavailable: 0
+        type: RollingUpdate
+    template:
+        metadata:
+            annotations:
+                cattle.io/timestamp: 2019-01-17T13:30:48Z
+                field.cattle.io/ports: '[[{"containerPort":9000,"dnsName":"caesar-nodeport","kind":"NodePort","name":"9000tcp01","protocol":"TCP","sourcePort":0}],[{"containerPort":80,"dnsName":"caesarapp-server-nodeport","kind":"NodePort","name":"80tcp01","protocol":"TCP","sourcePort":0}]]'
+            creationTimestamp: null
+            labels:
+                app: caesarapp-server
+                com.centurylinklabs.watchtower.enable: "true"
+                workload.user.cattle.io/workloadselector: deployment-default-caesar
+        spec:
+            containers:
+            - env:
+              - name: ALLOW_FRONT_REDIRECT_PATTERN
+                value: /^http[s]*:\/\/(dev.caesar.team|localhost:3000)/
+              - name: APP_SECRET
+                value: c43dcff33b066717adb64b31e8c2c3fc
+              - name: AVAILABLE_REQUEST_SIGNATURE
+                value: "false"
+              - name: DATABASE_URL
+                value: pgsql://dev_caesarapp:Sei3apuogh0oowahgai8ahr5w@postgres:5432/dev_caesarapp
+              - name: DB_VERSION
+                value: "9.6"
+              - name: GOOGLE_ID
+                value: 702303456740-qvomr2v3mrj3c91li4cf9u9mappei4s3.apps.googleusercontent.com
+              - name: GOOGLE_SECRET
+                value: PKXNhmjge1qCgdGTCB4k2rXW
+              - name: HTTPS
+                value: "on"
+              - name: HTTP_X_FORWARDED_PROTO
+                value: https
+              - name: JWT_PASSPHRASE
+                value: wHvB3gAEukZWC9YNo02FStlriUzITdL0
+              - name: JWT_TOKEN_TTL
+                value: "86400"
+              - name: MAILER_URL
+                value: null://localhost
+              - name: OAUTH_ALLOWED_DOMAINS
+                value: 4xxi.com
+              - name: STRICT_AUDIT_TRAIL
+                value: "false"
+              - name: SUPERADMIN_PASS
+                value: $2y$13$lmqojbDeoO7On3AfHy6UFOGq/dQrlwEyJ7b2sbDhLppbvfRguIJau
+              - name: TWO_FACTOR_SERVER_NAME
+                value: Caesar
+              image: caesarteam/caesar-server:${CICD_GIT_BRANCH}
+              imagePullPolicy: Always
+              name: caesarapp-server
+              ports:
+              - containerPort: 9000
+                name: 9000tcp01
+                protocol: TCP
+              resources: {}
+              volumeMounts:
+              - mountPath: /var/www/html/public
+                name: caesar-shared-static
+            - image: nginx:alpine
+              imagePullPolicy: IfNotPresent
+              name: nginx
+              ports:
+              - containerPort: 80
+                name: 80tcp01
+                protocol: TCP
+              resources: {}
+              volumeMounts:
+              - mountPath: /etc/nginx/nginx.conf
+                name: nginx-config-volume
+                subPath: nginx.conf
+              - mountPath: /var/www/html/public
+                name: caesar-shared-static
+            dnsPolicy: ClusterFirst
+            imagePullSecrets:
+            - name: dockerhub
+            - name: dockerhub
+            restartPolicy: Always
+            schedulerName: default-scheduler
+            securityContext: {}
+            terminationGracePeriodSeconds: 30
+            volumes:
+            - name: caesar-shared-static
+              persistentVolumeClaim:
+                  claimName: caesar-shared-static
+            - configMap:
+                  defaultMode: 256
+                  name: nginx-config
+                  optional: false
+              name: nginx-config-volume
+status: {}
