@@ -20,7 +20,7 @@ class TwoFactoryAuthEnableType extends AbstractType
             ->add('secret', TextType::class, [
                 'property_path' => 'googleAuthenticatorSecret',
             ])
-            ->add('auth_code', TextType::class, [
+            ->add('authCode', TextType::class, [
                 'mapped' => false,
                 'constraints' => [
                     new GoogleAuthenticatorCheckCode(),

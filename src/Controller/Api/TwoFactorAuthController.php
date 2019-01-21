@@ -6,7 +6,6 @@ namespace App\Controller\Api;
 
 use App\Entity\User;
 use App\Form\Request\TwoFactoryAuthEnableType;
-use App\Normalizer\ErrorNormalizer;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
@@ -21,7 +20,7 @@ use Symfony\Component\Routing\Annotation\Route;
 final class TwoFactorAuthController extends AbstractController
 {
     /**
-     * Enable 2FA on your account.
+     * Activate 2FA on your account.
      *
      * @SWG\Tag(name="Security")
      *
@@ -31,27 +30,17 @@ final class TwoFactorAuthController extends AbstractController
      *     @Model(type=\App\Form\Request\TwoFactoryAuthEnableType::class)
      * )
      * @SWG\Response(
-     *     response=200,
-     *     description="Success enabled 2FA",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="string",
-     *             property="QR",
-     *             example="/qp.png",
-     *         ),
-     *         @SWG\Property(
-     *             type="string",
-     *             property="code",
-     *             example="f553f7c5-591a-4aed-9148-2958b7d88ee5",
-     *         )
-     *     )
+     *     response=201,
+     *     description="Already created"
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Succeed two factor created"
      * )
      * @SWG\Response(
      *     response=401,
      *     description="Unauthorized"
      * )
-     *
      * @SWG\Response(
      *     response=400,
      *     description="Returns errors",
@@ -62,7 +51,7 @@ final class TwoFactorAuthController extends AbstractController
      *             property="errors",
      *             @SWG\Property(
      *                 type="array",
-     *                 property="auth_code",
+     *                 property="authCode",
      *                 @SWG\Items(
      *                     type="string",
      *                     example="List of errors"
@@ -73,102 +62,34 @@ final class TwoFactorAuthController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/2fa",
-     *     name="api_security_2fa_enable",
+     *     path="/api/2fa/activate",
+     *     name="api_security_2fa_activate",
      *     methods={"POST"}
      * )
      *
      * @param Request                $request
      * @param EntityManagerInterface $manager
-     * @param ErrorNormalizer        $errorNormalizer
      *
-     * @return FormInterface|JsonResponse
+     * @return FormInterface|Response
      */
-    public function enable(Request $request, EntityManagerInterface $manager, ErrorNormalizer $errorNormalizer)
+    public function activateTwoFactor(Request $request, EntityManagerInterface $manager)
     {
         /** @var User $user */
         $user = $this->getUser();
         if ($user->getGoogleAuthenticatorSecret()) {
-            return new JsonResponse(['errors' => ['Two-factor authentication code already enabled']], Response::HTTP_BAD_REQUEST);
+            return Response::create(null, Response::HTTP_CREATED);
         }
 
         $form = $this->createForm(TwoFactoryAuthEnableType::class, $user);
         $form->submit($request->request->all());
-        if ($form->isValid()) {
-            $manager->persist($user);
-            $manager->flush();
-
-            return new JsonResponse();
+        if (!$form->isValid()) {
+            return $form;
         }
 
-        return new JsonResponse($errorNormalizer->normalize($form), Response::HTTP_BAD_REQUEST);
-    }
+        $manager->persist($user);
+        $manager->flush();
 
-    /**
-     * Disable 2FA on your account.
-     *
-     * @SWG\Tag(name="Security")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     required=true,
-     *     @SWG\Schema(
-     *         type="object",
-     *         properties={
-     *             @SWG\Property(
-     *                 property="_auth_code",
-     *                 type="integer"
-     *             )
-     *         }
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Success disable 2FA"
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns errors",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="string",
-     *             property="errors"
-     *         )
-     *     )
-     * )
-     *
-     * @Route(
-     *     path="/api/2fa",
-     *     name="api_security_2fa_disable",
-     *     methods={"DELETE"}
-     * )
-     *
-     * @param Request                      $request
-     * @param EntityManagerInterface       $manager
-     * @param GoogleAuthenticatorInterface $twoFactor
-     *
-     * @return FormInterface|JsonResponse
-     */
-    public function disable(Request $request, EntityManagerInterface $manager, GoogleAuthenticatorInterface $twoFactor)
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        if ($twoFactor->checkCode($user, $request->request->get('_auth_code'))) {
-            $user->setGoogleAuthenticatorSecret(null);
-            $manager->persist($user);
-            $manager->flush();
-
-            return new JsonResponse();
-        }
-
-        return new JsonResponse(['errors' => 'Invalid two-factor authentication code.'], Response::HTTP_BAD_REQUEST);
+        return null;
     }
 
     /**
@@ -184,7 +105,7 @@ final class TwoFactorAuthController extends AbstractController
      *         @SWG\Property(
      *             type="string",
      *             description="Url to QR code",
-     *             property="QR",
+     *             property="qr",
      *             example="https://chart.googleapis.com/chart?chs=200x200",
      *         ),
      *         @SWG\Property(
@@ -210,7 +131,7 @@ final class TwoFactorAuthController extends AbstractController
      *
      * @return FormInterface|JsonResponse
      */
-    public function code(GoogleAuthenticatorInterface $twoFactor)
+    public function getCode(GoogleAuthenticatorInterface $twoFactor)
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -235,11 +156,11 @@ final class TwoFactorAuthController extends AbstractController
      *         type="object",
      *         properties={
      *             @SWG\Property(
-     *                 property="_auth_code",
+     *                 property="authCode",
      *                 type="integer"
      *             ),
      *             @SWG\Property(
-     *                 property="_trusted",
+     *                 property="trusted",
      *                 description="Set if we need trusted device token",
      *                 type="boolean"
      *             )
@@ -286,8 +207,8 @@ final class TwoFactorAuthController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/2fa_check",
-     *     name="2fa_login_check",
+     *     path="/api/2fa",
+     *     name="2fa_get_token",
      *     methods={"POST"}
      * )
      */
