@@ -6,6 +6,7 @@ namespace App\Factory\View;
 
 use App\Entity\Item;
 use App\Model\View\CredentialsList\ItemView;
+use App\Model\View\CredentialsList\ShareView;
 use App\Repository\UserRepository;
 
 class ItemViewFactory
@@ -24,7 +25,6 @@ class ItemViewFactory
 
         $view->id = $item->getId();
         $view->type = $item->getType();
-        $view->owner = null === $item->getOriginalItem();
         $view->lastUpdated = $item->getLastUpdated();
         $view->listId = $item->getParentList()->getId()->toString();
         $view->tags = array_map('strval', $item->getTags()->toArray());
@@ -42,16 +42,18 @@ class ItemViewFactory
         if (null !== $item->getOriginalItem()) {
             $ownerItem = $item->getOriginalItem();
         }
-        $userToExclude = $this->userRepository->getByItem($item);
 
         $sharesViewCollection = [];
         $allItems = $ownerItem->getSharedItems()->toArray();
         $allItems[] = $ownerItem;
         foreach ($allItems as $item) {
             $user = $this->userRepository->getByItem($item);
-            if ($user !== $userToExclude) {
-                $sharesViewCollection[] = $user->getId()->toString();
-            }
+
+            $share = new ShareView();
+            $share->userId = $user->getId()->toString();
+            $share->owner = $ownerItem === $item;
+
+            $sharesViewCollection[] = $share;
         }
 
         return $sharesViewCollection;
