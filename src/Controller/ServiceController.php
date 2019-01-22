@@ -30,6 +30,10 @@ final class ServiceController extends AbstractController
      *         @SWG\Property(
      *             type="boolean",
      *             property="database"
+     *         ),
+     *         @SWG\Property(
+     *             type="string",
+     *             property="date"
      *         )
      *     )
      * )
@@ -46,6 +50,7 @@ final class ServiceController extends AbstractController
     {
         return [
             'database' => $this->checkDB(),
+            'date' => new \DateTime(),
         ];
     }
 
