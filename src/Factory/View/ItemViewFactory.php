@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Factory\View;
 
+use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
+use App\Model\View\CredentialsList\InviteView;
 use App\Model\View\CredentialsList\ItemView;
-use App\Model\View\CredentialsList\ShareView;
 use App\Repository\UserRepository;
 
 class ItemViewFactory
@@ -30,13 +31,14 @@ class ItemViewFactory
         $view->tags = array_map('strval', $item->getTags()->toArray());
 
         $view->secret = $item->getSecret();
-        $view->shared = $this->getSharedCollection($item);
+        $view->invited = $this->getInvitesCollection($item);
+        $view->ownerId = $this->getOwnerId($item);
         $view->favorite = $item->isFavorite();
 
         return $view;
     }
 
-    protected function getSharedCollection(Item $item)
+    protected function getInvitesCollection(Item $item)
     {
         $ownerItem = $item;
         if (null !== $item->getOriginalItem()) {
@@ -44,18 +46,26 @@ class ItemViewFactory
         }
 
         $sharesViewCollection = [];
-        $allItems = $ownerItem->getSharedItems()->toArray();
-        $allItems[] = $ownerItem;
-        foreach ($allItems as $item) {
+        foreach ($ownerItem->getSharedItems()->toArray() as $item) {
             $user = $this->userRepository->getByItem($item);
 
-            $share = new ShareView();
+            $share = new InviteView();
             $share->userId = $user->getId()->toString();
-            $share->owner = $ownerItem === $item;
+            $share->access = AccessEnumType::TYPE_READ;
 
             $sharesViewCollection[] = $share;
         }
 
         return $sharesViewCollection;
+    }
+
+    private function getOwnerId(Item $item): string
+    {
+        $ownerItem = $item;
+        if (null !== $item->getOriginalItem()) {
+            $ownerItem = $item->getOriginalItem();
+        }
+
+        return $this->userRepository->getByItem($ownerItem)->getId()->toString();
     }
 }

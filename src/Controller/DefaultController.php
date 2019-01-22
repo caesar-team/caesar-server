@@ -19,13 +19,27 @@ final class DefaultController extends AbstractController
     }
 
     /**
-     * @Route("/status", name="status")
+     * @Route("/api/service/status", name="status")
      */
     public function statusAction()
     {
         return [
             'database' => $this->checkDB(),
         ];
+    }
+
+    /**
+     * @Route("/api/service/version", name="version")
+     */
+    public function versionAction()
+    {
+        $dir = $this->getParameter('kernel.project_dir');
+
+        $result = shell_exec("cd $dir && git log -n 1 --pretty=format:'%H|%aD'");
+        $response = [];
+        [$response['version'], $response['date']] = explode('|', $result);
+
+        return $response;
     }
 
     /**

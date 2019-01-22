@@ -31,7 +31,8 @@ class PagesAvailabilityTest extends WebTestCase
     private function urlsToTest(): array
     {
         return [
-            '/status',
+            '/api/service/status',
+            '/api/service/version',
             '/doc',
             '/admin/?action=list&entity=User',
         ];

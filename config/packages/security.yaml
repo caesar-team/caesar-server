@@ -17,6 +17,9 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        service:
+            pattern: ^/api/service
+            anonymous: true
         doc:
             pattern: ^/doc
             http_basic: ~
@@ -77,6 +80,7 @@ security:
                 success_handler: App\Security\JwtRedirectHandler
     access_control:
         - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/srp, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/doc, roles: [ROLE_ADMIN]}

@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Model\View\CredentialsList;
 
 use Swagger\Annotations as SWG;
+use App\Swagger\Annotations as AppSwagger;
 
-class ShareView
+class InviteView
 {
     /**
      * @var string
@@ -16,7 +17,9 @@ class ShareView
     public $userId;
 
     /**
-     * @var bool
+     * @var string
+     *
+     * @AppSwagger\EnumProperty(enumPath="App\DBAL\Types\Enum\AccessEnumType")
      */
-    public $owner;
+    public $access;
 }
