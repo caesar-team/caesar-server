@@ -3,12 +3,13 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-final class DefaultController extends AbstractController
+final class ServiceController extends AbstractController
 {
     /**
      * @Route("/", name="root")
@@ -19,7 +20,27 @@ final class DefaultController extends AbstractController
     }
 
     /**
-     * @Route("/api/service/status", name="status")
+     * @SWG\Tag(name="Service")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Returns application health status",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="boolean",
+     *             property="database"
+     *         )
+     *     )
+     * )
+     *
+     * @Route(
+     *     "/api/service/status",
+     *     name="status",
+     *     methods={"GET"}
+     * )
+     *
+     * @return array
      */
     public function statusAction()
     {
@@ -29,7 +50,33 @@ final class DefaultController extends AbstractController
     }
 
     /**
-     * @Route("/api/service/version", name="version")
+     * @SWG\Tag(name="Service")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Returns application health status",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="string",
+     *             property="version",
+     *             example="bb45d8e19ab97f104fe3f4ab0e5ab4d97b36f7c3"
+     *         ),
+     *         @SWG\Property(
+     *             type="string",
+     *             property="date",
+     *             example="Tue, 22 Jan 2019 15:45:36 +0300"
+     *         )
+     *     )
+     * )
+     *
+     * @Route(
+     *     "/api/service/version",
+     *     name="version",
+     *     methods={"GET"}
+     * )
+     *
+     * @return array
      */
     public function versionAction()
     {
