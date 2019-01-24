@@ -10,3 +10,4 @@ scheb_two_factor:
     google:
         server_name: '%env(TWO_FACTOR_SERVER_NAME)%'
         enabled: true
+        issuer: 'caesar'
