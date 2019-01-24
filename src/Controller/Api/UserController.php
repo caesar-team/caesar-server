@@ -11,19 +11,17 @@ use App\Factory\View\UserListViewFactory;
 use App\Form\Query\UserQueryType;
 use App\Form\Request\SaveKeysType;
 use App\Model\Query\UserQuery;
-use App\Model\View\User\UserKeysView;
 use App\Model\View\User\SelfUserInfoView;
+use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserView;
 use Doctrine\ORM\EntityManagerInterface;
+use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\SerializerInterface;
 
 final class UserController extends AbstractController
 {
@@ -33,7 +31,7 @@ final class UserController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="User information response",
-     *     @Model(type="\App\Model\View\User\SelfUserInfoView", groups={"user_read"})
+     *     @Model(type="\App\Model\View\User\SelfUserInfoView")
      * )
      * @SWG\Response(
      *     response=401,
@@ -46,17 +44,16 @@ final class UserController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param SelfUserInfoViewFactory        $viewFactory
-     * @param SerializerInterface|Serializer $serializer
+     * @param SelfUserInfoViewFactory $viewFactory
      *
-     * @return SelfUserInfoView|array
+     * @return SelfUserInfoView
      */
-    public function userInfoAction(SelfUserInfoViewFactory $viewFactory, SerializerInterface $serializer)
+    public function userInfoAction(SelfUserInfoViewFactory $viewFactory)
     {
         /** @var User $user */
         $user = $this->getUser();
 
-        return $serializer->normalize($viewFactory->create($user), 'array', ['groups' => ['user_read']]);
+        return $viewFactory->create($user);
     }
 
     /**
@@ -65,7 +62,7 @@ final class UserController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="User keys information response",
-     *     @Model(type="\App\Model\View\User\SelfUserInfoView", groups={"user_read"})
+     *     @Model(type="\App\Model\View\User\UserKeysView", groups={"public"})
      * )
      * @SWG\Response(
      *     response=401,
@@ -77,17 +74,16 @@ final class UserController extends AbstractController
      *     name="api_user_get_keys",
      *     methods={"GET"}
      * )
-     * @ParamConverter("user", options={"mapping": {"email": "email"}})
+     * @Rest\View(serializerGroups={"public"})
      *
-     * @param User                           $user
-     * @param UserKeysViewFactory            $viewFactory
-     * @param SerializerInterface|Serializer $serializer
+     * @param User                $user
+     * @param UserKeysViewFactory $viewFactory
      *
-     * @return SelfUserInfoView|array
+     * @return UserKeysView
      */
-    public function userKeysAction(User $user, UserKeysViewFactory $viewFactory, SerializerInterface $serializer)
+    public function userKeysAction(User $user, UserKeysViewFactory $viewFactory)
     {
-        return $serializer->normalize($viewFactory->create($user), 'array', ['groups' => ['key_read']]);
+        return $viewFactory->create($user);
     }
 
     /**
@@ -138,7 +134,7 @@ final class UserController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="List of user keys",
-     *     @Model(type="\App\Model\View\User\UserKeysView")
+     *     @Model(type="\App\Model\View\User\UserKeysView", groups={"key_detail_read"})
      * )
      * @SWG\Response(
      *     response=204,
@@ -154,6 +150,7 @@ final class UserController extends AbstractController
      *     name="api_keys_list",
      *     methods={"GET"}
      * )
+     * @Rest\View(serializerGroups={"key_detail_read"})
      *
      * @param UserKeysViewFactory $viewFactory
      *
