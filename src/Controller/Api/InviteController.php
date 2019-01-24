@@ -96,6 +96,47 @@ final class InviteController extends AbstractController
     /**
      * @SWG\Tag(name="Invite")
      *
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success invite revoked"
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not owner of parent item"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such item"
+     * )
+     *
+     * @Route(
+     *     path="/api/invite/{id}",
+     *     name="api_revoke_invite",
+     *     methods={"DELETE"}
+     * )
+     *
+     * @param Item                   $item
+     * @param EntityManagerInterface $entityManager
+     *
+     * @return null
+     */
+    public function revokeInviteAction(Item $item, EntityManagerInterface $entityManager)
+    {
+        $this->denyAccessUnlessGranted(InviteVoter::REVOKE_INVITE, $item);
+
+        $entityManager->remove($item);
+        $entityManager->flush();
+
+        return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Invite")
+     *
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
@@ -160,47 +201,6 @@ final class InviteController extends AbstractController
         }
 
         $entityManager->persist($item);
-        $entityManager->flush();
-
-        return null;
-    }
-
-    /**
-     * @SWG\Tag(name="Invite")
-     *
-     * @SWG\Response(
-     *     response=204,
-     *     description="Success invite revoked"
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of parent item"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="No such item"
-     * )
-     *
-     * @Route(
-     *     path="/api/invite/{id}",
-     *     name="api_revoke_invite",
-     *     methods={"DELETE"}
-     * )
-     *
-     * @param Item                   $item
-     * @param EntityManagerInterface $entityManager
-     *
-     * @return null
-     */
-    public function revokeInviteAction(Item $item, EntityManagerInterface $entityManager)
-    {
-        $this->denyAccessUnlessGranted(InviteVoter::REVOKE_INVITE, $item);
-
-        $entityManager->remove($item);
         $entityManager->flush();
 
         return null;
