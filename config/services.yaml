@@ -83,3 +83,11 @@ services:
             - "@sylius.mailer.default_settings_provider"
 
     Sylius\Component\Mailer\Sender\SenderInterface: '@App\Mailer\Sender\MailSender'
+
+    Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface: '@App\Security\TwoFactor\GoogleAuthenticator'
+
+    App\Security\TwoFactor\GoogleAuthenticator:
+        arguments:
+            - "@scheb_two_factor.security.google"
+            - "%scheb_two_factor.google.server_name%"
+            - "%scheb_two_factor.google.issuer%"
