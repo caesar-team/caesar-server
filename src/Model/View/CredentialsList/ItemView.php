@@ -35,6 +35,11 @@ class ItemView extends NodeView
     public $invited;
 
     /**
+     * @var UpdateView
+     */
+    public $update;
+
+    /**
      * @var \DateTime
      */
     public $lastUpdated;

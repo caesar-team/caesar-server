@@ -14,6 +14,7 @@ class InviteVoter extends Voter
 {
     public const REVOKE_INVITE = 'revoke_invite';
     public const CHANGE_ACCESS = 'change_access_invite';
+    public const UPDATE_INVITE = 'update_invite';
 
     /** @var UserRepository */
     private $userRepository;
@@ -28,7 +29,7 @@ class InviteVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::REVOKE_INVITE, self::CHANGE_ACCESS])) {
+        if (!in_array($attribute, [self::REVOKE_INVITE, self::CHANGE_ACCESS, self::UPDATE_INVITE])) {
             return false;
         }
 
@@ -60,6 +61,16 @@ class InviteVoter extends Voter
             $parentOwner = $this->userRepository->getByItem($parentItem);
 
             return $parentOwner === $user;
+        }
+
+        if (in_array($attribute, [self::UPDATE_INVITE])) {
+            if (null !== $subject->getOriginalItem()) {
+                return false;
+            }
+
+            $owner = $this->userRepository->getByItem($subject);
+
+            return $owner === $user;
         }
 
         throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');

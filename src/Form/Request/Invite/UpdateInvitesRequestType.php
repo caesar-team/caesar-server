@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Request\Invite;
 
+use App\Entity\Item;
 use App\Model\Request\InviteCollectionRequest;
 use App\Repository\UserRepository;
 use Symfony\Component\Form\AbstractType;
@@ -15,7 +16,7 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class InviteCollectionRequestType extends AbstractType
+class UpdateInvitesRequestType extends AbstractType
 {
     /**
      * @var UserRepository
@@ -48,17 +49,33 @@ class InviteCollectionRequestType extends AbstractType
         $request = $event->getData();
         $form = $event->getForm();
 
-        $parentItem = $request->getItem();
+        $parentItem = $request->getItem()->getOriginalItem() ?? $request->getItem();
+
+        if ($request->getInvites()->count() !== $parentItem->getSharedItems()->count()) {
+            $form->addError(new FormError('item.invite.update.invalid_user'));
+
+            return;
+        }
+
+        $newUsers = [];
         foreach ($request->getInvites() as $invite) {
-            foreach ($parentItem->getSharedItems() as $sharedItem) {
-                $owner = $this->userRepository->getByItem($sharedItem);
-
-                if ($invite->getUser() === $owner) {
-                    $form->addError(new FormError('item.invite.user.already_invited'));
-
-                    return;
-                }
+            if (null === $invite->getUser()) {
+                return;
             }
+
+            $newUsers[] = $invite->getUser()->getId()->toString();
+        }
+
+        $oldUsers = array_map(
+            function (Item $item) {
+                return $this->userRepository->getByItem($item)->getId()->toString();
+            },
+            $parentItem->getSharedItems()->toArray()
+        );
+
+        $diff = array_diff($newUsers, $oldUsers);
+        if (!empty($diff)) {
+            $form->addError(new FormError('item.invite.update.invalid_user'));
         }
     }
 
