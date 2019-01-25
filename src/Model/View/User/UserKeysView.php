@@ -21,7 +21,7 @@ class UserKeysView
      * @var string
      *
      * @SWG\Property(example="asdfassdaaw46t4wesdra34w56")
-     * @Groups({"key_detail_read", "key_read"})
+     * @Groups({"key_detail_read", "public"})
      */
     public $publicKey;
 }

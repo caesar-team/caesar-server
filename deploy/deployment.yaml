@@ -15,10 +15,8 @@ spec:
         type: RollingUpdate
     template:
         metadata:
-            annotations:
-                field.cattle.io/ports: '[[{"containerPort":9000,"dnsName":"caesar-nodeport","kind":"NodePort","name":"9000tcp01","protocol":"TCP","sourcePort":0}],[{"containerPort":80,"dnsName":"caesarapp-server-nodeport","kind":"NodePort","name":"80tcp01","protocol":"TCP","sourcePort":0}]]'
-            creationTimestamp: null
             labels:
+                CICD_GIT_COMMIT: ${CICD_GIT_COMMIT}
                 app: caesarapp-server
                 com.centurylinklabs.watchtower.enable: "true"
                 workload.user.cattle.io/workloadselector: deployment-default-caesar
@@ -92,7 +90,6 @@ spec:
               - containerPort: 9000
                 name: 9000tcp01
                 protocol: TCP
-              resources: {}
               volumeMounts:
               - mountPath: /var/www/html/public
                 name: caesar-shared-static
@@ -103,7 +100,6 @@ spec:
               - containerPort: 80
                 name: 80tcp01
                 protocol: TCP
-              resources: {}
               volumeMounts:
               - mountPath: /etc/nginx/nginx.conf
                 name: nginx-config-volume
@@ -116,7 +112,6 @@ spec:
             - name: dockerhub
             restartPolicy: Always
             schedulerName: default-scheduler
-            securityContext: {}
             terminationGracePeriodSeconds: 30
             volumes:
             - name: caesar-shared-static
@@ -127,4 +122,3 @@ spec:
                   name: nginx-config
                   optional: false
               name: nginx-config-volume
-status: {}
