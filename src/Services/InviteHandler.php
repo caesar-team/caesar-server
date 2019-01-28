@@ -47,12 +47,7 @@ class InviteHandler
         $this->entityManager->flush();
     }
 
-    /**
-     * @param InviteCollectionRequest $request
-     *
-     * @throws \Exception
-     */
-    public function updateInvites(InviteCollectionRequest $request)
+    public function updateInvites(InviteCollectionRequest $request): void
     {
         foreach ($request->getInvites() as $invite) {
             /** @var Item $item */

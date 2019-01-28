@@ -72,7 +72,7 @@ class ItemViewFactory
         return $this->userRepository->getByItem($ownerItem)->getId()->toString();
     }
 
-    private function getUpdateView(?ItemUpdate $update)
+    private function getUpdateView(?ItemUpdate $update): ?UpdateView
     {
         if (null === $update) {
             return null;

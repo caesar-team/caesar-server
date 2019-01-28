@@ -104,7 +104,7 @@ class Item
     /**
      * @var ItemUpdate|null
      *
-     * @ORM\OneToOne(targetEntity="App\Entity\ItemUpdate", mappedBy="item", orphanRemoval=true, cascade={"PERSIST"})
+     * @ORM\OneToOne(targetEntity="App\Entity\ItemUpdate", mappedBy="item", orphanRemoval=true, cascade={"persist"})
      */
     protected $update;
 
