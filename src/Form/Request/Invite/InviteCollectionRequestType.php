@@ -43,7 +43,7 @@ class InviteCollectionRequestType extends AbstractType
         $builder->addEventListener(FormEvents::SUBMIT, [$this, 'validateInvites']);
     }
 
-    public function validateINvites(FormEvent $event)
+    public function validateInvites(FormEvent $event)
     {
         /** @var InviteCollectionRequest $request */
         $request = $event->getData();

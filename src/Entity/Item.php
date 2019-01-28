@@ -295,7 +295,7 @@ class Item
     /**
      * @param string $access
      */
-    public function setAccess(string $access): void
+    public function setAccess(?string $access): void
     {
         $this->access = $access;
     }
