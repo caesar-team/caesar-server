@@ -45,6 +45,7 @@ class InviteHandler
         }
 
         $this->entityManager->flush();
+        $this->entityManager->refresh($request->getItem());
     }
 
     public function updateInvites(InviteCollectionRequest $request): void

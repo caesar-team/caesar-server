@@ -10,6 +10,7 @@ use App\Form\Request\Invite\InviteCollectionRequestType;
 use App\Form\Request\Invite\InviteUpdateRequestType;
 use App\Form\Request\Invite\UpdateInvitesRequestType;
 use App\Model\Request\InviteCollectionRequest;
+use App\Model\View\CredentialsList\ItemView;
 use App\Security\InviteVoter;
 use App\Security\ItemVoter;
 use App\Services\InviteHandler;
@@ -33,8 +34,9 @@ final class InviteController extends AbstractController
      *     @Model(type=App\Form\Request\Invite\InviteCollectionRequestType::class)
      * )
      * @SWG\Response(
-     *     response=204,
-     *     description="Success item shared"
+     *     response=200,
+     *     description="Success item shared",
+     *     @Model(type=App\Model\View\CredentialsList\ItemView::class)
      * )
      * @SWG\Response(
      *     response=400,
@@ -78,9 +80,9 @@ final class InviteController extends AbstractController
      * @param Request       $request
      * @param InviteHandler $inviteHandler
      *
-     * @return FormInterface|null
+     * @return ItemView|FormInterface
      */
-    public function inviteItemAction(Item $item, Request $request, InviteHandler $inviteHandler)
+    public function inviteItemAction(Item $item, Request $request, InviteHandler $inviteHandler, ItemViewFactory $viewFactory)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
@@ -93,7 +95,7 @@ final class InviteController extends AbstractController
 
         $inviteHandler->inviteToItem($inviteCollectionRequest);
 
-        return null;
+        return $viewFactory->create($item);
     }
 
     /**
