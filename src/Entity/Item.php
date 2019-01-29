@@ -296,7 +296,7 @@ class Item
         return $this->access;
     }
 
-    public function setAccess(string $access): void
+    public function setAccess(?string $access): void
     {
         $this->access = $access;
     }
