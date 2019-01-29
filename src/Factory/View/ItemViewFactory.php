@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Factory\View;
 
-use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Model\View\CredentialsList\InviteView;
 use App\Model\View\CredentialsList\ItemView;
@@ -45,18 +44,19 @@ class ItemViewFactory
             $ownerItem = $item->getOriginalItem();
         }
 
-        $sharesViewCollection = [];
-        foreach ($ownerItem->getSharedItems()->toArray() as $item) {
+        $inviteViewCollection = [];
+        foreach ($ownerItem->getSharedItems() as $item) {
             $user = $this->userRepository->getByItem($item);
 
-            $share = new InviteView();
-            $share->userId = $user->getId()->toString();
-            $share->access = AccessEnumType::TYPE_READ;
+            $invite = new InviteView();
+            $invite->id = $item->getId()->toString();
+            $invite->userId = $user->getId()->toString();
+            $invite->access = $item->getAccess();
 
-            $sharesViewCollection[] = $share;
+            $inviteViewCollection[] = $invite;
         }
 
-        return $sharesViewCollection;
+        return $inviteViewCollection;
     }
 
     private function getOwnerId(Item $item): string

@@ -13,16 +13,13 @@ use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemType;
-use App\Form\Request\Invite\InviteCollectionRequestType;
 use App\Form\Request\MoveItemType;
 use App\Model\Query\ItemListQuery;
-use App\Model\Request\InviteCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
-use App\Services\InviteHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -379,78 +376,6 @@ final class ItemController extends AbstractController
         return [
             'lastUpdated' => $item->getLastUpdated(),
         ];
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=\App\Form\Request\Invite\InviteCollectionRequestType::class)
-     * )
-     * @SWG\Response(
-     *     response=204,
-     *     description="Success item shared"
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns item share error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="object",
-     *             property="errors",
-     *             @SWG\Property(
-     *                 type="array",
-     *                 property="userId",
-     *                 @SWG\Items(
-     *                     type="string",
-     *                     example="This value is not valid"
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of item"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="No such item"
-     * )
-     *
-     * @Route(
-     *     path="/api/invite/{id}",
-     *     name="api_invite_to_item",
-     *     methods={"POST"}
-     * )
-     *
-     * @param Item          $item
-     * @param Request       $request
-     * @param InviteHandler $inviteHandler
-     *
-     * @return FormInterface|null
-     */
-    public function shareItemAction(Item $item, Request $request, InviteHandler $inviteHandler)
-    {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-
-        $inviteCollectionRequest = new InviteCollectionRequest($item);
-        $form = $this->createForm(InviteCollectionRequestType::class, $inviteCollectionRequest);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        $inviteHandler->inviteToItem($inviteCollectionRequest);
-
-        return null;
     }
 
     /**

@@ -19,6 +19,11 @@ class Invite
     private $secret;
 
     /**
+     * @var string
+     */
+    private $access;
+
+    /**
      * @return User
      */
     public function getUser(): ?User
@@ -39,5 +44,15 @@ class Invite
     public function setSecret(string $secret): void
     {
         $this->secret = $secret;
+    }
+
+    public function getAccess(): ?string
+    {
+        return $this->access;
+    }
+
+    public function setAccess(string $access): void
+    {
+        $this->access = $access;
     }
 }

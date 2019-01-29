@@ -10,12 +10,10 @@ use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-class ItemVoter extends Voter
+class InviteVoter extends Voter
 {
-    public const DELETE_ITEM = 'delete_item';
-    public const CREATE_ITEM = 'create_item';
-    public const EDIT_ITEM = 'edit_item';
-    public const SHOW_ITEM = 'show_item';
+    public const REVOKE_INVITE = 'revoke_invite';
+    public const CHANGE_ACCESS = 'change_access_invite';
 
     /** @var UserRepository */
     private $userRepository;
@@ -30,7 +28,7 @@ class ItemVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::DELETE_ITEM, self::CREATE_ITEM, self::SHOW_ITEM, self::EDIT_ITEM])) {
+        if (!in_array($attribute, [self::REVOKE_INVITE, self::CHANGE_ACCESS])) {
             return false;
         }
 
@@ -53,10 +51,15 @@ class ItemVoter extends Voter
         /** @var User $user */
         $user = $token->getUser();
 
-        if (in_array($attribute, [self::DELETE_ITEM, self::CREATE_ITEM, self::SHOW_ITEM, self::EDIT_ITEM])) {
-            $itemOwner = $this->userRepository->getByItem($subject);
+        if (in_array($attribute, [self::REVOKE_INVITE, self::CHANGE_ACCESS])) {
+            $parentItem = $subject->getOriginalItem();
+            if (null === $parentItem) {
+                return false;
+            }
 
-            return $itemOwner === $user;
+            $parentOwner = $this->userRepository->getByItem($parentItem);
+
+            return $parentOwner === $user;
         }
 
         throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');

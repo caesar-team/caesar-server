@@ -94,6 +94,13 @@ class Item
      */
     protected $tags;
 
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="AccessEnumType", nullable=true)
+     */
+    protected $access;
+
     public function __construct()
     {
         $this->id = Uuid::uuid4();
@@ -233,20 +240,20 @@ class Item
         return $this->externalSharedItems;
     }
 
-    public function addExternalShareItem(ShareItem $shareItem): void
-    {
-        if (!$this->externalSharedItems->contains($shareItem)) {
-            $this->externalSharedItems->add($shareItem);
-            $shareItem->setItem($this);
-        }
-    }
-
     /**
      * @param ShareItem[]|Collection $externalSharedItems
      */
     public function setExternalSharedItems(Collection $externalSharedItems): void
     {
         $this->externalSharedItems = $externalSharedItems;
+    }
+
+    public function addExternalShareItem(ShareItem $shareItem): void
+    {
+        if (!$this->externalSharedItems->contains($shareItem)) {
+            $this->externalSharedItems->add($shareItem);
+            $shareItem->setItem($this);
+        }
     }
 
     /**
@@ -275,5 +282,21 @@ class Item
     public function removeTag(Tag $tag): void
     {
         $this->tags->removeElement($tag);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAccess(): ?string
+    {
+        return $this->access;
+    }
+
+    /**
+     * @param string $access
+     */
+    public function setAccess(?string $access): void
+    {
+        $this->access = $access;
     }
 }

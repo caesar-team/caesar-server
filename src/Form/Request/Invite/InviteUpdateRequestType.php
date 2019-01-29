@@ -5,39 +5,24 @@ declare(strict_types=1);
 namespace App\Form\Request\Invite;
 
 use App\DBAL\Types\Enum\AccessEnumType;
-use App\Entity\User;
-use App\Model\Request\Invite;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Entity\Item;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class InviteType extends AbstractType
+class InviteUpdateRequestType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         parent::buildForm($builder, $options);
         $builder
-            ->add('userId', EntityType::class, [
-                'property_path' => 'user',
-                'class' => User::class,
-                'constraints' => [
-                    new NotBlank(),
-                ],
-            ])
             ->add('access', ChoiceType::class, [
                 'constraints' => [
                     new NotBlank(),
                 ],
                 'choices' => AccessEnumType::getValues(),
-            ])
-            ->add('secret', TextType::class, [
-                'constraints' => [
-                    new NotBlank(),
-                ],
             ]);
     }
 
@@ -45,7 +30,7 @@ class InviteType extends AbstractType
     {
         parent::configureOptions($resolver);
         $resolver->setDefaults([
-            'data_class' => Invite::class,
+            'data_class' => Item::class,
         ]);
     }
 }

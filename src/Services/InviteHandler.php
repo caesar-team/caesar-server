@@ -34,28 +34,15 @@ class InviteHandler
     public function inviteToItem(InviteCollectionRequest $request)
     {
         foreach ($request->getInvites() as $invite) {
-            $item = $this->getItem($invite->getUser(), $request->getItem());
+            $item = new Item();
+            $item->setParentList($invite->getUser()->getInbox());
+            $item->setOriginalItem($request->getItem());
             $item->setSecret($invite->getSecret());
+            $item->setAccess($invite->getAccess());
 
             $this->entityManager->persist($item);
         }
 
         $this->entityManager->flush();
-    }
-
-    private function getItem(User $user, Item $originalItem): Item
-    {
-        foreach ($originalItem->getSharedItems() as $sharedItem) {
-            $owner = $this->userRepository->getByItem($sharedItem);
-            if ($user === $owner) {
-                return $sharedItem;
-            }
-        }
-
-        $item = new Item();
-        $item->setParentList($user->getInbox());
-        $item->setOriginalItem($originalItem);
-
-        return $item;
     }
 }

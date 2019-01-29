@@ -14,6 +14,13 @@ class InviteView
      *
      * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      */
+    public $id;
+
+    /**
+     * @var string
+     *
+     * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
+     */
     public $userId;
 
     /**
