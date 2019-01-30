@@ -40,6 +40,7 @@ class InviteHandler
             $item->setOriginalItem($request->getItem());
             $item->setSecret($invite->getSecret());
             $item->setAccess($invite->getAccess());
+            $item->setType($request->getItem()->getType());
 
             $this->entityManager->persist($item);
         }
@@ -50,10 +51,15 @@ class InviteHandler
 
     public function updateInvites(InviteCollectionRequest $request, User $currentOwner): void
     {
+        $parentItem = $request->getItem();
+        if (null !== $parentItem->getOriginalItem()) {
+            $parentItem = $parentItem->getOriginalItem();
+        }
+
         foreach ($request->getInvites() as $invite) {
             /** @var Item $item */
             /** @var User $user */
-            [$item, $user] = $this->getItem($invite->getUser(), $request->getItem());
+            [$item, $user] = $this->getItem($invite->getUser(), $parentItem);
 
             if ($currentOwner === $user) {
                 $item->setSecret($invite->getSecret());
