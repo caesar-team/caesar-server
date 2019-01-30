@@ -37,7 +37,7 @@ class UpdateInvitesRequestType extends AbstractType
                     new NotBlank(),
                 ],
                 'allow_add' => true,
-                'entry_type' => InviteType::class,
+                'entry_type' => SecretType::class,
             ]);
 
         $builder->addEventListener(FormEvents::SUBMIT, [$this, 'validateInvites']);
@@ -51,7 +51,7 @@ class UpdateInvitesRequestType extends AbstractType
 
         $parentItem = $request->getItem()->getOriginalItem() ?? $request->getItem();
 
-        if ($request->getInvites()->count() !== $parentItem->getSharedItems()->count()) {
+        if ($request->getInvites()->count() !== $parentItem->getSharedItems()->count() + 1) {
             $form->addError(new FormError('item.invite.update.invalid_user'));
 
             return;
@@ -70,7 +70,7 @@ class UpdateInvitesRequestType extends AbstractType
             function (Item $item) {
                 return $this->userRepository->getByItem($item)->getId()->toString();
             },
-            $parentItem->getSharedItems()->toArray()
+            array_merge($parentItem->getSharedItems()->toArray(), [$parentItem])
         );
 
         $diff = array_diff($newUsers, $oldUsers);

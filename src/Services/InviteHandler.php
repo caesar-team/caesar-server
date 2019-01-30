@@ -48,15 +48,19 @@ class InviteHandler
         $this->entityManager->refresh($request->getItem());
     }
 
-    public function updateInvites(InviteCollectionRequest $request): void
+    public function updateInvites(InviteCollectionRequest $request, User $currentOwner): void
     {
         foreach ($request->getInvites() as $invite) {
             /** @var Item $item */
             /** @var User $user */
             [$item, $user] = $this->getItem($invite->getUser(), $request->getItem());
 
-            $update = $this->extractUpdate($item, $user);
-            $update->setSecret($invite->getSecret());
+            if ($currentOwner === $user) {
+                $item->setSecret($invite->getSecret());
+            } else {
+                $update = $this->extractUpdate($item, $user);
+                $update->setSecret($invite->getSecret());
+            }
 
             $this->entityManager->persist($item);
         }
@@ -66,6 +70,11 @@ class InviteHandler
 
     private function getItem(User $user, Item $originalItem): array
     {
+        $owner = $this->userRepository->getByItem($originalItem);
+        if ($user === $owner) {
+            return [$originalItem, $user];
+        }
+
         foreach ($originalItem->getSharedItems() as $sharedItem) {
             $owner = $this->userRepository->getByItem($sharedItem);
             if ($user === $owner) {

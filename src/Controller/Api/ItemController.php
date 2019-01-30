@@ -360,8 +360,8 @@ final class ItemController extends AbstractController
     public function editItemAction(Item $item, Request $request, EntityManagerInterface $entityManager)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-        if (null !== $item->getOriginalItem()) {
-            throw new BadRequestHttpException('Read only item. You are not owner');
+        if (null !== $item->getOriginalItem() || 0 !== $item->getSharedItems()->count()) {
+            throw new BadRequestHttpException('Shared item. Can not edit as single.');
         }
 
         $form = $this->createForm(EditItemType::class, $item);

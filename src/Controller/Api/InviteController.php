@@ -217,7 +217,7 @@ final class InviteController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=App\Form\Request\Invite\InviteCollectionRequestType::class)
+     *     @Model(type=App\Form\Request\Invite\UpdateInvitesRequestType::class)
      * )
      * @SWG\Response(
      *     response=204,
@@ -278,7 +278,7 @@ final class InviteController extends AbstractController
             return $form;
         }
 
-        $inviteHandler->updateInvites($inviteCollectionRequest);
+        $inviteHandler->updateInvites($inviteCollectionRequest, $this->getUser());
 
         return null;
     }

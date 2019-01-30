@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Security;
 
+use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Repository\UserRepository;
@@ -64,13 +65,16 @@ class InviteVoter extends Voter
         }
 
         if (in_array($attribute, [self::UPDATE_INVITE])) {
-            if (null !== $subject->getOriginalItem()) {
-                return false;
+            if (null === $subject->getOriginalItem()) {
+                return true;
             }
 
             $owner = $this->userRepository->getByItem($subject);
+            if ($owner === $user) {
+                return AccessEnumType::TYPE_READ !== $subject->getAccess();
+            }
 
-            return $owner === $user;
+            return false;
         }
 
         throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');
