@@ -64,7 +64,7 @@ class InviteHandler
             if ($currentOwner === $user) {
                 $item->setSecret($invite->getSecret());
             } else {
-                $update = $this->extractUpdate($item, $user);
+                $update = $this->extractUpdate($item, $currentOwner);
                 $update->setSecret($invite->getSecret());
             }
 
