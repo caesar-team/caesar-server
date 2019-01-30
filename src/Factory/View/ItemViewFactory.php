@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Factory\View;
 
+use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
 use App\Model\View\CredentialsList\InviteView;
@@ -58,6 +59,15 @@ class ItemViewFactory
 
             $inviteViewCollection[] = $invite;
         }
+
+        $user = $this->userRepository->getByItem($ownerItem);
+
+        $invite = new InviteView();
+        $invite->id = $ownerItem->getId()->toString();
+        $invite->userId = $user->getId()->toString();
+        $invite->access = AccessEnumType::TYPE_WRITE;
+
+        $inviteViewCollection[] = $invite;
 
         return $inviteViewCollection;
     }
