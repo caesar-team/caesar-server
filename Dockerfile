@@ -14,14 +14,14 @@ COPY composer.lock .
 FROM base AS dependencies
 # install vendors
 RUN composer global require hirak/prestissimo  --prefer-dist --no-progress --no-suggest --optimize-autoloader  --no-interaction
-RUN composer install --prefer-dist --no-progress --no-suggest --no-interaction --optimize-autoloader --no-scripts
+RUN APP_ENV=prod composer install --prefer-dist --no-progress --no-suggest --no-interaction --optimize-autoloader --no-scripts
 # copy production vendor aside
 
 # ---- Release ----
 FROM base AS release
 # copy production vendors
 COPY --from=dependencies /var/www/html/vendor ./vendor
-RUN apt-get install -y libgpgme11-dev && pecl install gnupg && docker-php-ext-enable gnupg
+RUN apt-get install -y --no-install-recommends libgpgme11-dev && rm -rf /var/lib/apt/lists/* && pecl install gnupg && docker-php-ext-enable gnupg
 COPY . .
 COPY entrypoint.sh /usr/local/bin/
 COPY ./www.conf /usr/local/etc/php-fpm.d/

@@ -42,6 +42,9 @@ class UserFixtures extends AbstractFixture implements FixtureInterface
         $user->setUsername($name);
         $user->setEmail("$name@4xxi.com");
         $user->setDomain('4xxi.com');
+        $user->setGoogleAuthenticatorSecret('fake_secret');
+        $user->setPublicKey('fake_key');
+        $user->setEncryptedPrivateKey('fake_key');
         $user->setSuperAdmin(true);
         $user->setEnabled(true);
         $user->setPlainPassword(uniqid('pass_', true));

@@ -101,6 +101,13 @@ class Item
      */
     protected $access;
 
+    /**
+     * @var ItemUpdate|null
+     *
+     * @ORM\OneToOne(targetEntity="App\Entity\ItemUpdate", mappedBy="item", orphanRemoval=true, cascade={"persist"})
+     */
+    protected $update;
+
     public function __construct()
     {
         $this->id = Uuid::uuid4();
@@ -284,19 +291,23 @@ class Item
         $this->tags->removeElement($tag);
     }
 
-    /**
-     * @return string|null
-     */
     public function getAccess(): ?string
     {
         return $this->access;
     }
 
-    /**
-     * @param string $access
-     */
     public function setAccess(?string $access): void
     {
         $this->access = $access;
+    }
+
+    public function getUpdate(): ?ItemUpdate
+    {
+        return $this->update;
+    }
+
+    public function setUpdate(?ItemUpdate $update): void
+    {
+        $this->update = $update;
     }
 }
