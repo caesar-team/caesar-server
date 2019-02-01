@@ -9,6 +9,7 @@ use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
 use App\Factory\View\UserListViewFactory;
 use App\Form\Query\UserQueryType;
+use App\Form\Request\CreateUserType;
 use App\Form\Request\SaveKeysType;
 use App\Model\Query\UserQuery;
 use App\Model\View\User\SelfUserInfoView;
@@ -58,7 +59,7 @@ final class UserController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="User")
+     * @SWG\Tag(name="Invitation")
      *
      * @SWG\Response(
      *     response=200,
@@ -208,6 +209,50 @@ final class UserController extends AbstractController
             return $form;
         }
 
+        $entityManager->flush();
+
+        return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Invitation")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\CreateUserType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success user created update",
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/user",
+     *     name="api_user_create",
+     *     methods={"POST"}
+     * )
+     * @param Request                $request
+     * @param EntityManagerInterface $entityManager
+     * @return FormInterface
+     */
+    public function createUserAction(Request $request, EntityManagerInterface $entityManager)
+    {
+        $user = new User();
+        $form = $this->createForm(CreateUserType::class, $user);
+        $form->submit($request);
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $user->setPlainPassword(md5(uniqid('', true))); //TODO обновление пользователя с мылом, если нет publicKey
+        $user->setUsername($user->getEmail());
+//        $user->setEnabled(true);
+        $entityManager->persist($user);
         $entityManager->flush();
 
         return null;
