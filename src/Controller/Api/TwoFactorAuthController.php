@@ -160,9 +160,10 @@ final class TwoFactorAuthController extends AbstractController
      *                 type="integer"
      *             ),
      *             @SWG\Property(
-     *                 property="trusted",
+     *                 property="fingerprint",
      *                 description="Set if we need trusted device token",
-     *                 type="boolean"
+     *                 type="string",
+     *                 example="fc772c1049ac5342cd9bc77086373e22"
      *             )
      *         }
      *     )
