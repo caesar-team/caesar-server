@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Event\EventSubscriber;
 
+use App\Security\Fingerprint\FingerprintStasher;
 use App\Security\FrontendUriHandler;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
@@ -20,9 +21,16 @@ class FrontendRedirectSubscriber implements EventSubscriberInterface
     /** @var FrontendUriHandler */
     private $frontendUriHandler;
 
-    public function __construct(FrontendUriHandler $frontendUriHandler)
+    /** @var string */
+    private $fingerprint;
+
+    /** @var FingerprintStasher */
+    private $fingerprintStasher;
+
+    public function __construct(FrontendUriHandler $frontendUriHandler, FingerprintStasher $fingerprintStasher)
     {
         $this->frontendUriHandler = $frontendUriHandler;
+        $this->fingerprintStasher = $fingerprintStasher;
     }
 
     /**
@@ -44,7 +52,8 @@ class FrontendRedirectSubscriber implements EventSubscriberInterface
             $uri = $request->query->get('redirect_uri');
             $this->frontendUriHandler->validateUri($uri);
             $this->frontendUri = $uri;
-            $request->getSession()->set('current_frontend_uri', $uri);
+            $this->fingerprint = $request->query->get('fingerprint');
+            $request->getSession()->set('current_frontend_uri', $uri); //Need redirect back to frontend if auth fails
         }
     }
 
@@ -52,6 +61,10 @@ class FrontendRedirectSubscriber implements EventSubscriberInterface
     {
         if (null !== $this->frontendUri) {
             $this->frontendUriHandler->persistUri($event->getResponse(), $this->frontendUri);
+        }
+
+        if (null !== $this->fingerprint) {
+            $this->fingerprintStasher->stash($event->getResponse(), $this->fingerprint);
         }
     }
 }

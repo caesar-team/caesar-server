@@ -152,6 +152,13 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $credentialsNonExpired = true;
 
     /**
+     * @var Collection|Fingerprint[]
+     *
+     * @ORM\OneToMany(targetEntity="Fingerprint", mappedBy="user", orphanRemoval=true, cascade={"persist"})
+     */
+    private $fingerprints = [];
+
+    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -165,6 +172,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->trash = Directory::createTrash();
         $this->shares = new ArrayCollection();
         $this->availableShares = new ArrayCollection();
+        $this->fingerprints = new ArrayCollection();
         if (null !== $srp) {
             $this->srp = $srp;
         }
@@ -380,5 +388,22 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setCredentialNonExpired(bool $flag)
     {
         $this->credentialsNonExpired = $flag;
+    }
+
+    public function removeFingerprint(Fingerprint $fingerprint): void
+    {
+        $this->fingerprints->removeElement($fingerprint);
+    }
+
+    public function addFingerprint(Fingerprint $fingerprint)
+    {
+        if (false === $this->fingerprints->contains($fingerprint)) {
+            $this->fingerprints->add($fingerprint);
+        }
+    }
+
+    public function getFingerprints(): Collection
+    {
+        return $this->fingerprints;
     }
 }

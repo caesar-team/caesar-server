@@ -2,7 +2,8 @@
 
 namespace App\Security\Authentication;
 
-use App\Security\Trusted\TrustedDeviceTokenStorage;
+use App\Entity\User;
+use App\Security\Fingerprint\FingerprintManager;
 use App\Security\Voter\TwoFactorInProgressVoter;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
@@ -24,33 +25,32 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
     private $jwtEncoder;
 
     /**
-     * @var TrustedDeviceTokenStorage
+     * @var FingerprintManager
      */
-    private $trustedDeviceTokenStorage;
+    private $fingerprintManager;
 
-    public function __construct(
-        JWTEncoderInterface $jwtEncoder,
-        TrustedDeviceTokenStorage $trustedDeviceTokenStorage
-    ) {
+    public function __construct(JWTEncoderInterface $jwtEncoder, FingerprintManager $fingerprintManager)
+    {
         $this->jwtEncoder = $jwtEncoder;
-        $this->trustedDeviceTokenStorage = $trustedDeviceTokenStorage;
+        $this->fingerprintManager = $fingerprintManager;
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token)
     {
         $request->getSession()->remove(Security::AUTHENTICATION_ERROR);
-        if ($token instanceof JWTUserToken) {
+        $user = $token->getUser();
+        if ($token instanceof JWTUserToken && $user instanceof User) {
             $data = $this->jwtEncoder->decode($token->getCredentials());
             unset($data[TwoFactorInProgressVoter::CHECK_KEY_NAME]);
+
+            $fingerprint = $request->request->get('fingerprint');
+            if (!empty($fingerprint)) {
+                $this->fingerprintManager->rememberFingerprint($request->request->get('fingerprint'), $user);
+            }
 
             $responseData = [
                 'token' => $this->jwtEncoder->encode($data),
             ];
-
-            if ($this->trustedDeviceTokenStorage->getTokenValue()) {
-                $responseData['trustedDeviceToken'] = $this->trustedDeviceTokenStorage->getTokenValue();
-                $responseData['trustedDeviceTokenExpiresAt'] = $this->trustedDeviceTokenStorage->getExpiresAtToken();
-            }
 
             return new JsonResponse($responseData);
         }
