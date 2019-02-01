@@ -4,7 +4,6 @@ namespace App\Security\Authentication;
 
 use App\Entity\User;
 use App\Security\Fingerprint\FingerprintManager;
-use App\Security\Trusted\TrustedDeviceTokenStorage;
 use App\Security\Voter\TwoFactorInProgressVoter;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
@@ -26,26 +25,13 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
     private $jwtEncoder;
 
     /**
-     * @var TrustedDeviceTokenStorage
-     */
-    private $trustedDeviceTokenStorage;
-
-    /**
      * @var FingerprintManager
      */
     private $fingerprintManager;
 
-    /**
-     * TwoFactorAuthenticationHandler constructor.
-     *
-     * @param JWTEncoderInterface       $jwtEncoder
-     * @param TrustedDeviceTokenStorage $trustedDeviceTokenStorage
-     * @param FingerprintManager        $fingerprintManager
-     */
-    public function __construct(JWTEncoderInterface $jwtEncoder, TrustedDeviceTokenStorage $trustedDeviceTokenStorage, FingerprintManager $fingerprintManager)
+    public function __construct(JWTEncoderInterface $jwtEncoder, FingerprintManager $fingerprintManager)
     {
         $this->jwtEncoder = $jwtEncoder;
-        $this->trustedDeviceTokenStorage = $trustedDeviceTokenStorage;
         $this->fingerprintManager = $fingerprintManager;
     }
 

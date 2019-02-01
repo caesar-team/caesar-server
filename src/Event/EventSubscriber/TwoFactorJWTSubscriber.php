@@ -10,16 +10,10 @@ use App\Security\Fingerprint\FingerprintStasher;
 use App\Security\Voter\TwoFactorInProgressVoter;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events;
-use Scheb\TwoFactorBundle\Security\TwoFactor\Trusted\TrustedDeviceManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 final class TwoFactorJWTSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var TrustedDeviceManagerInterface
-     */
-    private $trustedDeviceManager;
-
     /**
      * @var FingerprintManager
      */
@@ -30,9 +24,8 @@ final class TwoFactorJWTSubscriber implements EventSubscriberInterface
      */
     private $fingerprintStasher;
 
-    public function __construct(TrustedDeviceManagerInterface $trustedDeviceManager, FingerprintManager $fingerprintManager, FingerprintStasher $fingerprintStasher)
+    public function __construct(FingerprintManager $fingerprintManager, FingerprintStasher $fingerprintStasher)
     {
-        $this->trustedDeviceManager = $trustedDeviceManager;
         $this->fingerprintManager = $fingerprintManager;
         $this->fingerprintStasher = $fingerprintStasher;
     }
