@@ -17,6 +17,7 @@ use App\Model\View\User\UserView;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -61,8 +62,8 @@ final class UserController extends AbstractController
      *
      * @SWG\Response(
      *     response=200,
-     *     description="User keys information response",
-     *     @Model(type="\App\Model\View\User\UserKeysView", groups={"public"})
+     *     description="User public key",
+     *     @Model(type="App\Model\View\User\UserKeysView", groups={"public"})
      * )
      * @SWG\Response(
      *     response=401,
@@ -70,9 +71,13 @@ final class UserController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/keys/{email}",
-     *     name="api_user_get_keys",
+     *     path="/api/key/{email}",
+     *     name="api_user_get_public_key",
      *     methods={"GET"}
+     * )
+     * @Entity(
+     *     "user",
+     *     expr="repository.findByEmail(email)"
      * )
      * @Rest\View(serializerGroups={"public"})
      *
@@ -81,7 +86,7 @@ final class UserController extends AbstractController
      *
      * @return UserKeysView
      */
-    public function userKeysAction(User $user, UserKeysViewFactory $viewFactory)
+    public function publicKeyAction(User $user, UserKeysViewFactory $viewFactory)
     {
         return $viewFactory->create($user);
     }
