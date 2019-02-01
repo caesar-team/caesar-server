@@ -43,7 +43,10 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
             $data = $this->jwtEncoder->decode($token->getCredentials());
             unset($data[TwoFactorInProgressVoter::CHECK_KEY_NAME]);
 
-            $this->fingerprintManager->rememberFingerprint($request->request->get('fingerprint'), $user);
+            $fingerprint = $request->request->get('fingerprint');
+            if (!empty($fingerprint)) {
+                $this->fingerprintManager->rememberFingerprint($request->request->get('fingerprint'), $user);
+            }
 
             $responseData = [
                 'token' => $this->jwtEncoder->encode($data),
