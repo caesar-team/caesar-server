@@ -1,0 +1,3 @@
+# See https://symfony.com/doc/current/email/dev_environment.html
+swiftmailer:
+    delivery_addresses: ['%env(DELIVERY_ADDRESS)%']   # send all emails to a specific address

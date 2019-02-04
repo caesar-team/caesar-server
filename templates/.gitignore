@@ -15,4 +15,3 @@
 /public/static/images/
 !/public/static/documents/.gitignore
 /public/static/documents/
-phpunit.xml

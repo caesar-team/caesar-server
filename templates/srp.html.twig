@@ -1,0 +1,167 @@
+<html>
+<head>
+
+</head>
+<body>
+<div>
+    <span>
+        Registration
+    </span>
+    <form method="POST" action="{{ path('api_srp_registration') }}" id="register">
+        <div>
+            <label>
+                Email:
+                <input type="text" name="email">
+            </label>
+        </div>
+        <div>
+            <label>
+                Password:
+                <input type="text" name="password">
+            </label>
+        </div>
+        <div>
+            <input type="submit" value="Register">
+        </div>
+    </form>
+</div>
+<div>
+    <span>
+        Login
+    </span>
+    <form method="POST" action="{{ path('api_srp_login_prepare') }}" id="login">
+        <div>
+            <label>
+                Email:
+                <input type="text" name="email">
+            </label>
+        </div>
+        <div>
+            <label>
+                Password:
+                <input type="text" name="password">
+            </label>
+        </div>
+        <div>
+            <input type="submit" value="Login">
+        </div>
+    </form>
+</div>
+
+{% block js %}
+    <script type="text/javascript" src="{{ asset('axios.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('bigint.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('sha256.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('srp.js') }}"></script>
+    <script type="text/javascript">
+        var srp = new srp();
+
+        function generateTemporarySession(data) {
+            console.log(data);
+            let secondMatcher = srp.generateM2(data.A, data.matcher, data.S);
+            if (secondMatcher !== data.secondMatcher) {
+                alert('Invalid password');
+                return;
+            }
+
+            let sessionKey = srp.generateK(data.S);
+            console.log(sessionKey);
+
+            let jwt = data.jwt;
+
+            alert('JWT: '  + jwt);
+        }
+
+        function generateMatcher(data) {
+            let x = srp.generateX(data.seed, data.email, data.password);
+            let S = srp.generateS_Client(data.A, data.B, data.a, x);
+            let M1 = srp.generateM1(data.A, data.B, S);
+
+            data.S = S;
+            data.matcher = M1;
+            axios.post(
+                '/api/srp/login', {
+                    'matcher': M1,
+                    'email': data.email
+                })
+                .then(function (response) {
+                    console.log(response);
+                    data.secondMatcher = response.data.secondMatcher;
+                    data.jwt = response.data.jwt;
+
+                    generateTemporarySession(data);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        }
+
+        document.getElementById('register').onsubmit = function () {
+            let email = this.elements.item(0).value;
+            let password = this.elements.item(1).value;
+
+            let seed = srp.getRandomSeed();
+            let x = srp.generateX(seed, email, password);
+            let verifier = srp.generateV(x);
+            console.log({
+                'email': email,
+                'seed': seed,
+                'verifier': verifier
+            });
+
+            axios.post(
+                this.action, {
+                    'email': email,
+                    'seed': seed,
+                    'verifier': verifier
+                })
+                .then(function (response) {
+                    console.log('response');
+                    console.log(response);
+                })
+                .catch(function (error) {
+                    console.log('err');
+                    console.log(error);
+                });
+
+            return false;
+        };
+
+        document.getElementById('login').onsubmit = function () {
+            console.log(this);
+            console.log(this.action);
+            let email = this.elements.item(0).value;
+            let password = this.elements.item(1).value;
+
+            let a = srp.getRandomSeed();
+            let A = srp.generateA(a);
+
+            axios.post(
+                this.action, {
+                    'email': this.elements.item(0).value,
+                    'publicEphemeralValue': A,
+                })
+                .then(function (response) {
+                    console.log('response');
+                    console.log(response);
+
+                    generateMatcher({
+                        'email': email,
+                        'password': password,
+                        'A': A,
+                        'a': a,
+                        'B': response.data.publicEphemeralValue,
+                        'seed': response.data.seed,
+                    });
+                })
+                .catch(function (error) {
+                    console.log('err');
+                    console.log(error);
+                });
+
+            return false;
+        }
+    </script>
+{% endblock %}
+</body>
+</html>

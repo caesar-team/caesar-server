@@ -1,0 +1,16 @@
+stages:
+- name: Publish image
+  steps:
+  - publishImageConfig:
+        dockerfilePath: ./Dockerfile
+        buildContext: .
+        pushRemote: true
+        tag: caesarteam/caesar-server:${CICD_GIT_BRANCH}
+        registry: index.docker.io
+- name: Deploy
+  steps:
+  - applyYamlConfig:
+        path: ./deploy/deployment.yaml
+# branch conditions for the pipeline
+branch:
+    include: [develop, master]

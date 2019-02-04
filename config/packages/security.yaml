@@ -1,0 +1,86 @@
+security:
+    encoders:
+        FOS\UserBundle\Model\UserInterface: bcrypt
+        Symfony\Component\Security\Core\User\User: bcrypt
+    providers:
+        fos.user.provider:
+            id: fos_user.user_provider.username_email
+        hwi_oauth.user.provider:
+            id: hwi_oauth.user.provider
+        in_memory:
+            memory:
+                users:
+                    admin:
+                        password:            '%env(SUPERADMIN_PASS)%'
+                        roles:               ROLE_ADMIN
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        service:
+            pattern: ^/api/service
+            anonymous: true
+        doc:
+            pattern: ^/doc
+            http_basic: ~
+            anonymous: ~
+            context: admin
+            provider: in_memory
+        admin:
+            pattern: ^/admin
+            http_basic: ~
+            anonymous: ~
+            context: admin
+            provider: in_memory
+        share:
+            pattern: "^/api/share/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            provider:  fos.user.provider
+            stateless: true
+            anonymous: ~
+            logout: ~
+            guard:
+                authenticators:
+                    - App\Security\ShareAuthenticator
+        srp:
+            pattern: ^/api/srp
+            stateless: true
+            context: srp
+            anonymous: true
+        api:
+            pattern: ^/api
+            provider: fos.user.provider
+            stateless: true
+            anonymous: ~
+            two_factor:
+                check_path: /api/2fa
+                provider: fos.user.provider
+                auth_code_parameter_name: authCode
+                success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
+                failure_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
+                authentication_required_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
+            guard:
+                authenticators:
+                    - lexik_jwt_authentication.jwt_token_authenticator
+        main:
+            pattern: ^/
+            form_login:
+                provider: fos.user.provider
+            logout: true
+            stateless: false
+            anonymous: true
+            oauth:
+                resource_owners:
+                    google: google_login
+                login_path: /login
+                provider: hwi_oauth.user.provider
+                oauth_user_provider:
+                    service: App\Security\FOSUBUserProvider
+                failure_handler: App\Security\Authentication\OAuthFailureHandler
+                success_handler: App\Security\JwtRedirectHandler
+    access_control:
+        - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api/srp, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api, roles: [ROLE_USER]}
+        - { path: ^/doc, roles: [ROLE_ADMIN]}
+        - { path: ^/admin, roles: [ROLE_ADMIN]}

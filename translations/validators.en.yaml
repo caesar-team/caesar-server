@@ -1,0 +1,3 @@
+list.create.label.already_exists: List with such label already exists
+item.invite.user.already_invited: User already invited to this item
+item.invite.update.invalid_user: You are sent invalid users collection

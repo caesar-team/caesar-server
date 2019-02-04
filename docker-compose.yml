@@ -1,0 +1,59 @@
+version: '3.2'
+
+services:
+    php:
+        build: ./config/docker/php
+        volumes:
+            - .:/var/www/html
+            - trash:/var/www/
+        expose:
+            - 9000
+        environment:
+            - PARENT_USER_ID
+            - APP_ENV
+        entrypoint:
+            - "./config/docker/php/docker-entrypoint.sh"
+    nginx:
+        image: 4xxi/nginx:flex
+        depends_on:
+            - php
+        ports:
+            - "${SERVER_HTTP_PORT}:80"
+        volumes:
+            - .:/var/www/html
+            - ./var/log:/var/log/nginx
+    db:
+        image: postgres:9
+        ports:
+            - "${POSTGRES_EXTERNAL_PORT}:5432"
+        volumes:
+            - db:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_DB
+            - POSTGRES_USER
+            - POSTGRES_PASSWORD
+    db_test:
+        image: postgres:9
+        ports:
+            - "5433:5432"
+        command: ["postgres", "-c", "fsync=off", "-c", "full_page_writes=off"]
+        environment:
+            - POSTGRES_DB
+            - POSTGRES_USER
+            - POSTGRES_PASSWORD
+    redis:
+        image: 'redis:alpine'
+        environment:
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+        volumes:
+            - 'redis:/etc/redis/database/caesarapp'
+    mailer:
+        image: schickling/mailcatcher
+        ports:
+            - "${MAILER_PORT_1080}:1080"
+            - "${MAILER_PORT_1025}:1025"
+volumes:
+    db:
+    trash:
+    redis:
