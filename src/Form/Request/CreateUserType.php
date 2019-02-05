@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace App\Form\Request;
 
@@ -22,12 +22,12 @@ class CreateUserType extends AbstractType
                 'constraints' => [
                     new NotBlank(),
                     new Email(),
-                ]
+                ],
             ])
             ->add('encryptedPrivateKey', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
-                ]
+                ],
             ])
             ->add('publicKey', TextType::class, [
                 'constraints' => [

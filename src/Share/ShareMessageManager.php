@@ -12,6 +12,7 @@ class ShareMessageManager
 {
     public const PREFIX = 'messages';
     public const LIMIT_PREFIX = 'limits';
+    public const UNLIMITED_VALUE = -1;
 
     /**
      * @var Client
@@ -34,18 +35,17 @@ class ShareMessageManager
      *
      * @return ShareMessage
      */
-    public function create(ShareMessage $message): ShareMessage
+    public function save(ShareMessage $message): ShareMessage
     {
-        $id = bin2hex(random_bytes(20));
-        $message->setId($id);
-        $message->initExpiration();
-
         $redisId = $this->buildRedisId($message->getId());
         $limitId = $this->buildLimitId($message->getId());
         $this->redis->set($redisId, $this->serialize($message));
-        $this->redis->expire($redisId, $message->getSecondsLimit());
         $this->redis->set($limitId, $message->getRequestsLimit());
-        $this->redis->expire($limitId, $message->getSecondsLimit());
+
+        if (self::UNLIMITED_VALUE !== $message->getSecondsLimit()) {
+            $this->redis->expire($redisId, $message->getSecondsLimit());
+            $this->redis->expire($limitId, $message->getSecondsLimit());
+        }
 
         return $message;
     }
@@ -71,10 +71,44 @@ class ShareMessageManager
 
         $message = $this->deserialize($json);
 
-        $this->decreaseLimit($message);
-        $this->deleteIfLastAttempt($message);
+        if (self::UNLIMITED_VALUE !== $message->getRequestsLimit()) {
+            $this->decreaseLimit($message);
+            $this->deleteIfLastAttempt($message);
+        }
+
+        $message->setSecondsLimit($this->redis->ttl($this->buildRedisId($id)));
 
         return $message;
+    }
+
+    public function buildRedisId(string $id): string
+    {
+        return $this::PREFIX.':'.$id;
+    }
+
+    public function buildLimitId(string $id): string
+    {
+        return $this::LIMIT_PREFIX.':'.$id;
+    }
+
+    /**
+     * @param ShareMessage $message
+     *
+     * @return string
+     */
+    public function serialize(ShareMessage $message): string
+    {
+        return $this->serializer->serialize($message, 'json');
+    }
+
+    /**
+     * @param string $data
+     *
+     * @return ShareMessage
+     */
+    public function deserialize($data)
+    {
+        return $this->serializer->deserialize($data, ShareMessage::class, 'json');
     }
 
     /**
@@ -91,12 +125,8 @@ class ShareMessageManager
 
     /**
      * Returns true if it is last attempt (based on requestsLimit), false - in opposite case.
-     *
-     * @param ShareMessage $message
-     *
-     * @return bool
      */
-    protected function deleteIfLastAttempt(ShareMessage $message)
+    protected function deleteIfLastAttempt(ShareMessage $message): bool
     {
         $limit = (int) $this->redis->get($this->buildLimitId($message->getId()));
 
@@ -108,45 +138,5 @@ class ShareMessageManager
         }
 
         return false;
-    }
-
-    /**
-     * @var string
-     *
-     * @return string
-     */
-    public function buildRedisId($id)
-    {
-        return $this::PREFIX.':'.$id;
-    }
-
-    /**
-     * @var string
-     *
-     * @return string
-     */
-    public function buildLimitId($id)
-    {
-        return $this::LIMIT_PREFIX.':'.$id;
-    }
-
-    /**
-     * @param ShareMessage $message
-     *
-     * @return string
-     */
-    public function serialize(ShareMessage $message)
-    {
-        return $this->serializer->serialize($message, 'json');
-    }
-
-    /**
-     * @param string $data
-     *
-     * @return Message
-     */
-    public function deserialize($data)
-    {
-        return $this->serializer->deserialize($data, ShareMessage::class, 'json');
     }
 }

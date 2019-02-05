@@ -159,6 +159,13 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $fingerprints = [];
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean", options={"default": false})
+     */
+    private $requireMasterRefresh = false;
+
+    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -405,5 +412,15 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getFingerprints(): Collection
     {
         return $this->fingerprints;
+    }
+
+    public function isRequireMasterRefresh(): bool
+    {
+        return $this->requireMasterRefresh;
+    }
+
+    public function setRequireMasterRefresh(bool $requireMasterRefresh): void
+    {
+        $this->requireMasterRefresh = $requireMasterRefresh;
     }
 }

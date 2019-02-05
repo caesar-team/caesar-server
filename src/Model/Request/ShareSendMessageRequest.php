@@ -4,35 +4,31 @@ declare(strict_types=1);
 
 namespace App\Model\Request;
 
-use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\User;
 
 final class ShareSendMessageRequest
 {
     /**
-     * @var string
-     *
-     * @Assert\NotBlank
+     * @var User
      */
-    private $email = '';
+    private $user;
 
     /**
      * @var string
-     *
-     * @Assert\NotBlank
      */
-    private $message = '';
+    private $message;
 
-    public function getEmail(): string
+    public function getUser(): ?User
     {
-        return $this->email;
+        return $this->user;
     }
 
-    public function setEmail(string $email): void
+    public function setUser(User $user): void
     {
-        $this->email = $email;
+        $this->user = $user;
     }
 
-    public function getMessage(): string
+    public function getMessage(): ?string
     {
         return $this->message;
     }

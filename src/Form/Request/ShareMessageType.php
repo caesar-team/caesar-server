@@ -6,20 +6,36 @@ namespace App\Form\Request;
 
 use App\Model\DTO\ShareMessage;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\NotEqualTo;
+use Symfony\Component\Validator\Constraints\NotNull;
 
 class ShareMessageType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('message', TextType::class)
-            ->add('secondsLimit', IntegerType::class)
-            ->add('requestsLimit', IntegerType::class)
-        ;
+            ->add('message', TextType::class, [
+                'constraints' => [
+                    new NotBlank(),
+                ],
+            ])
+            ->add('secondsLimit', IntegerType::class, [
+                'constraints' => [
+                    new NotNull(),
+                    new NotEqualTo(['value' => 0]),
+                ],
+            ])
+            ->add('requestsLimit', IntegerType::class, [
+                'constraints' => [
+                    new NotNull(),
+                    new NotEqualTo(['value' => 0]),
+                ],
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver)

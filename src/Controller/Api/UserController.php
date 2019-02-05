@@ -209,6 +209,12 @@ final class UserController extends AbstractController
             return $form;
         }
 
+        /** @var User $oldUser */
+        $oldUser = $entityManager->getUnitOfWork()->getOriginalEntityData($user);
+        if ($oldUser['encryptedPrivateKey'] !== $user->getEncryptedPrivateKey()) {
+            $user->setRequireMasterRefresh(false);
+        }
+
         $entityManager->flush();
 
         return null;
@@ -236,22 +242,25 @@ final class UserController extends AbstractController
      *     name="api_user_create",
      *     methods={"POST"}
      * )
+     *
      * @param Request                $request
      * @param EntityManagerInterface $entityManager
+     *
      * @return FormInterface
      */
     public function createUserAction(Request $request, EntityManagerInterface $entityManager)
     {
         $user = new User();
         $form = $this->createForm(CreateUserType::class, $user);
-        $form->submit($request);
+        $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
         $user->setPlainPassword(md5(uniqid('', true))); //TODO обновление пользователя с мылом, если нет publicKey
         $user->setUsername($user->getEmail());
-//        $user->setEnabled(true);
+        $user->setRequireMasterRefresh(true);
+        $user->setEnabled(true);
         $entityManager->persist($user);
         $entityManager->flush();
 

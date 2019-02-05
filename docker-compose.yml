@@ -48,6 +48,14 @@ services:
             - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
         volumes:
             - 'redis:/etc/redis/database/caesarapp'
+    phpredisadmin:
+        image: erikdubbelboer/phpredisadmin
+        ports:
+            - "9999:80"
+        environment:
+            REDIS_1_HOST: 'redis'
+        links:
+            - redis
     mailer:
         image: schickling/mailcatcher
         ports:

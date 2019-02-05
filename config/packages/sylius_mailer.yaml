@@ -1,7 +1,7 @@
 sylius_mailer:
     sender:
         name: '%env(DELIVERY_NAME)%'
-        address: '%env(DELIVERY_ADDRESS)%'
+        address: '%env(SENDER_ADDRESS)%'
     emails:
         !php/const App\Mailer\MailRegistry::SHARE_SEND_MESSAGE:
             subject: 'Shared access with you'

@@ -53,6 +53,12 @@ spec:
                         key: DATABASE_URL
                         name: caesarapp-server
                         optional: false
+              - name: MAILER_URL
+                valueFrom:
+                    secretKeyRef:
+                        key: MAILER_URL
+                        name: caesarapp-server
+                        optional: false
               - name: GOOGLE_ID
                 valueFrom:
                     secretKeyRef:
