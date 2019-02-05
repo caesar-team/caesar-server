@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace App\Form\Request;
 
 use App\Entity\User;
-use App\Model\Request\ShareSendMessageRequest;
+use App\Model\Request\SendMessageRequest;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Url;
 
-final class ShareSendMessageType extends AbstractType
+final class SendMessageType extends AbstractType
 {
     /**
      * {@inheritdoc}
@@ -31,9 +32,15 @@ final class ShareSendMessageType extends AbstractType
                     new NotBlank(),
                 ],
             ])
-            ->add('message', TextType::class, [
+            ->add('token', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
+                ],
+            ])
+            ->add('url', TextType::class, [
+                'constraints' => [
+                    new NotBlank(),
+                    new Url(),
                 ],
             ]);
     }
@@ -46,7 +53,7 @@ final class ShareSendMessageType extends AbstractType
         parent::configureOptions($resolver);
 
         $resolver->setDefaults([
-            'data_class' => ShareSendMessageRequest::class,
+            'data_class' => SendMessageRequest::class,
         ]);
     }
 }

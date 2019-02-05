@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Form\Request\ShareSendMessageType;
+use App\Form\Request\SendMessageType;
 use App\Form\Request\TemporaryMessageType;
 use App\Mailer\MailRegistry;
 use App\Model\DTO\TemporaryMessage;
-use App\Model\Request\ShareSendMessageRequest;
+use App\Model\Request\SendMessageRequest;
 use App\Services\TemporaryMessageManager;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -114,7 +114,7 @@ class MessageController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type="\App\Form\Request\ShareSendMessageType")
+     *     @Model(type="\App\Form\Request\SendMessageType")
      * )
      * @SWG\Response(
      *     response=201,
@@ -142,16 +142,17 @@ class MessageController extends AbstractController
      */
     public function sendInvitation(Request $request, SenderInterface $sender)
     {
-        $sendRequest = new ShareSendMessageRequest();
+        $sendRequest = new SendMessageRequest();
 
-        $form = $this->createForm(ShareSendMessageType::class, $sendRequest);
+        $form = $this->createForm(SendMessageType::class, $sendRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        $sender->send(MailRegistry::SHARE_SEND_MESSAGE, [$sendRequest->getUser()->getEmail()], [
-            'message' => $sendRequest->getMessage(),
+        $sender->send(MailRegistry::INVITE_SEND_MESSAGE, [$sendRequest->getUser()->getEmail()], [
+            'url' => $sendRequest->getUrl(),
+            'token' => $sendRequest->getToken(),
         ]);
 
         return null;
