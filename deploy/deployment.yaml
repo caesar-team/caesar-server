@@ -33,8 +33,6 @@ spec:
                 value: https
               - name: JWT_TOKEN_TTL
                 value: "86400"
-              - name: MAILER_URL
-                value: null://localhost
               - name: STRICT_AUDIT_TRAIL
                 value: "false"
               - name: SENDER_ADDRESS
@@ -49,10 +47,10 @@ spec:
                         key: OAUTH_ALLOWED_DOMAINS
                         name: caesarapp-server
                         optional: false
-              - name: ALLOW_FRONT_REDIRECT_PATTERN
+              - name: FRONTEND_URL
                 valueFrom:
                     secretKeyRef:
-                        key: ALLOW_FRONT_REDIRECT_PATTERN
+                        key: FRONTEND_URL
                         name: caesarapp-server
                         optional: false
               - name: APP_SECRET

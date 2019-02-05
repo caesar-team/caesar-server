@@ -59,8 +59,7 @@ services:
     mailer:
         image: schickling/mailcatcher
         ports:
-            - "${MAILER_PORT_1080}:1080"
-            - "${MAILER_PORT_1025}:1025"
+            - "1080:1080"
 volumes:
     db:
     trash:

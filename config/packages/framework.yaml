@@ -33,4 +33,4 @@ framework:
 parameters:
     env(IDE_STRING): ''
     locale: 'en'
-    frontend_uris: ['%env(ALLOW_FRONT_REDIRECT_PATTERN)%']
+    frontend_uris: ['%env(FRONTEND_URL)%']

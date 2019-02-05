@@ -20,6 +20,7 @@ class FrontendUriHandler
      * @var array
      */
     private $validUriCollection;
+
     /**
      * @var RequestStack
      */
@@ -37,13 +38,10 @@ class FrontendUriHandler
             throw new NotFoundHttpException('Empty frontend uri');
         }
 
-        $redirectUri = parse_url($uri);
-        $redirectUri = $redirectUri['host'].(isset($redirectUri['port']) ? ':'.$redirectUri['port'] : '');
-        if ($this->requestStack->getCurrentRequest()->getHttpHost() === $redirectUri) {
-            return true;
-        }
-
         foreach ($this->validUriCollection as $validUri) {
+            $validUri = addcslashes($validUri, '/');
+            $validUri = "/$validUri/";
+
             if (preg_match($validUri, $uri)) {
                 return true;
             }
