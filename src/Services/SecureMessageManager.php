@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Model\DTO\TemporaryMessage;
+use App\Model\DTO\SecureMessage;
 use Predis\Client;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class TemporaryMessageManager
+class SecureMessageManager
 {
     public const PREFIX = 'messages';
     public const LIMIT_PREFIX = 'limits';
@@ -30,7 +30,7 @@ class TemporaryMessageManager
         $this->serializer = $serializer;
     }
 
-    public function save(TemporaryMessage $message): TemporaryMessage
+    public function save(SecureMessage $message): SecureMessage
     {
         $redisId = $this->buildRedisId($message->getId());
         $limitId = $this->buildLimitId($message->getId());
@@ -52,7 +52,7 @@ class TemporaryMessageManager
         return null !== $json;
     }
 
-    public function get($id): ?TemporaryMessage
+    public function get($id): ?SecureMessage
     {
         $redisId = $this->buildRedisId($id);
 
@@ -83,14 +83,14 @@ class TemporaryMessageManager
         return $this::LIMIT_PREFIX.':'.$id;
     }
 
-    public function serialize(TemporaryMessage $message): string
+    public function serialize(SecureMessage $message): string
     {
         return $message->getMessage();
     }
 
-    public function deserialize(string $id, string $data, int $ttl, int $attemptsLeft): TemporaryMessage
+    public function deserialize(string $id, string $data, int $ttl, int $attemptsLeft): SecureMessage
     {
-        $message = new TemporaryMessage();
+        $message = new SecureMessage();
 
         $message->setId($id);
         $message->setMessage($data);
@@ -100,7 +100,7 @@ class TemporaryMessageManager
         return $message;
     }
 
-    protected function decreaseLimit(TemporaryMessage $message): int
+    protected function decreaseLimit(SecureMessage $message): int
     {
         $res = $this->redis->decr($this->buildLimitId($message->getId()));
 
@@ -110,11 +110,11 @@ class TemporaryMessageManager
     /**
      * Returns true if it is last attempt (based on requestsLimit), false - in opposite case.
      *
-     * @param TemporaryMessage $message
+     * @param SecureMessage $message
      *
      * @return bool
      */
-    protected function deleteIfLastAttempt(TemporaryMessage $message): bool
+    protected function deleteIfLastAttempt(SecureMessage $message): bool
     {
         if (1 >= $message->getRequestsLimit()) {
             $this->redis->del($this->buildRedisId($message->getId()));

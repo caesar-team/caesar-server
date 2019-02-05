@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Form\Request\SendMessageType;
-use App\Form\Request\TemporaryMessageType;
+use App\Form\Request\SecureMessageType;
 use App\Mailer\MailRegistry;
-use App\Model\DTO\TemporaryMessage;
+use App\Model\DTO\SecureMessage;
 use App\Model\Request\SendMessageRequest;
-use App\Services\TemporaryMessageManager;
+use App\Services\SecureMessageManager;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Sylius\Component\Mailer\Sender\SenderInterface;
@@ -27,7 +27,7 @@ class MessageController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type="\App\Form\Request\TemporaryMessageType")
+     *     @Model(type="\App\Form\Request\SecureMessageType")
      * )
      * @SWG\Response(
      *     response=200,
@@ -48,15 +48,15 @@ class MessageController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                 $request
-     * @param TemporaryMessageManager $messageManager
+     * @param Request              $request
+     * @param SecureMessageManager $messageManager
      *
      * @return array|FormInterface
      */
-    public function createMessage(Request $request, TemporaryMessageManager $messageManager)
+    public function createMessage(Request $request, SecureMessageManager $messageManager)
     {
-        $message = new TemporaryMessage();
-        $form = $this->createForm(TemporaryMessageType::class, $message);
+        $message = new SecureMessage();
+        $form = $this->createForm(SecureMessageType::class, $message);
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {
@@ -77,7 +77,7 @@ class MessageController extends AbstractController
      *     response=200,
      *     description="Get message by id",
      *     @SWG\Schema(
-     *         @Model(type="\App\Model\DTO\TemporaryMessage")
+     *         @Model(type="\App\Model\DTO\SecureMessage")
      *     )
      * )
      *
@@ -92,12 +92,12 @@ class MessageController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param string                  $id
-     * @param TemporaryMessageManager $messageManager
+     * @param string               $id
+     * @param SecureMessageManager $messageManager
      *
-     * @return TemporaryMessage
+     * @return SecureMessage
      */
-    public function showMessage(string $id, TemporaryMessageManager $messageManager)
+    public function showMessage(string $id, SecureMessageManager $messageManager)
     {
         $message = $messageManager->get($id);
 
