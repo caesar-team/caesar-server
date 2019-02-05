@@ -9,6 +9,8 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -34,6 +36,18 @@ class CreateUserType extends AbstractType
                     new NotBlank(),
                 ],
             ]);
+
+        $builder->addEventListener(FormEvents::SUBMIT, [$this, 'userFill']);
+    }
+
+    public function userFill(FormEvent $event)
+    {
+        $user = $event->getData();
+
+        $user->setPlainPassword(md5(uniqid('', true)));
+        $user->setUsername($user->getEmail());
+        $user->setRequireMasterRefresh(true);
+        $user->setEnabled(true);
     }
 
     public function configureOptions(OptionsResolver $resolver)

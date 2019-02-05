@@ -17,6 +17,7 @@ class UserKeysViewFactory
 
         $view = new UserKeysView();
 
+        $view->userId = $user->getId()->toString();
         $view->encryptedPrivateKey = $user->getEncryptedPrivateKey();
         $view->publicKey = $user->getPublicKey();
 

@@ -15,6 +15,7 @@ use App\Model\Query\UserQuery;
 use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserView;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -23,6 +24,7 @@ use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 final class UserController extends AbstractController
@@ -229,8 +231,16 @@ final class UserController extends AbstractController
      *     @Model(type=\App\Form\Request\CreateUserType::class)
      * )
      * @SWG\Response(
-     *     response=204,
+     *     response=200,
      *     description="Success user created update",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="string",
+     *             property="userId",
+     *             example="553d9b8d-fce0-4a53-8cba-f7d334160bc4"
+     *         )
+     *     )
      * )
      * @SWG\Response(
      *     response=401,
@@ -244,26 +254,32 @@ final class UserController extends AbstractController
      * )
      *
      * @param Request                $request
+     * @param UserRepository         $userRepository
      * @param EntityManagerInterface $entityManager
      *
-     * @return FormInterface
+     * @return array|FormInterface
      */
-    public function createUserAction(Request $request, EntityManagerInterface $entityManager)
+    public function createUserAction(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
     {
-        $user = new User();
+        /** @var User $user */
+        $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
+        if (empty($user)) {
+            $user = new User();
+        } elseif (null !== $user->getPublicKey()) {
+            throw new BadRequestHttpException('User already exists');
+        }
+
         $form = $this->createForm(CreateUserType::class, $user);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        $user->setPlainPassword(md5(uniqid('', true))); //TODO обновление пользователя с мылом, если нет publicKey
-        $user->setUsername($user->getEmail());
-        $user->setRequireMasterRefresh(true);
-        $user->setEnabled(true);
         $entityManager->persist($user);
         $entityManager->flush();
 
-        return null;
+        return [
+            'userId' => $user->getId()->toString(),
+        ];
     }
 }
