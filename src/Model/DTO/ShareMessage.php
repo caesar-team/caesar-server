@@ -46,7 +46,7 @@ class ShareMessage
         $this->id = $id;
     }
 
-    public function getMessage(): string
+    public function getMessage(): ?string
     {
         return $this->message;
     }

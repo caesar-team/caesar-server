@@ -24,17 +24,12 @@ class ShareMessageManager
      */
     private $serializer;
 
-    public function __construct(Client $redis, SerializerInterface $serializer)
+    public function __construct(\Redis $redis, SerializerInterface $serializer)
     {
         $this->redis = $redis;
         $this->serializer = $serializer;
     }
 
-    /**
-     * @param ShareMessage $message
-     *
-     * @return ShareMessage
-     */
     public function save(ShareMessage $message): ShareMessage
     {
         $redisId = $this->buildRedisId($message->getId());
@@ -57,26 +52,23 @@ class ShareMessageManager
         return null !== $json;
     }
 
-    /**
-     * @param string $id
-     *
-     * @return ShareMessage|null
-     */
     public function get($id): ?ShareMessage
     {
-        $json = $this->redis->get($this->buildRedisId($id));
-        if (is_null($json)) {
+        $redisId = $this->buildRedisId($id);
+
+        $rawMessage = $this->redis->get($redisId);
+        if (false === $rawMessage) {
             return null;
         }
 
-        $message = $this->deserialize($json);
+        $ttl = $this->redis->ttl($redisId);
+        $attemptsLeft = (int) $this->redis->get($this->buildLimitId($id));
+        $message = $this->deserialize($id, $rawMessage, $ttl, $attemptsLeft);
 
         if (self::UNLIMITED_VALUE !== $message->getRequestsLimit()) {
             $this->decreaseLimit($message);
             $this->deleteIfLastAttempt($message);
         }
-
-        $message->setSecondsLimit($this->redis->ttl($this->buildRedisId($id)));
 
         return $message;
     }
@@ -91,32 +83,24 @@ class ShareMessageManager
         return $this::LIMIT_PREFIX.':'.$id;
     }
 
-    /**
-     * @param ShareMessage $message
-     *
-     * @return string
-     */
     public function serialize(ShareMessage $message): string
     {
-        return $this->serializer->serialize($message, 'json');
+        return $message->getMessage();
     }
 
-    /**
-     * @param string $data
-     *
-     * @return ShareMessage
-     */
-    public function deserialize($data)
+    public function deserialize(string $id, string $data, int $ttl, int $attemptsLeft): ShareMessage
     {
-        return $this->serializer->deserialize($data, ShareMessage::class, 'json');
+        $message = new ShareMessage();
+
+        $message->setId($id);
+        $message->setMessage($data);
+        $message->setSecondsLimit($ttl);
+        $message->setRequestsLimit($attemptsLeft);
+
+        return $message;
     }
 
-    /**
-     * @param ShareMessage $message
-     *
-     * @return int
-     */
-    protected function decreaseLimit(ShareMessage $message)
+    protected function decreaseLimit(ShareMessage $message): int
     {
         $res = $this->redis->decr($this->buildLimitId($message->getId()));
 
@@ -125,12 +109,14 @@ class ShareMessageManager
 
     /**
      * Returns true if it is last attempt (based on requestsLimit), false - in opposite case.
+     *
+     * @param ShareMessage $message
+     *
+     * @return bool
      */
     protected function deleteIfLastAttempt(ShareMessage $message): bool
     {
-        $limit = (int) $this->redis->get($this->buildLimitId($message->getId()));
-
-        if (0 === $limit) {
+        if (1 >= $message->getRequestsLimit()) {
             $this->redis->del($this->buildRedisId($message->getId()));
             $this->redis->del($this->buildLimitId($message->getId()));
 
