@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Form\Request\ShareMessageType;
 use App\Form\Request\ShareSendMessageType;
+use App\Form\Request\TemporaryMessageType;
 use App\Mailer\MailRegistry;
-use App\Model\DTO\ShareMessage;
+use App\Model\DTO\TemporaryMessage;
 use App\Model\Request\ShareSendMessageRequest;
-use App\Share\ShareMessageManager;
+use App\Services\TemporaryMessageManager;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Sylius\Component\Mailer\Sender\SenderInterface;
@@ -27,7 +27,7 @@ class MessageController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type="\App\Form\Request\ShareMessageType")
+     *     @Model(type="\App\Form\Request\TemporaryMessageType")
      * )
      * @SWG\Response(
      *     response=200,
@@ -48,22 +48,22 @@ class MessageController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request             $request
-     * @param ShareMessageManager $shareMessageManager
+     * @param Request                 $request
+     * @param TemporaryMessageManager $messageManager
      *
      * @return array|FormInterface
      */
-    public function createMessage(Request $request, ShareMessageManager $shareMessageManager)
+    public function createMessage(Request $request, TemporaryMessageManager $messageManager)
     {
-        $message = new ShareMessage();
-        $form = $this->createForm(ShareMessageType::class, $message);
+        $message = new TemporaryMessage();
+        $form = $this->createForm(TemporaryMessageType::class, $message);
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        $shareMessageManager->save($message);
+        $messageManager->save($message);
 
         return [
             'id' => $message->getId(),
@@ -77,7 +77,7 @@ class MessageController extends AbstractController
      *     response=200,
      *     description="Get message by id",
      *     @SWG\Schema(
-     *         @Model(type="\App\Model\DTO\ShareMessage")
+     *         @Model(type="\App\Model\DTO\TemporaryMessage")
      *     )
      * )
      *
@@ -92,12 +92,12 @@ class MessageController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param string              $id
-     * @param ShareMessageManager $messageManager
+     * @param string                  $id
+     * @param TemporaryMessageManager $messageManager
      *
-     * @return ShareMessage
+     * @return TemporaryMessage
      */
-    public function showMessage(string $id, ShareMessageManager $messageManager)
+    public function showMessage(string $id, TemporaryMessageManager $messageManager)
     {
         $message = $messageManager->get($id);
 

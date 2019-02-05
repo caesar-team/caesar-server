@@ -7,7 +7,7 @@ namespace App\Model\DTO;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-class ShareMessage
+class TemporaryMessage
 {
     /**
      * @var string

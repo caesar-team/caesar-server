@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Share;
+namespace App\Services;
 
-use App\Model\DTO\ShareMessage;
+use App\Model\DTO\TemporaryMessage;
 use Predis\Client;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class ShareMessageManager
+class TemporaryMessageManager
 {
     public const PREFIX = 'messages';
     public const LIMIT_PREFIX = 'limits';
@@ -30,7 +30,7 @@ class ShareMessageManager
         $this->serializer = $serializer;
     }
 
-    public function save(ShareMessage $message): ShareMessage
+    public function save(TemporaryMessage $message): TemporaryMessage
     {
         $redisId = $this->buildRedisId($message->getId());
         $limitId = $this->buildLimitId($message->getId());
@@ -52,7 +52,7 @@ class ShareMessageManager
         return null !== $json;
     }
 
-    public function get($id): ?ShareMessage
+    public function get($id): ?TemporaryMessage
     {
         $redisId = $this->buildRedisId($id);
 
@@ -83,14 +83,14 @@ class ShareMessageManager
         return $this::LIMIT_PREFIX.':'.$id;
     }
 
-    public function serialize(ShareMessage $message): string
+    public function serialize(TemporaryMessage $message): string
     {
         return $message->getMessage();
     }
 
-    public function deserialize(string $id, string $data, int $ttl, int $attemptsLeft): ShareMessage
+    public function deserialize(string $id, string $data, int $ttl, int $attemptsLeft): TemporaryMessage
     {
-        $message = new ShareMessage();
+        $message = new TemporaryMessage();
 
         $message->setId($id);
         $message->setMessage($data);
@@ -100,7 +100,7 @@ class ShareMessageManager
         return $message;
     }
 
-    protected function decreaseLimit(ShareMessage $message): int
+    protected function decreaseLimit(TemporaryMessage $message): int
     {
         $res = $this->redis->decr($this->buildLimitId($message->getId()));
 
@@ -110,11 +110,11 @@ class ShareMessageManager
     /**
      * Returns true if it is last attempt (based on requestsLimit), false - in opposite case.
      *
-     * @param ShareMessage $message
+     * @param TemporaryMessage $message
      *
      * @return bool
      */
-    protected function deleteIfLastAttempt(ShareMessage $message): bool
+    protected function deleteIfLastAttempt(TemporaryMessage $message): bool
     {
         if (1 >= $message->getRequestsLimit()) {
             $this->redis->del($this->buildRedisId($message->getId()));
