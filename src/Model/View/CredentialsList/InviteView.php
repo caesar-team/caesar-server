@@ -24,6 +24,11 @@ class InviteView
     public $userId;
 
     /**
+     * @var \DateTime
+     */
+    public $lastUpdated;
+
+    /**
      * @var string
      *
      * @AppSwagger\EnumProperty(enumPath="App\DBAL\Types\Enum\AccessEnumType")
