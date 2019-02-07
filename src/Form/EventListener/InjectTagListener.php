@@ -7,6 +7,7 @@ namespace App\Form\EventListener;
 use App\Entity\Item;
 use App\Entity\Tag;
 use App\Repository\TagRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -38,6 +39,9 @@ final class InjectTagListener implements EventSubscriberInterface
         $item = $event->getData();
         if ($item instanceof Item && $event->getForm()->has('tags')) {
             $tags = $event->getForm()->get('tags')->getData();
+            if (null === $tags) {
+                return;
+            }
 
             $names = [];
             $uniqueTags = [];
@@ -47,9 +51,10 @@ final class InjectTagListener implements EventSubscriberInterface
             }
 
             $existTags = $this->tagRepository->getTags($names);
-            $tags = [];
+            $tags = new ArrayCollection();
             foreach ($uniqueTags as $tag) {
-                $tags[] = $existTags[$tag] ?? new Tag($tag);
+                $tag = $existTags[$tag] ?? new Tag($tag);
+                $tags->add($tag);
             }
 
             $item->setTags($tags);

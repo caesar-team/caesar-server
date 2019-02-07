@@ -30,6 +30,11 @@ class ItemView extends NodeView
     public $ownerId;
 
     /**
+     * @var LinkView|null
+     */
+    public $link;
+
+    /**
      * @var InviteView[]
      */
     public $invited;

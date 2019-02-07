@@ -365,7 +365,7 @@ final class ItemController extends AbstractController
         }
 
         $form = $this->createForm(EditItemType::class, $item);
-        $form->submit($request->request->all());
+        $form->submit($request->request->all(), false);
         if (!$form->isValid()) {
             return $form;
         }

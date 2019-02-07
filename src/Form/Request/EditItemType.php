@@ -41,7 +41,9 @@ class EditItemType extends AbstractType
                 'allow_delete' => true,
                 'mapped' => false,
             ])
-        ;
+            ->add('linkData', TextType::class, [
+                'property_path' => 'link.data',
+            ]);
 
         if ($this->injectTagListener) {
             $builder->addEventSubscriber($this->injectTagListener);

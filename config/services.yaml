@@ -83,3 +83,8 @@ services:
             - "@scheb_two_factor.security.google"
             - "%scheb_two_factor.google.server_name%"
             - "%scheb_two_factor.google.issuer%"
+
+    App\Repository\ItemRepository:
+        factory: ['@doctrine.orm.default_entity_manager', getRepository]
+        arguments:
+            - App\Entity\Item

@@ -154,7 +154,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      *
      * @ORM\OneToMany(targetEntity="Fingerprint", mappedBy="user", orphanRemoval=true, cascade={"persist"})
      */
-    private $fingerprints = [];
+    private $fingerprints;
 
     /**
      * @var bool

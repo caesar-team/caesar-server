@@ -46,6 +46,10 @@ security:
             stateless: true
             context: srp
             anonymous: true
+        link:
+            pattern: ^/api/link/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$
+            methods: ['GET']
+            anonymous: true
         api:
             pattern: ^/api
             provider: fos.user.provider
@@ -78,6 +82,7 @@ security:
                 failure_handler: App\Security\Authentication\OAuthFailureHandler
                 success_handler: App\Security\JwtRedirectHandler
     access_control:
+        - { path: '^/api/link/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$', roles: [IS_AUTHENTICATED_ANONYMOUSLY], methods: ['GET']}
         - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/srp, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}

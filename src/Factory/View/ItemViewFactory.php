@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Factory\View;
 
-use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
+use App\Entity\Link;
 use App\Model\View\CredentialsList\InviteView;
 use App\Model\View\CredentialsList\ItemView;
+use App\Model\View\CredentialsList\LinkView;
 use App\Model\View\CredentialsList\UpdateView;
 use App\Repository\UserRepository;
 
@@ -33,6 +34,7 @@ class ItemViewFactory
         $view->tags = array_map('strval', $item->getTags()->toArray());
 
         $view->secret = $item->getSecret();
+        $view->link = $this->createLinkView($item->getLink());
         $view->invited = $this->getInvitesCollection($item);
         $view->update = $this->getUpdateView($item->getUpdate());
         $view->ownerId = $this->getOwnerId($item);
@@ -67,9 +69,9 @@ class ItemViewFactory
         $invite = new InviteView();
         $invite->id = $ownerItem->getId()->toString();
         $invite->userId = $user->getId()->toString();
-        $invite->access = AccessEnumType::TYPE_WRITE;
         $invite->lastUpdated = $ownerItem->getLastUpdated();
         $invite->email = $user->getEmail();
+        $invite->access = $ownerItem->getAccess();
 
         $inviteViewCollection[] = $invite;
 
@@ -96,6 +98,21 @@ class ItemViewFactory
         $view->userId = $update->getUpdatedBy()->getId()->toString();
         $view->createdAt = $update->getLastUpdated();
         $view->secret = $update->getSecret();
+
+        return $view;
+    }
+
+    private function createLinkView(?Link $link): ?LinkView
+    {
+        if (null === $link) {
+            return null;
+        }
+
+        $view = new LinkView();
+
+        $view->id = $link->getId();
+        $view->data = $link->getData();
+        $view->publicKey = $link->getGuestUser()->getPublicKey();
 
         return $view;
     }

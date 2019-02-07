@@ -108,6 +108,13 @@ class Item
      */
     protected $update;
 
+    /**
+     * @var Link|null
+     *
+     * @ORM\OneToOne(targetEntity="Link", mappedBy="parentItem")
+     */
+    protected $link;
+
     public function __construct()
     {
         $this->id = Uuid::uuid4();
@@ -153,7 +160,7 @@ class Item
     /**
      * @param string|null $secret
      */
-    public function setSecret(string $secret)
+    public function setSecret(?string $secret)
     {
         $this->secret = $secret;
     }
@@ -309,5 +316,10 @@ class Item
     public function setUpdate(?ItemUpdate $update): void
     {
         $this->update = $update;
+    }
+
+    public function getLink(): ?Link
+    {
+        return $this->link;
     }
 }
