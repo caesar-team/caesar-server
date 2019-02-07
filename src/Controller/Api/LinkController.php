@@ -28,7 +28,7 @@ class LinkController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type="\App\Form\Request\SecureMessageType")
+     *     @Model(type="App\Form\Request\LinkCreateRequestType")
      * )
      * @SWG\Response(
      *     response=200,
@@ -37,7 +37,7 @@ class LinkController extends AbstractController
      *         type="object",
      *         @SWG\Property(
      *             type="string",
-     *             property="id",
+     *             property="token",
      *             example="fc2b052450a6c890ffa510c2aa735c0178c71a03"
      *         )
      *     )
@@ -73,6 +73,21 @@ class LinkController extends AbstractController
     }
 
     /**
+     * @SWG\Tag(name="Link")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success message created",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="string",
+     *             property="jwt",
+     *             example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE1NDk1NDQwNTAsImV4cCI6MTU0OTYzMDQ1MCwicm9sZXMiOlsiUk9MRV9VU0VSIl0sInVzZXJuYW1lIjoiN2Q5ZTNiYjctMTFiNy00MTBiLWFhN2QtYjNiYWM4ZTA1N2NlIn0.cAAwihBVsaRXOzXnaFQ7u6BJhWvDzYGwLIxZEYp-8bdPMXk7v_DoooHjAvX5P_ubTXbzK_w8UZU1h0pphFA7dCAARsA0_B1MFz83HZY6EZW2Zeheg6z__89ppTwcp4SfK2Vdn9eylwtoUzu-ZT003FIdvmjdeSRY4Fdl9XpZHzO5HQE3DTydRk7zQMtRWwPZewhK9jUh9RW0AH-gYV9Uz6dTW_3EtB8pBKbFx6GmGtwbot8YftXJ7M93ZjPJIdj_Vm5cT3xRPZeb9ol2JKHCJMs1UhX5oy3pdRToyRSUnX_-GO_P3eXChGSOR3248OOXetlZzOah1iEB9owIrZFLlBGNIJP9YdeW-CW0zfgmK95hBfmlsJ6otoF2XNvw7xBfPhsmMZajtJoW1mTlCYis5hjYPv-wtpL6mrEnJkmL1Kp0sV31YXYTPj6rKP_ZYXJIn7SvN-Ebii_xy26UKC7_-PTzXlGtrbB3NXIUCHePL2nzQlR25qraKszghs1_fmosc95mx9nLOptMuNAI0rc1DjRED-FJgt0hmAIYzEcv0flfpYMGkHqA-zupT1JAiQXTbHCQA9jPuzTyJtjd02OUtugMi8qeZtbomFvGwnr6e757kHdInNa_3ABPaNB1WiDoBVHlKm1KYmdEREnOtIVuLeG7_yb9jc1Jh0-B7n91dpc"
+     *         )
+     *     )
+     * )
+     *
      * @Route(
      *     "/api/link/{id}",
      *     name="authorize_by_link",
@@ -95,6 +110,17 @@ class LinkController extends AbstractController
     }
 
     /**
+     * @SWG\Tag(name="Link")
+     *
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success link deleted",
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="You are not link owner",
+     * )
+     *
      * @Route(
      *     "/api/link/{id}",
      *     name="delete_link",
@@ -118,6 +144,22 @@ class LinkController extends AbstractController
     }
 
     /**
+     * @SWG\Tag(name="Link")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type="App\Form\Request\LinkUpdateRequestType")
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success link deleted",
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="You are not link owner",
+     * )
+     *
      * @Route(
      *     "/api/link/{id}",
      *     name="update_link",
@@ -127,6 +169,7 @@ class LinkController extends AbstractController
      * @param Link                   $link
      * @param Request                $request
      * @param EntityManagerInterface $entityManager
+     *
      * @return null
      */
     public function updateLink(Link $link, Request $request, EntityManagerInterface $entityManager)
