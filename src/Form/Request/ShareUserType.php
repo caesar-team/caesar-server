@@ -19,7 +19,12 @@ class ShareUserType extends AbstractType
         parent::buildForm($builder, $options);
 
         $builder
-            ->add('email', EmailType::class, [
+            ->add('login', EmailType::class, [
+                'constraints' => [
+                    new NotBlank(),
+                ],
+            ])
+            ->add('password', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
                 ],

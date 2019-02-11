@@ -7,6 +7,14 @@ namespace App\Model\DTO;
 class ShareUser
 {
     /**
+     * @var string|null
+     */
+    private $login;
+    /**
+     * @var string|null
+     */
+    private $password;
+    /**
      * @var string
      */
     private $email;
@@ -61,5 +69,37 @@ class ShareUser
     public function setPublicKey(?string $publicKey): void
     {
         $this->publicKey = $publicKey;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getLogin(): ?string
+    {
+        return $this->login;
+    }
+
+    /**
+     * @param null|string $login
+     */
+    public function setLogin(?string $login): void
+    {
+        $this->login = $login;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    /**
+     * @param null|string $password
+     */
+    public function setPassword(?string $password): void
+    {
+        $this->password = $password;
     }
 }

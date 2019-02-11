@@ -52,17 +52,18 @@ final class ShareManager
             throw new AccessDeniedException('Access denied to the method');
         }
 
-        $user = $this->userManager->findUserByEmail($shareUser->getEmail());
+        $user = $this->userManager->findUserByEmail($shareUser->getLogin());
         if (!$user) {
             /** @var User $user */
             $user = $this->userManager->createUser();
             $user->setEnabled(true);
             $user->setGuest(true);
-            $user->setEmail($shareUser->getEmail());
-            $user->setUsername($shareUser->getEmail());
+            $user->setEmail($shareUser->getLogin());
+            $user->setLogin($shareUser->getLogin());
+            $user->setUsername($shareUser->getLogin());
             $user->setEncryptedPrivateKey($shareUser->getEncryptedPrivateKey());
             $user->setPublicKey($shareUser->getPublicKey());
-            $user->setPlainPassword(md5(uniqid('', true)));
+            $user->setPlainPassword($shareUser->getPassword());
 
             $this->userManager->updateUser($user);
         }
