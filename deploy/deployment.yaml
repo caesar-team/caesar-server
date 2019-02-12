@@ -22,67 +22,144 @@ spec:
                 workload.user.cattle.io/workloadselector: deployment-default-caesar
         spec:
             containers:
-            - env:
-              - name: ALLOW_FRONT_REDIRECT_PATTERN
-                value: /^http[s]*:\/\/(dev.caesar.team|localhost:3000)/
-              - name: AVAILABLE_REQUEST_SIGNATURE
-                value: "false"
-              - name: DB_VERSION
-                value: "9.6"
-              - name: HTTPS
-                value: "on"
-              - name: HTTP_X_FORWARDED_PROTO
-                value: https
-              - name: JWT_TOKEN_TTL
-                value: "86400"
-              - name: MAILER_URL
-                value: null://localhost
-              - name: OAUTH_ALLOWED_DOMAINS
-                value: 4xxi.com
-              - name: STRICT_AUDIT_TRAIL
-                value: "false"
-              - name: APP_SECRET
-                valueFrom:
+              - env:
+                - name: AVAILABLE_REQUEST_SIGNATURE
+                  value: "false"
+                - name: DB_VERSION
+                  value: "9.6"
+                - name: HTTPS
+                  value: "on"
+                - name: HTTP_X_FORWARDED_PROTO
+                  value: https
+                - name: JWT_TOKEN_TTL
+                  value: "86400"
+                - name: STRICT_AUDIT_TRAIL
+                  value: "false"
+                - name: SENDER_ADDRESS
+                  valueFrom:
                     secretKeyRef:
-                        key: APP_SECRET
-                        name: caesarapp-server
-                        optional: false
-              - name: DATABASE_URL
-                valueFrom:
+                      key: SENDER_ADDRESS
+                      name: caesarapp-server
+                      optional: false
+                - name: OAUTH_ALLOWED_DOMAINS
+                  valueFrom:
                     secretKeyRef:
-                        key: DATABASE_URL
-                        name: caesarapp-server
-                        optional: false
-              - name: GOOGLE_ID
-                valueFrom:
+                      key: OAUTH_ALLOWED_DOMAINS
+                      name: caesarapp-server
+                      optional: false
+                - name: GOOGLE_ID
+                  valueFrom:
                     secretKeyRef:
-                        key: GOOGLE_ID
-                        name: caesarapp-server
-                        optional: false
-              - name: GOOGLE_SECRET
-                valueFrom:
+                      key: GOOGLE_ID
+                      name: caesarapp-server
+                      optional: false
+                - name: GOOGLE_SECRET
+                  valueFrom:
                     secretKeyRef:
-                        key: GOOGLE_SECRET
-                        name: caesarapp-server
-                        optional: false
-              - name: JWT_PASSPHRASE
-                valueFrom:
+                      key: GOOGLE_SECRET
+                      name: caesarapp-server
+                      optional: false
+                - name: JWT_PASSPHRASE
+                  valueFrom:
                     secretKeyRef:
-                        key: JWT_PASSPHRASE
-                        name: caesarapp-server
-                        optional: false
-              - name: SUPERADMIN_PASS
-                valueFrom:
+                      key: JWT_PASSPHRASE
+                      name: caesarapp-server
+                      optional: false
+                - name: SUPERADMIN_PASS
+                  valueFrom:
                     secretKeyRef:
-                        key: SUPERADMIN_PASS
-                        name: caesarapp-server
-                        optional: false
-              - name: TWO_FACTOR_SERVER_NAME
-                valueFrom:
+                      key: SUPERADMIN_PASS
+                      name: caesarapp-server
+                      optional: false
+                - name: TWO_FACTOR_SERVER_NAME
+                  valueFrom:
                     secretKeyRef:
-                        key: TWO_FACTOR_SERVER_NAME
-                        name: caesarapp-server
-                        optional: false
+                      key: TWO_FACTOR_SERVER_NAME
+                      name: caesarapp-server
+                      optional: false
+                - name: ALLOW_FRONT_REDIRECT_PATTERN
+                  valueFrom:
+                    secretKeyRef:
+                      key: ALLOW_FRONT_REDIRECT_PATTERN
+                      name: caesarapp-server
+                      optional: false
+                - name: APP_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      key: APP_SECRET
+                      name: cae- env:
+                - name: AVAILABLE_REQUEST_SIGNATURE
+                  value: "false"
+                - name: DB_VERSION
+                  value: "9.6"
+                - name: HTTPS
+                  value: "on"
+                - name: HTTP_X_FORWARDED_PROTO
+                  value: https
+                - name: JWT_TOKEN_TTL
+                  value: "86400"
+                - name: STRICT_AUDIT_TRAIL
+                  value: "false"
+                - name: SENDER_ADDRESS
+                  valueFrom:
+                    secretKeyRef:
+                      key: SENDER_ADDRESS
+                      name: caesarapp-server
+                      optional: false
+                - name: OAUTH_ALLOWED_DOMAINS
+                  valueFrom:
+                    secretKeyRef:
+                      key: OAUTH_ALLOWED_DOMAINS
+                      name: caesarapp-server
+                      optional: false
+                - name: GOOGLE_ID
+                  valueFrom:
+                    secretKeyRef:
+                      key: GOOGLE_ID
+                      name: caesarapp-server
+                      optional: false
+                - name: GOOGLE_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      key: GOOGLE_SECRET
+                      name: caesarapp-server
+                      optional: false
+                - name: JWT_PASSPHRASE
+                  valueFrom:
+                    secretKeyRef:
+                      key: JWT_PASSPHRASE
+                      name: caesarapp-server
+                      optional: false
+                - name: SUPERADMIN_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      key: SUPERADMIN_PASS
+                      name: caesarapp-server
+                      optional: false
+                - name: TWO_FACTOR_SERVER_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: TWO_FACTOR_SERVER_NAME
+                      name: caesarapp-server
+                      optional: false
+                - name: ALLOW_FRONT_REDIRECT_PATTERN
+                  valueFrom:
+                    secretKeyRef:
+                      key: ALLOW_FRONT_REDIRECT_PATTERN
+                      name: caesarapp-server
+                      optional: false
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      key: DATABASE_URL
+                      name: caesarapp-server
+                      optional: false
+                - name: MAILER_URL
+                  valueFrom:
+                    secretKeyRef:
+                      key: MAILER_URL
+                      name: caesarapp-server
+                      optional: false
               image: caesarteam/caesar-server:${CICD_GIT_BRANCH}
               imagePullPolicy: Always
               name: caesarapp-server
