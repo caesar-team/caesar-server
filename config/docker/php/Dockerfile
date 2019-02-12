@@ -14,7 +14,9 @@ RUN docker-php-ext-install \
     opcache \
     pdo \
     pdo_pgsql \
-    zip
+    zip \
+    && pecl install redis \
+    && docker-php-ext-enable redis
 
 #Liip Imagine support
 RUN apt-get install -y \

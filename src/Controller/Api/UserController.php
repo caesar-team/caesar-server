@@ -9,18 +9,22 @@ use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
 use App\Factory\View\UserListViewFactory;
 use App\Form\Query\UserQueryType;
+use App\Form\Request\CreateUserType;
 use App\Form\Request\SaveKeysType;
 use App\Model\Query\UserQuery;
 use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserView;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 final class UserController extends AbstractController
@@ -57,12 +61,12 @@ final class UserController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="User")
+     * @SWG\Tag(name="Invitation")
      *
      * @SWG\Response(
      *     response=200,
-     *     description="User keys information response",
-     *     @Model(type="\App\Model\View\User\UserKeysView", groups={"public"})
+     *     description="User public key",
+     *     @Model(type="App\Model\View\User\UserKeysView", groups={"public"})
      * )
      * @SWG\Response(
      *     response=401,
@@ -70,9 +74,13 @@ final class UserController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/keys/{email}",
-     *     name="api_user_get_keys",
+     *     path="/api/key/{email}",
+     *     name="api_user_get_public_key",
      *     methods={"GET"}
+     * )
+     * @Entity(
+     *     "user",
+     *     expr="repository.findByEmail(email)"
      * )
      * @Rest\View(serializerGroups={"public"})
      *
@@ -81,7 +89,7 @@ final class UserController extends AbstractController
      *
      * @return UserKeysView
      */
-    public function userKeysAction(User $user, UserKeysViewFactory $viewFactory)
+    public function publicKeyAction(User $user, UserKeysViewFactory $viewFactory)
     {
         return $viewFactory->create($user);
     }
@@ -203,8 +211,75 @@ final class UserController extends AbstractController
             return $form;
         }
 
+        /** @var User $oldUser */
+        $oldUser = $entityManager->getUnitOfWork()->getOriginalEntityData($user);
+        if ($oldUser['encryptedPrivateKey'] !== $user->getEncryptedPrivateKey()) {
+            $user->setRequireMasterRefresh(false);
+        }
+
         $entityManager->flush();
 
         return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Invitation")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\CreateUserType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success user created update",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="string",
+     *             property="userId",
+     *             example="553d9b8d-fce0-4a53-8cba-f7d334160bc4"
+     *         )
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/user",
+     *     name="api_user_create",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Request                $request
+     * @param UserRepository         $userRepository
+     * @param EntityManagerInterface $entityManager
+     *
+     * @return array|FormInterface
+     */
+    public function createUserAction(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
+    {
+        /** @var User $user */
+        $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
+        if (empty($user)) {
+            $user = new User();
+        } elseif (null !== $user->getPublicKey()) {
+            throw new BadRequestHttpException('User already exists');
+        }
+
+        $form = $this->createForm(CreateUserType::class, $user);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return [
+            'userId' => $user->getId()->toString(),
+        ];
     }
 }

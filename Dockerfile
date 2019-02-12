@@ -21,7 +21,7 @@ RUN APP_ENV=prod composer install --prefer-dist --no-progress --no-suggest --no-
 FROM base AS release
 # copy production vendors
 COPY --from=dependencies /var/www/html/vendor ./vendor
-RUN apt-get install -y --no-install-recommends libgpgme11-dev && rm -rf /var/lib/apt/lists/* && pecl install gnupg && docker-php-ext-enable gnupg
+RUN apt-get install -y --no-install-recommends libgpgme11-dev && rm -rf /var/lib/apt/lists/* && pecl install gnupg redis && docker-php-ext-enable gnupg redis
 COPY . .
 COPY entrypoint.sh /usr/local/bin/
 COPY ./www.conf /usr/local/etc/php-fpm.d/
