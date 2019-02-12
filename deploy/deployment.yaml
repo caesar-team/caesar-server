@@ -23,8 +23,6 @@ spec:
         spec:
             containers:
             - env:
-              - name: ALLOW_FRONT_REDIRECT_PATTERN
-                value: /^http[s]*:\/\/(dev.caesar.team|localhost:3000)/
               - name: AVAILABLE_REQUEST_SIGNATURE
                 value: "false"
               - name: DB_VERSION
@@ -37,10 +35,26 @@ spec:
                 value: "86400"
               - name: MAILER_URL
                 value: null://localhost
-              - name: OAUTH_ALLOWED_DOMAINS
-                value: 4xxi.com
               - name: STRICT_AUDIT_TRAIL
                 value: "false"
+              - name: SENDER_ADDRESS
+                valueFrom:
+                    secretKeyRef:
+                        key: SENDER_ADDRESS
+                        name: caesarapp-server
+                        optional: false
+              - name: OAUTH_ALLOWED_DOMAINS
+                valueFrom:
+                    secretKeyRef:
+                        key: OAUTH_ALLOWED_DOMAINS
+                        name: caesarapp-server
+                        optional: false
+              - name: ALLOW_FRONT_REDIRECT_PATTERN
+                valueFrom:
+                    secretKeyRef:
+                        key: ALLOW_FRONT_REDIRECT_PATTERN
+                        name: caesarapp-server
+                        optional: false
               - name: APP_SECRET
                 valueFrom:
                     secretKeyRef:
@@ -51,6 +65,12 @@ spec:
                 valueFrom:
                     secretKeyRef:
                         key: DATABASE_URL
+                        name: caesarapp-server
+                        optional: false
+              - name: MAILER_URL
+                valueFrom:
+                    secretKeyRef:
+                        key: MAILER_URL
                         name: caesarapp-server
                         optional: false
               - name: GOOGLE_ID

@@ -11,6 +11,13 @@ class UserKeysView
 {
     /**
      * @var string
+     * @SWG\Property(example="553d9b8d-fce0-4a53-8cba-f7d334160bc4")
+     * @Groups({"public"})
+     */
+    public $userId;
+
+    /**
+     * @var string
      *
      * @SWG\Property(example="asdfasdra34w56")
      * @Groups({"key_detail_read"})

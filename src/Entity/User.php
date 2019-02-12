@@ -12,14 +12,12 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * User.
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @UniqueEntity(fields={"email"})
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 {
@@ -157,6 +155,13 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * @ORM\OneToMany(targetEntity="Fingerprint", mappedBy="user", orphanRemoval=true, cascade={"persist"})
      */
     private $fingerprints = [];
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean", options={"default": false})
+     */
+    private $requireMasterRefresh = false;
 
     /**
      * User constructor.
@@ -405,5 +410,15 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getFingerprints(): Collection
     {
         return $this->fingerprints;
+    }
+
+    public function isRequireMasterRefresh(): bool
+    {
+        return $this->requireMasterRefresh;
+    }
+
+    public function setRequireMasterRefresh(bool $requireMasterRefresh): void
+    {
+        $this->requireMasterRefresh = $requireMasterRefresh;
     }
 }

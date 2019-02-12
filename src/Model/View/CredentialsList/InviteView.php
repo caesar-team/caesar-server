@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Model\View\CredentialsList;
 
-use Swagger\Annotations as SWG;
 use App\Swagger\Annotations as AppSwagger;
+use Swagger\Annotations as SWG;
 
 class InviteView
 {
@@ -24,9 +24,21 @@ class InviteView
     public $userId;
 
     /**
+     * @var \DateTime
+     */
+    public $lastUpdated;
+
+    /**
      * @var string
      *
      * @AppSwagger\EnumProperty(enumPath="App\DBAL\Types\Enum\AccessEnumType")
      */
     public $access;
+
+    /**
+     * @var string
+     *
+     * @SWG\Property(example="user@mail.com")
+     */
+    public $email;
 }
