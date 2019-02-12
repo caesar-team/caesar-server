@@ -6,7 +6,6 @@ namespace App\Share;
 
 use App\Entity\Share;
 use App\Entity\User;
-use App\Model\DTO\ShareUser;
 use App\Share\Event\ShareCreatedEvent;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -46,26 +45,10 @@ final class ShareManager
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    public function updateShare(Share $share, ShareUser $shareUser): Share
+    public function updateShare(Share $share, User $user): Share
     {
         if (!$this->security->getUser() instanceof User) {
             throw new AccessDeniedException('Access denied to the method');
-        }
-
-        $user = $this->userManager->findUserByEmail($shareUser->getLogin());
-        if (!$user) {
-            /** @var User $user */
-            $user = $this->userManager->createUser();
-            $user->setEnabled(true);
-            $user->setGuest(true);
-            $user->setEmail($shareUser->getLogin());
-            $user->setLogin($shareUser->getLogin());
-            $user->setUsername($shareUser->getLogin());
-            $user->setEncryptedPrivateKey($shareUser->getEncryptedPrivateKey());
-            $user->setPublicKey($shareUser->getPublicKey());
-            $user->setPlainPassword($shareUser->getPassword());
-
-            $this->userManager->updateUser($user);
         }
 
         $share->setOwner($this->security->getUser());
