@@ -32,11 +32,6 @@ final class SendMessageType extends AbstractType
                     new NotBlank(),
                 ],
             ])
-            ->add('token', TextType::class, [
-                'constraints' => [
-                    new NotBlank(),
-                ],
-            ])
             ->add('url', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
