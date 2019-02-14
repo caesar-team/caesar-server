@@ -12,12 +12,14 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
+use App\Validator\Constraints\AtLeastOneOf;
 
 /**
  * User.
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
+ * @AtLeastOneOf(properties={"login", "email"})
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 {
@@ -173,6 +175,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * User constructor.
      *
      * @param Srp|null $srp
+     * @throws \Exception
      */
     public function __construct(Srp $srp = null)
     {
