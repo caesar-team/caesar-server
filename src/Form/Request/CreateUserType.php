@@ -20,10 +20,11 @@ class CreateUserType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('email', EmailType::class, [
+            ->add('email', EmailType::class)
+            ->add('login', TextType::class)
+            ->add('plainPassword', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
-                    new Email(),
                 ],
             ])
             ->add('encryptedPrivateKey', TextType::class, [
@@ -42,10 +43,9 @@ class CreateUserType extends AbstractType
 
     public function userFill(FormEvent $event)
     {
+        /** @var User $user */
         $user = $event->getData();
-
-        $user->setPlainPassword(md5(uniqid('', true)));
-        $user->setUsername($user->getEmail());
+        $user->setUsername($user->getEmail()?:$user->getLogin()());
         $user->setRequireMasterRefresh(true);
         $user->setEnabled(true);
     }

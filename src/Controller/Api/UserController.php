@@ -237,7 +237,7 @@ final class UserController extends AbstractController
      *         type="object",
      *         @SWG\Property(
      *             type="string",
-     *             property="userId",
+     *             property="user",
      *             example="553d9b8d-fce0-4a53-8cba-f7d334160bc4"
      *         )
      *     )
@@ -259,10 +259,10 @@ final class UserController extends AbstractController
      *
      * @return array|FormInterface
      */
-    public function createUserAction(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
+    public function createUser(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
     {
         /** @var User $user */
-        $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
+        $user = $userRepository->findOneBy(['email' => $request->request->get('login')]);
         if (empty($user)) {
             $user = new User();
         } elseif (null !== $user->getPublicKey()) {
@@ -279,7 +279,7 @@ final class UserController extends AbstractController
         $entityManager->flush();
 
         return [
-            'userId' => $user->getId()->toString(),
+            'user' => $user->getId()->toString(),
         ];
     }
 }
