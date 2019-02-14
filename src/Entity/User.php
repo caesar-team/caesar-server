@@ -22,6 +22,12 @@ use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 {
     /**
+     * @var string|null
+     *
+     * @ORM\Column(length=50, type="string", nullable=true)
+     */
+    protected $login;
+    /**
      * @var UuidInterface
      *
      * @ORM\Id
@@ -420,5 +426,21 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setRequireMasterRefresh(bool $requireMasterRefresh): void
     {
         $this->requireMasterRefresh = $requireMasterRefresh;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getLogin(): ?string
+    {
+        return $this->login;
+    }
+
+    /**
+     * @param null|string $login
+     */
+    public function setLogin(?string $login): void
+    {
+        $this->login = $login;
     }
 }
