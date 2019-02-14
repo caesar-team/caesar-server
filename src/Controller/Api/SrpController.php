@@ -67,10 +67,11 @@ final class SrpController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request              $request
+     * @param Request $request
      * @param UserManagerInterface $manager
      *
      * @return null
+     * @throws \Exception
      */
     public function registerAction(Request $request, UserManagerInterface $manager)
     {
