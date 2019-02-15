@@ -242,18 +242,4 @@ final class SrpController extends AbstractController
             'jwt' => $jwtManager->create($loginRequest->getUser()),
         ];
     }
-
-    /**
-     * @Route(
-     *     path="/srp",
-     *     name="srp_form",
-     *     methods={"GET"}
-     * )
-     *
-     * @return Response
-     */
-    public function srpFormAction()
-    {
-        return $this->render('srp.html.twig');
-    }
 }
