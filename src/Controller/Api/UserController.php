@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Entity\Srp;
 use App\Entity\User;
 use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
@@ -259,12 +260,12 @@ final class UserController extends AbstractController
      *
      * @return array|FormInterface
      */
-    public function createUserAction(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
+    public function createUser(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
     {
         /** @var User $user */
         $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
         if (empty($user)) {
-            $user = new User();
+            $user = new User(new Srp());
         } elseif (null !== $user->getPublicKey()) {
             throw new BadRequestHttpException('User already exists');
         }

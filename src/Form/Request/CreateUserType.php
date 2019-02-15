@@ -35,6 +35,18 @@ class CreateUserType extends AbstractType
                 'constraints' => [
                     new NotBlank(),
                 ],
+            ])
+            ->add('seed', TextType::class, [
+                'property_path' => 'srp.seed',
+                'constraints' => [
+                    new NotBlank(),
+                ],
+            ])
+            ->add('verifier', TextType::class, [
+                'property_path' => 'srp.verifier',
+                'constraints' => [
+                    new NotBlank(),
+                ],
             ]);
 
         $builder->addEventListener(FormEvents::SUBMIT, [$this, 'userFill']);
