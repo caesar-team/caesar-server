@@ -12,15 +12,23 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
+use App\Validator\Constraints\AtLeastOneOf;
 
 /**
  * User.
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
+ * @AtLeastOneOf(properties={"login", "email"})
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 {
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(length=50, type="string", nullable=true)
+     */
+    protected $login;
     /**
      * @var UuidInterface
      *
@@ -167,6 +175,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * User constructor.
      *
      * @param Srp|null $srp
+     * @throws \Exception
      */
     public function __construct(Srp $srp = null)
     {
@@ -420,5 +429,21 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setRequireMasterRefresh(bool $requireMasterRefresh): void
     {
         $this->requireMasterRefresh = $requireMasterRefresh;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getLogin(): ?string
+    {
+        return $this->login;
+    }
+
+    /**
+     * @param null|string $login
+     */
+    public function setLogin(?string $login): void
+    {
+        $this->login = $login;
     }
 }

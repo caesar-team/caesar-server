@@ -238,7 +238,7 @@ final class UserController extends AbstractController
      *         type="object",
      *         @SWG\Property(
      *             type="string",
-     *             property="userId",
+     *             property="user",
      *             example="553d9b8d-fce0-4a53-8cba-f7d334160bc4"
      *         )
      *     )
@@ -254,17 +254,19 @@ final class UserController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                $request
-     * @param UserRepository         $userRepository
+     * @param Request $request
+     * @param UserRepository $userRepository
      * @param EntityManagerInterface $entityManager
      *
      * @return array|FormInterface
+     * @throws \Exception
      */
     public function createUser(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
     {
+        $email = $request->request->get('email') ?: $request->request->get('login');
         /** @var User $user */
-        $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
-        if (empty($user)) {
+        $user = $userRepository->findOneBy(['email' => $email]);
+        if (!$user) {
             $user = new User(new Srp());
         } elseif (null !== $user->getPublicKey()) {
             throw new BadRequestHttpException('User already exists');
@@ -280,7 +282,7 @@ final class UserController extends AbstractController
         $entityManager->flush();
 
         return [
-            'userId' => $user->getId()->toString(),
+            'user' => $user->getId()->toString(),
         ];
     }
 }

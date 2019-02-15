@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity
@@ -77,6 +78,9 @@ class Share
         return $this->owner;
     }
 
+    /**
+     * @param User|UserInterface $owner
+     */
     public function setOwner(User $owner): void
     {
         $this->owner = $owner;
