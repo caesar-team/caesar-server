@@ -6,6 +6,7 @@ namespace App\Form\Request;
 
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -52,7 +53,13 @@ class CreateUserType extends AbstractType
                 'constraints' => [
                     new NotBlank(),
                 ],
-            ]);
+            ])
+            ->add('roles', ChoiceType::class, [
+                'choices' => User::AVAILABLE_ROLES,
+                'expanded' => true,
+                'multiple' => true,
+            ])
+        ;
 
         $builder->addEventListener(FormEvents::SUBMIT, [$this, 'userFill']);
     }

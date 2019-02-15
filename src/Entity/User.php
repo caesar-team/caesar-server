@@ -23,6 +23,14 @@ use App\Validator\Constraints\AtLeastOneOf;
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 {
+    const ROLE_USER = 'ROLE_USER';
+    const ROLE_READ_ONLY_USER = 'ROLE_READ_ONLY_USER';
+    const ROLE_ANONYMOUS_USER = 'ROLE_ANONYMOUS_USER';
+    const AVAILABLE_ROLES = [
+        self::ROLE_USER => self::ROLE_USER,
+        self::ROLE_READ_ONLY_USER => self::ROLE_READ_ONLY_USER,
+        self::ROLE_ANONYMOUS_USER => self::ROLE_ANONYMOUS_USER,
+    ];
     /**
      * @var string|null
      *
@@ -133,13 +141,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * @ORM\Column(name="trusted_version", type="integer", options={"default": 0})
      */
     protected $trustedVersion = 0;
-
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="guest", type="boolean", options={"default": false})
-     */
-    protected $guest = false;
 
     /**
      * @var Srp|null
@@ -359,16 +360,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }
     }
 
-    public function isGuest(): bool
-    {
-        return $this->guest;
-    }
-
-    public function setGuest(bool $guest): void
-    {
-        $this->guest = $guest;
-    }
-
     public function getEncryptedPrivateKey(): ?string
     {
         return $this->encryptedPrivateKey;
@@ -431,17 +422,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->requireMasterRefresh = $requireMasterRefresh;
     }
 
-    /**
-     * @return null|string
-     */
     public function getLogin(): ?string
     {
         return $this->login;
     }
 
-    /**
-     * @param null|string $login
-     */
     public function setLogin(?string $login): void
     {
         $this->login = $login;
