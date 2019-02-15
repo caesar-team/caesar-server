@@ -65,7 +65,6 @@ class CreateUserType extends AbstractType
         if (!$user->getEmail()) {
             $user->setEmail($user->getLogin());
         }
-        $user->setRequireMasterRefresh(true);
         $user->setEnabled(true);
     }
 
