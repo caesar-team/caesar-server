@@ -24,7 +24,7 @@ final class ShareViewFactory
         $view = new ShareView();
 
         $view->id = $share->getId();
-        $view->email = $share->getUser()->getEmail();
+        $view->user = $share->getUser()->getId();
         $view->createdAt = $share->getCreatedAt();
         $view->updatedAt = $share->getUpdatedAt();
         foreach ($share->getSharedItems() as $sharedItem) {

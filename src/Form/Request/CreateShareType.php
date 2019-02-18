@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Form\Request;
 
 use App\Entity\Share;
+use App\Entity\User;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -18,8 +20,8 @@ class CreateShareType extends AbstractType
         parent::buildForm($builder, $options);
 
         $builder
-            ->add('user', ShareUserType::class, [
-                'mapped' => false,
+            ->add('user', EntityType::class, [
+                'class' => User::class,
             ])
             ->add('sharedItems', CollectionType::class, [
                 'entry_type' => ShareItemType::class,
