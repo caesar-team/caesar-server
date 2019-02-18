@@ -15,6 +15,7 @@ use App\Form\Request\SaveKeysType;
 use App\Model\Query\UserQuery;
 use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
+use App\Model\View\User\UserSecurityInfoView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -284,5 +285,41 @@ final class UserController extends AbstractController
         return [
             'user' => $user->getId()->toString(),
         ];
+    }
+
+    /**
+     * @SWG\Tag(name="Security")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="{roles:['ROLE_USER'], permissions:['create','read','update','delete']}",
+     * )
+     * )
+     *
+     * @SWG\Response(
+     *     response=401,
+     *     description="Access denied"
+     * )
+     *
+     * @Route(
+     *     path="/api/user/permissions",
+     *     name="api_user_permissions",
+     *     methods={"GET"}
+     * )
+     *
+     * @return array
+     */
+    public function permissions(): array
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $userPermissions = [
+            'create' => $this->isGranted('create', $user),
+            'read' => $this->isGranted('read', $user),
+            'update' => $this->isGranted('update', $user),
+            'delete' => $this->isGranted('delete', $user),
+        ];
+
+        return (new UserSecurityInfoView($user->getRoles(), $userPermissions))->view();
     }
 }
