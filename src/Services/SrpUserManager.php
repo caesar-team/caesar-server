@@ -52,12 +52,6 @@ class SrpUserManager
         $serverSession = $sessionMatcher->getServerSession();
         $matcher = $sessionMatcher->getMatcher();
 
-        //$user = $request->getUser();
-        //$k = $this->srpHandler->generateSessionKey($serverSession); //This is session key
-        //$user->setToken($k);
-        //$this->entityManager->persist($user);
-        //$this->entityManager->flush();
-
         return $this->srpHandler->generateSecondMatcher(
             $request->getUser()->getSrp()->getPublicClientEphemeralValue(),
             $matcher,
