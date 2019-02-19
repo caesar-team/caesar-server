@@ -3,5 +3,5 @@
 {% block subject %}Invite to application{% endblock %}
 
 {% block body %}
-    {{ 'mail.invite.message' | trans({'%url%': url, '%token%': token}) }}
+    {{ 'mail.invite.message' | trans({'%url%': url}) }}
 {% endblock %}

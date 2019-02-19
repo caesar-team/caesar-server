@@ -34,6 +34,7 @@ class SelfUserInfoViewFactory
         $view->email = $user->getEmail();
         $view->name = $user->getUsername();
         $view->avatar = $this->getImage($user->getAvatar());
+        $view->roles = $user->getRoles();
         foreach ($user->getShares() as $share) {
             $view->shares[] = $this->shareViewFactory->create($share);
         }

@@ -6,6 +6,7 @@ namespace App\Form\Request;
 
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -22,8 +23,13 @@ class CreateUserType extends AbstractType
         $builder
             ->add('email', EmailType::class, [
                 'constraints' => [
-                    new NotBlank(),
                     new Email(),
+                ],
+            ])
+            ->add('login', TextType::class)
+            ->add('plainPassword', TextType::class, [
+                'constraints' => [
+                    new NotBlank(),
                 ],
             ])
             ->add('encryptedPrivateKey', TextType::class, [
@@ -35,18 +41,37 @@ class CreateUserType extends AbstractType
                 'constraints' => [
                     new NotBlank(),
                 ],
-            ]);
+            ])
+            ->add('seed', TextType::class, [
+                'property_path' => 'srp.seed',
+                'constraints' => [
+                    new NotBlank(),
+                ],
+            ])
+            ->add('verifier', TextType::class, [
+                'property_path' => 'srp.verifier',
+                'constraints' => [
+                    new NotBlank(),
+                ],
+            ])
+            ->add('roles', ChoiceType::class, [
+                'choices' => User::AVAILABLE_ROLES,
+                'expanded' => true,
+                'multiple' => true,
+            ])
+        ;
 
         $builder->addEventListener(FormEvents::SUBMIT, [$this, 'userFill']);
     }
 
     public function userFill(FormEvent $event)
     {
+        /** @var User $user */
         $user = $event->getData();
-
-        $user->setPlainPassword(md5(uniqid('', true)));
-        $user->setUsername($user->getEmail());
-        $user->setRequireMasterRefresh(true);
+        $user->setUsername($user->getEmail()?:$user->getLogin());
+        if (!$user->getEmail()) {
+            $user->setEmail($user->getLogin());
+        }
         $user->setEnabled(true);
     }
 

@@ -6,6 +6,7 @@ namespace App\Share\Subscriber;
 
 use App\Entity\Share;
 use App\Entity\ShareItem;
+use App\Entity\User;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
@@ -33,7 +34,7 @@ final class ShareSubscriber implements EventSubscriber
         $entityManager = $args->getObjectManager();
 
         $user = $entity->getUser();
-        if ($user->isGuest() && 1 === $user->getAvailableShares()->count()) {
+        if ($user->hasRole(User::ROLE_ANONYMOUS_USER) && 1 === $user->getAvailableShares()->count()) {
             $entityManager->remove($user);
         }
     }

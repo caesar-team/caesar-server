@@ -61,7 +61,7 @@ class FOSUBUserProvider extends BaseUserProvider
             $user = $this->userManager->findUserByEmail($response->getEmail());
 
             $this->checkEmailDomain($response->getEmail());
-            if ($user instanceof User && $user->isGuest()) {
+            if ($user instanceof User && $user->hasRole(User::ROLE_ANONYMOUS_USER)) {
                 throw new AuthenticationException(
                     $this->translator->trans('authentication.user_restriction', ['%email%' => $response->getEmail()])
                 );

@@ -152,7 +152,6 @@ class MessageController extends AbstractController
 
         $sender->send(MailRegistry::INVITE_SEND_MESSAGE, [$sendRequest->getUser()->getEmail()], [
             'url' => $sendRequest->getUrl(),
-            'token' => $sendRequest->getToken(),
         ]);
 
         return null;

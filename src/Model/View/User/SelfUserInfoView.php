@@ -38,6 +38,12 @@ class SelfUserInfoView
     public $avatar;
 
     /**
+     * @var string[]
+     * @SWG\Property(example="['ROLE_USER']")
+     */
+    public $roles = [];
+
+    /**
      * @var ShareView[]
      */
     public $shares;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Entity\Srp;
 use App\Entity\User;
 use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
@@ -14,6 +15,7 @@ use App\Form\Request\SaveKeysType;
 use App\Model\Query\UserQuery;
 use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
+use App\Model\View\User\UserSecurityInfoView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -237,7 +239,7 @@ final class UserController extends AbstractController
      *         type="object",
      *         @SWG\Property(
      *             type="string",
-     *             property="userId",
+     *             property="user",
      *             example="553d9b8d-fce0-4a53-8cba-f7d334160bc4"
      *         )
      *     )
@@ -253,18 +255,20 @@ final class UserController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                $request
-     * @param UserRepository         $userRepository
+     * @param Request $request
+     * @param UserRepository $userRepository
      * @param EntityManagerInterface $entityManager
      *
      * @return array|FormInterface
+     * @throws \Exception
      */
-    public function createUserAction(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
+    public function createUser(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
     {
+        $email = $request->request->get('email') ?: $request->request->get('login');
         /** @var User $user */
-        $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
-        if (empty($user)) {
-            $user = new User();
+        $user = $userRepository->findOneBy(['email' => $email]);
+        if (!$user) {
+            $user = new User(new Srp());
         } elseif (null !== $user->getPublicKey()) {
             throw new BadRequestHttpException('User already exists');
         }
@@ -279,7 +283,43 @@ final class UserController extends AbstractController
         $entityManager->flush();
 
         return [
-            'userId' => $user->getId()->toString(),
+            'user' => $user->getId()->toString(),
         ];
+    }
+
+    /**
+     * @SWG\Tag(name="Security")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="{roles:['ROLE_USER'], permissions:['create','read','update','delete']}",
+     * )
+     * )
+     *
+     * @SWG\Response(
+     *     response=401,
+     *     description="Access denied"
+     * )
+     *
+     * @Route(
+     *     path="/api/user/permissions",
+     *     name="api_user_permissions",
+     *     methods={"GET"}
+     * )
+     *
+     * @return array
+     */
+    public function permissions(): array
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $userPermissions = [
+            'create' => $this->isGranted('create', $user),
+            'read' => $this->isGranted('read', $user),
+            'update' => $this->isGranted('update', $user),
+            'delete' => $this->isGranted('delete', $user),
+        ];
+
+        return (new UserSecurityInfoView($user->getRoles(), $userPermissions))->view();
     }
 }

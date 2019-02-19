@@ -49,18 +49,11 @@ class SrpUserManager
 
     public function generateSecondMatcher(LoginRequest $request, SessionMatcher $sessionMatcher): string
     {
-        $user = $request->getUser();
         $serverSession = $sessionMatcher->getServerSession();
         $matcher = $sessionMatcher->getMatcher();
 
-        $k = $this->srpHandler->generateSessionKey($serverSession); //This is session key
-
-        $user->setToken($k);
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-
         return $this->srpHandler->generateSecondMatcher(
-            $user->getSrp()->getPublicClientEphemeralValue(),
+            $request->getUser()->getSrp()->getPublicClientEphemeralValue(),
             $matcher,
             $serverSession
         );
