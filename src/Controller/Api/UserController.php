@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
 use App\Factory\View\UserListViewFactory;
+use App\Factory\View\UserSecurityInfoViewFactory;
 use App\Form\Query\UserQueryType;
 use App\Form\Request\CreateUserType;
 use App\Form\Request\SaveKeysType;
@@ -292,7 +293,8 @@ final class UserController extends AbstractController
      *
      * @SWG\Response(
      *     response=200,
-     *     description="{roles:['ROLE_USER'], permissions:['create','read','update','delete']}",
+     *     description="User's permissions",
+     *     @Model(type="\App\Model\View\User\UserSecurityInfoView")
      * )
      * )
      *
@@ -307,19 +309,14 @@ final class UserController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @return array
+     * @param UserSecurityInfoViewFactory $infoViewFactory
+     * @return UserSecurityInfoView
      */
-    public function permissions(): array
+    public function permissions(UserSecurityInfoViewFactory $infoViewFactory): UserSecurityInfoView
     {
         /** @var User $user */
         $user = $this->getUser();
-        $userPermissions = [
-            'create' => $this->isGranted('create', $user),
-            'read' => $this->isGranted('read', $user),
-            'update' => $this->isGranted('update', $user),
-            'delete' => $this->isGranted('delete', $user),
-        ];
 
-        return (new UserSecurityInfoView($user->getRoles(), $userPermissions))->view();
+        return $infoViewFactory->create($user);
     }
 }
