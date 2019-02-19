@@ -6,6 +6,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Factory\View\SecurityBootstrapViewFactory;
 use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
 use App\Factory\View\UserListViewFactory;
@@ -14,6 +15,7 @@ use App\Form\Query\UserQueryType;
 use App\Form\Request\CreateUserType;
 use App\Form\Request\SaveKeysType;
 use App\Model\Query\UserQuery;
+use App\Model\View\User\SecurityBootstrapView;
 use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserSecurityInfoView;
@@ -318,5 +320,37 @@ final class UserController extends AbstractController
         $user = $this->getUser();
 
         return $infoViewFactory->create($user);
+    }
+
+    /**
+     * @SWG\Tag(name="Security")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="User's security bootstrap",
+     *     @Model(type="\App\Model\View\User\SecurityBootstrapView")
+     * )
+     * )
+     *
+     * @SWG\Response(
+     *     response=401,
+     *     description="Access denied"
+     * )
+     *
+     * @Route(
+     *     path="/api/user/security/bootstrap",
+     *     name="api_user_security_bootstrap",
+     *     methods={"GET"}
+     * )
+     *
+     * @param SecurityBootstrapViewFactory $bootstrapViewFactory
+     * @return SecurityBootstrapView
+     */
+    public function securityBootstrap(SecurityBootstrapViewFactory $bootstrapViewFactory): SecurityBootstrapView
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return $bootstrapViewFactory->create($user);
     }
 }
