@@ -51,6 +51,12 @@ security:
             provider: fos.user.provider
             stateless: true
             anonymous: ~
+            two_factor:
+                check_path: /api/2fa
+                provider: fos.user.provider
+                auth_code_parameter_name: authCode
+                success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
+                failure_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
