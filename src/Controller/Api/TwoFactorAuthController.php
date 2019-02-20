@@ -125,7 +125,7 @@ final class TwoFactorAuthController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/2fa/check",
+     *     path="/api/2fa",
      *     name="2fa_check",
      *     methods={"POST"}
      * )
