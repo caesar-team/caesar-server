@@ -79,7 +79,6 @@ security:
                 success_handler: App\Security\JwtRedirectHandler
     access_control:
         - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
-        - { path: ^/api/user/security/bootstrap, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/srp, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api, roles: [ROLE_USER]}
