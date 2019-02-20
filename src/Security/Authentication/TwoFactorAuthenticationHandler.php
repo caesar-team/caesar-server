@@ -39,19 +39,24 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
      * @param Request $request
      * @param TokenInterface $token
      * @return JsonResponse|Response
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTEncodeFailureException
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token)
     {
         $request->getSession()->remove(Security::AUTHENTICATION_ERROR);
         $user = $token->getUser();
         if ($token instanceof JWTUserToken && $user instanceof User) {
+            $data = $this->jwtEncoder->decode($token->getCredentials());
+            unset($data[TwoFactorInProgressVoter::CHECK_KEY_NAME]);
+
             $fingerprint = $request->request->get('fingerprint');
             if (!empty($fingerprint)) {
                 $this->fingerprintManager->rememberFingerprint($request->request->get('fingerprint'), $user);
             }
 
             $responseData = [
-                'success' => true,
+                'token' => $this->jwtEncoder->encode($data),
             ];
 
             return new JsonResponse($responseData);
