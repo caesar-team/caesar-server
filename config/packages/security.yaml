@@ -52,7 +52,7 @@ security:
             stateless: true
             anonymous: ~
             two_factor:
-                check_path: /api/2fa
+                check_path: /api/2fa/check
                 provider: fos.user.provider
                 auth_code_parameter_name: authCode
                 success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
