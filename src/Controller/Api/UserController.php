@@ -29,6 +29,7 @@ use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -350,6 +351,10 @@ final class UserController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw new AccessDeniedHttpException('The user not defined');
+        }
 
         return $bootstrapViewFactory->create($user);
     }
