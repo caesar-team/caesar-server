@@ -63,6 +63,7 @@ security:
             two_factor:
                 check_path: /api/2fa
                 provider: fos.user.provider
+                auth_code_parameter_name: authCode
                 success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
                 failure_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
                 authentication_required_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
