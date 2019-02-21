@@ -14,7 +14,13 @@ use Symfony\Component\Security\Core\Security;
 
 class UserMasterSubscriber implements EventSubscriberInterface
 {
-    private const GRANTED_ROUTES = ['api_keys_save', 'api_keys_list', 'api_user_security_bootstrap', 'api_anonymous_share_check'];
+    private const GRANTED_ROUTES = [
+        'api_keys_save',
+        'api_keys_list',
+        'api_user_security_bootstrap',
+        'api_anonymous_share_check',
+        'hwi_oauth_service_redirect',
+    ];
 
     /**
      * @var Security
