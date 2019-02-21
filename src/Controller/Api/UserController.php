@@ -28,9 +28,14 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 
 final class UserController extends AbstractController
 {
@@ -312,14 +317,14 @@ final class UserController extends AbstractController
      * )
      *
      * @param UserSecurityInfoViewFactory $infoViewFactory
-     * @return UserSecurityInfoView
+     * @return JsonResponse
      */
-    public function permissions(UserSecurityInfoViewFactory $infoViewFactory): UserSecurityInfoView
+    public function permissions(UserSecurityInfoViewFactory $infoViewFactory): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
 
-        return $infoViewFactory->create($user);
+        return new JsonResponse($infoViewFactory->create($user));
     }
 
     /**
@@ -344,13 +349,13 @@ final class UserController extends AbstractController
      * )
      *
      * @param SecurityBootstrapViewFactory $bootstrapViewFactory
-     * @return SecurityBootstrapView
+     * @return JsonResponse
      */
-    public function securityBootstrap(SecurityBootstrapViewFactory $bootstrapViewFactory): SecurityBootstrapView
+    public function bootstrap(SecurityBootstrapViewFactory $bootstrapViewFactory): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
 
-        return $bootstrapViewFactory->create($user);
+        return new JsonResponse($bootstrapViewFactory->create($user));
     }
 }

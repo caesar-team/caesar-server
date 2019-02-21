@@ -20,6 +20,79 @@ use Symfony\Component\Routing\Annotation\Route;
 final class TwoFactorAuthController extends AbstractController
 {
     /**
+     * Activate 2FA on your account.
+     *
+     * @SWG\Tag(name="Security")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\TwoFactoryAuthEnableType::class)
+     * )
+     * @SWG\Response(
+     *     response=201,
+     *     description="Already created"
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Succeed two factor created"
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns errors",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="object",
+     *             property="errors",
+     *             @SWG\Property(
+     *                 type="array",
+     *                 property="authCode",
+     *                 @SWG\Items(
+     *                     type="string",
+     *                     example="List of errors"
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     *
+     * @Route(
+     *     path="/api/2fa/activate",
+     *     name="api_security_2fa_activate",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Request                $request
+     * @param EntityManagerInterface $manager
+     *
+     * @return FormInterface|Response
+     */
+    public function activateTwoFactor(Request $request, EntityManagerInterface $manager)
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        if ($user->getGoogleAuthenticatorSecret()) {
+            return Response::create(null, Response::HTTP_CREATED);
+        }
+
+        $form = $this->createForm(TwoFactoryAuthEnableType::class, $user);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $manager->persist($user);
+        $manager->flush();
+
+        return null;
+    }
+
+    /**
      * Get 2FA QR code.
      *
      * @SWG\Tag(name="Security")
@@ -125,7 +198,7 @@ final class TwoFactorAuthController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/2fa/check",
+     *     path="/api/2fa",
      *     name="2fa_check",
      *     methods={"POST"}
      * )

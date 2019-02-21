@@ -54,6 +54,10 @@ class SecurityBootstrapViewFactory
         /** @var Fingerprint $fingerPrint */
         $fingerPrint = $this->fingerprintManager->findFingerPrintByUser($user);
 
-        return !$this->fingerprintManager->isValidDate($fingerPrint->getCreatedAt());
+        if ($fingerPrint instanceof Fingerprint) {
+            return !$this->fingerprintManager->isValidDate($fingerPrint->getCreatedAt());
+        }
+
+        return true;
     }
 }

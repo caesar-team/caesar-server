@@ -46,13 +46,22 @@ security:
             stateless: true
             context: srp
             anonymous: true
+        user_bootstrap:
+            pattern: ^/api/user/security/bootstrap
+            stateless: true
+            context: user_bootstrap
+            anonymous: ~
+            provider:  fos.user.provider
+            guard:
+                authenticators:
+                    - lexik_jwt_authentication.jwt_token_authenticator
         api:
             pattern: ^/api
             provider: fos.user.provider
             stateless: true
             anonymous: ~
             two_factor:
-                check_path: /api/2fa/check
+                check_path: /api/2fa
                 provider: fos.user.provider
                 auth_code_parameter_name: authCode
                 success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
