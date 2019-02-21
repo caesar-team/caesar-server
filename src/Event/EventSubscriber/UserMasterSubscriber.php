@@ -20,6 +20,7 @@ class UserMasterSubscriber implements EventSubscriberInterface
         'api_user_security_bootstrap',
         'api_anonymous_share_check',
         'hwi_oauth_service_redirect',
+        'google_login',
     ];
 
     /**
