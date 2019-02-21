@@ -23,6 +23,7 @@ class UserMasterSubscriber implements EventSubscriberInterface
         'google_login',
         'api_security_2fa_code',
         'api_security_2fa_activate',
+        '2fa_check',
     ];
 
     /**
