@@ -375,4 +375,29 @@ final class ShareController extends AbstractController
 
         return $form;
     }
+
+    /**
+     * Check share by id
+     *
+     * @SWG\Tag(name="Share")
+     * @SWG\Response(
+     *     response=200,
+     *     description="The shared item exists"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such share"
+     * )
+     * @Route("/api/anonymous/share/{share}/check", methods={"GET"}, name="api_anonymous_share_check")
+     * @param Share $share
+     * @return JsonResponse
+     */
+    public function check(Share $share): JsonResponse
+    {
+        if (0 === $share->getSharedItems()->count()) {
+            return new JsonResponse(['share' => $share->getId()], Response::HTTP_NOT_FOUND);
+        }
+
+        return new JsonResponse(['share' => $share->getId()], Response::HTTP_OK);
+    }
 }
