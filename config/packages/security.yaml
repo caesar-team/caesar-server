@@ -46,6 +46,10 @@ security:
             stateless: true
             context: srp
             anonymous: true
+            provider:  fos.user.provider
+            guard:
+                authenticators:
+                    - lexik_jwt_authentication.jwt_token_authenticator
         user_bootstrap:
             pattern: ^/api/user/security/bootstrap
             stateless: true
