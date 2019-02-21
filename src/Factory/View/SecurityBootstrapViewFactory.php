@@ -27,7 +27,7 @@ class SecurityBootstrapViewFactory
         $securityBootstrapView = new SecurityBootstrapView();
         $securityBootstrapView->twoFactorAuthState = $this->getTwoFactorAuthState($user);
         $securityBootstrapView->passwordState = $this->getPasswordState($user);
-        $securityBootstrapView->passwordState = $this->getMasterPasswordState($user);
+        $securityBootstrapView->masterPasswordState = $this->getMasterPasswordState($user);
 
         return $securityBootstrapView;
     }
