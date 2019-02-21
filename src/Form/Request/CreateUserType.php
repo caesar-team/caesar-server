@@ -24,9 +24,9 @@ class CreateUserType extends AbstractType
             ->add('email', EmailType::class, [
                 'constraints' => [
                     new Email(),
+                    new NotBlank(),
                 ],
             ])
-            ->add('login', TextType::class)
             ->add('plainPassword', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
@@ -68,10 +68,7 @@ class CreateUserType extends AbstractType
     {
         /** @var User $user */
         $user = $event->getData();
-        $user->setUsername($user->getEmail()?:$user->getLogin());
-        if (!$user->getEmail()) {
-            $user->setEmail($user->getLogin());
-        }
+        $user->setUsername($user->getEmail());
         $user->setEnabled(true);
     }
 

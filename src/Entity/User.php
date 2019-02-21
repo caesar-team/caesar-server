@@ -12,14 +12,12 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
-use App\Validator\Constraints\AtLeastOneOf;
 
 /**
  * User.
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @AtLeastOneOf(properties={"login", "email"})
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 {
@@ -31,12 +29,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         self::ROLE_READ_ONLY_USER => self::ROLE_READ_ONLY_USER,
         self::ROLE_ANONYMOUS_USER => self::ROLE_ANONYMOUS_USER,
     ];
-    /**
-     * @var string|null
-     *
-     * @ORM\Column(length=50, type="string", nullable=true)
-     */
-    protected $login;
+
     /**
      * @var UuidInterface
      *
@@ -411,16 +404,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getFingerprints(): Collection
     {
         return $this->fingerprints;
-    }
-
-    public function getLogin(): ?string
-    {
-        return $this->login;
-    }
-
-    public function setLogin(?string $login): void
-    {
-        $this->login = $login;
     }
 
     /**

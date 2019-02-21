@@ -272,9 +272,8 @@ final class UserController extends AbstractController
      */
     public function createUser(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
     {
-        $email = $request->request->get('email') ?: $request->request->get('login');
         /** @var User $user */
-        $user = $userRepository->findOneBy(['email' => $email]);
+        $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
         if (!$user) {
             $user = new User(new Srp());
         } elseif (null !== $user->getPublicKey()) {
