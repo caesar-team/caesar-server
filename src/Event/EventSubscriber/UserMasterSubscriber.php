@@ -14,7 +14,7 @@ use Symfony\Component\Security\Core\Security;
 
 class UserMasterSubscriber implements EventSubscriberInterface
 {
-    private const GRANTED_ROUTES = ['api_keys_save', 'api_keys_list'];
+    private const GRANTED_ROUTES = ['api_keys_save', 'api_keys_list', 'api_user_security_bootstrap', 'api_anonymous_share_check'];
 
     /**
      * @var Security
@@ -41,7 +41,7 @@ class UserMasterSubscriber implements EventSubscriberInterface
         $request = $event->getRequest();
 
         $user = $this->security->getUser();
-        if ($user instanceof User && $user->isIncompleteShareFlow()) {
+        if ($user instanceof User && $user->isIncompleteFlow()) {
             if (!in_array($request->get('_route'), self::GRANTED_ROUTES)) {
                 $event->setResponse(new JsonResponse(['master' => 'You must update your master password'], Response::HTTP_UNAUTHORIZED));
             }

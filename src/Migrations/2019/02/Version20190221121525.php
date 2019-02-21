@@ -18,7 +18,7 @@ final class Version20190221121525 extends AbstractMigration
     {
         $table = $schema->getTable('fos_user');
         $table->dropColumn('require_master_refresh');
-        $table->addColumn('incomplete_share_flow', 'boolean', [
+        $table->addColumn('incomplete_flow', 'boolean', [
             'notnull' => true,
             'default' => false,
         ]);
@@ -31,7 +31,7 @@ final class Version20190221121525 extends AbstractMigration
     public function down(Schema $schema) : void
     {
         $table = $schema->getTable('fos_user');
-        $table->dropColumn('incomplete_share_flow');
+        $table->dropColumn('incomplete_flow');
         $table->addColumn('require_master_refresh', 'boolean', [
             'notnull' => true,
             'default' => false,

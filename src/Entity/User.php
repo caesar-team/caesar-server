@@ -170,7 +170,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      *
      * @ORM\Column(type="boolean", options={"default": false}, nullable=false)
      */
-    private $incompleteShareFlow = false;
+    private $incompleteFlow = false;
 
     /**
      * User constructor.
@@ -191,7 +191,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         if (null !== $srp) {
             $this->srp = $srp;
         }
-        $this->incompleteShareFlow = true;
+        $this->incompleteFlow = true;
     }
 
     /**
@@ -426,16 +426,16 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @return bool
      */
-    public function isIncompleteShareFlow(): bool
+    public function isIncompleteFlow(): bool
     {
-        return $this->incompleteShareFlow;
+        return $this->incompleteFlow;
     }
 
     /**
-     * @param bool $incompleteShareFlow
+     * @param bool $incompleteFlow
      */
-    public function setIncompleteShareFlow(bool $incompleteShareFlow): void
+    public function setIncompleteFlow(bool $incompleteFlow): void
     {
-        $this->incompleteShareFlow = $incompleteShareFlow;
+        $this->incompleteFlow = $incompleteFlow;
     }
 }

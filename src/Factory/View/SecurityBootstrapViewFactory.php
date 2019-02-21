@@ -81,7 +81,7 @@ class SecurityBootstrapViewFactory
         switch (true) {
             case $user->hasRole(User::ROLE_READ_ONLY_USER):
             case $user->hasRole(User::ROLE_ANONYMOUS_USER):
-                $state = $user->isIncompleteShareFlow() ? SecurityBootstrapView::STATE_CHECK_SHARED : SecurityBootstrapView::STATE_CHECK;
+                $state = $user->isIncompleteFlow() ? SecurityBootstrapView::STATE_CHECK_SHARED : SecurityBootstrapView::STATE_CHECK;
             break;
             default:
                 $state = is_null($user->getEncryptedPrivateKey()) ? SecurityBootstrapView::STATE_CREATE : SecurityBootstrapView::STATE_CHECK;
