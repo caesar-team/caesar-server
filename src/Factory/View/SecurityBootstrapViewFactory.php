@@ -39,7 +39,7 @@ class SecurityBootstrapViewFactory
                 $state = SecurityBootstrapView::STATE_SKIP;
                 break;
             case !$user->isGoogleAuthenticatorEnabled():
-                $state = SecurityBootstrapView::STATE_CREATION;
+                $state = SecurityBootstrapView::STATE_CREATE;
                 break;
             case $this->isExpiredFingerprint($user):
                 $state = SecurityBootstrapView::STATE_CHECK;
@@ -84,7 +84,7 @@ class SecurityBootstrapViewFactory
                 $state = $user->isIncompleteShareFlow() ? SecurityBootstrapView::STATE_CHECK_SHARED : SecurityBootstrapView::STATE_CHECK;
             break;
             default:
-                $state = is_null($user->getEncryptedPrivateKey()) ? SecurityBootstrapView::STATE_CREATION : SecurityBootstrapView::STATE_CHECK;
+                $state = is_null($user->getEncryptedPrivateKey()) ? SecurityBootstrapView::STATE_CREATE : SecurityBootstrapView::STATE_CHECK;
                 break;
         }
 
