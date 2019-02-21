@@ -26,6 +26,7 @@ class SecurityBootstrapViewFactory
     {
         $securityBootstrapView = new SecurityBootstrapView();
         $securityBootstrapView->twoFactorAuthState = $this->getTwoFactorAuthState($user);
+        $securityBootstrapView->passwordState = $this->getPasswordState($user);
 
         return $securityBootstrapView;
     }
@@ -59,5 +60,18 @@ class SecurityBootstrapViewFactory
         }
 
         return true;
+    }
+
+    private function getPasswordState(User $user): string
+    {
+        switch (true) {
+            case $user->isRequireRefresh():
+                $state = SecurityBootstrapView::STATE_CHANGE;
+                break;
+            default:
+                $state = SecurityBootstrapView::STATE_SKIP;
+        }
+
+        return $state;
     }
 }

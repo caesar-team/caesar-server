@@ -173,6 +173,13 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $requireMasterRefresh = false;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(type="boolean", options={"default": false}, nullable=false)
+     */
+    private $requireRefresh = false;
+
+    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -430,5 +437,15 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setLogin(?string $login): void
     {
         $this->login = $login;
+    }
+
+    public function isRequireRefresh(): bool
+    {
+        return false;
+    }
+
+    public function setRequireRefresh(bool $requireRefresh): void
+    {
+        $this->requireRefresh = $requireRefresh;
     }
 }

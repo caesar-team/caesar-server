@@ -69,6 +69,9 @@ class CreateUserType extends AbstractType
         /** @var User $user */
         $user = $event->getData();
         $user->setUsername($user->getEmail()?:$user->getLogin());
+        if ($user->hasRole(User::ROLE_READ_ONLY_USER)) {
+            $user->setRequireRefresh(true);
+        }
         if (!$user->getEmail()) {
             $user->setEmail($user->getLogin());
         }
