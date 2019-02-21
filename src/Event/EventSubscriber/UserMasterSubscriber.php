@@ -21,6 +21,7 @@ class UserMasterSubscriber implements EventSubscriberInterface
         'api_anonymous_share_check',
         'hwi_oauth_service_redirect',
         'google_login',
+        'api_security_2fa_code',
     ];
 
     /**
