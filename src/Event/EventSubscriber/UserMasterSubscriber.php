@@ -41,7 +41,7 @@ class UserMasterSubscriber implements EventSubscriberInterface
         $request = $event->getRequest();
 
         $user = $this->security->getUser();
-        if ($user instanceof User && $user->isRequireMasterRefresh()) {
+        if ($user instanceof User && $user->isIncompleteShareFlow()) {
             if (!in_array($request->get('_route'), self::GRANTED_ROUTES)) {
                 $event->setResponse(new JsonResponse(['master' => 'You must update your master password'], Response::HTTP_UNAUTHORIZED));
             }
