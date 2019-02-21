@@ -65,8 +65,8 @@ class SecurityBootstrapViewFactory
     private function getPasswordState(User $user): string
     {
         switch (true) {
-            case $user->isRequireRefresh():
-                $state = SecurityBootstrapView::STATE_CHANGE;
+            case $user->hasRole(User::ROLE_READ_ONLY_USER):
+                $state = is_null($user->getLastLogin()) ? SecurityBootstrapView::STATE_CHANGE : SecurityBootstrapView::STATE_SKIP;
                 break;
             default:
                 $state = SecurityBootstrapView::STATE_SKIP;
