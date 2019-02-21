@@ -224,7 +224,7 @@ final class UserController extends AbstractController
         /** @var User $oldUser */
         $oldUser = $entityManager->getUnitOfWork()->getOriginalEntityData($user);
         if ($oldUser['encryptedPrivateKey'] !== $user->getEncryptedPrivateKey()) {
-            $user->setRequireMasterRefresh(false);
+            $user->setIncompleteShareFlow(false);
         }
 
         $entityManager->flush();

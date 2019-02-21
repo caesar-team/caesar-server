@@ -27,6 +27,7 @@ class SecurityBootstrapViewFactory
         $securityBootstrapView = new SecurityBootstrapView();
         $securityBootstrapView->twoFactorAuthState = $this->getTwoFactorAuthState($user);
         $securityBootstrapView->passwordState = $this->getPasswordState($user);
+        $securityBootstrapView->passwordState = $this->getMasterPasswordState($user);
 
         return $securityBootstrapView;
     }
@@ -70,6 +71,21 @@ class SecurityBootstrapViewFactory
                 break;
             default:
                 $state = SecurityBootstrapView::STATE_SKIP;
+        }
+
+        return $state;
+    }
+
+    private function getMasterPasswordState(User $user): string
+    {
+        switch (true) {
+            case $user->hasRole(User::ROLE_READ_ONLY_USER):
+            case $user->hasRole(User::ROLE_ANONYMOUS_USER):
+                $state = $user->isIncompleteShareFlow() ? SecurityBootstrapView::STATE_CHECK_SHARED : SecurityBootstrapView::STATE_CHECK;
+            break;
+            default:
+                $state = is_null($user->getEncryptedPrivateKey()) ? SecurityBootstrapView::STATE_CREATION : SecurityBootstrapView::STATE_CHECK;
+                break;
         }
 
         return $state;

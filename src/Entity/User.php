@@ -168,9 +168,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @var bool
      *
-     * @ORM\Column(type="boolean", options={"default": false})
+     * @ORM\Column(type="boolean", options={"default": false}, nullable=false)
      */
-    private $requireMasterRefresh = false;
+    private $incompleteShareFlow = false;
 
     /**
      * User constructor.
@@ -191,6 +191,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         if (null !== $srp) {
             $this->srp = $srp;
         }
+        $this->incompleteShareFlow = true;
     }
 
     /**
@@ -412,16 +413,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->fingerprints;
     }
 
-    public function isRequireMasterRefresh(): bool
-    {
-        return $this->requireMasterRefresh;
-    }
-
-    public function setRequireMasterRefresh(bool $requireMasterRefresh): void
-    {
-        $this->requireMasterRefresh = $requireMasterRefresh;
-    }
-
     public function getLogin(): ?string
     {
         return $this->login;
@@ -430,5 +421,21 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setLogin(?string $login): void
     {
         $this->login = $login;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isIncompleteShareFlow(): bool
+    {
+        return $this->incompleteShareFlow;
+    }
+
+    /**
+     * @param bool $incompleteShareFlow
+     */
+    public function setIncompleteShareFlow(bool $incompleteShareFlow): void
+    {
+        $this->incompleteShareFlow = $incompleteShareFlow;
     }
 }
