@@ -35,6 +35,13 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
         $this->fingerprintManager = $fingerprintManager;
     }
 
+    /**
+     * @param Request $request
+     * @param TokenInterface $token
+     * @return JsonResponse|Response
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTEncodeFailureException
+     */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token)
     {
         $request->getSession()->remove(Security::AUTHENTICATION_ERROR);

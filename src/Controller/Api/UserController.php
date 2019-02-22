@@ -6,13 +6,16 @@ namespace App\Controller\Api;
 
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Factory\View\SecurityBootstrapViewFactory;
 use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
 use App\Factory\View\UserListViewFactory;
+use App\Factory\View\UserSecurityInfoViewFactory;
 use App\Form\Query\UserQueryType;
 use App\Form\Request\CreateUserType;
 use App\Form\Request\SaveKeysType;
 use App\Model\Query\UserQuery;
+use App\Model\View\User\SecurityBootstrapView;
 use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserSecurityInfoView;
@@ -25,9 +28,14 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 
 final class UserController extends AbstractController
 {
@@ -292,7 +300,8 @@ final class UserController extends AbstractController
      *
      * @SWG\Response(
      *     response=200,
-     *     description="{roles:['ROLE_USER'], permissions:['create','read','update','delete']}",
+     *     description="User's permissions",
+     *     @Model(type="\App\Model\View\User\UserSecurityInfoView")
      * )
      * )
      *
@@ -307,19 +316,46 @@ final class UserController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @return array
+     * @param UserSecurityInfoViewFactory $infoViewFactory
+     * @return JsonResponse
      */
-    public function permissions(): array
+    public function permissions(UserSecurityInfoViewFactory $infoViewFactory): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
-        $userPermissions = [
-            'create' => $this->isGranted('create', $user),
-            'read' => $this->isGranted('read', $user),
-            'update' => $this->isGranted('update', $user),
-            'delete' => $this->isGranted('delete', $user),
-        ];
 
-        return (new UserSecurityInfoView($user->getRoles(), $userPermissions))->view();
+        return new JsonResponse($infoViewFactory->create($user));
+    }
+
+    /**
+     * @SWG\Tag(name="Security")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="User's security bootstrap",
+     *     @Model(type="\App\Model\View\User\SecurityBootstrapView")
+     * )
+     * )
+     *
+     * @SWG\Response(
+     *     response=401,
+     *     description="Access denied"
+     * )
+     *
+     * @Route(
+     *     path="/api/user/security/bootstrap",
+     *     name="api_user_security_bootstrap",
+     *     methods={"GET"}
+     * )
+     *
+     * @param SecurityBootstrapViewFactory $bootstrapViewFactory
+     * @return JsonResponse
+     */
+    public function bootstrap(SecurityBootstrapViewFactory $bootstrapViewFactory): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return new JsonResponse($bootstrapViewFactory->create($user));
     }
 }

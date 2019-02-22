@@ -174,19 +174,9 @@ final class TwoFactorAuthController extends AbstractController
      *     @SWG\Schema(
      *         type="object",
      *         @SWG\Property(
-     *             type="string",
-     *             property="jwt",
-     *             example="jwt-token-here",
-     *         ),
-     *         @SWG\Property(
-     *             type="string",
-     *             property="trustedDeviceToken",
-     *             example="jwt-token-here",
-     *         ),
-     *         @SWG\Property(
-     *             type="integer",
-     *             property="trustedDeviceTokenExpiresAt",
-     *             example="1548506076",
+     *             type="boolean",
+     *             property="success",
+     *             example="true",
      *         )
      *     )
      * )
@@ -209,7 +199,7 @@ final class TwoFactorAuthController extends AbstractController
      *
      * @Route(
      *     path="/api/2fa",
-     *     name="2fa_get_token",
+     *     name="2fa_check",
      *     methods={"POST"}
      * )
      */

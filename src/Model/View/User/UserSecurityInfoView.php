@@ -4,41 +4,19 @@ declare(strict_types=1);
 
 namespace App\Model\View\User;
 
+use Swagger\Annotations as SWG;
+
 class UserSecurityInfoView
 {
     /**
-     * @var array
+     * @var string[]
+     * @SWG\Property(example="['ROLE_USER']")
      */
-    private $roles = [];
+    public $roles = [];
 
     /**
-     * @var array
+     * @var string[]
+     * @SWG\Property(example="['create', 'read', 'update', 'delete']")
      */
-    private $permissions = [];
-
-    public function __construct(array $roles, array $permissions)
-    {
-        $this->roles = $roles;
-        $this->permissions = $permissions;
-    }
-
-    public function view(): array
-    {
-        return [
-            'roles' => $this->roles,
-            'permissions' => $this->getExistsPermissions(),
-        ];
-    }
-
-    private function getExistsPermissions(): array
-    {
-        $keys = [];
-        foreach ($this->permissions as $key => $permission) {
-            if ($permission) {
-                $keys[] = $key;
-            }
-        }
-
-        return $keys;
-    }
+    public $permissions = [];
 }
