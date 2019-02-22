@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Entity\Share;
+use App\Event\EntityListener\ShareLinkCreatedListener;
 use App\Factory\View\Share\ShareViewFactory;
 use App\Form\Request\BatchCreateShareType;
 use App\Form\Request\BatchEditShareType;
@@ -14,6 +15,8 @@ use App\Security\Voter\ShareVoter;
 use App\Share\ShareManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -272,12 +275,13 @@ final class ShareController extends AbstractController
      *
      * @Route("/api/shares/{id}", name="api_share_edit", methods={"PATCH"})
      *
-     * @param Request                $request
-     * @param Share                  $share
+     * @param Request $request
+     * @param Share $share
      * @param EntityManagerInterface $entityManager
-     * @param ShareViewFactory       $shareViewFactory
-     * @param SerializerInterface    $serializer
+     * @param ShareViewFactory $shareViewFactory
+     * @param SerializerInterface $serializer
      *
+     * @param EventDispatcherInterface $eventDispatcher
      * @return \Symfony\Component\Form\FormInterface
      */
     public function edit(
@@ -285,16 +289,25 @@ final class ShareController extends AbstractController
         Share $share,
         EntityManagerInterface $entityManager,
         ShareViewFactory $shareViewFactory,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->denyAccessUnlessGranted(ShareVoter::EDIT_SHARE, $share);
 
+        $oldLink = $share->getLink();
         $form = $this->createForm(EditShareType::class, $share);
 
         $form->submit($request->request->all());
         if ($form->isValid()) {
             $entityManager->persist($share);
             $entityManager->flush();
+
+            $shareLink = $share->getLink();
+            if ($shareLink && $shareLink !== $oldLink) {
+                $method = $oldLink ? ShareLinkCreatedListener::METHOD_CREATE : ShareLinkCreatedListener::METHOD_UPDATE;
+                $this->dispathLinkCreatedEvent($share, $eventDispatcher, $method);
+            }
+
 
             return $serializer->normalize($shareViewFactory->create($share), 'array', ['groups' => 'share_create']);
         }
@@ -399,5 +412,11 @@ final class ShareController extends AbstractController
         }
 
         return new JsonResponse(['share' => $share->getId()], Response::HTTP_OK);
+    }
+
+    private function dispathLinkCreatedEvent(Share $share, EventDispatcherInterface $eventDispatcher, string $method)
+    {
+        $linkCreatedEvent = new GenericEvent($share, ['method' => $method]);
+        $eventDispatcher->dispatch(ShareLinkCreatedListener::EVENT_NAME, $linkCreatedEvent);
     }
 }

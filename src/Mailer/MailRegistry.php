@@ -10,4 +10,5 @@ final class MailRegistry
      * Sending invite message.
      */
     public const INVITE_SEND_MESSAGE = 'invite_send_message';
+    public const SHARE_SEND_MESSAGE = 'share_send_message';
 }

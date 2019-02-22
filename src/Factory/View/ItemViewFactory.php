@@ -119,10 +119,22 @@ class ItemViewFactory
             $shareView->roles = $user->getRoles();
             $shareView->id = $share->getId();
             $shareView->link = $share->getLink();
-            $shareView->status = $share->getStatus();
+            $shareView->status = $this->getStatus($share);
             $shares[] = $shareView;
         }
 
         return $shares;
+    }
+
+    private function getStatus(Share $share): string
+    {
+        switch (true) {
+            case $share->getUser()->getLastLogin():
+                $status = Share::STATUS_ACCEPTED;
+                break;
+            default:
+                $status = Share::STATUS_WAITING;
+        }
+        return $status;
     }
 }

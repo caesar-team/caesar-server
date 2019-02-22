@@ -63,7 +63,6 @@ class Share
 
     /**
      * @var string
-     * @ORM\Column(nullable=false, type="string", length=20, options={"default"="WAITING"})
      */
     private $status = self::STATUS_WAITING;
 
