@@ -2,6 +2,7 @@ framework:
     serializer:
         enable_annotations: true
         enabled: true
+        circular_reference_handler: App\Utils\CircularReferenceHandler
     secret: '%env(APP_SECRET)%'
     session:
         handler_id: ~
