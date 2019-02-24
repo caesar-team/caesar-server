@@ -281,7 +281,7 @@ final class ShareController extends AbstractController
      * @param ShareViewFactory $shareViewFactory
      * @param SerializerInterface $serializer
      *
-     * @param EventDispatcherInterface $eventDispatcher
+     * @param ShareManager $shareManager
      * @return \Symfony\Component\Form\FormInterface
      */
     public function edit(
@@ -290,7 +290,7 @@ final class ShareController extends AbstractController
         EntityManagerInterface $entityManager,
         ShareViewFactory $shareViewFactory,
         SerializerInterface $serializer,
-        EventDispatcherInterface $eventDispatcher
+        ShareManager $shareManager
     ) {
         $this->denyAccessUnlessGranted(ShareVoter::EDIT_SHARE, $share);
 
@@ -305,7 +305,7 @@ final class ShareController extends AbstractController
             $shareLink = $share->getLink();
             if ($shareLink && $shareLink !== $oldLink) {
                 $method = $oldLink ? ShareLinkCreatedListener::METHOD_CREATE : ShareLinkCreatedListener::METHOD_UPDATE;
-                $this->dispathLinkCreatedEvent($share, $eventDispatcher, $method);
+                $shareManager->dispathLinkCreatedEvent($share, $method);
             }
 
 
@@ -412,11 +412,5 @@ final class ShareController extends AbstractController
         }
 
         return new JsonResponse(['share' => $share->getId()], Response::HTTP_OK);
-    }
-
-    private function dispathLinkCreatedEvent(Share $share, EventDispatcherInterface $eventDispatcher, string $method)
-    {
-        $linkCreatedEvent = new GenericEvent($share, ['method' => $method]);
-        $eventDispatcher->dispatch(ShareLinkCreatedListener::EVENT_NAME, $linkCreatedEvent);
     }
 }

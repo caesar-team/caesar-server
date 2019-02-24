@@ -6,11 +6,13 @@ namespace App\Share;
 
 use App\Entity\Share;
 use App\Entity\User;
+use App\Event\EntityListener\ShareLinkCreatedListener;
 use App\Share\Event\ShareCreatedEvent;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 
@@ -70,6 +72,13 @@ final class ShareManager
             throw new AccessDeniedException('Access denied to the method');
         }
 
+        $oldLink = $share->getLink();
+        $shareLink = $shareNew->getLink();
+        if ($shareLink && $shareLink !== $oldLink) {
+            $method = $oldLink ? ShareLinkCreatedListener::METHOD_CREATE : ShareLinkCreatedListener::METHOD_UPDATE;
+            $this->dispathLinkCreatedEvent($share, $method);
+        }
+
         $share->setLink($shareNew->getLink());
         $share->setSharedItems(new ArrayCollection());
         foreach ($shareNew->getSharedItems() as $shareItem) {
@@ -80,5 +89,11 @@ final class ShareManager
         $this->entityManager->flush();
 
         return $share;
+    }
+
+    public function dispathLinkCreatedEvent(Share $share, string $method)
+    {
+        $linkCreatedEvent = new GenericEvent($share, ['method' => $method]);
+        $this->eventDispatcher->dispatch(ShareLinkCreatedListener::EVENT_NAME, $linkCreatedEvent);
     }
 }
