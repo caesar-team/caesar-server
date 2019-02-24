@@ -64,11 +64,13 @@ final class ShareManager
 
     public function editShare(string $shareId, Share $shareNew): Share
     {
+        /** @var Share $share */
         $share = $this->entityManager->getRepository(Share::class)->find($shareId);
         if (!$this->security->getUser() instanceof User || $this->security->getUser() !== $share->getOwner()) {
             throw new AccessDeniedException('Access denied to the method');
         }
 
+        $share->setLink($shareNew->getLink());
         $share->setSharedItems(new ArrayCollection());
         foreach ($shareNew->getSharedItems() as $shareItem) {
             $share->addSharedItem($shareItem);
