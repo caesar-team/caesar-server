@@ -76,11 +76,13 @@ final class InviteController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Item          $item
-     * @param Request       $request
+     * @param Item $item
+     * @param Request $request
      * @param InviteHandler $inviteHandler
      *
+     * @param ItemViewFactory $viewFactory
      * @return ItemView|FormInterface
+     * @throws \Exception
      */
     public function inviteItemAction(Item $item, Request $request, InviteHandler $inviteHandler, ItemViewFactory $viewFactory)
     {
