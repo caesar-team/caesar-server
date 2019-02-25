@@ -57,11 +57,18 @@ class ShareView
     /**
      * @var \DateTime
      */
-    public $left;
+    private $left;
 
-    public function __construct()
+    public function setLeft(\DateTime $date)
     {
-        $now = new \DateTime();
-        $this->left = $this->updatedAt ? $this->updatedAt->diff($now) : $this->createdAt->diff($now);
+        $this->left = $this->updatedAt ? $this->updatedAt->diff($date) : $this->createdAt->diff($date);
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getLeft(): \DateTime
+    {
+        return $this->left;
     }
 }

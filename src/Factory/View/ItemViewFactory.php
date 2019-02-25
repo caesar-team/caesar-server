@@ -122,6 +122,7 @@ class ItemViewFactory
             $shareView->status = $this->getStatus($share);
             $shareView->updatedAt = $share->getUpdatedAt();
             $shareView->createdAt = $share->getCreatedAt();
+            $shareView->setLeft(new \DateTime());
             $shares[] = $shareView;
         }
 
