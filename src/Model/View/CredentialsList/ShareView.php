@@ -62,6 +62,6 @@ class ShareView
     public function __construct()
     {
         $now = new \DateTime();
-        $this->left = $this->updatedAt->diff($now);
+        $this->left = $this->updatedAt ? $this->updatedAt->diff($now) : $this->createdAt->diff($now);
     }
 }
