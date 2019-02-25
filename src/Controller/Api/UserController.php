@@ -224,7 +224,7 @@ final class UserController extends AbstractController
         /** @var User $oldUser */
         $oldUser = $entityManager->getUnitOfWork()->getOriginalEntityData($user);
         if ($oldUser['encryptedPrivateKey'] !== $user->getEncryptedPrivateKey()) {
-            $user->setIncompleteFlow(false);
+            $user->setFlowStatus($this->setFlowStatus($user->getFlowStatus()));
         }
 
         $entityManager->flush();
@@ -356,5 +356,14 @@ final class UserController extends AbstractController
         $user = $this->getUser();
 
         return new JsonResponse($bootstrapViewFactory->create($user));
+    }
+
+    private function setFlowStatus(string $currentFlowStatus): string
+    {
+        if (User::FLOW_STATUS_CHANGE_PASSWORD === $currentFlowStatus) {
+            return $currentFlowStatus;
+        }
+
+        return User::FLOW_STATUS_FINISHED;
     }
 }

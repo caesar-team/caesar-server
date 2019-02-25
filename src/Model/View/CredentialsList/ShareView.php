@@ -54,4 +54,14 @@ class ShareView
      * @var \DateTime
      */
     public $updatedAt;
+    /**
+     * @var \DateTime
+     */
+    public $left;
+
+    public function __construct()
+    {
+        $now = new \DateTime();
+        $this->left = $this->updatedAt->diff($now);
+    }
 }

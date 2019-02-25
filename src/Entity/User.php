@@ -21,6 +21,10 @@ use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 {
+    const FLOW_STATUS_FINISHED = 'finished';
+    const FLOW_STATUS_INCOMPLETE = 'incomplete';
+    const FLOW_STATUS_CHANGE_PASSWORD = 'password_change';
+    const DEFAULT_FLOW_STATUS = self::FLOW_STATUS_FINISHED;
     const ROLE_USER = 'ROLE_USER';
     const ROLE_READ_ONLY_USER = 'ROLE_READ_ONLY_USER';
     const ROLE_ANONYMOUS_USER = 'ROLE_ANONYMOUS_USER';
@@ -159,11 +163,10 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $fingerprints = [];
 
     /**
-     * @var bool
-     *
-     * @ORM\Column(type="boolean", options={"default": false}, nullable=false)
+     * @var string
+     * @ORM\Column(type="string", options={"default": "finished"}, nullable=false)
      */
-    private $incompleteFlow = false;
+    private $flowStatus = self::DEFAULT_FLOW_STATUS;
 
     /**
      * User constructor.
@@ -184,7 +187,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         if (null !== $srp) {
             $this->srp = $srp;
         }
-        $this->incompleteFlow = true;
+        $this->flowStatus = self::FLOW_STATUS_INCOMPLETE;
     }
 
     /**
@@ -407,18 +410,18 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     }
 
     /**
-     * @return bool
+     * @return string
      */
-    public function isIncompleteFlow(): bool
+    public function getFlowStatus(): string
     {
-        return $this->incompleteFlow;
+        return $this->flowStatus;
     }
 
     /**
-     * @param bool $incompleteFlow
+     * @param string $flowStatus
      */
-    public function setIncompleteFlow(bool $incompleteFlow): void
+    public function setFlowStatus(string $flowStatus): void
     {
-        $this->incompleteFlow = $incompleteFlow;
+        $this->flowStatus = $flowStatus;
     }
 }

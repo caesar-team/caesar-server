@@ -70,6 +70,9 @@ class CreateUserType extends AbstractType
         $user = $event->getData();
         $user->setUsername($user->getEmail());
         $user->setEnabled(true);
+        if ($user->hasRole(User::ROLE_READ_ONLY_USER)) {
+            $user->setFlowStatus(User::FLOW_STATUS_CHANGE_PASSWORD);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver)
