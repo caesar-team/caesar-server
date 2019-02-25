@@ -28,7 +28,7 @@ class ShareView
     /**
      * @var \DateTime
      *
-     * @Groups({"share_edit", "share_read", "user_read"})
+     * @Groups({"share_edit", "share_read", "user_read", "share_create"})
      */
     public $updatedAt;
 

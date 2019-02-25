@@ -114,12 +114,14 @@ class ItemViewFactory
             $shareView = new ShareView();
             $share = $shareItem->getShare();
             $user = $share->getUser();
-            $shareView->userId = $user;
+            $shareView->userId = $user->getId();
             $shareView->email = $user->getEmail();
             $shareView->roles = $user->getRoles();
             $shareView->id = $share->getId();
             $shareView->link = $share->getLink();
             $shareView->status = $this->getStatus($share);
+            $shareView->updatedAt = $share->getUpdatedAt();
+            $shareView->createdAt = $share->getCreatedAt();
             $shares[] = $shareView;
         }
 

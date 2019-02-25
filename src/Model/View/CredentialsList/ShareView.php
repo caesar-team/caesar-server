@@ -46,4 +46,12 @@ class ShareView
      * @SWG\Property(example="['ROLE_USER']")
      */
     public $roles;
+    /**
+     * @var \DateTime
+     */
+    public $createdAt;
+    /**
+     * @var \DateTime
+     */
+    public $updatedAt;
 }
