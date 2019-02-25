@@ -174,9 +174,9 @@ final class TwoFactorAuthController extends AbstractController
      *     @SWG\Schema(
      *         type="object",
      *         @SWG\Property(
-     *             type="boolean",
-     *             property="success",
-     *             example="true",
+     *             type="string",
+     *             property="token",
+     *             example="fc772c1049ac5342cd9bc77086373e22",
      *         )
      *     )
      * )

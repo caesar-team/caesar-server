@@ -6,3 +6,6 @@ sylius_mailer:
         !php/const App\Mailer\MailRegistry::INVITE_SEND_MESSAGE:
             subject: 'Shared access with you'
             template: email/invite_message.html.twig
+        !php/const App\Mailer\MailRegistry::SHARE_SEND_MESSAGE:
+            subject: 'Shared access with you'
+            template: email/share_message.html.twig

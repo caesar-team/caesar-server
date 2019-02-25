@@ -1,3 +1,5 @@
 authentication.email_domain_restriction: 'Domain %domain% is not allowed.'
 authentication.user_restriction: 'User %email% is not allowed.'
 mail.invite.message: 'You got invite into application go to link %url%'
+mail.share.created_link.message: 'You have access to a secured item. Follow this link %url%'
+mail.share.updated_link.message: 'Shared item updated. Follow the new link %url%'

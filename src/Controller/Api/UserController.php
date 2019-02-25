@@ -224,7 +224,7 @@ final class UserController extends AbstractController
         /** @var User $oldUser */
         $oldUser = $entityManager->getUnitOfWork()->getOriginalEntityData($user);
         if ($oldUser['encryptedPrivateKey'] !== $user->getEncryptedPrivateKey()) {
-            $user->setRequireMasterRefresh(false);
+            $user->setIncompleteFlow(false);
         }
 
         $entityManager->flush();
@@ -272,9 +272,8 @@ final class UserController extends AbstractController
      */
     public function createUser(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
     {
-        $email = $request->request->get('email') ?: $request->request->get('login');
         /** @var User $user */
-        $user = $userRepository->findOneBy(['email' => $email]);
+        $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
         if (!$user) {
             $user = new User(new Srp());
         } elseif (null !== $user->getPublicKey()) {

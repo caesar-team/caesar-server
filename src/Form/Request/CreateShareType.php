@@ -29,9 +29,6 @@ class CreateShareType extends AbstractType
                 'allow_delete' => true,
                 'delete_empty' => true,
                 'by_reference' => false,
-                'constraints' => [
-                    new Count(['min' => 1]),
-                ],
             ])
         ;
     }

@@ -23,6 +23,11 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
+    /**
+     * @param Item $item
+     * @return User|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function getByItem(Item $item): ?User
     {
         $list = $item->getParentList();
@@ -30,6 +35,11 @@ class UserRepository extends ServiceEntityRepository
         return $this->getByList($list);
     }
 
+    /**
+     * @param Directory $list
+     * @return User|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function getByList(Directory $list): ?User
     {
         $parent = $list->getParentList();
@@ -74,6 +84,11 @@ class UserRepository extends ServiceEntityRepository
         return $this->createPaginatedList($qb, $query);
     }
 
+    /**
+     * @param string $token
+     * @return User|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function findByToken(string $token): ?User
     {
         $qb = $this->createQueryBuilder('user');
@@ -85,6 +100,11 @@ class UserRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @param string $email
+     * @return User|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function findByEmail(string $email): ?User
     {
         $qb = $this->createQueryBuilder('user');

@@ -12,14 +12,12 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
-use App\Validator\Constraints\AtLeastOneOf;
 
 /**
  * User.
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @AtLeastOneOf(properties={"login", "email"})
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 {
@@ -31,12 +29,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         self::ROLE_READ_ONLY_USER => self::ROLE_READ_ONLY_USER,
         self::ROLE_ANONYMOUS_USER => self::ROLE_ANONYMOUS_USER,
     ];
-    /**
-     * @var string|null
-     *
-     * @ORM\Column(length=50, type="string", nullable=true)
-     */
-    protected $login;
+
     /**
      * @var UuidInterface
      *
@@ -168,9 +161,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @var bool
      *
-     * @ORM\Column(type="boolean", options={"default": false})
+     * @ORM\Column(type="boolean", options={"default": false}, nullable=false)
      */
-    private $requireMasterRefresh = false;
+    private $incompleteFlow = false;
 
     /**
      * User constructor.
@@ -191,6 +184,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         if (null !== $srp) {
             $this->srp = $srp;
         }
+        $this->incompleteFlow = true;
     }
 
     /**
@@ -412,23 +406,19 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->fingerprints;
     }
 
-    public function isRequireMasterRefresh(): bool
+    /**
+     * @return bool
+     */
+    public function isIncompleteFlow(): bool
     {
-        return $this->requireMasterRefresh;
+        return $this->incompleteFlow;
     }
 
-    public function setRequireMasterRefresh(bool $requireMasterRefresh): void
+    /**
+     * @param bool $incompleteFlow
+     */
+    public function setIncompleteFlow(bool $incompleteFlow): void
     {
-        $this->requireMasterRefresh = $requireMasterRefresh;
-    }
-
-    public function getLogin(): ?string
-    {
-        return $this->login;
-    }
-
-    public function setLogin(?string $login): void
-    {
-        $this->login = $login;
+        $this->incompleteFlow = $incompleteFlow;
     }
 }
