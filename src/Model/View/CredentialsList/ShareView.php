@@ -54,4 +54,22 @@ class ShareView
      * @var \DateTime
      */
     public $updatedAt;
+    /**
+     * @var string
+     */
+    private $left;
+
+    public function setLeft(\DateTime $date)
+    {
+        $interval = $this->updatedAt ? $this->updatedAt->diff($date) : $this->createdAt->diff($date);
+        $this->left = $interval->format('%h');
+    }
+
+    /**
+     * @return int
+     */
+    public function getLeft(): int
+    {
+        return (int) $this->left;
+    }
 }

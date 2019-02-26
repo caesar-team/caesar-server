@@ -292,6 +292,9 @@ final class SrpController extends AbstractController
             return $form;
         }
 
+        if ($user->hasRole(User::ROLE_READ_ONLY_USER)) {
+            $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
+        }
         $manager->updateUser($user);
 
         return null;

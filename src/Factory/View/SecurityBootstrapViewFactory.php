@@ -67,7 +67,7 @@ class SecurityBootstrapViewFactory
     {
         switch (true) {
             case $user->hasRole(User::ROLE_READ_ONLY_USER):
-                $state = is_null($user->getLastLogin()) ? SecurityBootstrapView::STATE_CHANGE : SecurityBootstrapView::STATE_SKIP;
+                $state = User::FLOW_STATUS_CHANGE_PASSWORD === $user->getFlowStatus() ? SecurityBootstrapView::STATE_CHANGE : SecurityBootstrapView::STATE_SKIP;
                 break;
             default:
                 $state = SecurityBootstrapView::STATE_SKIP;
@@ -81,7 +81,11 @@ class SecurityBootstrapViewFactory
         switch (true) {
             case $user->hasRole(User::ROLE_READ_ONLY_USER):
             case $user->hasRole(User::ROLE_ANONYMOUS_USER):
-                $state = $user->isIncompleteFlow() ? SecurityBootstrapView::STATE_CHECK_SHARED : SecurityBootstrapView::STATE_CHECK;
+                $flowStatuses = [
+                    User::FLOW_STATUS_CHANGE_PASSWORD,
+                    User::FLOW_STATUS_INCOMPLETE,
+                ];
+                $state = in_array($user->getFlowStatus(), $flowStatuses) ? SecurityBootstrapView::STATE_CHECK_SHARED : SecurityBootstrapView::STATE_CHECK;
             break;
             default:
                 $state = is_null($user->getEncryptedPrivateKey()) ? SecurityBootstrapView::STATE_CREATE : SecurityBootstrapView::STATE_CHECK;

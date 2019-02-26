@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Share;
 
+use App\DBAL\Types\Enum\AccessEnumType;
+use App\Entity\Item;
 use App\Entity\Share;
 use App\Entity\User;
 use App\Event\EntityListener\ShareLinkCreatedListener;
-use App\Share\Event\ShareCreatedEvent;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
@@ -59,7 +60,7 @@ final class ShareManager
         $this->entityManager->persist($share);
         $this->entityManager->flush();
 
-        $this->eventDispatcher->dispatch(ShareCreatedEvent::NAME, new ShareCreatedEvent($share));
+        $this->shareToItems($share);
 
         return $share;
     }
@@ -95,5 +96,20 @@ final class ShareManager
     {
         $linkCreatedEvent = new GenericEvent($share, ['method' => $method]);
         $this->eventDispatcher->dispatch(ShareLinkCreatedListener::EVENT_NAME, $linkCreatedEvent);
+    }
+
+    private function shareToItems(Share $share)
+    {
+        foreach ($share->getSharedItems() as $sharedItem) {
+            $item = new Item();
+            $item->setParentList($share->getUser()->getInbox());
+            $item->setOriginalItem($sharedItem->getItem());
+            $item->setSecret($sharedItem->getSecret());
+            $item->setAccess(AccessEnumType::TYPE_READ);
+            $item->setType($sharedItem->getItem()->getType());
+
+            $this->entityManager->persist($item);
+        }
+        $this->entityManager->flush();
     }
 }
