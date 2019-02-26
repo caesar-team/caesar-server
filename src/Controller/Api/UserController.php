@@ -223,8 +223,11 @@ final class UserController extends AbstractController
 
         /** @var User $oldUser */
         $oldUser = $entityManager->getUnitOfWork()->getOriginalEntityData($user);
-        if ($oldUser['encryptedPrivateKey'] !== $user->getEncryptedPrivateKey()) {
-            $user->setFlowStatus($this->setFlowStatus($user->getFlowStatus()));
+        if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
+            $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
+
+        } else {
+            $this->setFlowStatusByPrivateKeys($oldUser, $user);
         }
 
         $entityManager->flush();
@@ -365,5 +368,12 @@ final class UserController extends AbstractController
         }
 
         return User::FLOW_STATUS_FINISHED;
+    }
+
+    private function setFlowStatusByPrivateKeys($oldUser, User $user)
+    {
+        if ($oldUser['encryptedPrivateKey'] !== $user->getEncryptedPrivateKey()) {
+            $user->setFlowStatus($this->setFlowStatus($user->getFlowStatus()));
+        }
     }
 }
