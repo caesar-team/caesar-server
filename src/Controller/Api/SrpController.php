@@ -22,6 +22,7 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -135,7 +136,7 @@ final class SrpController extends AbstractController
      * @param SrpHandler             $srpHandler
      * @param SrpPrepareViewFactory  $viewFactory
      *
-     * @return PreparedSrpView|FormInterface
+     * @return PreparedSrpView|FormInterface|JsonResponse
      */
     public function prepareLoginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler, SrpPrepareViewFactory $viewFactory)
     {
@@ -143,9 +144,13 @@ final class SrpController extends AbstractController
         /** @var User $user */
         $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
         if (null === $user) {
-            throw new BadRequestHttpException('No such user');
+            return new JsonResponse(['error' => 'No such user'], Response::HTTP_BAD_REQUEST);
         }
         $srp = $user->getSrp();
+
+        if (is_null($srp)) {
+            return new JsonResponse(['error' => 'Invalid Srp'], Response::HTTP_BAD_REQUEST);
+        }
 
         $form = $this->createForm(LoginPrepareType::class, $srp);
         $form->submit($request->request->all());
