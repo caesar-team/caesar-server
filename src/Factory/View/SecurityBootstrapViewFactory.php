@@ -87,7 +87,7 @@ class SecurityBootstrapViewFactory
                 $state = in_array($user->getFlowStatus(), $flowStatuses) ? SecurityBootstrapView::STATE_CHECK_SHARED : SecurityBootstrapView::STATE_CHECK;
                 break;
             case $user->hasRole(User::ROLE_ANONYMOUS_USER):
-                $state = SecurityBootstrapView::STATE_CHECK_SHARED;
+                $state = SecurityBootstrapView::STATE_CHECK;
             break;
             default:
                 $state = is_null($user->getEncryptedPrivateKey()) ? SecurityBootstrapView::STATE_CREATE : SecurityBootstrapView::STATE_CHECK;
