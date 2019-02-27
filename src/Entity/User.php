@@ -172,7 +172,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 
     /**
      * @var array|null
-     * @ORM\Column(type="json_array")
+     * @ORM\Column(type="json_array", nullable=true)
      */
     private $backupCodes = [];
 
