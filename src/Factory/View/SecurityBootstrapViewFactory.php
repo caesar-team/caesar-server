@@ -79,13 +79,6 @@ class SecurityBootstrapViewFactory
     private function getMasterPasswordState(User $user): string
     {
         switch (true) {
-            case $user->hasRole(User::ROLE_READ_ONLY_USER):
-                $flowStatuses = [
-                    User::FLOW_STATUS_CHANGE_PASSWORD,
-                    User::FLOW_STATUS_INCOMPLETE,
-                ];
-                $state = in_array($user->getFlowStatus(), $flowStatuses) ? SecurityBootstrapView::STATE_CHECK_SHARED : SecurityBootstrapView::STATE_CHECK;
-                break;
             case $user->hasRole(User::ROLE_ANONYMOUS_USER):
                 $state = SecurityBootstrapView::STATE_CHECK;
             break;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Entity\Share;
+use App\Entity\User;
 use App\Event\EntityListener\ShareLinkCreatedListener;
 use App\Factory\View\Share\ShareViewFactory;
 use App\Form\Request\BatchCreateShareType;
@@ -408,6 +409,10 @@ final class ShareController extends AbstractController
     public function check(Share $share): JsonResponse
     {
         if (0 === $share->getSharedItems()->count()) {
+            return new JsonResponse(['share' => $share->getId()], Response::HTTP_NOT_FOUND);
+        }
+
+        if (User::FLOW_STATUS_FINISHED === $share->getUser()->getFlowStatus()) {//The share link must be unavailable when user already finished flow
             return new JsonResponse(['share' => $share->getId()], Response::HTTP_NOT_FOUND);
         }
 
