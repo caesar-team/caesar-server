@@ -43,7 +43,11 @@ final class TwoFactorJWTSubscriber implements EventSubscriberInterface
     public function onJWTCreated(JWTCreatedEvent $event)
     {
         $user = $event->getUser();
-        if ($user instanceof User && $user->isGoogleAuthenticatorEnabled()) {
+        if (!$user instanceof User) {
+            return;
+        }
+
+        if ($user->getGoogleId() && $user->isGoogleAuthenticatorEnabled()) {
             $fingerprint = $this->fingerprintStasher->unstash();
 
             if (empty($fingerprint) || !$this->fingerprintManager->isHasFingerprint($user, $fingerprint)) {
