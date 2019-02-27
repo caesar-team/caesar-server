@@ -412,7 +412,10 @@ final class ShareController extends AbstractController
             return new JsonResponse(['share' => $share->getId()], Response::HTTP_NOT_FOUND);
         }
 
-        if (User::FLOW_STATUS_FINISHED === $share->getUser()->getFlowStatus()) {//The share link must be unavailable when user already finished flow
+        if (
+            User::FLOW_STATUS_FINISHED === $share->getUser()->getFlowStatus() &&
+            !$share->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)
+        ) {//The share link must be unavailable when user already finished flow
             return new JsonResponse(['share' => $share->getId()], Response::HTTP_NOT_FOUND);
         }
 
