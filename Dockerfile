@@ -1,7 +1,8 @@
 # ---- Base Image ----
 FROM 4xxi/php-pgsql:flex AS base
 # Preparing
-RUN mkdir -p /var/www/html && chown -R www-data /var
+RUN mkdir -p /var/www/html && chown -R www-data /var && \
+apt-get update && apt-get install -y --no-install-recommends libgpgme11-dev && rm -rf /var/lib/apt/lists/* && pecl install gnupg redis && docker-php-ext-enable gnupg redis
 # Set working directory
 WORKDIR /var/www/html
 # Run in production mode
@@ -21,7 +22,6 @@ RUN APP_ENV=prod composer install --prefer-dist --no-progress --no-suggest --no-
 FROM base AS release
 # copy production vendors
 COPY --from=dependencies /var/www/html/vendor ./vendor
-RUN apt-get install -y --no-install-recommends libgpgme11-dev && rm -rf /var/lib/apt/lists/* && pecl install gnupg redis && docker-php-ext-enable gnupg redis
 COPY . .
 COPY entrypoint.sh /usr/local/bin/
 COPY ./www.conf /usr/local/etc/php-fpm.d/
