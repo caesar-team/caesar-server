@@ -11,8 +11,6 @@ use Hashids\Hashids;
 class BackUpCodesManager
 {
     const CODES_COUNT = 20;
-    const SALT = '38c936d565cc1d668ef46ff8f7fe33460814e5cc';
-    const HASH_LENGTH = 15;
 
     static public function generate(User $user): void
     {
@@ -32,6 +30,6 @@ class BackUpCodesManager
 
     static public function initEncoder()
     {
-        return new Hashids(self::SALT, self::HASH_LENGTH);
+        return new Hashids(getenv('BACKUP_CODE_SALT'), getenv('BACKUP_CODE_HASH_LENGTH'));
     }
 }
