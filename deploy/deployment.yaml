@@ -96,6 +96,18 @@ spec:
               key: MAILER_URL
               name: caesarapp-server
               optional: false
+        - name: BACKUP_CODE_SALT
+            valueFrom:
+              secretKeyRef:
+                key: BACKUP_CODE_SALT
+                name: caesarapp-server
+                optional: false
+        - name: BACKUP_CODE_HASH_LENGTH
+            valueFrom:
+              secretKeyRef:
+                key: BACKUP_CODE_HASH_LENGTH
+                name: caesarapp-server
+                optional: false
         image: caesarteam/caesar-server:${CICD_GIT_BRANCH}
         imagePullPolicy: Always
         name: caesarapp-server

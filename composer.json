@@ -39,7 +39,8 @@
         "symfony/swiftmailer-bundle": "^3.2",
         "symfony/twig-bundle": "^4.1",
         "symfony/yaml": "^4.1",
-        "ext-redis": "*"
+        "ext-redis": "*",
+        "hashids/hashids": "^3.0"
     },
     "require-dev": {
         "deployer/deployer": "^6.2",
