@@ -207,4 +207,34 @@ final class TwoFactorAuthController extends AbstractController
     {
         throw new \RuntimeException('You must configure the check path to be handled by the firewall using form_login in your security firewall configuration.');
     }
+
+    /**
+     * Return Backup codes
+     *
+     * @SWG\Tag(name="Security")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Return Backup codes [231678,233764]",
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/auth/2fa/backups",
+     *     name="api_security_2fa_backup_codes",
+     *     methods={"GET"}
+     * )
+     *
+     * @return JsonResponse
+     */
+    public function getBackupCodes()
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return new JsonResponse($user->getBackupCodes());
+    }
 }

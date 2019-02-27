@@ -6,3 +6,5 @@ scheb_two_factor:
         server_name: '%env(TWO_FACTOR_SERVER_NAME)%'
         enabled: true
         issuer: '%env(TWO_FACTOR_SERVER_NAME)%'
+    backup_codes:
+        enabled: true
