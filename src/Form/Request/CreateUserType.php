@@ -73,6 +73,9 @@ class CreateUserType extends AbstractType
         if ($user->hasRole(User::ROLE_READ_ONLY_USER)) {
             $user->setFlowStatus(User::FLOW_STATUS_CHANGE_PASSWORD);
         }
+        if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
+            $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver)
