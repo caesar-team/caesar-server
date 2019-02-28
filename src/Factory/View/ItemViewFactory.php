@@ -8,10 +8,12 @@ use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
 use App\Entity\Share;
+use App\Entity\User;
 use App\Model\View\CredentialsList\InviteView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ShareView;
 use App\Model\View\CredentialsList\UpdateView;
+use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
 
 class ItemViewFactory
@@ -24,6 +26,11 @@ class ItemViewFactory
         $this->userRepository = $userRepository;
     }
 
+    /**
+     * @param Item $item
+     * @return ItemView
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function create(Item $item): ItemView
     {
         $view = new ItemView();
@@ -38,7 +45,7 @@ class ItemViewFactory
         $view->invited = $this->getInvitesCollection($item);
         $view->shared = $this->getSharesCollection($item);
         $view->update = $this->getUpdateView($item->getUpdate());
-        $view->ownerId = $this->getOwnerId($item);
+        $view->owner = $this->getOwner($item);
         $view->favorite = $item->isFavorite();
 
         return $view;
@@ -68,14 +75,20 @@ class ItemViewFactory
         return $inviteViewCollection;
     }
 
-    private function getOwnerId(Item $item): string
+    /**
+     * @param Item $item
+     * @return UserView
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    private function getOwner(Item $item): UserView
     {
         $ownerItem = $item;
         if (null !== $item->getOriginalItem()) {
             $ownerItem = $item->getOriginalItem();
         }
+        $user = $this->userRepository->getByItem($ownerItem);
 
-        return $this->userRepository->getByItem($ownerItem)->getId()->toString();
+        return (new UserViewFactory())->create($user);
     }
 
     private function getUpdateView(?ItemUpdate $update): ?UpdateView
@@ -111,6 +124,7 @@ class ItemViewFactory
             $shareView->status = $this->getStatus($share);
             $shareView->updatedAt = $share->getUpdatedAt();
             $shareView->createdAt = $share->getCreatedAt();
+            $shareView->publicKey = $user->getPublicKey();
             $shareView->setLeft(new \DateTime());
             $shares[] = $shareView;
         }
