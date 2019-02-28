@@ -12,6 +12,7 @@ use App\Form\Request\BatchCreateShareType;
 use App\Form\Request\BatchEditShareType;
 use App\Form\Request\CreateShareType;
 use App\Form\Request\EditShareType;
+use App\Form\Request\UpdateShareType;
 use App\Security\Voter\ShareVoter;
 use App\Share\ShareManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -296,7 +297,7 @@ final class ShareController extends AbstractController
         $this->denyAccessUnlessGranted(ShareVoter::EDIT_SHARE, $share);
 
         $oldLink = $share->getLink();
-        $form = $this->createForm(EditShareType::class, $share);
+        $form = $this->createForm(UpdateShareType::class, $share);
 
         $form->submit($request->request->all());
         if ($form->isValid()) {

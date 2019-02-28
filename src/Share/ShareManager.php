@@ -81,9 +81,11 @@ final class ShareManager
         }
 
         $share->setLink($shareNew->getLink());
-        $share->setSharedItems(new ArrayCollection());
-        foreach ($shareNew->getSharedItems() as $shareItem) {
-            $share->addSharedItem($shareItem);
+        if (!$share->getSharedItems()->count()) {
+            $share->setSharedItems(new ArrayCollection());
+            foreach ($shareNew->getSharedItems() as $shareItem) {
+                $share->addSharedItem($shareItem);
+            }
         }
 
         $this->entityManager->persist($share);
