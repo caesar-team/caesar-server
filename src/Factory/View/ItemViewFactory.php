@@ -65,17 +65,6 @@ class ItemViewFactory
             $inviteViewCollection[] = $invite;
         }
 
-        $user = $this->userRepository->getByItem($ownerItem);
-
-        $invite = new InviteView();
-        $invite->id = $ownerItem->getId()->toString();
-        $invite->userId = $user->getId()->toString();
-        $invite->access = AccessEnumType::TYPE_WRITE;
-        $invite->lastUpdated = $ownerItem->getLastUpdated();
-        $invite->email = $user->getEmail();
-
-        $inviteViewCollection[] = $invite;
-
         return $inviteViewCollection;
     }
 
