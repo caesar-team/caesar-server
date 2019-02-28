@@ -103,7 +103,6 @@ final class ShareManager
         foreach ($share->getSharedItems() as $sharedItem) {
             $item = new Item();
             $item->setParentList($share->getUser()->getInbox());
-            $item->setOriginalItem($sharedItem->getItem());
             $item->setSecret($sharedItem->getSecret());
             $item->setAccess(AccessEnumType::TYPE_READ);
             $item->setType($sharedItem->getItem()->getType());

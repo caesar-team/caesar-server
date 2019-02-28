@@ -56,6 +56,11 @@ class ShareView
     public $updatedAt;
     /**
      * @var string
+     * @SWG\Property(example="asfd7sdfasdf8dsfdsfgdfg8dfg7sdfg")
+     */
+    public $publicKey;
+    /**
+     * @var string
      */
     private $left;
 
