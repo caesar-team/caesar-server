@@ -86,7 +86,6 @@ final class ShareManager
 
         $this->entityManager->persist($share);
         $this->entityManager->flush();
-        $this->shareToItems($share);
 
         return $share;
     }
