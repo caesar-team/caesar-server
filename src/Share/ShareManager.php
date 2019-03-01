@@ -116,7 +116,7 @@ final class ShareManager
      */
     private function updateShareItems(Share $share, $newSharedItems): void
     {
-        if (!$share->getSharedItems()->count() && !$newSharedItems->count()) {
+        if (!$share->getSharedItems()->count() && $newSharedItems->count()) {
             $share->setSharedItems(new ArrayCollection());
             foreach ($newSharedItems as $shareItem) {
                 $share->addSharedItem($shareItem);
