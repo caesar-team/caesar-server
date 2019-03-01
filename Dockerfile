@@ -1,8 +1,8 @@
 # ---- Base Image ----
 FROM 4xxi/php-pgsql:flex AS base
 # Preparing
-RUN mkdir -p /var/www/html && chown -R www-data /var && \
-apt-get update && apt-get install -y --no-install-recommends libgpgme11-dev && rm -rf /var/lib/apt/lists/* && pecl install gnupg redis && docker-php-ext-enable gnupg redis
+RUN mkdir -p /var/www/html && chown -R www-data /var && rm -rf /var/lib/apt/lists/* && \
+apt-get update && apt-get install -y --no-install-recommends libgpgme11-dev && pecl install gnupg redis && docker-php-ext-enable gnupg redis
 # Set working directory
 WORKDIR /var/www/html
 # Run in production mode
