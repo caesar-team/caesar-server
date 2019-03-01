@@ -26,8 +26,8 @@ class CreateShareType extends AbstractType
             ->add('sharedItems', CollectionType::class, [
                 'entry_type' => ShareItemType::class,
                 'allow_add' => true,
-                'allow_delete' => true,
-                'delete_empty' => true,
+                'allow_delete' => false,
+                'delete_empty' => false,
                 'by_reference' => false,
             ])
         ;

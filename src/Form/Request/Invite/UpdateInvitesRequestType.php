@@ -40,7 +40,7 @@ class UpdateInvitesRequestType extends AbstractType
                 'entry_type' => SecretType::class,
             ]);
 
-        $builder->addEventListener(FormEvents::SUBMIT, [$this, 'validateInvites']);
+        //$builder->addEventListener(FormEvents::SUBMIT, [$this, 'validateInvites']);
     }
 
     public function validateInvites(FormEvent $event)
