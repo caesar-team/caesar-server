@@ -99,7 +99,7 @@ final class ShareManager
     private function shareToItems(Share $share)
     {
         foreach ($share->getSharedItems() as $sharedItem) {
-            $item = $sharedItem->getItem() ?: new Item();
+            $item = new Item();
             $item->setParentList($share->getUser()->getInbox());
             $item->setSecret($sharedItem->getSecret());
             $item->setAccess(AccessEnumType::TYPE_READ);
