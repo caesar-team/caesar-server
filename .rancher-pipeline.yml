@@ -13,4 +13,4 @@ stages:
         path: ./deploy/deployment.yaml
 # branch conditions for the pipeline
 branch:
-    include: [develop, master]
+    include: [master]
