@@ -2,20 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\Event\EntityListener;
+namespace App\Event\EventSubscriber;
 
 
 use App\Entity\Share;
 use App\Mailer\MailRegistry;
 use Sylius\Component\Mailer\Sender\SenderInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\HttpFoundation\Response;
 
-class ShareLinkCreatedListener
+class ShareLinkCreatedSubscriber implements EventSubscriberInterface
 {
     const EVENT_NAME = 'app.event.share.link_created';
     const METHOD_CREATE = 'create';
     const METHOD_UPDATE = 'update';
+
     /**
      * @var SenderInterface
      */
@@ -24,6 +26,13 @@ class ShareLinkCreatedListener
     public function __construct(SenderInterface $sender)
     {
         $this->sender = $sender;
+    }
+
+    public static function getSubscribedEvents()
+    {
+        return [
+            self::EVENT_NAME => 'handler'
+        ];
     }
 
     public function handler(GenericEvent $event)
