@@ -9,6 +9,10 @@ use App\Entity\Fingerprint;
 use App\Entity\User;
 use App\Model\View\User\SecurityBootstrapView;
 use App\Security\Fingerprint\FingerprintManager;
+use App\Security\Voter\TwoFactorInProgressVoter;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
+use Symfony\Component\Security\Core\Security;
 
 class SecurityBootstrapViewFactory
 {
@@ -16,10 +20,20 @@ class SecurityBootstrapViewFactory
      * @var FingerprintManager
      */
     private $fingerprintManager;
+    /**
+     * @var Security
+     */
+    private $security;
+    /**
+     * @var JWTEncoderInterface
+     */
+    private $encoder;
 
-    public function __construct(FingerprintManager $fingerprintManager)
+    public function __construct(FingerprintManager $fingerprintManager, Security $security, JWTEncoderInterface $encoder)
     {
         $this->fingerprintManager = $fingerprintManager;
+        $this->security = $security;
+        $this->encoder = $encoder;
     }
 
     public function create(User $user):SecurityBootstrapView
@@ -32,9 +46,18 @@ class SecurityBootstrapViewFactory
         return $securityBootstrapView;
     }
 
+    /**
+     * @param User $user
+     * @return string
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     */
     private function getTwoFactorAuthState(User $user): string
     {
+        $isCompleteJwt = $this->isCompleteJwt();
         switch (true) {
+            case $isCompleteJwt:
+                $state = SecurityBootstrapView::STATE_SKIP;
+                break;
             case $user->hasRole(User::ROLE_ANONYMOUS_USER):
                 $state = SecurityBootstrapView::STATE_SKIP;
                 break;
@@ -95,5 +118,20 @@ class SecurityBootstrapViewFactory
         }
 
         return $state;
+    }
+
+    /**
+     * @return bool
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     */
+    private function isCompleteJwt(): bool
+    {
+        if ($this->security->getToken() instanceof JWTUserToken) {
+            $decodedToken = $this->encoder->decode($this->security->getToken()->getCredentials());
+
+            return !isset($decodedToken[TwoFactorInProgressVoter::CHECK_KEY_NAME]);
+        }
+
+        return false;
     }
 }
