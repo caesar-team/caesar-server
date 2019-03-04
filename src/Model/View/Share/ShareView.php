@@ -28,18 +28,16 @@ class ShareView
     /**
      * @var \DateTime
      *
-     * @Groups({"share_edit", "share_read", "user_read"})
+     * @Groups({"share_edit", "share_read", "user_read", "share_create"})
      */
     public $updatedAt;
 
     /**
      * @var string
-     *
-     * @SWG\Property(example="email@email")
-     *
-     * @Groups({"share_read", "user_read"})
+     * @SWG\Property(example="a68833af-ab0f-4db3-acde-fccc47641b9e")
+     * @Groups({"share_read"})
      */
-    public $email;
+    public $user;
 
     /**
      * @var ShareItemView[]

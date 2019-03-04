@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity
@@ -19,6 +20,9 @@ use Ramsey\Uuid\UuidInterface;
 class Share
 {
     use TimestampableEntity;
+
+    const STATUS_WAITING = 'WAITING';
+    const STATUS_ACCEPTED = 'ACCEPTED';
 
     /**
      * @var UuidInterface
@@ -51,10 +55,22 @@ class Share
      */
     private $sharedItems;
 
+    /**
+     * @var string|null
+     * @ORM\Column(nullable=true, type="string", length=510)
+     */
+    private $link;
+
+    /**
+     * @var string
+     */
+    private $status = self::STATUS_WAITING;
+
     public function __construct()
     {
         $this->id = Uuid::uuid4();
         $this->sharedItems = new ArrayCollection();
+        $this->status = self::STATUS_WAITING;
     }
 
     public function getId(): UuidInterface
@@ -77,6 +93,9 @@ class Share
         return $this->owner;
     }
 
+    /**
+     * @param User|UserInterface $owner
+     */
     public function setOwner(User $owner): void
     {
         $this->owner = $owner;
@@ -109,5 +128,31 @@ class Share
     public function setSharedItems($sharedItems): void
     {
         $this->sharedItems = $sharedItems;
+    }
+
+    public function getLink(): ?string
+    {
+        return $this->link;
+    }
+
+    public function setLink(?string $link): void
+    {
+        $this->link = $link;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param string $status
+     */
+    public function setStatus(string $status): void
+    {
+        $this->status = $status;
     }
 }

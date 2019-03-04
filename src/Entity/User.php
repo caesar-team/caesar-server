@@ -4,25 +4,38 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Security\TwoFactor\BackUpCodesManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use FOS\UserBundle\Model\User as FOSUser;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use Scheb\TwoFactorBundle\Model\BackupCodeInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * User.
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @UniqueEntity(fields={"email"})
  */
-class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
+class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface, BackupCodeInterface
 {
+    const FLOW_STATUS_FINISHED = 'finished';
+    const FLOW_STATUS_INCOMPLETE = 'incomplete';
+    const FLOW_STATUS_CHANGE_PASSWORD = 'password_change';
+    const DEFAULT_FLOW_STATUS = self::FLOW_STATUS_FINISHED;
+    const ROLE_USER = 'ROLE_USER';
+    const ROLE_READ_ONLY_USER = 'ROLE_READ_ONLY_USER';
+    const ROLE_ANONYMOUS_USER = 'ROLE_ANONYMOUS_USER';
+    const AVAILABLE_ROLES = [
+        self::ROLE_USER => self::ROLE_USER,
+        self::ROLE_READ_ONLY_USER => self::ROLE_READ_ONLY_USER,
+        self::ROLE_ANONYMOUS_USER => self::ROLE_ANONYMOUS_USER,
+    ];
+
     /**
      * @var UuidInterface
      *
@@ -129,13 +142,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $trustedVersion = 0;
 
     /**
-     * @var bool
-     *
-     * @ORM\Column(name="guest", type="boolean", options={"default": false})
-     */
-    protected $guest = false;
-
-    /**
      * @var Srp|null
      *
      * @ORM\OneToOne(
@@ -159,9 +165,22 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $fingerprints = [];
 
     /**
+     * @var string
+     * @ORM\Column(type="string", options={"default": "finished"}, nullable=false)
+     */
+    private $flowStatus = self::DEFAULT_FLOW_STATUS;
+
+    /**
+     * @var array|null
+     * @ORM\Column(type="json_array", nullable=true)
+     */
+    private $backupCodes = [];
+
+    /**
      * User constructor.
      *
      * @param Srp|null $srp
+     * @throws \Exception
      */
     public function __construct(Srp $srp = null)
     {
@@ -176,6 +195,8 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         if (null !== $srp) {
             $this->srp = $srp;
         }
+        $this->flowStatus = self::FLOW_STATUS_INCOMPLETE;
+        BackUpCodesManager::generate($this);
     }
 
     /**
@@ -345,16 +366,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }
     }
 
-    public function isGuest(): bool
-    {
-        return $this->guest;
-    }
-
-    public function setGuest(bool $guest): void
-    {
-        $this->guest = $guest;
-    }
-
     public function getEncryptedPrivateKey(): ?string
     {
         return $this->encryptedPrivateKey;
@@ -405,5 +416,82 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getFingerprints(): Collection
     {
         return $this->fingerprints;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFlowStatus(): string
+    {
+        return $this->flowStatus;
+    }
+
+    /**
+     * @param string $flowStatus
+     */
+    public function setFlowStatus(string $flowStatus): void
+    {
+        $this->flowStatus = $flowStatus;
+    }
+
+    /**
+     * Check if it is a valid backup code.
+     *
+     * @param string $code
+     *
+     * @return bool
+     */
+    public function isBackupCode(string $code): bool
+    {
+        $encoder = BackUpCodesManager::initEncoder();
+        $code = $encoder->encode($code);
+        return in_array($code, $this->backupCodes);
+    }
+
+    /**
+     * Invalidate a backup code.
+     *
+     * @param string $code
+     */
+    public function invalidateBackupCode(string $code): void
+    {
+        $encoder = BackUpCodesManager::initEncoder();
+        $code = $encoder->encode($code);
+        $key = array_search($code, $this->backupCodes);
+        if ($key !== false){
+            unset($this->backupCodes[$key]);
+        }
+    }
+
+    /**
+     * @param array|null $backupCodes
+     */
+    public function setBackupCodes(?array $backupCodes): void
+    {
+        $this->backupCodes = $backupCodes;
+    }
+
+    private function getBackupCodesCount(): int
+    {
+        return $this->backupCodes ? count($this->backupCodes) : 0;
+    }
+
+    public function hasBackupCodes(): bool
+    {
+        return (bool) $this->getBackupCodesCount();
+    }
+
+    /**
+     * @return array
+     */
+    public function getBackupCodes(): array
+    {
+        $encoder = BackUpCodesManager::initEncoder();
+        $codes = [];
+        foreach ($this->backupCodes as $backupCode) {
+            $codes[] = current($encoder->decode($backupCode));
+        }
+
+        return $codes;
     }
 }

@@ -10,6 +10,7 @@ use App\Factory\View\Srp\SrpPrepareViewFactory;
 use App\Form\Request\Srp\LoginPrepareType;
 use App\Form\Request\Srp\LoginType;
 use App\Form\Request\Srp\RegistrationType;
+use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
 use App\Services\SrpHandler;
@@ -21,8 +22,10 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -67,10 +70,11 @@ final class SrpController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request              $request
+     * @param Request $request
      * @param UserManagerInterface $manager
      *
      * @return null
+     * @throws \Exception
      */
     public function registerAction(Request $request, UserManagerInterface $manager)
     {
@@ -132,7 +136,7 @@ final class SrpController extends AbstractController
      * @param SrpHandler             $srpHandler
      * @param SrpPrepareViewFactory  $viewFactory
      *
-     * @return PreparedSrpView|FormInterface
+     * @return PreparedSrpView|FormInterface|JsonResponse
      */
     public function prepareLoginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler, SrpPrepareViewFactory $viewFactory)
     {
@@ -140,9 +144,13 @@ final class SrpController extends AbstractController
         /** @var User $user */
         $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
         if (null === $user) {
-            throw new BadRequestHttpException('No such user');
+            return new JsonResponse(['error' => 'No such user'], Response::HTTP_BAD_REQUEST);
         }
         $srp = $user->getSrp();
+
+        if (is_null($srp)) {
+            return new JsonResponse(['error' => 'Invalid Srp'], Response::HTTP_BAD_REQUEST);
+        }
 
         $form = $this->createForm(LoginPrepareType::class, $srp);
         $form->submit($request->request->all());
@@ -243,16 +251,57 @@ final class SrpController extends AbstractController
     }
 
     /**
-     * @Route(
-     *     path="/srp",
-     *     name="srp_form",
-     *     methods={"GET"}
+     * @SWG\Tag(name="Srp")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\Srp\UpdatePasswordType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Password changed"
      * )
      *
-     * @return Response
+     * @SWG\Response(
+     *     response=403,
+     *     description="Access denied"
+     * )
+     *
+     * @Route(
+     *     path="/api/srp/password",
+     *     name="api_srp_update_password",
+     *     methods={"PATCH"}
+     * )
+     *
+     * @param Request $request
+     * @param UserManagerInterface $manager
+     *
+     * @return null
+     * @throws \Exception
      */
-    public function srpFormAction()
+    public function updatePassword(Request $request, UserManagerInterface $manager)
     {
-        return $this->render('srp.html.twig');
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw new AccessDeniedHttpException();
+        }
+
+        if (is_null($user->getSrp())) {
+            throw new BadRequestHttpException('Invalid user SRP');
+        }
+
+        $form = $this->createForm(UpdatePasswordType::class, $user);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        if ($user->hasRole(User::ROLE_READ_ONLY_USER)) {
+            $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
+        }
+        $manager->updateUser($user);
+
+        return null;
     }
 }

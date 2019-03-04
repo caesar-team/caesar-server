@@ -175,18 +175,8 @@ final class TwoFactorAuthController extends AbstractController
      *         type="object",
      *         @SWG\Property(
      *             type="string",
-     *             property="jwt",
-     *             example="jwt-token-here",
-     *         ),
-     *         @SWG\Property(
-     *             type="string",
-     *             property="trustedDeviceToken",
-     *             example="jwt-token-here",
-     *         ),
-     *         @SWG\Property(
-     *             type="integer",
-     *             property="trustedDeviceTokenExpiresAt",
-     *             example="1548506076",
+     *             property="token",
+     *             example="fc772c1049ac5342cd9bc77086373e22",
      *         )
      *     )
      * )
@@ -209,12 +199,42 @@ final class TwoFactorAuthController extends AbstractController
      *
      * @Route(
      *     path="/api/2fa",
-     *     name="2fa_get_token",
+     *     name="2fa_check",
      *     methods={"POST"}
      * )
      */
     public function check()
     {
         throw new \RuntimeException('You must configure the check path to be handled by the firewall using form_login in your security firewall configuration.');
+    }
+
+    /**
+     * Return Backup codes
+     *
+     * @SWG\Tag(name="Security")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Return Backup codes [231678,233764]",
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/auth/2fa/backups",
+     *     name="api_security_2fa_backup_codes",
+     *     methods={"GET"}
+     * )
+     *
+     * @return JsonResponse
+     */
+    public function getBackupCodes()
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        return new JsonResponse($user->getBackupCodes());
     }
 }

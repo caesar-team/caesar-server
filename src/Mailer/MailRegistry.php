@@ -7,7 +7,8 @@ namespace App\Mailer;
 final class MailRegistry
 {
     /**
-     * Sending share message.
+     * Sending invite message.
      */
+    public const INVITE_SEND_MESSAGE = 'invite_send_message';
     public const SHARE_SEND_MESSAGE = 'share_send_message';
 }

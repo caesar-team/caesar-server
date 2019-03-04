@@ -1,0 +1,7 @@
+{% extends 'email/layout.html.twig' %}
+
+{% block subject %}Invite to application{% endblock %}
+
+{% block body %}
+    {{ 'mail.invite.message' | trans({'%url%': url}) }}
+{% endblock %}

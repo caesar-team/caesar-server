@@ -164,6 +164,9 @@
     "guzzlehttp/psr7": {
         "version": "1.4.2"
     },
+    "hashids/hashids": {
+        "version": "3.0.0"
+    },
     "hwi/oauth-bundle": {
         "version": "0.6",
         "recipe": {
@@ -493,6 +496,9 @@
     },
     "symfony/event-dispatcher": {
         "version": "v4.1.1"
+    },
+    "symfony/expression-language": {
+        "version": "v4.2.2"
     },
     "symfony/filesystem": {
         "version": "v4.1.1"

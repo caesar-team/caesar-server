@@ -56,7 +56,7 @@ class FingerprintManager
         $this->entityManager->flush();
     }
 
-    private function isValidDate(\DateTimeImmutable $dateTime): bool
+    public function isValidDate(\DateTimeImmutable $dateTime): bool
     {
         $deadline = $dateTime->modify("+ {$this->fingerprintLifeTime}second");
         if ($deadline > $this->now) {
@@ -76,5 +76,13 @@ class FingerprintManager
         }
 
         $this->entityManager->persist($user);
+    }
+
+    public function findFingerPrintByUser($user): ?Fingerprint
+    {
+        $this->invalidateOutdated($user);
+        $repo = $this->entityManager->getRepository(Fingerprint::class);
+
+        return $repo->findOneBy(['user' => $user]);
     }
 }
