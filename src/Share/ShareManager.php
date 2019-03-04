@@ -7,6 +7,7 @@ namespace App\Share;
 use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Entity\Share;
+use App\Entity\ShareItem;
 use App\Entity\User;
 use App\Event\EntityListener\ShareLinkCreatedListener;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -81,10 +82,7 @@ final class ShareManager
         }
 
         $share->setLink($shareNew->getLink());
-        $share->setSharedItems(new ArrayCollection());
-        foreach ($shareNew->getSharedItems() as $shareItem) {
-            $share->addSharedItem($shareItem);
-        }
+        $this->updateShareItems($share, $shareNew->getSharedItems());
 
         $this->entityManager->persist($share);
         $this->entityManager->flush();
@@ -103,7 +101,6 @@ final class ShareManager
         foreach ($share->getSharedItems() as $sharedItem) {
             $item = new Item();
             $item->setParentList($share->getUser()->getInbox());
-            $item->setOriginalItem($sharedItem->getItem());
             $item->setSecret($sharedItem->getSecret());
             $item->setAccess(AccessEnumType::TYPE_READ);
             $item->setType($sharedItem->getItem()->getType());
@@ -111,5 +108,21 @@ final class ShareManager
             $this->entityManager->persist($item);
         }
         $this->entityManager->flush();
+    }
+
+    /**
+     * @param Share $share
+     * @param ShareItem[]|ArrayCollection $newSharedItems
+     */
+    private function updateShareItems(Share $share, $newSharedItems): void
+    {
+        if (!$share->getSharedItems()->count() || $newSharedItems->count()) {
+            $share->setSharedItems(new ArrayCollection());
+            foreach ($newSharedItems as $shareItem) {
+                $share->addSharedItem($shareItem);
+            }
+
+            return;
+        }
     }
 }
