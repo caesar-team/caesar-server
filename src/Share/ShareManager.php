@@ -78,7 +78,7 @@ final class ShareManager
         $shareLink = $shareNew->getLink();
         if ($shareLink && $shareLink !== $oldLink) {
             $method = $oldLink ? ShareLinkCreatedSubscriber::METHOD_CREATE : ShareLinkCreatedSubscriber::METHOD_UPDATE;
-            $this->dispathLinkCreatedEvent($share, $method);
+            $this->dispathLinkCreatedEvent($shareNew, $method);
         }
 
         $share->setLink($shareNew->getLink());
