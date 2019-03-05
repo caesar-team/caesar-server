@@ -4,7 +4,7 @@
 
 {% block body %}
     {% set message = 'mail.share.created_link.message' %}
-    {% if method = 'update' %}
+    {% if method == 'update' %}
         {% set message = 'mail.share.updated_link.message' %}
     {% endif %}
     {{ message | trans({'%url%': url}) }}
