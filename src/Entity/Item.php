@@ -108,6 +108,12 @@ class Item
      */
     protected $update;
 
+    /**
+     * @var int
+     * @ORM\Column(type="integer", options={"default": 0}, nullable=false)
+     */
+    protected $sort = 0;
+
     public function __construct()
     {
         $this->id = Uuid::uuid4();
@@ -309,5 +315,21 @@ class Item
     public function setUpdate(?ItemUpdate $update): void
     {
         $this->update = $update;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSort(): int
+    {
+        return $this->sort;
+    }
+
+    /**
+     * @param int $sort
+     */
+    public function setSort(int $sort): void
+    {
+        $this->sort = $sort;
     }
 }

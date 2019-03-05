@@ -14,6 +14,7 @@ use App\Form\Query\ItemListQueryType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemType;
 use App\Form\Request\MoveItemType;
+use App\Form\Request\SortItemType;
 use App\Model\Query\ItemListQuery;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
@@ -500,17 +501,74 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Item                   $item
+     * @param Item $item
      * @param EntityManagerInterface $entityManager
-     * @param ItemViewFactory        $factory
+     * @param ItemViewFactory $factory
      *
      * @return ItemView
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function favoriteToggle(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
         $this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
 
         $item->setFavorite(!$item->isFavorite());
+        $entityManager->persist($item);
+        $entityManager->flush();
+
+        return $factory->create($item);
+    }
+
+    /**
+     * Sort item.
+     *
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\SortItemType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Item data",
+     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not owner of this item"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such item"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/{item}/sort",
+     *     name="api_item_sort",
+     *     methods={"PATCH"}
+     * )
+     * @param Item $item
+     * @param EntityManagerInterface $entityManager
+     * @param ItemViewFactory $factory
+     * @param Request $request
+     * @return ItemView|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function sort(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory, Request $request)
+    {
+        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+
+        $form = $this->createForm(SortItemType::class, $item);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
         $entityManager->persist($item);
         $entityManager->flush();
 
