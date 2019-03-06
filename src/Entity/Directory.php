@@ -31,6 +31,7 @@ class Directory
      * @var Collection|Directory[]
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList", cascade={"remove"})
+     * @ORM\OrderBy({"sort" = "ASC"})
      */
     protected $childLists;
 
@@ -55,6 +56,12 @@ class Directory
      * @ORM\Column
      */
     protected $label;
+
+    /**
+     * @var int
+     * @ORM\Column(type="integer", options={"default": 0}, nullable=false)
+     */
+    protected $sort = 0;
 
     /**
      * @var string
@@ -183,5 +190,21 @@ class Directory
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSort(): int
+    {
+        return $this->sort;
+    }
+
+    /**
+     * @param int $sort
+     */
+    public function setSort(int $sort): void
+    {
+        $this->sort = $sort;
     }
 }

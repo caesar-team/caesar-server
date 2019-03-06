@@ -7,6 +7,7 @@ namespace App\Controller\Api;
 use App\Entity\Directory;
 use App\Form\Request\CreateListType;
 use App\Form\Request\EditListType;
+use App\Form\Request\SortListType;
 use App\Model\View\Error\SingleError;
 use App\Security\ListVoter;
 use App\Services\ItemDisplacer;
@@ -233,6 +234,69 @@ final class ListController extends AbstractController
         $itemDisplacer->moveChildItemsToTrash($list, $this->getUser());
 
         $manager->remove($list);
+        $manager->flush();
+
+        return null;
+    }
+
+    /**
+     * Sort List
+     *
+     * @SWG\Tag(name="list", description="Sort list")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\SortListType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="List position changed",
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns list creation error",
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not owner of this list"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such list"
+     * )
+     *
+     *
+     * @Route(
+     *     path="/api/list/{id}/sort",
+     *     name="api_sort_list",
+     *     methods={"PATCH"}
+     * )
+     *
+     * @param Directory              $list
+     * @param Request                $request
+     * @param EntityManagerInterface $manager
+     *
+     * @return SingleError|FormInterface|JsonResponse
+     */
+    public function sortList(Directory $list, Request $request, EntityManagerInterface $manager)
+    {
+        $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
+        if (null === $list->getParentList()) { //root list
+            throw new BadRequestHttpException('You can`t edit root list');
+        }
+
+        $form = $this->createForm(SortListType::class, $list);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $manager->persist($list);
         $manager->flush();
 
         return null;
