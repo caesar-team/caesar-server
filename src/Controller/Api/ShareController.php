@@ -302,8 +302,8 @@ final class ShareController extends AbstractController
             $entityManager->flush();
 
             $shareLink = $share->getLink();
-            if ($shareLink && $shareLink !== $oldLink) {
-                $method = $oldLink ? ShareLinkCreatedSubscriber::METHOD_CREATE : ShareLinkCreatedSubscriber::METHOD_UPDATE;
+            if ($shareLink) {
+                $method = $oldLink ? ShareLinkCreatedSubscriber::METHOD_UPDATE : ShareLinkCreatedSubscriber::METHOD_CREATE;
                 $shareManager->dispathLinkCreatedEvent($share, $method);
             }
 
