@@ -1,0 +1,12 @@
+version: "2"
+
+options:
+    compose-dev-file-path: 'docker-compose-sync.yml'
+syncs:
+    caesar-data-sync:
+        src: './'
+        host_disk_mount_mode: 'cached'
+        sync_excludes:
+            - '.git'
+            - '.idea'
+            - 'var/cache/*'
