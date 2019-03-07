@@ -6,19 +6,16 @@ namespace App\Controller\Api;
 
 use App\Entity\Share;
 use App\Entity\User;
-use App\Event\EntityListener\ShareLinkCreatedListener;
+use App\Event\EventSubscriber\ShareLinkCreatedSubscriber;
 use App\Factory\View\Share\ShareViewFactory;
 use App\Form\Request\BatchCreateShareType;
 use App\Form\Request\BatchEditShareType;
 use App\Form\Request\CreateShareType;
-use App\Form\Request\EditShareType;
 use App\Form\Request\UpdateShareType;
 use App\Security\Voter\ShareVoter;
 use App\Share\ShareManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -306,7 +303,7 @@ final class ShareController extends AbstractController
 
             $shareLink = $share->getLink();
             if ($shareLink && $shareLink !== $oldLink) {
-                $method = $oldLink ? ShareLinkCreatedListener::METHOD_CREATE : ShareLinkCreatedListener::METHOD_UPDATE;
+                $method = $oldLink ? ShareLinkCreatedSubscriber::METHOD_CREATE : ShareLinkCreatedSubscriber::METHOD_UPDATE;
                 $shareManager->dispathLinkCreatedEvent($share, $method);
             }
 

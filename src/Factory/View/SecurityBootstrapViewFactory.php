@@ -53,7 +53,7 @@ class SecurityBootstrapViewFactory
      */
     private function getTwoFactorAuthState(User $user): string
     {
-        $isCompleteJwt = $this->isCompleteJwt();
+        $isCompleteJwt = $this->isCompleteJwt($user);
         switch (true) {
             case $isCompleteJwt:
                 $state = SecurityBootstrapView::STATE_SKIP;
@@ -121,15 +121,17 @@ class SecurityBootstrapViewFactory
     }
 
     /**
+     * @param User $user
      * @return bool
      * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
      */
-    private function isCompleteJwt(): bool
+    private function isCompleteJwt(User $user): bool
     {
         if ($this->security->getToken() instanceof JWTUserToken) {
             $decodedToken = $this->encoder->decode($this->security->getToken()->getCredentials());
 
-            return !isset($decodedToken[TwoFactorInProgressVoter::CHECK_KEY_NAME]);
+            $isCompleteFlow = User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
+            return $isCompleteFlow && !isset($decodedToken[TwoFactorInProgressVoter::CHECK_KEY_NAME]);
         }
 
         return false;

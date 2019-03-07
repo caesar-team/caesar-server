@@ -9,7 +9,7 @@ use App\Entity\Item;
 use App\Entity\Share;
 use App\Entity\ShareItem;
 use App\Entity\User;
-use App\Event\EntityListener\ShareLinkCreatedListener;
+use App\Event\EventSubscriber\ShareLinkCreatedSubscriber;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
@@ -77,11 +77,10 @@ final class ShareManager
         $oldLink = $share->getLink();
         $shareLink = $shareNew->getLink();
         if ($shareLink && $shareLink !== $oldLink) {
-            $method = $oldLink ? ShareLinkCreatedListener::METHOD_CREATE : ShareLinkCreatedListener::METHOD_UPDATE;
+            $method = ShareLinkCreatedSubscriber::METHOD_CREATE;
+            $share->setLink($shareLink);
             $this->dispathLinkCreatedEvent($share, $method);
         }
-
-        $share->setLink($shareNew->getLink());
         $this->updateShareItems($share, $shareNew->getSharedItems());
 
         $this->entityManager->persist($share);
@@ -93,7 +92,7 @@ final class ShareManager
     public function dispathLinkCreatedEvent(Share $share, string $method)
     {
         $linkCreatedEvent = new GenericEvent($share, ['method' => $method]);
-        $this->eventDispatcher->dispatch(ShareLinkCreatedListener::EVENT_NAME, $linkCreatedEvent);
+        $this->eventDispatcher->dispatch(ShareLinkCreatedSubscriber::EVENT_NAME, $linkCreatedEvent);
     }
 
     private function shareToItems(Share $share)
