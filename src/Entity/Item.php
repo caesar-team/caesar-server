@@ -18,6 +18,8 @@ use Ramsey\Uuid\UuidInterface;
  */
 class Item
 {
+    const CAUSE_INVITE = 'invite';
+    const CAUSE_SHARE = 'share';
     /**
      * @var UuidInterface
      *
@@ -113,6 +115,12 @@ class Item
      * @ORM\Column(type="integer", options={"default": 0}, nullable=false)
      */
     protected $sort = 0;
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     * @var string|null
+     */
+    protected $cause;
 
     public function __construct()
     {
@@ -331,5 +339,21 @@ class Item
     public function setSort(int $sort): void
     {
         $this->sort = $sort;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getCause(): ?string
+    {
+        return $this->cause;
+    }
+
+    /**
+     * @param null|string $cause
+     */
+    public function setCause(?string $cause): void
+    {
+        $this->cause = $cause;
     }
 }

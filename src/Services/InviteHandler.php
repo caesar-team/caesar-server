@@ -38,6 +38,7 @@ class InviteHandler
             $item = new Item();
             $item->setParentList($invite->getUser()->getInbox());
             $item->setOriginalItem($request->getItem());
+            $item->setCause(Item::CAUSE_INVITE);
             $item->setSecret($invite->getSecret());
             $item->setAccess($invite->getAccess());
             $item->setType($request->getItem()->getType());
