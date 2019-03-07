@@ -22,4 +22,9 @@ class NodeView
      * @AppSwagger\EnumProperty(enumPath="App\DBAL\Types\Enum\NodeEnumType")
      */
     public $type;
+
+    /**
+     * @var int
+     */
+    public $sort;
 }

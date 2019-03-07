@@ -58,6 +58,7 @@ class ListTreeViewFactory
         $view->label = $directory->getLabel();
         $view->type = NodeEnumType::TYPE_LIST;
         $view->children = $this->getChildren($directory);
+        $view->sort = $directory->getSort();
 
         return $view;
     }
