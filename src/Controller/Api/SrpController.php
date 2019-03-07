@@ -13,16 +13,23 @@ use App\Form\Request\Srp\RegistrationType;
 use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
+use App\Security\PasswordRecoveryManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
 use Doctrine\ORM\EntityManagerInterface;
+use FOS\UserBundle\Event\FilterUserResponseEvent;
+use FOS\UserBundle\Event\FormEvent;
+use FOS\UserBundle\Event\GetResponseUserEvent;
+use FOS\UserBundle\FOSUserEvents;
 use FOS\UserBundle\Model\UserManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -303,5 +310,79 @@ final class SrpController extends AbstractController
         $manager->updateUser($user);
 
         return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Srp")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\Srp\UpdatePasswordType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Password changed"
+     * )
+     *
+     * @SWG\Response(
+     *     response=403,
+     *     description="Access denied"
+     * )
+     *
+     * @param Request $request
+     * @param $token
+     * @param UserManagerInterface $userManager
+     * @param EventDispatcherInterface $eventDispatcher
+     * @return null|FormInterface|RedirectResponse|Response
+     */
+    public function resetPassword(
+        Request $request,
+        $token,
+        UserManagerInterface $userManager,
+        EventDispatcherInterface $eventDispatcher)
+    {
+        $user = $userManager->findUserByConfirmationToken($token);
+
+        if (!$user instanceof User) {
+            throw new AccessDeniedHttpException();
+        }
+
+        if (is_null($user->getSrp())) {
+            throw new BadRequestHttpException('Invalid user SRP');
+        }
+
+        $event = new GetResponseUserEvent($user, $request);
+        $eventDispatcher->dispatch(FOSUserEvents::RESETTING_RESET_INITIALIZE, $event);
+
+        if (null !== $event->getResponse()) {
+            return $event->getResponse();
+        }
+
+        $form = $this->createForm(UpdatePasswordType::class, $user);
+        $form->submit($request->request->all());
+
+        if ($form->isValid()) {
+            $event = new FormEvent($form, $request);
+            $eventDispatcher->dispatch(FOSUserEvents::RESETTING_RESET_SUCCESS, $event);
+            $user->setEnabled(true);
+            $userManager->updateUser($user);
+
+            if (null === $response = $event->getResponse()) {
+                $url = $this->generateUrl('google_login');
+                $response = new RedirectResponse($url);
+            }
+
+            $eventDispatcher->dispatch(
+                FOSUserEvents::RESETTING_RESET_COMPLETED,
+                new FilterUserResponseEvent($user, $request, $response)
+            );
+
+        } else {
+            return $form;
+        }
+
+        return null;
+
     }
 }

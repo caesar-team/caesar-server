@@ -108,6 +108,12 @@ spec:
               key: BACKUP_CODE_HASH_LENGTH
               name: caesarapp-server
               optional: false
+        - name: CAESAR_APP_ABSOLUTE_PATH
+          valueFrom:
+            secretKeyRef:
+              key: CAESAR_APP_ABSOLUTE_PATH
+              name: caesarapp-server
+              optional: false
         image: caesarteam/caesar-server:${CICD_GIT_BRANCH}
         imagePullPolicy: Always
         name: caesarapp-server
