@@ -11,10 +11,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Table
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\DirectoryRepository")
  * @UniqueEntity(fields={"label"}, errorPath="label", message="list.create.label.already_exists")
  */
 class Directory
@@ -39,6 +40,7 @@ class Directory
      * @var Directory|null
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childLists")
+     * @Gedmo\SortableGroup
      */
     protected $parentList;
 
@@ -60,6 +62,7 @@ class Directory
     /**
      * @var int
      * @ORM\Column(type="integer", options={"default": 0}, nullable=false)
+     * @Gedmo\SortablePosition
      */
     protected $sort = 0;
 

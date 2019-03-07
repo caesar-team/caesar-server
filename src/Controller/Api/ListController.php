@@ -78,10 +78,11 @@ final class ListController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                $request
+     * @param Request $request
      * @param EntityManagerInterface $manager
      *
      * @return FormInterface|JsonResponse
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function createListAction(Request $request, EntityManagerInterface $manager)
     {
