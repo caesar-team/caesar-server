@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
     php:
-        build: ./config/docker/php
+        build: .
         volumes:
             - .:/var/www/html
             - trash:/var/www/
@@ -11,8 +11,11 @@ services:
         environment:
             - PARENT_USER_ID
             - APP_ENV
+        depends_on:
+            - db
+            - redis 
         entrypoint:
-            - "./config/docker/php/docker-entrypoint.sh"
+            - "./entrypoint.sh"
     nginx:
         image: 4xxi/nginx:flex
         depends_on:
