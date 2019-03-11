@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Form\Query;
 
+use App\Form\Request\UserGroupType;
 use App\Model\Query\UserQuery;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -20,7 +22,12 @@ class UserQueryType extends AbstractQueryType
                 'constraints' => [
                     new Length(['min' => 3]),
                 ],
-            ]);
+            ])
+            ->add('userGroups', CollectionType::class, [
+                'entry_type' => UserGroupType::class,
+                'by_reference' => false,
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver)
