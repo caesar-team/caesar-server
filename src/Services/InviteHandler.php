@@ -13,8 +13,8 @@ use App\Model\Request\InviteCollectionRequest;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
-use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\RouterInterface;
 
 class InviteHandler
 {
@@ -33,13 +33,24 @@ class InviteHandler
      * @var SenderInterface
      */
     private $sender;
+    /**
+     * @var RouterInterface
+     */
+    protected $router;
 
-    public function __construct(EntityManagerInterface $entityManager, SenderInterface $sender)
+    /**
+     * InviteHandler constructor.
+     * @param EntityManagerInterface $entityManager
+     * @param SenderInterface $sender
+     * @param RouterInterface $router
+     */
+    public function __construct(EntityManagerInterface $entityManager, SenderInterface $sender, RouterInterface $router)
     {
         $this->entityManager = $entityManager;
         $this->userRepository = $entityManager->getRepository(User::class);
         $this->maskRepository = $entityManager->getRepository(ItemMask::class);
         $this->sender = $sender;
+        $this->router = $router;
     }
 
     /**
@@ -95,15 +106,14 @@ class InviteHandler
      */
     public function createMasks(InviteCollectionRequest $request)
     {
-        /** @var Router $router */
-        $router = "";
-        $url = $router->generate('login', [], Router::ABSOLUTE_URL);
+        $url = $this->router->generate('google_login', [], RouterInterface::ABSOLUTE_URL);
         foreach ($request->getInvites() as $invite) {
             $mask = new ItemMask();
             $mask->setOriginalItem($request->getItem());
             $mask->setRecipient($invite->getUser());
             $mask->setSecret($invite->getSecret());
             $mask->setAccess($invite->getAccess());
+            $mask->refreshLastUpdated();
 
             $this->entityManager->persist($mask);
             $this->sendInvitationMessage($mask, $url);

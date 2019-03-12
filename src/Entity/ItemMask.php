@@ -47,13 +47,6 @@ class ItemMask
     protected $recipient;
 
     /**
-     * @var Item|null
-     * @ORM\OneToOne(targetEntity="Item")
-     * @ORM\JoinColumn(name="assembled_item_id", referencedColumnName="id")
-     */
-    protected $assembledItem;
-
-    /**
      * @var string
      *
      * @ORM\Column(type="AccessEnumType", nullable=false)
@@ -130,22 +123,6 @@ class ItemMask
     public function setRecipient(User $recipient): void
     {
         $this->recipient = $recipient;
-    }
-
-    /**
-     * @return Item|null
-     */
-    public function getAssembledItem(): ?Item
-    {
-        return $this->assembledItem;
-    }
-
-    /**
-     * @param Item|null $assembledItem
-     */
-    public function setAssembledItem(?Item $assembledItem): void
-    {
-        $this->assembledItem = $assembledItem;
     }
 
     /**

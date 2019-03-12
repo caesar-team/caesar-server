@@ -9,3 +9,7 @@ sylius_mailer:
         !php/const App\Mailer\MailRegistry::SHARE_SEND_MESSAGE:
             subject: 'Shared access with you'
             template: email/share_message.html.twig
+        !php/const App\Mailer\MailRegistry::NEW_ITEM_MESSAGE:
+            subject: 'You got access to new secure data'
+            template: email/new_item_message.html.twig
+
