@@ -6,34 +6,55 @@ namespace App\Controller\Api;
 
 use App\Entity\Item;
 use App\Entity\ItemMask;
+use App\Factory\View\Share\ItemMaskViewFactory;
+use App\Model\View\Share\ItemMasksView;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Swagger\Annotations as SWG;
+use Nelmio\ApiDocBundle\Annotation\Model;
 
 class ItemMaskController extends AbstractController
 {
     /**
+     * List of offered items
+     *
+     * @SWG\Tag(name="Item Mask")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="List of offered items",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="\App\Model\View\Share\ItemMasksView")
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
      * @Route("/api/item_mask", methods={"GET"})
      * @param EntityManagerInterface $entityManager
-     * @param SerializerInterface $serializer
-     * @return JsonResponse
+     * @param ItemMaskViewFactory $viewFactory
+     * @return \App\Model\View\Share\ItemMasksView|null
      */
-    public function getList(EntityManagerInterface $entityManager, SerializerInterface $serializer): JsonResponse
+    public function getList(EntityManagerInterface $entityManager, ItemMaskViewFactory $viewFactory): ?ItemMasksView
     {
         $itemMasks = $entityManager->getRepository(ItemMask::class)->findBy(['recipient' => $this->getUser()]);
 
         if (is_array($itemMasks)) {
-            $json = $serializer->serialize($itemMasks,'json');
-            return new JsonResponse(json_decode($json));
+            return $viewFactory->create($itemMasks);
         }
 
-        return new JsonResponse([], Response::HTTP_OK);
+        return null;
     }
 
     /**
+     *
      * @Route("/api/item_mask/{itemMask}", methods={"POST"})
      *
      * @param ItemMask $itemMask
