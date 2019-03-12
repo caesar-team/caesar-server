@@ -117,7 +117,7 @@ class Item
     /**
      * @var ItemMask[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="ItemMask", mappedBy="item", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="ItemMask", mappedBy="originalItem", orphanRemoval=true)
      */
     protected $itemMasks;
 
@@ -358,7 +358,7 @@ class Item
     {
         if (!$this->itemMasks->contains($itemMask)) {
             $this->itemMasks->add($itemMask);
-            $itemMask->setItem($this);
+            $itemMask->setOriginalItem($this);
         }
     }
 

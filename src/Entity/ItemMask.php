@@ -37,7 +37,7 @@ class ItemMask
      * @ORM\ManyToOne(targetEntity="Item", inversedBy="itemMasks", cascade={"persist"})
      * @ORM\JoinColumn(name="item_id", columnDefinition="id", nullable=false, onDelete="CASCADE")
      */
-    protected $item;
+    protected $originalItem;
 
     /**
      * @var User
@@ -52,6 +52,20 @@ class ItemMask
      * @ORM\JoinColumn(name="assembled_item_id", referencedColumnName="id")
      */
     protected $assembledItem;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(type="AccessEnumType", nullable=false)
+     */
+    protected $access;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(type="datetime")
+     */
+    protected $lastUpdated;
 
     /**
      * ItemMask constructor.
@@ -89,17 +103,17 @@ class ItemMask
     /**
      * @return Item
      */
-    public function getItem(): Item
+    public function getOriginalItem(): Item
     {
-        return $this->item;
+        return $this->originalItem;
     }
 
     /**
-     * @param Item $item
+     * @param Item $originalItem
      */
-    public function setItem(Item $item): void
+    public function setOriginalItem(Item $originalItem): void
     {
-        $this->item = $item;
+        $this->originalItem = $originalItem;
     }
 
     /**
@@ -132,5 +146,38 @@ class ItemMask
     public function setAssembledItem(?Item $assembledItem): void
     {
         $this->assembledItem = $assembledItem;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAccess(): string
+    {
+        return $this->access;
+    }
+
+    /**
+     * @param string $access
+     */
+    public function setAccess(string $access): void
+    {
+        $this->access = $access;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getLastUpdated(): \DateTime
+    {
+        return $this->lastUpdated;
+    }
+
+    /**
+     * @ORM\PreUpdate
+     * @ORM\PrePersist
+     */
+    public function refreshLastUpdated()
+    {
+        $this->lastUpdated = new \DateTime();
     }
 }

@@ -8,9 +8,13 @@ use App\Entity\Item;
 use App\Entity\ItemMask;
 use App\Entity\ItemUpdate;
 use App\Entity\User;
+use App\Mailer\MailRegistry;
 use App\Model\Request\InviteCollectionRequest;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Sylius\Component\Mailer\Sender\SenderInterface;
+use Symfony\Bundle\FrameworkBundle\Routing\Router;
+use Symfony\Component\HttpFoundation\Response;
 
 class InviteHandler
 {
@@ -25,12 +29,17 @@ class InviteHandler
      * @var \Doctrine\Common\Persistence\ObjectRepository
      */
     private $maskRepository;
+    /**
+     * @var SenderInterface
+     */
+    private $sender;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, SenderInterface $sender)
     {
         $this->entityManager = $entityManager;
         $this->userRepository = $entityManager->getRepository(User::class);
         $this->maskRepository = $entityManager->getRepository(ItemMask::class);
+        $this->sender = $sender;
     }
 
     /**
@@ -80,6 +89,40 @@ class InviteHandler
         $this->entityManager->flush();
     }
 
+    /**
+     * @param InviteCollectionRequest $request
+     * @throws \Exception
+     */
+    public function createMasks(InviteCollectionRequest $request)
+    {
+        /** @var Router $router */
+        $router = "";
+        $url = $router->generate('login', [], Router::ABSOLUTE_URL);
+        foreach ($request->getInvites() as $invite) {
+            $mask = new ItemMask();
+            $mask->setOriginalItem($request->getItem());
+            $mask->setRecipient($invite->getUser());
+            $mask->setSecret($invite->getSecret());
+            $mask->setAccess($invite->getAccess());
+
+            $this->entityManager->persist($mask);
+            $this->sendInvitationMessage($mask, $url);
+        }
+
+        $this->entityManager->flush();
+    }
+
+    private function sendInvitationMessage(ItemMask $mask, string $url)
+    {
+        try {
+            $this->sender->send(MailRegistry::NEW_ITEM_MESSAGE, [$mask->getRecipient()->getEmail()], [
+                'url' => $url,
+            ]);
+        } catch (\Exception $exception) {
+            throw new \LogicException($exception->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     private function getItem(User $user, Item $originalItem): array
     {
         $owner = $this->userRepository->getByItem($originalItem);
@@ -104,16 +147,5 @@ class InviteHandler
         }
 
         return new ItemUpdate($item, $user);
-    }
-
-    /**
-     * @param InviteCollectionRequest $request
-     * @throws \Exception
-     */
-    public function setMasks(InviteCollectionRequest $request)
-    {
-        foreach ($request->getInvites() as $invite) {
-            $mask = new ItemMask();
-        }
     }
 }

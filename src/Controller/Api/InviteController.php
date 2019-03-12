@@ -9,6 +9,7 @@ use App\Factory\View\ItemViewFactory;
 use App\Form\Request\Invite\InviteCollectionRequestType;
 use App\Form\Request\Invite\InviteUpdateRequestType;
 use App\Form\Request\Invite\UpdateInvitesRequestType;
+use App\Mailer\MailRegistry;
 use App\Model\Request\InviteCollectionRequest;
 use App\Model\View\CredentialsList\ItemView;
 use App\Security\InviteVoter;
@@ -17,6 +18,7 @@ use App\Services\InviteHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
+use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -82,6 +84,7 @@ final class InviteController extends AbstractController
      *
      * @param ItemViewFactory $viewFactory
      * @return ItemView|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Exception
      */
     public function inviteItemAction(Item $item, Request $request, InviteHandler $inviteHandler, ItemViewFactory $viewFactory)
@@ -95,11 +98,7 @@ final class InviteController extends AbstractController
             return $form;
         }
 
-        //todo: (scenario) - делаем слепок будущих итемов, в респонсе показываем связь родителя со слепками,...
-        //todo: ... отправляем письмо целевым пользователям
-        $inviteHandler->setMasks($inviteCollectionRequest);
-        //old flow
-        //$inviteHandler->inviteToItem($inviteCollectionRequest);
+        $inviteHandler->createMasks($inviteCollectionRequest);
 
         return $viewFactory->create($item);
     }

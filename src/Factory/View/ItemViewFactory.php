@@ -60,15 +60,15 @@ class ItemViewFactory
         }
 
         $inviteViewCollection = [];
-        foreach ($ownerItem->getSharedItems() as $item) {
-            $user = $this->userRepository->getByItem($item);
+        foreach ($ownerItem->getItemMasks() as $itemMask) {
+            $user = $itemMask->getRecipient();
 
             $invite = new InviteView();
-            $invite->id = $item->getId()->toString();
+            $invite->id = $itemMask->getId()->toString();
             $invite->userId = $user->getId()->toString();
             $invite->email = $user->getEmail();
-            $invite->lastUpdated = $item->getLastUpdated();
-            $invite->access = $item->getAccess();
+            $invite->lastUpdated = $itemMask->getLastUpdated();
+            $invite->access = $itemMask->getAccess();
 
             $inviteViewCollection[] = $invite;
         }
