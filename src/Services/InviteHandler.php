@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Entity\Item;
+use App\Entity\ItemMask;
 use App\Entity\ItemUpdate;
 use App\Entity\User;
 use App\Model\Request\InviteCollectionRequest;
@@ -20,11 +21,16 @@ class InviteHandler
      * @var UserRepository
      */
     private $userRepository;
+    /**
+     * @var \Doctrine\Common\Persistence\ObjectRepository
+     */
+    private $maskRepository;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
         $this->userRepository = $entityManager->getRepository(User::class);
+        $this->maskRepository = $entityManager->getRepository(ItemMask::class);
     }
 
     /**
@@ -38,7 +44,6 @@ class InviteHandler
             $item = new Item();
             $item->setParentList($invite->getUser()->getInbox());
             $item->setOriginalItem($request->getItem());
-            $item->setCause(Item::CAUSE_INVITE);
             $item->setSecret($invite->getSecret());
             $item->setAccess($invite->getAccess());
             $item->setType($request->getItem()->getType());
@@ -99,5 +104,16 @@ class InviteHandler
         }
 
         return new ItemUpdate($item, $user);
+    }
+
+    /**
+     * @param InviteCollectionRequest $request
+     * @throws \Exception
+     */
+    public function setMasks(InviteCollectionRequest $request)
+    {
+        foreach ($request->getInvites() as $invite) {
+            $mask = new ItemMask();
+        }
     }
 }

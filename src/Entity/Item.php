@@ -18,8 +18,6 @@ use Ramsey\Uuid\UuidInterface;
  */
 class Item
 {
-    const CAUSE_INVITE = 'invite';
-    const CAUSE_SHARE = 'share';
     /**
      * @var UuidInterface
      *
@@ -117,11 +115,16 @@ class Item
     protected $sort = 0;
 
     /**
-     * @ORM\Column(type="string", nullable=true)
-     * @var string|null
+     * @var ItemMask[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="ItemMask", mappedBy="item", orphanRemoval=true)
      */
-    protected $cause;
+    protected $itemMasks;
 
+    /**
+     * Item constructor.
+     * @throws \Exception
+     */
     public function __construct()
     {
         $this->id = Uuid::uuid4();
@@ -130,6 +133,7 @@ class Item
         $this->sharedItems = new ArrayCollection();
         $this->externalSharedItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
+        $this->itemMasks = new ArrayCollection();
     }
 
     /**
@@ -341,19 +345,30 @@ class Item
         $this->sort = $sort;
     }
 
-    /**
-     * @return null|string
-     */
-    public function getCause(): ?string
-    {
-        return $this->cause;
-    }
 
     /**
-     * @param null|string $cause
+     * @return Collection|ItemMask[]
      */
-    public function setCause(?string $cause): void
+    public function getItemMasks(): Collection
     {
-        $this->cause = $cause;
+        return $this->itemMasks;
+    }
+
+    public function addItemMask(ItemMask $itemMask): void
+    {
+        if (!$this->itemMasks->contains($itemMask)) {
+            $this->itemMasks->add($itemMask);
+            $itemMask->setItem($this);
+        }
+    }
+
+    public function removeItemMask(ItemMask $itemMask): void
+    {
+        $this->itemMasks->removeElement($itemMask);
+    }
+
+    public function setItemMasks($itemMasks): void
+    {
+        $this->itemMasks = $itemMasks;
     }
 }

@@ -104,7 +104,6 @@ final class ShareManager
             $item->setAccess(AccessEnumType::TYPE_READ);
             $item->setType($sharedItem->getItem()->getType());
             $item->setOriginalItem($sharedItem->getItem());
-            $item->setCause(Item::CAUSE_SHARE);
 
             $this->entityManager->persist($item);
         }

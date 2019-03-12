@@ -95,7 +95,11 @@ final class InviteController extends AbstractController
             return $form;
         }
 
-        $inviteHandler->inviteToItem($inviteCollectionRequest);
+        //todo: (scenario) - делаем слепок будущих итемов, в респонсе показываем связь родителя со слепками,...
+        //todo: ... отправляем письмо целевым пользователям
+        $inviteHandler->setMasks($inviteCollectionRequest);
+        //old flow
+        //$inviteHandler->inviteToItem($inviteCollectionRequest);
 
         return $viewFactory->create($item);
     }
