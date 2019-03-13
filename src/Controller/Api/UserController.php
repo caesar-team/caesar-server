@@ -6,13 +6,14 @@ namespace App\Controller\Api;
 
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Entity\UserGroup;
 use App\Factory\View\SecurityBootstrapViewFactory;
 use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
 use App\Factory\View\UserListViewFactory;
 use App\Factory\View\UserSecurityInfoViewFactory;
 use App\Form\Query\UserQueryType;
-use App\Form\Request\CreateUserType;
+use App\Form\Request\CreateInvitedUserType;
 use App\Form\Request\SaveKeysType;
 use App\Model\Query\UserQuery;
 use App\Model\View\User\SecurityBootstrapView;
@@ -230,6 +231,7 @@ final class UserController extends AbstractController
         } else {
             $this->setFlowStatusByPrivateKeys($oldUser, $user);
         }
+        $user->setInvitation(false);
 
         $entityManager->flush();
 
@@ -290,14 +292,14 @@ final class UserController extends AbstractController
             throw new BadRequestHttpException('User already exists');
         }
 
-        $form = $this->createForm(CreateUserType::class, $user);
+        $form = $this->createForm(CreateInvitedUserType::class, $user);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        if (!$user->hasRole(User::ROLE_ANONYMOUS_USER)) {
-            $groupManager->addGroupToUser($user);
+        if ($user->isFullUser()) {
+            $groupManager->addGroupToUser($user, UserGroup::USER_ROLE_PRETENDER);
         }
 
         $entityManager->persist($user);
@@ -363,6 +365,7 @@ final class UserController extends AbstractController
      *
      * @param SecurityBootstrapViewFactory $bootstrapViewFactory
      * @return JsonResponse
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
      */
     public function bootstrap(SecurityBootstrapViewFactory $bootstrapViewFactory): JsonResponse
     {

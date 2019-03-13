@@ -54,13 +54,6 @@ class ItemMask
     protected $access;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(type="datetime")
-     */
-    protected $lastUpdated;
-
-    /**
      * ItemMask constructor.
      * @throws \Exception
      */
@@ -139,22 +132,5 @@ class ItemMask
     public function setAccess(string $access): void
     {
         $this->access = $access;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getLastUpdated(): \DateTime
-    {
-        return $this->lastUpdated;
-    }
-
-    /**
-     * @ORM\PreUpdate
-     * @ORM\PrePersist
-     */
-    public function refreshLastUpdated()
-    {
-        $this->lastUpdated = new \DateTime();
     }
 }

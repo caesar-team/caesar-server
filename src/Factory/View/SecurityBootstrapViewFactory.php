@@ -36,12 +36,18 @@ class SecurityBootstrapViewFactory
         $this->encoder = $encoder;
     }
 
+    /**
+     * @param User $user
+     * @return SecurityBootstrapView
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     */
     public function create(User $user):SecurityBootstrapView
     {
         $securityBootstrapView = new SecurityBootstrapView();
         $securityBootstrapView->twoFactorAuthState = $this->getTwoFactorAuthState($user);
         $securityBootstrapView->passwordState = $this->getPasswordState($user);
         $securityBootstrapView->masterPasswordState = $this->getMasterPasswordState($user);
+        $securityBootstrapView->sharedItemsStepState = $this->getSharedItemsStepState($user);
 
         return $securityBootstrapView;
     }
@@ -136,4 +142,18 @@ class SecurityBootstrapViewFactory
 
         return false;
     }
+
+    private function getSharedItemsStepState(User $user): string
+    {
+        switch (true) {
+            case $user->hasInvitation() && SecurityBootstrapView::STATE_CREATE === $this->getMasterPasswordState($user):
+                $state = SecurityBootstrapView::STATE_CHECK;
+                break;
+            default:
+                $state = SecurityBootstrapView::STATE_SKIP;
+        }
+
+        return $state;
+    }
+
 }

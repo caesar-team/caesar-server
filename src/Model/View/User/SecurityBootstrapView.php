@@ -31,4 +31,10 @@ class SecurityBootstrapView
      * @SWG\Property(example="CREATE|SKIP|CHANGE|CHECK_SHARED")
      */
     public $masterPasswordState;
+
+    /**
+     * @var string
+     * @SWG\Property(example="SKIP|CHECK")
+     */
+    public $sharedItemsStepState;
 }

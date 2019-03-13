@@ -113,7 +113,6 @@ class InviteHandler
             $mask->setRecipient($invite->getUser());
             $mask->setSecret($invite->getSecret());
             $mask->setAccess($invite->getAccess());
-            $mask->refreshLastUpdated();
 
             $this->entityManager->persist($mask);
             $this->sendInvitationMessage($mask, $url);
