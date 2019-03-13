@@ -191,12 +191,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $itemMasks;
 
     /**
-     * @var bool
-     * @ORM\Column(type="boolean", nullable=false, options={"default"=false})
-     */
-    private $invitation = false;
-
-    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -567,22 +561,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setItemMasks($itemMasks): void
     {
         $this->itemMasks = $itemMasks;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasInvitation(): bool
-    {
-        return $this->invitation;
-    }
-
-    /**
-     * @param bool $invitation
-     */
-    public function setInvitation(bool $invitation): void
-    {
-        $this->invitation = $invitation;
     }
 
     public function isFullUser(): bool

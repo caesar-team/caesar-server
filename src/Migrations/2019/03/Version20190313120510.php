@@ -20,11 +20,10 @@ final class Version20190313120510 extends AbstractMigration
     {
         $itemMasktable = $schema->getTable('item_mask');
         $itemMasktable->dropColumn('last_updated');
-        $userTable = $schema->getTable('fos_user');
-        $userTable->addColumn('invitation', 'boolean', [
-            'notnull' => true,
-            'default' => false
-        ]);
+
+        $this->addSql("CREATE TABLE invitation (id UUID NOT NULL, hash TEXT NOT NULL, PRIMARY KEY(id))");
+        $this->addSql("CREATE UNIQUE INDEX UNIQ_F11D61A2D1B862B8 ON invitation (hash)");
+        $this->addSql("COMMENT ON COLUMN invitation.id IS '(DC2Type:uuid)'");
     }
 
     /**
@@ -33,8 +32,6 @@ final class Version20190313120510 extends AbstractMigration
      */
     public function down(Schema $schema) : void
     {
-        $userTable = $schema->getTable('fos_user');
-        $userTable->dropColumn('invitation');
         $itemMasktable = $schema->getTable('item_mask');
         $itemMasktable->addColumn('last_updated', 'datetime');
     }

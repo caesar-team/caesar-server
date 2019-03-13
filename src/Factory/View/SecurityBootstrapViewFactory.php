@@ -8,6 +8,7 @@ namespace App\Factory\View;
 use App\Entity\Fingerprint;
 use App\Entity\User;
 use App\Model\View\User\SecurityBootstrapView;
+use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Security\Fingerprint\FingerprintManager;
 use App\Security\Voter\TwoFactorInProgressVoter;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
@@ -28,12 +29,22 @@ class SecurityBootstrapViewFactory
      * @var JWTEncoderInterface
      */
     private $encoder;
+    /**
+     * @var AuthorizationManager
+     */
+    private $authorizationManager;
 
-    public function __construct(FingerprintManager $fingerprintManager, Security $security, JWTEncoderInterface $encoder)
+    public function __construct(
+        FingerprintManager $fingerprintManager,
+        Security $security,
+        JWTEncoderInterface $encoder,
+        AuthorizationManager $authorizationManager
+    )
     {
         $this->fingerprintManager = $fingerprintManager;
         $this->security = $security;
         $this->encoder = $encoder;
+        $this->authorizationManager = $authorizationManager;
     }
 
     /**
@@ -146,7 +157,7 @@ class SecurityBootstrapViewFactory
     private function getSharedItemsStepState(User $user): string
     {
         switch (true) {
-            case $user->hasInvitation() && SecurityBootstrapView::STATE_CREATE === $this->getMasterPasswordState($user):
+            case $this->authorizationManager->hasInvitation($user) && SecurityBootstrapView::STATE_CREATE === $this->getMasterPasswordState($user):
                 $state = SecurityBootstrapView::STATE_CHECK;
                 break;
             default:
