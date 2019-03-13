@@ -207,12 +207,14 @@ final class UserController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                $request
+     * @param Request $request
      * @param EntityManagerInterface $entityManager
      *
+     * @param GroupManager $groupManager
      * @return FormInterface|null
+     * @throws \Exception
      */
-    public function saveKeysAction(Request $request, EntityManagerInterface $entityManager)
+    public function saveKeysAction(Request $request, EntityManagerInterface $entityManager, GroupManager $groupManager)
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -231,7 +233,11 @@ final class UserController extends AbstractController
         } else {
             $this->setFlowStatusByPrivateKeys($oldUser, $user);
         }
-        $user->setInvitation(false);
+
+        if ($user->isFullUser()) {
+            $user->setInvitation(false);
+            $groupManager->addGroupToUser($user);
+        }
 
         $entityManager->flush();
 
