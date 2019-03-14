@@ -24,14 +24,16 @@ class GroupManager
     /**
      * @param User $user
      * @param Group|null $group
+     * @param string $role
      * @throws \Exception
      */
-    public function addGroupToUser(User $user, Group $group = null)
+    public function addGroupToUser(User $user, string $role = UserGroup::DEEFAULT_USER_ROLE, Group $group = null)
     {
         $group = $group ?: $this->findDefaultGroup();
         $userGroup = new UserGroup();
         $userGroup->setGroup($group);
         $userGroup->setUser($user);
+        $userGroup->setUserRole($role);
         $this->manager->persist($userGroup);
     }
 
