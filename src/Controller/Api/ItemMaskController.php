@@ -50,7 +50,7 @@ class ItemMaskController extends AbstractController
             return $viewFactory->create($itemMasks);
         }
 
-        return null;
+        return $viewFactory->create([]);
     }
 
     /**

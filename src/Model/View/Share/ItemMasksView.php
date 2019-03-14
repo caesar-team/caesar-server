@@ -10,7 +10,7 @@ class ItemMasksView
     /**
      * @var ItemMaskView[]
      */
-    public $masks;
+    public $masks = [];
 
     public function addItemMask(ItemMaskView $maskView): void
     {
