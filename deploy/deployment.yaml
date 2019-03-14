@@ -114,12 +114,6 @@ spec:
               key: INVITATION_SALT
               name: caesarapp-server
               optional: false
-        - name: INVITATION_HASH_LENGTH
-          valueFrom:
-            secretKeyRef:
-              key: INVITATION_HASH_LENGTH
-              name: caesarapp-server
-              optional: false
         image: caesarteam/caesar-server:${CICD_GIT_BRANCH}
         imagePullPolicy: Always
         name: caesarapp-server
