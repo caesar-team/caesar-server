@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Form\Request;
 
 use App\Entity\User;
-use App\Model\Request\SendMessageRequest;
+use App\Model\Request\SendInviteRequest;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -14,7 +14,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Url;
 
-final class SendMessageType extends AbstractType
+final class SendInviteType extends AbstractType
 {
     /**
      * {@inheritdoc}
@@ -48,7 +48,7 @@ final class SendMessageType extends AbstractType
         parent::configureOptions($resolver);
 
         $resolver->setDefaults([
-            'data_class' => SendMessageRequest::class,
+            'data_class' => SendInviteRequest::class,
         ]);
     }
 }

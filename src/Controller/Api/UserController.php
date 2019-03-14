@@ -16,7 +16,12 @@ use App\Factory\View\UserSecurityInfoViewFactory;
 use App\Form\Query\UserQueryType;
 use App\Form\Request\CreateInvitedUserType;
 use App\Form\Request\SaveKeysType;
+use App\Form\Request\SendInvitesType;
+use App\Form\Request\SendInviteType;
+use App\Mailer\MailRegistry;
 use App\Model\Query\UserQuery;
+use App\Model\Request\SendInviteRequest;
+use App\Model\Request\SendInviteRequests;
 use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserView;
@@ -28,6 +33,7 @@ use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
+use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -246,7 +252,7 @@ final class UserController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\CreateUserType::class)
+     *     @Model(type=\App\Form\Request\CreateInvitedUserType::class)
      * )
      * @SWG\Response(
      *     response=200,
@@ -378,6 +384,101 @@ final class UserController extends AbstractController
         $user = $this->getUser();
 
         return new JsonResponse($bootstrapViewFactory->create($user));
+    }
+
+    /**
+     * @SWG\Tag(name="Invitation")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type="\App\Form\Request\SendInviteType")
+     * )
+     * @SWG\Response(
+     *     response=201,
+     *     description="Success message sent"
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns send mail errors",
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     "/api/invitation",
+     *     name="api_send_invitation",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Request         $request
+     * @param SenderInterface $sender
+     *
+     * @return FormInterface
+     */
+    public function sendInvitation(Request $request, SenderInterface $sender)
+    {
+        $sendRequest = new SendInviteRequest();
+
+        $form = $this->createForm(SendInviteType::class, $sendRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $sender->send(MailRegistry::INVITE_SEND_MESSAGE, [$sendRequest->getUser()->getEmail()], [
+            'url' => $sendRequest->getUrl(),
+        ]);
+
+        return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Invitation")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type="\App\Form\Request\SendInvitesType")
+     * )
+     * @SWG\Response(
+     *     response=201,
+     *     description="Success message sent"
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns send mail errors",
+     * )
+     *
+     * @Route(
+     *     "/api/invitations",
+     *     name="api_send_invitations",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Request $request
+     * @param SenderInterface $sender
+     * @return null|FormInterface
+     */
+    public function sendInvitations(Request $request, SenderInterface $sender)
+    {
+        $sendRequests = new SendInviteRequests();
+
+        $form = $this->createForm(SendInvitesType::class, $sendRequests);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        foreach ($sendRequests->getMessages() as $message) {
+            $sender->send(MailRegistry::INVITE_SEND_MESSAGE, [$message->getUser()->getEmail()], [
+                'url' => $message->getUrl(),
+            ]);
+        }
+
+        return null;
     }
 
     private function setFlowStatus(string $currentFlowStatus): string

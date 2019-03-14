@@ -109,6 +109,9 @@ class SecurityBootstrapViewFactory
             case $user->hasRole(User::ROLE_READ_ONLY_USER):
                 $state = User::FLOW_STATUS_CHANGE_PASSWORD === $user->getFlowStatus() ? SecurityBootstrapView::STATE_CHANGE : SecurityBootstrapView::STATE_SKIP;
                 break;
+            case $user->isFullUser() && $this->authorizationManager->hasInvitation($user):
+                $state = SecurityBootstrapView::STATE_CHANGE;
+                break;
             default:
                 $state = SecurityBootstrapView::STATE_SKIP;
         }
