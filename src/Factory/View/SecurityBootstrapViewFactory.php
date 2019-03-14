@@ -58,7 +58,7 @@ class SecurityBootstrapViewFactory
         $securityBootstrapView->twoFactorAuthState = $this->getTwoFactorAuthState($user);
         $securityBootstrapView->passwordState = $this->getPasswordState($user);
         $securityBootstrapView->masterPasswordState = $this->getMasterPasswordState($user);
-        $securityBootstrapView->sharedItemsStepState = $this->getSharedItemsStepState($user);
+        $securityBootstrapView->sharedItemsState = $this->getSharedItemsStepState($user);
 
         return $securityBootstrapView;
     }
@@ -131,6 +131,9 @@ class SecurityBootstrapViewFactory
                 break;
             case $user->hasRole(User::ROLE_ANONYMOUS_USER):
                 $state = SecurityBootstrapView::STATE_CHECK;
+                break;
+            case $user->isFullUser() && $this->authorizationManager->hasInvitation($user):
+                $state = SecurityBootstrapView::STATE_CREATE ;
                 break;
             default:
                 $state = is_null($user->getEncryptedPrivateKey()) ? SecurityBootstrapView::STATE_CREATE : SecurityBootstrapView::STATE_CHECK;

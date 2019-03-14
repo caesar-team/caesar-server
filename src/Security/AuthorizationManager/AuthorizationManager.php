@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Security\AuthorizationManager;
 
-use App\Entity\Directory;
 use App\Entity\Security\Invitation;
-use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
@@ -35,10 +33,6 @@ class AuthorizationManager
             return null;
         }
 
-        if ($user && $this->userHasItems($user)) {
-            return null;
-        }
-
         return $user;
     }
 
@@ -52,19 +46,5 @@ class AuthorizationManager
         }
 
         return false;
-    }
-
-    /**
-     * @param UserInterface|User $user
-     * @return bool
-     */
-    private function userHasItems(UserInterface $user): bool
-    {
-        return $this->isEmptyList($user->getInbox()) && $this->isEmptyList($user->getLists()) && $this->isEmptyList($user->getTrash());
-    }
-
-    private function isEmptyList(Directory $directory): bool
-    {
-        return !count($directory->getChildItems());
     }
 }

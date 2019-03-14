@@ -36,5 +36,5 @@ class SecurityBootstrapView
      * @var string
      * @SWG\Property(example="SKIP|CHECK")
      */
-    public $sharedItemsStepState;
+    public $sharedItemsState;
 }
