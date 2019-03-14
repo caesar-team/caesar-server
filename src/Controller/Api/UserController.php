@@ -21,6 +21,7 @@ use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserSecurityInfoView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
+use App\Services\GroupManager;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -270,10 +271,16 @@ final class UserController extends AbstractController
      * @param UserRepository $userRepository
      * @param EntityManagerInterface $entityManager
      *
+     * @param GroupManager $groupManager
      * @return array|FormInterface
      * @throws \Exception
      */
-    public function createUser(Request $request, UserRepository $userRepository, EntityManagerInterface $entityManager)
+    public function createUser(
+        Request $request,
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager,
+        GroupManager $groupManager
+    )
     {
         /** @var User $user */
         $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
@@ -287,6 +294,10 @@ final class UserController extends AbstractController
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
+        }
+
+        if (!$user->hasRole(User::ROLE_ANONYMOUS_USER)) {
+            $groupManager->addGroupToUser($user);
         }
 
         $entityManager->persist($user);

@@ -64,4 +64,9 @@ class ItemView extends NodeView
      * @var UserView
      */
     public $owner;
+
+    /**
+     * @var int
+     */
+    public $sort;
 }

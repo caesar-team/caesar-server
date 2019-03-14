@@ -11,10 +11,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Table
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\DirectoryRepository")
  * @UniqueEntity(fields={"label"}, errorPath="label", message="list.create.label.already_exists")
  */
 class Directory
@@ -31,6 +32,7 @@ class Directory
      * @var Collection|Directory[]
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList", cascade={"remove"})
+     * @ORM\OrderBy({"sort" = "ASC"})
      */
     protected $childLists;
 
@@ -38,6 +40,7 @@ class Directory
      * @var Directory|null
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childLists")
+     * @Gedmo\SortableGroup
      */
     protected $parentList;
 
@@ -45,7 +48,7 @@ class Directory
      * @var Collection|Item[]
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="parentList", cascade={"remove"})
-     * @ORM\OrderBy({"lastUpdated" = "DESC"})
+     * @ORM\OrderBy({"sort" = "ASC", "lastUpdated" = "DESC"})
      */
     protected $childItems;
 
@@ -55,6 +58,13 @@ class Directory
      * @ORM\Column
      */
     protected $label;
+
+    /**
+     * @var int
+     * @ORM\Column(type="integer", options={"default": 0}, nullable=false)
+     * @Gedmo\SortablePosition
+     */
+    protected $sort = 0;
 
     /**
      * @var string
@@ -183,5 +193,21 @@ class Directory
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSort(): int
+    {
+        return $this->sort;
+    }
+
+    /**
+     * @param int $sort
+     */
+    public function setSort(int $sort): void
+    {
+        $this->sort = $sort;
     }
 }

@@ -61,16 +61,17 @@ class UserRepository extends ServiceEntityRepository
 
     public function getByQuery(UserQuery $query): PaginatedList
     {
+        $groups = [];
+        foreach ($query->getUserGroups() as $userGroup) {
+            $groups[] = $userGroup->getGroup()->getId();
+        }
         $qb = $this->createQueryBuilder('user');
         $qb
+            ->join('user.userGroups','userGroups')
             ->where($qb->expr()->neq('user', ':userId'))
-            ->andWhere($qb->expr()->orX(
-                $qb->expr()->like('user.email', ':domain'),
-                $qb->expr()->like('user.domain', ':user_domain')
-            ))
+            ->andWhere('userGroups.group IN(:groups)')
             ->andWhere($qb->expr()->isNotNull('user.publicKey'))
-            ->setParameter('domain', '%@'.$query->getUser()->getUserDomain())
-            ->setParameter('user_domain', $query->getUser()->getUserDomain())
+            ->setParameter('groups', $groups)
             ->setParameter('userId', $query->getUser())
             ->setMaxResults($query->getPerPage())
             ->setFirstResult($query->getFirstResult());

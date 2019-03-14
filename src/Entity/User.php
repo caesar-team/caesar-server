@@ -177,6 +177,13 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $backupCodes = [];
 
     /**
+     * @var UserGroup[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="UserGroup", mappedBy="user", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $userGroups;
+
+    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -190,6 +197,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->lists = Directory::createRootList();
         $this->trash = Directory::createTrash();
         $this->shares = new ArrayCollection();
+        $this->userGroups = new ArrayCollection();
         $this->availableShares = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
         if (null !== $srp) {
@@ -493,5 +501,31 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }
 
         return $codes;
+    }
+
+    /**
+     * @return UserGroup[]|Collection
+     */
+    public function getUserGroups(): Collection
+    {
+        return $this->userGroups;
+    }
+
+    public function addUserGroup(UserGroup $userGroup): void
+    {
+        if (!$this->userGroups->contains($userGroup)) {
+            $this->userGroups->add($userGroup);
+            $userGroup->setUser($this);
+        }
+    }
+
+    public function removeUserGroup(UserGroup $userGroup): void
+    {
+        $this->userGroups->removeElement($userGroup);
+    }
+
+    public function setUserGroups($userGroups): void
+    {
+        $this->userGroups = $userGroups;
     }
 }

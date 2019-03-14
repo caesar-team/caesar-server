@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Model\Event\AppEvents;
 use App\Repository\UserRepository;
 use App\Services\File\FileDownloader;
+use App\Services\GroupManager;
 use FOS\UserBundle\Model\UserManagerInterface;
 use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
 use HWI\Bundle\OAuthBundle\Security\Core\Exception\AccountNotLinkedException;
@@ -34,6 +35,10 @@ class FOSUBUserProvider extends BaseUserProvider
      * @var TranslatorInterface
      */
     private $translator;
+    /**
+     * @var GroupManager
+     */
+    private $groupManager;
 
     public function __construct(
         UserManagerInterface $userManager,
@@ -41,17 +46,22 @@ class FOSUBUserProvider extends BaseUserProvider
         EventDispatcherInterface $eventDispatcher,
         UserRepository $userRepository,
         TranslatorInterface $translator,
-        array $properties
+        array $properties,
+        GroupManager $groupManager
     ) {
         parent::__construct($userManager, $properties);
         $this->eventDispatcher = $eventDispatcher;
         $this->downloader = $downloader;
         $this->userRepository = $userRepository;
         $this->translator = $translator;
+        $this->groupManager = $groupManager;
     }
 
     /**
-     * {@inheritdoc}
+     * @param UserResponseInterface $response
+     * @return User|\FOS\UserBundle\Model\UserInterface|null|\Symfony\Component\Security\Core\User\UserInterface
+     * @throws \Exception
+     * @throws \TypeError
      */
     public function loadUserByOAuthUserResponse(UserResponseInterface $response)
     {
@@ -74,6 +84,7 @@ class FOSUBUserProvider extends BaseUserProvider
                 $user->setPlainPassword(md5(uniqid('', true)));
                 $user->setUsername($response->getNickname());
                 $user->setEnabled(true);
+                $this->groupManager->addGroupToUser($user);
 
                 $avatar = $this->downloader->createAvatarFromLink($response->getProfilePicture());
                 $user->setAvatar($avatar);

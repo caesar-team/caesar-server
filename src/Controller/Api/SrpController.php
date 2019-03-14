@@ -14,6 +14,7 @@ use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
 use App\Security\PasswordRecoveryManager;
+use App\Services\GroupManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -80,10 +81,11 @@ final class SrpController extends AbstractController
      * @param Request $request
      * @param UserManagerInterface $manager
      *
+     * @param GroupManager $groupManager
      * @return null
      * @throws \Exception
      */
-    public function registerAction(Request $request, UserManagerInterface $manager)
+    public function registerAction(Request $request, UserManagerInterface $manager, GroupManager $groupManager)
     {
         $user = new User(new Srp());
 
@@ -91,6 +93,10 @@ final class SrpController extends AbstractController
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
+        }
+
+        if (!$user->hasRole(User::ROLE_ANONYMOUS_USER)) {
+            $groupManager->addGroupToUser($user);
         }
 
         $manager->updateUser($user);
