@@ -70,6 +70,7 @@ class CreateInvitedUserType extends AbstractType
         $user = $event->getData();
         $user->setUsername($user->getEmail());
         $this->setFlowStatus($user);
+        $user->setEnabled(true);
     }
 
     public function configureOptions(OptionsResolver $resolver)
