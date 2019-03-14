@@ -6,14 +6,16 @@ namespace App\Controller\Api;
 
 use App\Entity\Item;
 use App\Entity\ItemMask;
+use App\Factory\View\ItemViewFactory;
 use App\Factory\View\Share\ItemMaskViewFactory;
+use App\Form\Request\CreateItemByMaskType;
 use App\Model\View\Share\ItemMasksView;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 
@@ -54,28 +56,51 @@ class ItemMaskController extends AbstractController
     }
 
     /**
+     * @SWG\Tag(name="Item Mask")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\CreateItemByMaskType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Item data",
+     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
+     * )
      *
      * @Route("/api/item_mask/{itemMask}", methods={"POST"})
      *
+     * @param Request $request
      * @param ItemMask $itemMask
-     * @param SerializerInterface $serializer
-     * @return JsonResponse
+     * @param ItemViewFactory $viewFactory
+     * @return \App\Model\View\CredentialsList\ItemView|\Symfony\Component\Form\FormInterface
      * @throws \Exception
      */
-    public function create(ItemMask $itemMask, SerializerInterface $serializer): JsonResponse
+    public function create(Request $request, ItemMask $itemMask, ItemViewFactory $viewFactory)
     {
+        $form = $this->createForm(CreateItemByMaskType::class, $itemMask);
+
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
         $item = $this->createItem($itemMask);
         $this->removeItemMask($itemMask);
         if ($item instanceof Item) {
-            $json = $serializer->serialize($item,'json');
-
-            return new JsonResponse(json_decode($json));
+             return $viewFactory->create($item);
         }
 
-        return new JsonResponse([], Response::HTTP_CREATED);
+        throw new \LogicException('Unexpected case');
     }
 
     /**
+     * @SWG\Tag(name="Item Mask")
+     * @SWG\Response(
+     *     response=204,
+     *     description="Item mask removed"
+     * )
      * @Route("/api/item_mask/{itemMask}", methods={"DELETE"})
      *
      * @param ItemMask $itemMask
