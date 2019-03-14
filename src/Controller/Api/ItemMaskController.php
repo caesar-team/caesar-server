@@ -6,6 +6,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Item;
 use App\Entity\ItemMask;
+use App\Factory\View\ItemListViewFactory;
 use App\Factory\View\ItemViewFactory;
 use App\Factory\View\Share\ItemMaskViewFactory;
 use App\Form\Request\CreateItemByMaskType;
@@ -57,12 +58,6 @@ class ItemMaskController extends AbstractController
 
     /**
      * @SWG\Tag(name="Item Mask")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=\App\Form\Request\CreateItemByMaskType::class)
-     * )
      * @SWG\Response(
      *     response=200,
      *     description="Item data",
@@ -71,21 +66,13 @@ class ItemMaskController extends AbstractController
      *
      * @Route("/api/item_mask/{itemMask}", methods={"POST"})
      *
-     * @param Request $request
      * @param ItemMask $itemMask
      * @param ItemViewFactory $viewFactory
      * @return \App\Model\View\CredentialsList\ItemView|\Symfony\Component\Form\FormInterface
      * @throws \Exception
      */
-    public function create(Request $request, ItemMask $itemMask, ItemViewFactory $viewFactory)
+    public function create(ItemMask $itemMask, ItemViewFactory $viewFactory)
     {
-        $form = $this->createForm(CreateItemByMaskType::class, $itemMask);
-
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
         $item = $this->createItem($itemMask);
         $this->removeItemMask($itemMask);
         if ($item instanceof Item) {
@@ -93,6 +80,11 @@ class ItemMaskController extends AbstractController
         }
 
         throw new \LogicException('Unexpected case');
+    }
+
+    public function batchCreate(Request $request, ItemListViewFactory $viewFactory)
+    {
+
     }
 
     /**
