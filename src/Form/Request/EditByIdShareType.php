@@ -21,7 +21,6 @@ final class EditByIdShareType extends EditShareType
             ->add('sharedItems', CollectionType::class, [
                 'entry_type' => ShareItemType::class,
                 'allow_add' => true,
-                'by_reference' => false,
             ])
         ;
     }
