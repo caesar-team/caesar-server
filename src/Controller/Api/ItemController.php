@@ -628,8 +628,8 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/item/{id}/invite",
-     *     name="api_invite_to_item",
+     *     path="/api/item/{id}/child_item",
+     *     name="api_child_to_item",
      *     methods={"POST"}
      * )
      *
@@ -642,7 +642,7 @@ final class ItemController extends AbstractController
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Exception
      */
-    public function inviteItemAction(Item $item, Request $request, ChildItemHandler $childItemHandler, ItemViewFactory $viewFactory)
+    public function childItemToItem(Item $item, Request $request, ChildItemHandler $childItemHandler, ItemViewFactory $viewFactory)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
