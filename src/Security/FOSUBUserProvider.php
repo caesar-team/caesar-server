@@ -7,6 +7,7 @@ namespace App\Security;
 use App\Entity\User;
 use App\Model\Event\AppEvents;
 use App\Repository\UserRepository;
+use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\File\FileDownloader;
 use App\Services\GroupManager;
 use FOS\UserBundle\Model\UserManagerInterface;
@@ -39,6 +40,10 @@ class FOSUBUserProvider extends BaseUserProvider
      * @var GroupManager
      */
     private $groupManager;
+    /**
+     * @var AuthorizationManager
+     */
+    private $authorizationManager;
 
     public function __construct(
         UserManagerInterface $userManager,
@@ -47,7 +52,8 @@ class FOSUBUserProvider extends BaseUserProvider
         UserRepository $userRepository,
         TranslatorInterface $translator,
         array $properties,
-        GroupManager $groupManager
+        GroupManager $groupManager,
+        AuthorizationManager $authorizationManager
     ) {
         parent::__construct($userManager, $properties);
         $this->eventDispatcher = $eventDispatcher;
@@ -55,6 +61,7 @@ class FOSUBUserProvider extends BaseUserProvider
         $this->userRepository = $userRepository;
         $this->translator = $translator;
         $this->groupManager = $groupManager;
+        $this->authorizationManager = $authorizationManager;
     }
 
     /**
@@ -70,7 +77,10 @@ class FOSUBUserProvider extends BaseUserProvider
         } catch (AccountNotLinkedException $e) {
             $user = $this->userManager->findUserByEmail($response->getEmail());
 
-            $this->checkEmailDomain($response->getEmail());
+            if (!$this->authorizationManager->hasInvitation($user)) {
+                $this->checkEmailDomain($response->getEmail());
+            }
+
             if ($user instanceof User && $user->hasRole(User::ROLE_ANONYMOUS_USER)) {
                 throw new AuthenticationException(
                     $this->translator->trans('authentication.user_restriction', ['%email%' => $response->getEmail()])
