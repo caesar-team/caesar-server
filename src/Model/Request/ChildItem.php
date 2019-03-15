@@ -6,7 +6,7 @@ namespace App\Model\Request;
 
 use App\Entity\User;
 
-class Invite
+class ChildItem
 {
     /**
      * @var User

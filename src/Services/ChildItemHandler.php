@@ -9,14 +9,14 @@ use App\Entity\ItemMask;
 use App\Entity\ItemUpdate;
 use App\Entity\User;
 use App\Mailer\MailRegistry;
-use App\Model\Request\InviteCollectionRequest;
+use App\Model\Request\ItemCollectionRequest;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
-class InviteHandler
+class ChildItemHandler
 {
     /** @var EntityManagerInterface */
     private $entityManager;
@@ -54,44 +54,44 @@ class InviteHandler
     }
 
     /**
-     * @param InviteCollectionRequest $request
+     * @param ItemCollectionRequest $request
      *
      * @throws \Exception
      */
-    public function inviteToItem(InviteCollectionRequest $request)
+    public function childItemToItem(ItemCollectionRequest $request)
     {
-        foreach ($request->getInvites() as $invite) {
+        foreach ($request->getItems() as $childItem) {
             $item = new Item();
-            $item->setParentList($invite->getUser()->getInbox());
-            $item->setOriginalItem($request->getItem());
-            $item->setSecret($invite->getSecret());
-            $item->setAccess($invite->getAccess());
-            $item->setType($request->getItem()->getType());
+            $item->setParentList($childItem->getUser()->getInbox());
+            $item->setOriginalItem($request->getOriginalItem());
+            $item->setSecret($childItem->getSecret());
+            $item->setAccess($childItem->getAccess());
+            $item->setType($request->getOriginalItem()->getType());
 
             $this->entityManager->persist($item);
         }
 
         $this->entityManager->flush();
-        $this->entityManager->refresh($request->getItem());
+        $this->entityManager->refresh($request->getOriginalItem());
     }
 
-    public function updateInvites(InviteCollectionRequest $request, User $currentOwner): void
+    public function updateChildItems(ItemCollectionRequest $request, User $currentOwner): void
     {
-        $parentItem = $request->getItem();
+        $parentItem = $request->getOriginalItem();
         if (null !== $parentItem->getOriginalItem()) {
             $parentItem = $parentItem->getOriginalItem();
         }
 
-        foreach ($request->getInvites() as $invite) {
+        foreach ($request->getItems() as $childItem) {
             /** @var Item $item */
             /** @var User $user */
-            [$item, $user] = $this->getItem($invite->getUser(), $parentItem);
+            [$item, $user] = $this->getItem($childItem->getUser(), $parentItem);
 
             if ($currentOwner === $user) {
-                $item->setSecret($invite->getSecret());
+                $item->setSecret($childItem->getSecret());
             } else {
                 $update = $this->extractUpdate($item, $currentOwner);
-                $update->setSecret($invite->getSecret());
+                $update->setSecret($childItem->getSecret());
             }
 
             $this->entityManager->persist($item);
@@ -101,15 +101,15 @@ class InviteHandler
     }
 
     /**
-     * @param InviteCollectionRequest $request
+     * @param ItemCollectionRequest $request
      * @throws \Exception
      */
-    public function createMasks(InviteCollectionRequest $request)
+    public function createMasks(ItemCollectionRequest $request)
     {
         $url = $this->router->generate('google_login', [], RouterInterface::ABSOLUTE_URL);
-        foreach ($request->getInvites() as $invite) {
+        foreach ($request->getItems() as $invite) {
             $mask = new ItemMask();
-            $mask->setOriginalItem($request->getItem());
+            $mask->setOriginalItem($request->getOriginalItem());
             $mask->setRecipient($invite->getUser());
             $mask->setSecret($invite->getSecret());
             $mask->setAccess($invite->getAccess());
