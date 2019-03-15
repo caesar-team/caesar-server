@@ -659,6 +659,48 @@ final class ItemController extends AbstractController
     }
 
     /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=App\Form\Request\Invite\BatchUpdateChildItemsRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success items updated"
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns item share error"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/batch",
+     *     name="api_item_batch_update",
+     *     methods={"PUT"}
+     * )
+     * @param Request $request
+     * @param ChildItemHandler $childItemHandler
+     * @return null|FormInterface
+     */
+    public function batchUpdateChildItems(Request $request, ChildItemHandler $childItemHandler)
+    {
+        $batchChildItemsCollectionRequest = new BatchChildItemsCollectionRequest();
+        $form = $this->createForm(BatchUpdateChildItemsRequestType::class, $batchChildItemsCollectionRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+        foreach ($batchChildItemsCollectionRequest->getCollectionItems() as $itemCollectionRequest) {
+            $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $itemCollectionRequest->getOriginalItem());
+            $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
+        }
+
+        return null;
+    }
+
+    /**
      * Update item with children
      * @SWG\Tag(name="Item")
      *
@@ -727,48 +769,6 @@ final class ItemController extends AbstractController
         }
 
         $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
-
-        return null;
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=App\Form\Request\Invite\BatchUpdateChildItemsRequestType::class)
-     * )
-     * @SWG\Response(
-     *     response=204,
-     *     description="Success items updated"
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns item share error"
-     * )
-     *
-     * @Route(
-     *     path="/api/item/batch",
-     *     name="api_item_batch_update",
-     *     methods={"PUT"}
-     * )
-     * @param Request $request
-     * @param ChildItemHandler $childItemHandler
-     * @return null|FormInterface
-     */
-    public function batchUpdateChildItems(Request $request, ChildItemHandler $childItemHandler)
-    {
-        $batchChildItemsCollectionRequest = new BatchChildItemsCollectionRequest();
-        $form = $this->createForm(BatchUpdateChildItemsRequestType::class, $batchChildItemsCollectionRequest);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-        foreach ($batchChildItemsCollectionRequest->getCollectionItems() as $itemCollectionRequest) {
-            $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $itemCollectionRequest->getOriginalItem());
-            $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
-        }
 
         return null;
     }

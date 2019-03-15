@@ -20,7 +20,7 @@ class UpdateChildItemsRequestType extends AbstractType
         $builder
             ->add('originalItem', EntityType::class, [
                 'class' => Item::class,
-                'empty_data' => $builder->getData() ? $builder->getData()->getItem()->getId()->toString() : null
+                'empty_data' => $builder->getData() ? $builder->getData()->getOriginalItem()->getId()->toString() : null
             ])
             ->add('items', CollectionType::class, [
                 'constraints' => [
