@@ -6,10 +6,12 @@ namespace App\Controller\Api;
 
 use App\Entity\Item;
 use App\Factory\View\ItemViewFactory;
+use App\Form\Request\Invite\BatchUpdateInvitesRequestType;
 use App\Form\Request\Invite\InviteCollectionRequestType;
 use App\Form\Request\Invite\InviteUpdateRequestType;
 use App\Form\Request\Invite\UpdateInvitesRequestType;
 use App\Mailer\MailRegistry;
+use App\Model\Request\BatchInviteCollectionRequest;
 use App\Model\Request\InviteCollectionRequest;
 use App\Model\View\CredentialsList\ItemView;
 use App\Security\InviteVoter;
@@ -272,7 +274,7 @@ final class InviteController extends AbstractController
      *
      * @return FormInterface|null
      */
-    public function updateInviteAction(Item $item, Request $request, InviteHandler $inviteHandler)
+    public function updateInvite(Item $item, Request $request, InviteHandler $inviteHandler)
     {
         $this->denyAccessUnlessGranted(InviteVoter::UPDATE_INVITE, $item);
 
@@ -284,6 +286,47 @@ final class InviteController extends AbstractController
         }
 
         $inviteHandler->updateInvites($inviteCollectionRequest, $this->getUser());
+
+        return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Invite")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=App\Form\Request\Invite\BatchUpdateInvitesRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success invites updated"
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns item share error"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/invites",
+     *     name="api_item_invites_update",
+     *     methods={"PUT"}
+     * )
+     * @param Request $request
+     * @param InviteHandler $inviteHandler
+     * @return null|FormInterface
+     */
+    public function updateInvites(Request $request, InviteHandler $inviteHandler)
+    {
+        $batchInviteCollectionRequest = new BatchInviteCollectionRequest();
+        $form = $this->createForm(BatchUpdateInvitesRequestType::class, $batchInviteCollectionRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+        foreach ($batchInviteCollectionRequest->getInviteCollectionList() as $inviteCollectionRequest) {
+            $inviteHandler->updateInvites($inviteCollectionRequest, $this->getUser());
+        }
 
         return null;
     }
@@ -319,11 +362,12 @@ final class InviteController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Item                   $item
+     * @param Item $item
      * @param EntityManagerInterface $entityManager
-     * @param ItemViewFactory        $factory
+     * @param ItemViewFactory $factory
      *
      * @return null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function acceptItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {

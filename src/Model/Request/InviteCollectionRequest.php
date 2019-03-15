@@ -15,17 +15,17 @@ class InviteCollectionRequest
     protected $invites;
 
     /**
-     * @var Item
+     * @var Item|null
      */
     protected $item;
 
-    public function __construct(Item $item)
+    public function __construct(Item $item = null)
     {
         $this->item = $item;
         $this->invites = new ArrayCollection();
     }
 
-    public function getItem(): Item
+    public function getItem(): ?Item
     {
         return $this->item;
     }
@@ -48,5 +48,13 @@ class InviteCollectionRequest
     public function removeInvite(Invite $invite)
     {
         $this->invites->removeElement($invite);
+    }
+
+    /**
+     * @param Item $item
+     */
+    public function setItem(?Item $item): void
+    {
+        $this->item = $item;
     }
 }
