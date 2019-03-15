@@ -77,15 +77,7 @@ class FOSUBUserProvider extends BaseUserProvider
         } catch (AccountNotLinkedException $e) {
             $user = $this->userManager->findUserByEmail($response->getEmail());
 
-            if (!$this->authorizationManager->hasInvitation($user)) {
-                $this->checkEmailDomain($response->getEmail());
-            }
-
-            if ($user instanceof User && $user->hasRole(User::ROLE_ANONYMOUS_USER)) {
-                throw new AuthenticationException(
-                    $this->translator->trans('authentication.user_restriction', ['%email%' => $response->getEmail()])
-                );
-            }
+            $this->denyAccessUnlessGranted($response, $user);
 
             if (!$user) {
                 /** @var User $user */
@@ -127,6 +119,19 @@ class FOSUBUserProvider extends BaseUserProvider
             && !$this->userRepository->findOneBy(['email' => $email])
         ) {
             throw new AuthenticationException($this->translator->trans('authentication.email_domain_restriction', ['%domain%' => $domain]));
+        }
+    }
+
+    private function denyAccessUnlessGranted(UserResponseInterface $response, User $user = null)
+    {
+        if ($user instanceof User ?? !$this->authorizationManager->hasInvitation($user)) {
+            $this->checkEmailDomain($response->getEmail());
+        }
+
+        if ($user instanceof User && $user->hasRole(User::ROLE_ANONYMOUS_USER)) {
+            throw new AuthenticationException(
+                $this->translator->trans('authentication.user_restriction', ['%email%' => $response->getEmail()])
+            );
         }
     }
 }
