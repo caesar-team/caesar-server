@@ -749,7 +749,7 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="api/item/batch",
+     *     path="/api/item/batch",
      *     name="api_item_batch_update",
      *     methods={"PUT"}
      * )
