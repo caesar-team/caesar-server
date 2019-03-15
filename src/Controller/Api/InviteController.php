@@ -308,8 +308,8 @@ final class InviteController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/item/invites",
-     *     name="api_item_invites_update",
+     *     path="api/item/batch",
+     *     name="api_item_batch_update",
      *     methods={"PUT"}
      * )
      * @param Request $request
