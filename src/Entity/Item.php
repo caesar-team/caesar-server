@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\DBAL\Types\Enum\NodeEnumType;
+use App\Utils\ChildItemAwareInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -16,7 +17,7 @@ use Ramsey\Uuid\UuidInterface;
  * @ORM\Entity(repositoryClass="App\Repository\ItemRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class Item
+class Item implements ChildItemAwareInterface
 {
     /**
      * @var UuidInterface

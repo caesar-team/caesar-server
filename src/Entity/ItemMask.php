@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Utils\ChildItemAwareInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Ramsey\Uuid\Uuid;
@@ -13,7 +14,7 @@ use Ramsey\Uuid\UuidInterface;
  * Class ItemMask
  * @ORM\Entity
  */
-class ItemMask
+class ItemMask implements ChildItemAwareInterface
 {
     use TimestampableEntity;
 

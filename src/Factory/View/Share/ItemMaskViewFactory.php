@@ -16,11 +16,12 @@ use App\Entity\ItemMask;
 use App\Model\View\Share\ItemMasksView;
 use App\Model\View\Share\ItemMaskView;
 use App\Model\View\User\UserView;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class ItemMaskViewFactory
 {
     /**
-     * @param ItemMask[] $itemMasks
+     * @param ItemMask[]|ArrayCollection $itemMasks
      * @return ItemMasksView
      */
     public function create($itemMasks): ItemMasksView

@@ -10,6 +10,7 @@ use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
 use App\Factory\View\ItemViewFactory;
 use App\Factory\View\ListTreeViewFactory;
+use App\Factory\View\Share\ItemMaskViewFactory;
 use App\Form\Query\ItemListQueryType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemType;
@@ -37,6 +38,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use FOS\RestBundle\Controller\Annotations as Rest;
 
 final class ItemController extends AbstractController
 {
@@ -597,7 +599,7 @@ final class ItemController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="Success item shared",
-     *     @Model(type=App\Model\View\CredentialsList\ItemView::class)
+     *     @Model(type=App\Model\View\Share\ItemMasksView::class, groups={"create_child_item"})
      * )
      * @SWG\Response(
      *     response=400,
@@ -630,6 +632,7 @@ final class ItemController extends AbstractController
      *     response=404,
      *     description="No such item"
      * )
+     * @Rest\View(serializerGroups={"create_child_item"})
      *
      * @Route(
      *     path="/api/item/{id}/child_item",
@@ -641,12 +644,11 @@ final class ItemController extends AbstractController
      * @param Request $request
      * @param ChildItemHandler $childItemHandler
      *
-     * @param ItemViewFactory $viewFactory
-     * @return ItemView|FormInterface
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @param ItemMaskViewFactory $viewFactory
+     * @return \App\Model\View\Share\ItemMasksView|FormInterface
      * @throws \Exception
      */
-    public function childItemToItem(Item $item, Request $request, ChildItemHandler $childItemHandler, ItemViewFactory $viewFactory)
+    public function childItemToItem(Item $item, Request $request, ChildItemHandler $childItemHandler, ItemMaskViewFactory $viewFactory)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
@@ -659,7 +661,7 @@ final class ItemController extends AbstractController
 
         $childItemHandler->createMasks($itemCollectionRequest);
 
-        return $viewFactory->create($item);
+        return $viewFactory->create($itemCollectionRequest->getItems());
     }
 
     /**

@@ -12,7 +12,9 @@ use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
+use App\Utils\ChildItemAwareInterface;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 class ItemViewFactory
 {
@@ -41,7 +43,7 @@ class ItemViewFactory
 
         $view->secret = $item->getSecret();
         $view->invited = $this->getInvitesCollection($item);
-        $view->shared = [];
+        $view->shared = $this->getSharesCollection($item);
         $view->update = $this->getUpdateView($item->getUpdate());
         $view->owner = $this->getOwner($item);
         $view->favorite = $item->isFavorite();
@@ -62,8 +64,9 @@ class ItemViewFactory
             $ownerItem = $item->getOriginalItem();
         }
 
-        $inviteViewCollection = [];
-        foreach ($ownerItem->getSharedItems() as $item) {
+        $invites = [];
+        $sharedItems = $this->extractChildItemByCause($ownerItem->getSharedItems());
+        foreach ($sharedItems as $item) {
             $user = $this->userRepository->getByItem($item);
 
             $invite = new InviteView();
@@ -72,10 +75,10 @@ class ItemViewFactory
             $invite->email = $user->getEmail();
             $invite->lastUpdated = $item->getLastUpdated();
             $invite->access = $item->getAccess();
-            $inviteViewCollection[] = $invite;
+            $invites[] = $invite;
         }
 
-        foreach ($this->extractMasksByCause($ownerItem->getItemMasks()) as $mask) {
+        foreach ($this->extractChildItemByCause($ownerItem->getItemMasks()) as $mask) {
             $user = $mask->getRecipient();
             $invite = new InviteView();
             $invite->id = $mask->getId()->toString();
@@ -83,10 +86,10 @@ class ItemViewFactory
             $invite->email = $user->getEmail();
             $invite->lastUpdated = $ownerItem->getLastUpdated();
             $invite->access = $mask->getAccess();
-            $inviteViewCollection[] = $invite;
+            $invites[] = $invite;
         }
 
-        return $inviteViewCollection;
+        return $invites;
     }
 
     /**
@@ -120,14 +123,54 @@ class ItemViewFactory
     }
 
     /**
-     * @param \Countable $masks
+     * @param \Countable|ChildItemAwareInterface[]|Collection $childItems
      * @param string $cause
      * @return array|ItemMask[]
      */
-    private function extractMasksByCause(\Countable $masks, string $cause = ItemMask::CAUSE_INVITE): array
+    private function extractChildItemByCause(\Countable $childItems, string $cause = ItemMask::CAUSE_INVITE): array
     {
-        return array_filter($masks->toArray(), function(ItemMask $mask) use ($cause) {
-            return $cause === $mask->getCause();
+        return array_filter($childItems->toArray(), function(ChildItemAwareInterface $childItem) use ($cause) {
+            return $cause === $childItem->getCause();
         });
+    }
+
+    /**
+     * @param Item $item
+     * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    private function getSharesCollection(Item $item)
+    {
+        $ownerItem = $item;
+        if (null !== $item->getOriginalItem()) {
+            $ownerItem = $item->getOriginalItem();
+        }
+
+        $shares = [];
+        $sharedItems = $this->extractChildItemByCause($ownerItem->getSharedItems(), ItemMask::CAUSE_SHARE);
+        foreach ($sharedItems as $item) {
+            $user = $this->userRepository->getByItem($item);
+
+            $invite = new InviteView();
+            $invite->id = $item->getId()->toString();
+            $invite->userId = $user->getId()->toString();
+            $invite->email = $user->getEmail();
+            $invite->lastUpdated = $item->getLastUpdated();
+            $invite->access = $item->getAccess();
+            $shares[] = $invite;
+        }
+
+        foreach ($this->extractChildItemByCause($ownerItem->getItemMasks(), ItemMask::CAUSE_SHARE) as $mask) {
+            $user = $mask->getRecipient();
+            $invite = new InviteView();
+            $invite->id = $mask->getId()->toString();
+            $invite->userId = $user->getId()->toString();
+            $invite->email = $user->getEmail();
+            $invite->lastUpdated = $ownerItem->getLastUpdated();
+            $invite->access = $mask->getAccess();
+            $shares[] = $invite;
+        }
+
+        return $shares;
     }
 }
