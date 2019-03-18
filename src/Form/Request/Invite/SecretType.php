@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class SecretType extends AbstractType
@@ -36,11 +37,18 @@ class SecretType extends AbstractType
             ->add('cause', ChoiceType::class, [
                 'constraints' => [
                     new NotBlank(),
+                    new Choice([
+                        'choices' => [
+                            ItemMask::CAUSE_INVITE => ItemMask::CAUSE_INVITE,
+                            ItemMask::CAUSE_SHARE => ItemMask::CAUSE_SHARE,
+                        ],
+                    ]),
                 ],
                 'choices' => [
                     ItemMask::CAUSE_INVITE => ItemMask::CAUSE_INVITE,
                     ItemMask::CAUSE_SHARE => ItemMask::CAUSE_SHARE,
-                ]
+                ],
+                'empty_data' => ItemMask::CAUSE_INVITE
             ])
             ->add('link', TextType::class)
         ;

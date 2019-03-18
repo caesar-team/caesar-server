@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Factory\View;
 
 use App\Entity\Item;
+use App\Entity\ItemMask;
 use App\Entity\ItemUpdate;
 use App\Model\View\CredentialsList\InviteView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class ItemViewFactory
 {
@@ -70,7 +72,17 @@ class ItemViewFactory
             $invite->email = $user->getEmail();
             $invite->lastUpdated = $item->getLastUpdated();
             $invite->access = $item->getAccess();
+            $inviteViewCollection[] = $invite;
+        }
 
+        foreach ($this->extractMasksByCause($ownerItem->getItemMasks()) as $mask) {
+            $user = $mask->getRecipient();
+            $invite = new InviteView();
+            $invite->id = $mask->getId()->toString();
+            $invite->userId = $user->getId()->toString();
+            $invite->email = $user->getEmail();
+            $invite->lastUpdated = $ownerItem->getLastUpdated();
+            $invite->access = $mask->getAccess();
             $inviteViewCollection[] = $invite;
         }
 
@@ -105,5 +117,17 @@ class ItemViewFactory
         $view->secret = $update->getSecret();
 
         return $view;
+    }
+
+    /**
+     * @param \Countable $masks
+     * @param string $cause
+     * @return array|ItemMask[]
+     */
+    private function extractMasksByCause(\Countable $masks, string $cause = ItemMask::CAUSE_INVITE): array
+    {
+        return array_filter($masks->toArray(), function(ItemMask $mask) use ($cause) {
+            return $cause === $mask->getCause();
+        });
     }
 }
