@@ -10,6 +10,7 @@ use App\Factory\View\ItemListViewFactory;
 use App\Factory\View\ItemViewFactory;
 use App\Factory\View\Share\ItemMaskViewFactory;
 use App\Form\Request\ItemMasksType;
+use App\Form\Request\UpdateItemMaskType;
 use App\Model\Request\ItemMaskCollctionRequest;
 use App\Model\View\Share\ItemMasksView;
 use Doctrine\ORM\EntityManagerInterface;
@@ -159,7 +160,7 @@ class ItemMaskController extends AbstractController
      * @param Request $request
      * @return \Symfony\Component\Form\FormInterface
      */
-    public function batchRemove(Request $request)
+    public function batchRemove(Request $request, EntityManagerInterface $entityManager)
     {
         $masks = new ItemMaskCollctionRequest();
         $form = $this->createForm(ItemMasksType::class, $masks);
@@ -167,12 +168,49 @@ class ItemMaskController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
-        $entityManager = $this->get('doctrine')->getManager();
+
         foreach ($masks->getMasks() as $mask) {
             $this->removeItemMask($mask->getItemMask(), $entityManager);
         }
 
         $entityManager->flush();
+    }
+
+    /**
+     * @SWG\Tag(name="Item Mask")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\UpdateItemMaskType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="List of offered items",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="\App\Model\View\Share\ItemMaskView")
+     *     )
+     * )
+     *
+     * @Route("/api/item_mask/{itemMask}", methods={"PATCH"}, name="api_item_mask_patch")
+     * @param ItemMask $itemMask
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @param ItemMaskViewFactory $viewFactory
+     * @return \App\Model\View\Share\ItemMaskView|\Symfony\Component\Form\FormInterface
+     */
+    public function update(ItemMask $itemMask, Request $request, EntityManagerInterface $entityManager, ItemMaskViewFactory $viewFactory)
+    {
+        $form = $this->createForm(UpdateItemMaskType::class, $itemMask);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $entityManager->flush();
+
+        return $viewFactory->createOne($itemMask);
     }
 
     private function removeItemMask(ItemMask $itemMask, EntityManagerInterface $entityManager = null): void
