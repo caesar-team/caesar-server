@@ -63,6 +63,7 @@ class ChildItemHandler
             $item->setSecret($childItem->getSecret());
             $item->setAccess($childItem->getAccess());
             $item->setType($request->getOriginalItem()->getType());
+            $item->setStatus($this->getStatusByCause($childItem->getCause()));
 
             $this->entityManager->persist($item);
             $this->sendInvitationMessage($childItem, $url);
@@ -143,5 +144,18 @@ class ChildItemHandler
         }
 
         return new ItemUpdate($item, $user);
+    }
+
+    private function getStatusByCause(string $cause): string
+    {
+        switch ($cause) {
+            case Item::CAUSE_INVITE:
+                $status = Item::STATUS_OFFERED;
+                break;
+            default:
+                $status = Item::STATUS_FINISHED;
+        }
+
+        return $status;
     }
 }

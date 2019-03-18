@@ -21,6 +21,7 @@ use App\Form\Request\SortItemType;
 use App\Model\Query\ItemListQuery;
 use App\Model\Request\BatchChildItemsCollectionRequest;
 use App\Model\Request\ItemCollectionRequest;
+use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
@@ -28,16 +29,21 @@ use App\Security\ChildItemVoter;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
 use App\Services\ChildItemHandler;
+use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
+use Http\Client\Common\Exception\HttpClientNotFoundException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use FOS\RestBundle\Controller\Annotations as Rest;
+use Symfony\Component\Serializer\SerializerInterface;
 
 final class ItemController extends AbstractController
 {
@@ -369,7 +375,7 @@ final class ItemController extends AbstractController
      *
      * @return array|FormInterface
      */
-    public function editItemAction(Item $item, Request $request, EntityManagerInterface $entityManager)
+    public function editItem(Item $item, Request $request, EntityManagerInterface $entityManager)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
         if (null !== $item->getOriginalItem() || 0 !== $item->getSharedItems()->count()) {
@@ -688,6 +694,7 @@ final class ItemController extends AbstractController
      * @param Request $request
      * @param ChildItemHandler $childItemHandler
      * @return null|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function batchUpdateChildItems(Request $request, ChildItemHandler $childItemHandler)
     {
@@ -756,11 +763,12 @@ final class ItemController extends AbstractController
      *     methods={"PUT"}
      * )
      *
-     * @param Item          $item
-     * @param Request       $request
+     * @param Item $item
+     * @param Request $request
      * @param ChildItemHandler $childItemHandler
      *
      * @return FormInterface|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function updateChildItems(Item $item, Request $request, ChildItemHandler $childItemHandler)
     {
@@ -776,5 +784,112 @@ final class ItemController extends AbstractController
         $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
 
         return null;
+    }
+
+    /**
+     * Items collection
+     *
+     * @SWG\Tag(name="Item")
+     * @SWG\Response(
+     *     response=200,
+     *     description="Items collection",
+     * )
+     *
+     * @Route("/api/offered_item", methods={"GET"}, name="api_item_offered_list")
+     * @param ItemListViewFactory $viewFactory
+     * @return ItemView[]|array
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getList(ItemListViewFactory $viewFactory)
+    {
+        $user = $this->getUser();
+        $offeredItems = DirectoryHelper::extractOfferedItems($user);
+
+        return $viewFactory->create($offeredItems);
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=App\Form\Request\AcceptItemsType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Items accepted",
+     * )
+     *
+     * @Route("/api/accept_item", methods={"PATCH"}, name="api_item_accept")
+     *
+     * @param Request $request
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $entityManager
+     * @return null|FormInterface
+     */
+    public function acceptList(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManager)
+    {
+        /** @var ItemsCollectionRequest $itemsCollection */
+        $itemsCollection = $serializer->deserialize(json_encode($request->request->all()), ItemsCollectionRequest::class, 'json');
+
+        foreach ($itemsCollection->getItems() as $item) {
+            $item = $entityManager->getRepository(Item::class)->find($item['id']);
+            if ($item instanceof Item) {
+                $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+                $item->setStatus(Item::STATUS_FINISHED);
+            }
+        }
+        $entityManager->flush();
+
+        $offeredItems = DirectoryHelper::extractOfferedItems($this->getUser());
+        foreach ($offeredItems as $offeredItem) {
+            $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $offeredItem);
+            $entityManager->remove($offeredItem);
+        }
+
+        $entityManager->flush();
+
+        return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Parameter(
+     *     name="itemId",
+     *     in="query",
+     *     description="Id of item",
+     *     type="string"
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Item check"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="Shared item not found or expired"
+     * )
+     * @Route("api/anonymous/share/{item}/check", methods={"GET"})
+     * @param Item $item
+     * @return JsonResponse
+     */
+    public function checkSharedItem (Item $item)
+    {
+        $this->validateSharedItem($item);
+
+        return new JsonResponse(['id' => $item->getId()->toString()]);
+    }
+
+    private function validateSharedItem(Item $item)
+    {
+        $lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
+        $today = strtotime("today midnight");
+        $expire = strtotime($lastUpdated . Item::EXPIRATION_INTERVAL);
+        if (
+            Item::STATUS_FINISHED === $item->getStatus() ||
+            $today >= $expire
+        ) {
+            throw new NotFoundHttpException('Shared item not found or expired', null, Response::HTTP_NOT_FOUND);
+        }
     }
 }

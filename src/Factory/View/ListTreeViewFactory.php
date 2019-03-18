@@ -6,6 +6,7 @@ namespace App\Factory\View;
 
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
+use App\Entity\Item;
 use App\Entity\User;
 use App\Model\View\CredentialsList\ListView;
 
@@ -67,7 +68,7 @@ class ListTreeViewFactory
     {
         return array_merge(
             array_map([$this, 'createListView'], $directory->getChildLists()->toArray()),
-            array_map([$this->itemViewFactory, 'create'], $directory->getChildItems()->toArray())
+            array_map([$this->itemViewFactory, 'create'], $directory->getChildItems(Item::STATUS_FINISHED))
         );
     }
 }

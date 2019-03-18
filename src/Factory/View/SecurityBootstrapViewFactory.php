@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Factory\View;
 
 
+use App\Entity\Directory;
 use App\Entity\Fingerprint;
+use App\Entity\Item;
 use App\Entity\User;
 use App\Model\View\User\SecurityBootstrapView;
+use App\Repository\ItemRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Security\Fingerprint\FingerprintManager;
 use App\Security\Voter\TwoFactorInProgressVoter;
+use App\Utils\DirectoryHelper;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use Symfony\Component\Security\Core\Security;
@@ -162,12 +166,13 @@ class SecurityBootstrapViewFactory
 
     private function getSharedItemsStepState(User $user): string
     {
+
         switch (true) {
             case $this->authorizationManager->hasInvitation($user) && SecurityBootstrapView::STATE_CREATE === $this->getMasterPasswordState($user):
                 $state = SecurityBootstrapView::STATE_CHECK;
                 break;
             case $user->isFullUser():
-                $state = $user->getItemMasks()->count() ? SecurityBootstrapView::STATE_CHECK : SecurityBootstrapView::STATE_SKIP;
+                $state = DirectoryHelper::hasOfferedItems($user) ? SecurityBootstrapView::STATE_CHECK : SecurityBootstrapView::STATE_SKIP;
                 break;
             default:
                 $state = SecurityBootstrapView::STATE_SKIP;
@@ -175,5 +180,4 @@ class SecurityBootstrapViewFactory
 
         return $state;
     }
-
 }

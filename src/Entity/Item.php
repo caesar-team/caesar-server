@@ -21,6 +21,10 @@ class Item implements ChildItemAwareInterface
 {
     const CAUSE_INVITE = 'invite';
     const CAUSE_SHARE = 'share';
+    const STATUS_FINISHED = 'finished';
+    const STATUS_OFFERED = 'offered';
+    const STATUS_DEFAULT = self::STATUS_FINISHED;
+    const EXPIRATION_INTERVAL = '+ 1 day';
     /**
      * @var UuidInterface
      *
@@ -120,6 +124,12 @@ class Item implements ChildItemAwareInterface
      * @ORM\Column(type="string", length=10, nullable=true, options={"default"="invite"})
      */
     protected $cause;
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", nullable=false, options={"default"="finished"}, length=10)
+     */
+    protected $status = self::STATUS_DEFAULT;
 
     /**
      * Item constructor.
@@ -351,4 +361,19 @@ class Item implements ChildItemAwareInterface
         $this->cause = $cause;
     }
 
+    /**
+     * @return string
+     */
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param string $status
+     */
+    public function setStatus(?string $status): void
+    {
+        $this->status = $status;
+    }
 }
