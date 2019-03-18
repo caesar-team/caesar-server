@@ -38,6 +38,7 @@ final class Version20190318115912 extends AbstractMigration
         $itemMaskTable->addColumn('cause', 'string', [
             'length' => 10,
             'notnull' => false,
+            'default' => 'invite',
         ]);
     }
 

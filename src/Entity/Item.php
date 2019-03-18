@@ -121,7 +121,7 @@ class Item
     protected $link;
     /**
      * @var string|null
-     * @ORM\Column(type="string", length=10, nullable=true)
+     * @ORM\Column(type="string", length=10, nullable=true, options={"default"="invite"})
      */
     protected $cause;
 
