@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Form\Request\Invite;
 
+use App\Entity\ItemMask;
 use App\Entity\User;
 use App\Model\Request\ChildItem;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -30,7 +32,18 @@ class SecretType extends AbstractType
                 'constraints' => [
                     new NotBlank(),
                 ],
-            ]);
+            ])
+            ->add('cause', ChoiceType::class, [
+                'constraints' => [
+                    new NotBlank(),
+                ],
+                'choices' => [
+                    ItemMask::CAUSE_INVITE => ItemMask::CAUSE_INVITE,
+                    ItemMask::CAUSE_SHARE => ItemMask::CAUSE_SHARE,
+                ]
+            ])
+            ->add('link', TextType::class)
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver)

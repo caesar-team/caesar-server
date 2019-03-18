@@ -103,10 +103,11 @@ final class ItemController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param Request             $request
+     * @param Request $request
      * @param ItemListViewFactory $viewFactory
      *
      * @return ItemView[]|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function itemListAction(Request $request, ItemListViewFactory $viewFactory)
     {
@@ -152,10 +153,11 @@ final class ItemController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param Item            $item
+     * @param Item $item
      * @param ItemViewFactory $factory
      *
      * @return ItemView
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function itemShowAction(Item $item, ItemViewFactory $factory)
     {
@@ -204,11 +206,12 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                $request
+     * @param Request $request
      * @param EntityManagerInterface $manager
      * @param CreatedItemViewFactory $viewFactory
      *
      * @return CreatedItemView|FormInterface
+     * @throws \Exception
      */
     public function createItemAction(Request $request, EntityManagerInterface $manager, CreatedItemViewFactory $viewFactory)
     {
@@ -472,6 +475,7 @@ final class ItemController extends AbstractController
      * @param ItemListViewFactory $viewFactory
      *
      * @return ItemView[]|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function favorite(ItemListViewFactory $viewFactory)
     {

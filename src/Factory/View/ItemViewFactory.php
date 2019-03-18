@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace App\Factory\View;
 
-use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
-use App\Entity\Share;
-use App\Entity\User;
 use App\Model\View\CredentialsList\InviteView;
 use App\Model\View\CredentialsList\ItemView;
-use App\Model\View\CredentialsList\ShareView;
 use App\Model\View\CredentialsList\UpdateView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
@@ -43,7 +39,7 @@ class ItemViewFactory
 
         $view->secret = $item->getSecret();
         $view->invited = $this->getInvitesCollection($item);
-        $view->shared = $this->getSharesCollection($item);
+        $view->shared = [];
         $view->update = $this->getUpdateView($item->getUpdate());
         $view->owner = $this->getOwner($item);
         $view->favorite = $item->isFavorite();
@@ -52,6 +48,11 @@ class ItemViewFactory
         return $view;
     }
 
+    /**
+     * @param Item $item
+     * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     protected function getInvitesCollection(Item $item)
     {
         $ownerItem = $item;
@@ -104,44 +105,5 @@ class ItemViewFactory
         $view->secret = $update->getSecret();
 
         return $view;
-    }
-
-    /**
-     * @param Item $item
-     * @return array|ShareView
-     */
-    private function getSharesCollection(Item $item): array
-    {
-        $shares = [];
-        foreach ($item->getExternalSharedItems() as $shareItem) {
-            $shareView = new ShareView();
-            $share = $shareItem->getShare();
-            $user = $share->getUser();
-            $shareView->userId = $user->getId();
-            $shareView->email = $user->getEmail();
-            $shareView->roles = $user->getRoles();
-            $shareView->id = $share->getId();
-            $shareView->link = $share->getLink();
-            $shareView->status = $this->getStatus($share);
-            $shareView->updatedAt = $share->getUpdatedAt();
-            $shareView->createdAt = $share->getCreatedAt();
-            $shareView->publicKey = $user->getPublicKey();
-            $shareView->setLeft(new \DateTime());
-            $shares[] = $shareView;
-        }
-
-        return $shares;
-    }
-
-    private function getStatus(Share $share): string
-    {
-        switch (true) {
-            case $share->getUser()->getLastLogin():
-                $status = Share::STATUS_ACCEPTED;
-                break;
-            default:
-                $status = Share::STATUS_WAITING;
-        }
-        return $status;
     }
 }

@@ -30,7 +30,7 @@ class ItemView extends NodeView
     public $invited;
 
     /**
-     * @var ShareView[]
+     * @var InviteView[]
      */
     public $shared;
 

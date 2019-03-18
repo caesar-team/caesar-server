@@ -115,6 +115,17 @@ class Item
     protected $itemMasks;
 
     /**
+     * @var string|null
+     * @ORM\Column(type="string", length=510, nullable=true)
+     */
+    protected $link;
+    /**
+     * @var string|null
+     * @ORM\Column(type="string", length=10, nullable=true)
+     */
+    protected $cause;
+
+    /**
      * Item constructor.
      * @throws \Exception
      */
@@ -339,4 +350,37 @@ class Item
     {
         $this->itemMasks = $itemMasks;
     }
+
+    /**
+     * @return null|string
+     */
+    public function getLink(): ?string
+    {
+        return $this->link;
+    }
+
+    /**
+     * @param null|string $link
+     */
+    public function setLink(?string $link): void
+    {
+        $this->link = $link;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getCause(): ?string
+    {
+        return $this->cause;
+    }
+
+    /**
+     * @param null|string $cause
+     */
+    public function setCause(?string $cause): void
+    {
+        $this->cause = $cause;
+    }
+
 }

@@ -17,6 +17,8 @@ class ItemMask
 {
     use TimestampableEntity;
 
+    const CAUSE_INVITE = 'invite';
+    const CAUSE_SHARE = 'share';
     /**
      * @var UuidInterface
      *
@@ -52,6 +54,16 @@ class ItemMask
      * @ORM\Column(type="AccessEnumType", nullable=false)
      */
     protected $access;
+    /**
+     * @var string|null
+     * @ORM\Column(type="string", length=510, nullable=true)
+     */
+    protected $link;
+    /**
+     * @var string|null
+     * @ORM\Column(type="string", length=10, nullable=true, options={"default"="invite"})
+     */
+    protected $cause = self::CAUSE_INVITE;
 
     /**
      * ItemMask constructor.
@@ -132,5 +144,37 @@ class ItemMask
     public function setAccess(string $access): void
     {
         $this->access = $access;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getCause(): ?string
+    {
+        return $this->cause;
+    }
+
+    /**
+     * @param null|string $cause
+     */
+    public function setCause(?string $cause): void
+    {
+        $this->cause = $cause;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getLink(): ?string
+    {
+        return $this->link;
+    }
+
+    /**
+     * @param null|string $link
+     */
+    public function setLink(?string $link): void
+    {
+        $this->link = $link;
     }
 }

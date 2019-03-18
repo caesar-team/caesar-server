@@ -113,6 +113,8 @@ class ChildItemHandler
             $mask->setRecipient($invite->getUser());
             $mask->setSecret($invite->getSecret());
             $mask->setAccess($invite->getAccess());
+            $mask->setCause($invite->getCause());
+            $mask->setLink($invite->getLink());
 
             $this->entityManager->persist($mask);
             $this->sendInvitationMessage($mask, $url);
