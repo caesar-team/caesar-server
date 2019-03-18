@@ -22,6 +22,7 @@ class UserGroup
     const USER_ROLE_MEMBER = 'member';
     const USER_ROLE_ADMIN = 'admin';
     const USER_ROLE_GUEST = 'guest';
+    const USER_ROLE_PRETENDER = 'pretender';
     /**
      * @var UuidInterface
      *

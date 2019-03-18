@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Request\Invite;
 
-use App\Model\Request\InviteCollectionRequest;
+use App\Model\Request\ItemCollectionRequest;
 use App\Repository\UserRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -15,7 +15,7 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class InviteCollectionRequestType extends AbstractType
+class ChildItemCollectionRequestType extends AbstractType
 {
     /**
      * @var UserRepository
@@ -31,7 +31,7 @@ class InviteCollectionRequestType extends AbstractType
     {
         parent::buildForm($builder, $options);
         $builder
-            ->add('invites', CollectionType::class, [
+            ->add('items', CollectionType::class, [
                 'constraints' => [
                     new NotBlank(),
                 ],
@@ -39,17 +39,21 @@ class InviteCollectionRequestType extends AbstractType
                 'entry_type' => InviteType::class,
             ]);
 
-        $builder->addEventListener(FormEvents::SUBMIT, [$this, 'validateInvites']);
+        $builder->addEventListener(FormEvents::SUBMIT, [$this, 'validateChildItems']);
     }
 
-    public function validateInvites(FormEvent $event)
+    /**
+     * @param FormEvent $event
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function validateChildItems(FormEvent $event)
     {
-        /** @var InviteCollectionRequest $request */
+        /** @var ItemCollectionRequest $request */
         $request = $event->getData();
         $form = $event->getForm();
 
-        $parentItem = $request->getItem();
-        foreach ($request->getInvites() as $invite) {
+        $parentItem = $request->getOriginalItem();
+        foreach ($request->getItems() as $invite) {
             foreach ($parentItem->getSharedItems() as $sharedItem) {
                 $owner = $this->userRepository->getByItem($sharedItem);
 
@@ -66,7 +70,7 @@ class InviteCollectionRequestType extends AbstractType
     {
         parent::configureOptions($resolver);
         $resolver->setDefaults([
-            'data_class' => InviteCollectionRequest::class,
+            'data_class' => ItemCollectionRequest::class,
         ]);
     }
 }

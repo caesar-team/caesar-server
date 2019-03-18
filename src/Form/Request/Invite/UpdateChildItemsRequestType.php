@@ -4,40 +4,37 @@ declare(strict_types=1);
 
 namespace App\Form\Request\Invite;
 
-use App\Entity\User;
-use App\Model\Request\ChildItem;
+use App\Entity\Item;
+use App\Model\Request\ItemCollectionRequest;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class UpdateInviteType extends AbstractType
+class UpdateChildItemsRequestType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        parent::buildForm($builder, $options);
         $builder
-            ->add('userId', EntityType::class, [
-                'property_path' => 'user',
-                'class' => User::class,
-                'constraints' => [
-                    new NotBlank(),
-                ],
+            ->add('originalItem', EntityType::class, [
+                'class' => Item::class,
+                'empty_data' => $builder->getData() ? $builder->getData()->getOriginalItem()->getId()->toString() : null
             ])
-            ->add('secret', TextType::class, [
+            ->add('items', CollectionType::class, [
                 'constraints' => [
                     new NotBlank(),
                 ],
+                'allow_add' => true,
+                'entry_type' => SecretType::class,
             ]);
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        parent::configureOptions($resolver);
         $resolver->setDefaults([
-            'data_class' => ChildItem::class,
+            'data_class' => ItemCollectionRequest::class,
         ]);
     }
 }

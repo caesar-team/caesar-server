@@ -13,6 +13,7 @@ use App\Form\Request\Srp\RegistrationType;
 use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
+use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Security\PasswordRecoveryManager;
 use App\Services\GroupManager;
 use App\Services\SrpHandler;
@@ -79,27 +80,35 @@ final class SrpController extends AbstractController
      * )
      *
      * @param Request $request
-     * @param UserManagerInterface $manager
+     * @param UserManagerInterface $userManager
      *
      * @param GroupManager $groupManager
+     * @param AuthorizationManager $authorizationManager
      * @return null
      * @throws \Exception
      */
-    public function registerAction(Request $request, UserManagerInterface $manager, GroupManager $groupManager)
+    public function registerAction(
+        Request $request,
+        UserManagerInterface $userManager,
+        GroupManager $groupManager,
+        AuthorizationManager $authorizationManager
+    )
     {
-        $user = new User(new Srp());
+        /** @var User $user */
+        $user = $authorizationManager->findUserByInvitation($request->request->get('email'));
+        $user = $user && $user->getSrp() ? $user : new User(new Srp());
 
-        $form = $this->createForm(RegistrationType::class, $user); //TODO email confirmation
+        $form = $this->createForm(RegistrationType::class, $user);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        if (!$user->hasRole(User::ROLE_ANONYMOUS_USER)) {
+        if ($user->isFullUser()) {
             $groupManager->addGroupToUser($user);
         }
 
-        $manager->updateUser($user);
+        $userManager->updateUser($user);
 
         return null;
     }

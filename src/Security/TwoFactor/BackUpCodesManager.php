@@ -6,9 +6,10 @@ declare(strict_types=1);
 namespace App\Security\TwoFactor;
 
 use App\Entity\User;
+use App\Utils\HashidsEncoderInterface;
 use Hashids\Hashids;
 
-class BackUpCodesManager
+class BackUpCodesManager implements HashidsEncoderInterface
 {
     const CODES_COUNT = 20;
 
@@ -28,7 +29,7 @@ class BackUpCodesManager
         $user->setBackupCodes($codes);
     }
 
-    static public function initEncoder()
+    static public function initEncoder(): Hashids
     {
         return new Hashids(getenv('BACKUP_CODE_SALT'), getenv('BACKUP_CODE_HASH_LENGTH'));
     }

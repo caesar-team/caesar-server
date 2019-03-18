@@ -184,6 +184,13 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $userGroups;
 
     /**
+     * @var ItemMask[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="ItemMask", mappedBy="recipient", orphanRemoval=true)
+     */
+    private $itemMasks;
+
+    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -200,6 +207,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->userGroups = new ArrayCollection();
         $this->availableShares = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
+        $this->itemMasks = new ArrayCollection();
         if (null !== $srp) {
             $this->srp = $srp;
         }
@@ -527,5 +535,36 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setUserGroups($userGroups): void
     {
         $this->userGroups = $userGroups;
+    }
+
+    /**
+     * @return Collection|ItemMask[]
+     */
+    public function getItemMasks(): Collection
+    {
+        return $this->itemMasks;
+    }
+
+    public function addItemMask(ItemMask $itemMask): void
+    {
+        if (!$this->itemMasks->contains($itemMask)) {
+            $this->itemMasks->add($itemMask);
+            $itemMask->setRecipient($this);
+        }
+    }
+
+    public function removeItemMask(ItemMask $itemMask): void
+    {
+        $this->itemMasks->removeElement($itemMask);
+    }
+
+    public function setItemMasks($itemMasks): void
+    {
+        $this->itemMasks = $itemMasks;
+    }
+
+    public function isFullUser(): bool
+    {
+        return !$this->hasRole(self::ROLE_ANONYMOUS_USER) && !$this->hasRole(self::ROLE_READ_ONLY_USER) ;
     }
 }

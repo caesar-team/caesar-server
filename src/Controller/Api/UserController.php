@@ -4,39 +4,42 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Entity\Security\Invitation;
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Entity\UserGroup;
 use App\Factory\View\SecurityBootstrapViewFactory;
 use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
 use App\Factory\View\UserListViewFactory;
 use App\Factory\View\UserSecurityInfoViewFactory;
 use App\Form\Query\UserQueryType;
-use App\Form\Request\CreateUserType;
+use App\Form\Request\CreateInvitedUserType;
 use App\Form\Request\SaveKeysType;
+use App\Form\Request\SendInvitesType;
+use App\Form\Request\SendInviteType;
+use App\Mailer\MailRegistry;
 use App\Model\Query\UserQuery;
-use App\Model\View\User\SecurityBootstrapView;
+use App\Model\Request\SendInviteRequest;
+use App\Model\Request\SendInviteRequests;
 use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
-use App\Model\View\User\UserSecurityInfoView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
+use App\Security\AuthorizationManager\InvitationEncoder;
 use App\Services\GroupManager;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
+use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\SerializerInterface;
 
 final class UserController extends AbstractController
 {
@@ -206,12 +209,14 @@ final class UserController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                $request
+     * @param Request $request
      * @param EntityManagerInterface $entityManager
      *
+     * @param GroupManager $groupManager
      * @return FormInterface|null
+     * @throws \Exception
      */
-    public function saveKeysAction(Request $request, EntityManagerInterface $entityManager)
+    public function saveKeysAction(Request $request, EntityManagerInterface $entityManager, GroupManager $groupManager)
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -231,6 +236,11 @@ final class UserController extends AbstractController
             $this->setFlowStatusByPrivateKeys($oldUser, $user);
         }
 
+        if ($user->isFullUser()) {
+            $this->removeInvitation($user, $entityManager);
+            $groupManager->addGroupToUser($user);
+        }
+
         $entityManager->flush();
 
         return null;
@@ -242,7 +252,7 @@ final class UserController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\CreateUserType::class)
+     *     @Model(type=\App\Form\Request\CreateInvitedUserType::class)
      * )
      * @SWG\Response(
      *     response=200,
@@ -290,14 +300,17 @@ final class UserController extends AbstractController
             throw new BadRequestHttpException('User already exists');
         }
 
-        $form = $this->createForm(CreateUserType::class, $user);
+        $form = $this->createForm(CreateInvitedUserType::class, $user);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        if (!$user->hasRole(User::ROLE_ANONYMOUS_USER)) {
-            $groupManager->addGroupToUser($user);
+        if ($user->isFullUser()) {
+            $groupManager->addGroupToUser($user, UserGroup::USER_ROLE_PRETENDER);
+            $invitation = new Invitation();
+            $invitation->setHash($user->getEmail());
+            $entityManager->persist($invitation);
         }
 
         $entityManager->persist($user);
@@ -363,6 +376,7 @@ final class UserController extends AbstractController
      *
      * @param SecurityBootstrapViewFactory $bootstrapViewFactory
      * @return JsonResponse
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
      */
     public function bootstrap(SecurityBootstrapViewFactory $bootstrapViewFactory): JsonResponse
     {
@@ -370,6 +384,101 @@ final class UserController extends AbstractController
         $user = $this->getUser();
 
         return new JsonResponse($bootstrapViewFactory->create($user));
+    }
+
+    /**
+     * @SWG\Tag(name="Invitation")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type="\App\Form\Request\SendInviteType")
+     * )
+     * @SWG\Response(
+     *     response=201,
+     *     description="Success message sent"
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns send mail errors",
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     "/api/invitation",
+     *     name="api_send_invitation",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Request         $request
+     * @param SenderInterface $sender
+     *
+     * @return FormInterface
+     */
+    public function sendInvitation(Request $request, SenderInterface $sender)
+    {
+        $sendRequest = new SendInviteRequest();
+
+        $form = $this->createForm(SendInviteType::class, $sendRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $sender->send(MailRegistry::INVITE_SEND_MESSAGE, [$sendRequest->getUser()->getEmail()], [
+            'url' => $sendRequest->getUrl(),
+        ]);
+
+        return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Invitation")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type="\App\Form\Request\SendInvitesType")
+     * )
+     * @SWG\Response(
+     *     response=201,
+     *     description="Success message sent"
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns send mail errors",
+     * )
+     *
+     * @Route(
+     *     "/api/invitations",
+     *     name="api_send_invitations",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Request $request
+     * @param SenderInterface $sender
+     * @return null|FormInterface
+     */
+    public function sendInvitations(Request $request, SenderInterface $sender)
+    {
+        $sendRequests = new SendInviteRequests();
+
+        $form = $this->createForm(SendInvitesType::class, $sendRequests);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        foreach ($sendRequests->getMessages() as $message) {
+            $sender->send(MailRegistry::INVITE_SEND_MESSAGE, [$message->getUser()->getEmail()], [
+                'url' => $message->getUrl(),
+            ]);
+        }
+
+        return null;
     }
 
     private function setFlowStatus(string $currentFlowStatus): string
@@ -385,6 +494,15 @@ final class UserController extends AbstractController
     {
         if ($oldUser['encryptedPrivateKey'] !== $user->getEncryptedPrivateKey()) {
             $user->setFlowStatus($this->setFlowStatus($user->getFlowStatus()));
+        }
+    }
+
+    private function removeInvitation(User $user, EntityManagerInterface $entityManager)
+    {
+        $hash = (InvitationEncoder::initEncoder())->encode($user->getEmail());
+        $invitation = $entityManager->getRepository(Invitation::class)->findOneBy(['hash' => $hash]);
+        if ($invitation) {
+            $entityManager->remove($invitation);
         }
     }
 }

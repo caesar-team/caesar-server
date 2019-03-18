@@ -8,6 +8,7 @@ namespace App\Factory\View;
 use App\Entity\Fingerprint;
 use App\Entity\User;
 use App\Model\View\User\SecurityBootstrapView;
+use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Security\Fingerprint\FingerprintManager;
 use App\Security\Voter\TwoFactorInProgressVoter;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
@@ -28,20 +29,36 @@ class SecurityBootstrapViewFactory
      * @var JWTEncoderInterface
      */
     private $encoder;
+    /**
+     * @var AuthorizationManager
+     */
+    private $authorizationManager;
 
-    public function __construct(FingerprintManager $fingerprintManager, Security $security, JWTEncoderInterface $encoder)
+    public function __construct(
+        FingerprintManager $fingerprintManager,
+        Security $security,
+        JWTEncoderInterface $encoder,
+        AuthorizationManager $authorizationManager
+    )
     {
         $this->fingerprintManager = $fingerprintManager;
         $this->security = $security;
         $this->encoder = $encoder;
+        $this->authorizationManager = $authorizationManager;
     }
 
+    /**
+     * @param User $user
+     * @return SecurityBootstrapView
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     */
     public function create(User $user):SecurityBootstrapView
     {
         $securityBootstrapView = new SecurityBootstrapView();
         $securityBootstrapView->twoFactorAuthState = $this->getTwoFactorAuthState($user);
         $securityBootstrapView->passwordState = $this->getPasswordState($user);
         $securityBootstrapView->masterPasswordState = $this->getMasterPasswordState($user);
+        $securityBootstrapView->sharedItemsState = $this->getSharedItemsStepState($user);
 
         return $securityBootstrapView;
     }
@@ -92,6 +109,9 @@ class SecurityBootstrapViewFactory
             case $user->hasRole(User::ROLE_READ_ONLY_USER):
                 $state = User::FLOW_STATUS_CHANGE_PASSWORD === $user->getFlowStatus() ? SecurityBootstrapView::STATE_CHANGE : SecurityBootstrapView::STATE_SKIP;
                 break;
+            case $user->isFullUser() && $this->authorizationManager->hasInvitation($user):
+                $state = SecurityBootstrapView::STATE_CHANGE;
+                break;
             default:
                 $state = SecurityBootstrapView::STATE_SKIP;
         }
@@ -111,6 +131,9 @@ class SecurityBootstrapViewFactory
                 break;
             case $user->hasRole(User::ROLE_ANONYMOUS_USER):
                 $state = SecurityBootstrapView::STATE_CHECK;
+                break;
+            case $user->isFullUser() && $this->authorizationManager->hasInvitation($user):
+                $state = SecurityBootstrapView::STATE_CREATE ;
                 break;
             default:
                 $state = is_null($user->getEncryptedPrivateKey()) ? SecurityBootstrapView::STATE_CREATE : SecurityBootstrapView::STATE_CHECK;
@@ -136,4 +159,18 @@ class SecurityBootstrapViewFactory
 
         return false;
     }
+
+    private function getSharedItemsStepState(User $user): string
+    {
+        switch (true) {
+            case $this->authorizationManager->hasInvitation($user) && SecurityBootstrapView::STATE_CREATE === $this->getMasterPasswordState($user):
+                $state = SecurityBootstrapView::STATE_CHECK;
+                break;
+            default:
+                $state = SecurityBootstrapView::STATE_SKIP;
+        }
+
+        return $state;
+    }
+
 }

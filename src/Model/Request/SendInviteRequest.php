@@ -6,7 +6,7 @@ namespace App\Model\Request;
 
 use App\Entity\User;
 
-final class SendMessageRequest
+final class SendInviteRequest
 {
     /**
      * @var User

@@ -114,6 +114,12 @@ spec:
               key: CAESAR_APP_ABSOLUTE_PATH
               name: caesarapp-server
               optional: false
+        - name: INVITATION_SALT
+          valueFrom:
+            secretKeyRef:
+              key: INVITATION_SALT
+              name: caesarapp-server
+              optional: false
         image: caesarteam/caesar-server:${CICD_GIT_BRANCH}
         imagePullPolicy: Always
         name: caesarapp-server

@@ -13,14 +13,21 @@ use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemType;
+use App\Form\Request\Invite\BatchUpdateChildItemsRequestType;
+use App\Form\Request\Invite\ChildItemCollectionRequestType;
+use App\Form\Request\Invite\UpdateChildItemsRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
 use App\Model\Query\ItemListQuery;
+use App\Model\Request\BatchChildItemsCollectionRequest;
+use App\Model\Request\ItemCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
+use App\Security\ChildItemVoter;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
+use App\Services\ChildItemHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -573,5 +580,196 @@ final class ItemController extends AbstractController
         $entityManager->flush();
 
         return $factory->create($item);
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=App\Form\Request\Invite\ChildItemCollectionRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success item shared",
+     *     @Model(type=App\Model\View\CredentialsList\ItemView::class)
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns item share error",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="object",
+     *             property="errors",
+     *             @SWG\Property(
+     *                 type="array",
+     *                 property="userId",
+     *                 @SWG\Items(
+     *                     type="string",
+     *                     example="This value is not valid"
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not owner of item"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such item"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/{id}/child_item",
+     *     name="api_child_to_item",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Item $item
+     * @param Request $request
+     * @param ChildItemHandler $childItemHandler
+     *
+     * @param ItemViewFactory $viewFactory
+     * @return ItemView|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Exception
+     */
+    public function childItemToItem(Item $item, Request $request, ChildItemHandler $childItemHandler, ItemViewFactory $viewFactory)
+    {
+        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+
+        $itemCollectionRequest = new ItemCollectionRequest($item);
+        $form = $this->createForm(ChildItemCollectionRequestType::class, $itemCollectionRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $childItemHandler->createMasks($itemCollectionRequest);
+
+        return $viewFactory->create($item);
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=App\Form\Request\Invite\BatchUpdateChildItemsRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success items updated"
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns item share error"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/batch",
+     *     name="api_item_batch_update",
+     *     methods={"PUT"}
+     * )
+     * @param Request $request
+     * @param ChildItemHandler $childItemHandler
+     * @return null|FormInterface
+     */
+    public function batchUpdateChildItems(Request $request, ChildItemHandler $childItemHandler)
+    {
+        $batchChildItemsCollectionRequest = new BatchChildItemsCollectionRequest();
+        $form = $this->createForm(BatchUpdateChildItemsRequestType::class, $batchChildItemsCollectionRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+        foreach ($batchChildItemsCollectionRequest->getCollectionItems() as $itemCollectionRequest) {
+            $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $itemCollectionRequest->getOriginalItem());
+            $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
+        }
+
+        return null;
+    }
+
+    /**
+     * Update item with children
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=App\Form\Request\Invite\UpdateChildItemsRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success item updated"
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns item share error",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="object",
+     *             property="errors",
+     *             @SWG\Property(
+     *                 type="array",
+     *                 property="userId",
+     *                 @SWG\Items(
+     *                     type="string",
+     *                     example="This value is not valid"
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not owner of item"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such item"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/{id}",
+     *     name="api_item_update",
+     *     methods={"PUT"}
+     * )
+     *
+     * @param Item          $item
+     * @param Request       $request
+     * @param ChildItemHandler $childItemHandler
+     *
+     * @return FormInterface|null
+     */
+    public function updateChildItems(Item $item, Request $request, ChildItemHandler $childItemHandler)
+    {
+        $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $item);
+
+        $itemCollectionRequest = new ItemCollectionRequest($item);
+        $form = $this->createForm(UpdateChildItemsRequestType::class, $itemCollectionRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
+
+        return null;
     }
 }

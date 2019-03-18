@@ -114,6 +114,17 @@ class Item
      */
     protected $sort = 0;
 
+    /**
+     * @var ItemMask[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="ItemMask", mappedBy="originalItem", orphanRemoval=true)
+     */
+    protected $itemMasks;
+
+    /**
+     * Item constructor.
+     * @throws \Exception
+     */
     public function __construct()
     {
         $this->id = Uuid::uuid4();
@@ -122,6 +133,7 @@ class Item
         $this->sharedItems = new ArrayCollection();
         $this->externalSharedItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
+        $this->itemMasks = new ArrayCollection();
     }
 
     /**
@@ -331,5 +343,32 @@ class Item
     public function setSort(int $sort): void
     {
         $this->sort = $sort;
+    }
+
+
+    /**
+     * @return Collection|ItemMask[]
+     */
+    public function getItemMasks(): Collection
+    {
+        return $this->itemMasks;
+    }
+
+    public function addItemMask(ItemMask $itemMask): void
+    {
+        if (!$this->itemMasks->contains($itemMask)) {
+            $this->itemMasks->add($itemMask);
+            $itemMask->setOriginalItem($this);
+        }
+    }
+
+    public function removeItemMask(ItemMask $itemMask): void
+    {
+        $this->itemMasks->removeElement($itemMask);
+    }
+
+    public function setItemMasks($itemMasks): void
+    {
+        $this->itemMasks = $itemMasks;
     }
 }

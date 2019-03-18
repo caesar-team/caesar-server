@@ -16,7 +16,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class CreateUserType extends AbstractType
+class CreateInvitedUserType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -69,13 +69,8 @@ class CreateUserType extends AbstractType
         /** @var User $user */
         $user = $event->getData();
         $user->setUsername($user->getEmail());
+        $this->setFlowStatus($user);
         $user->setEnabled(true);
-        if ($user->hasRole(User::ROLE_READ_ONLY_USER)) {
-            $user->setFlowStatus(User::FLOW_STATUS_CHANGE_PASSWORD);
-        }
-        if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
-            $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
-        }
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -83,5 +78,15 @@ class CreateUserType extends AbstractType
         $resolver->setDefaults([
             'data_class' => User::class,
         ]);
+    }
+
+    private function setFlowStatus(User $user)
+    {
+        if ($user->hasRole(User::ROLE_READ_ONLY_USER)) {
+            $user->setFlowStatus(User::FLOW_STATUS_CHANGE_PASSWORD);
+        }
+        if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
+            $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
+        }
     }
 }
