@@ -70,13 +70,6 @@ class Item
     protected $sharedItems;
 
     /**
-     * @var ShareItem[]|Collection
-     *
-     * @ORM\OneToMany(targetEntity="App\Entity\ShareItem", mappedBy="item", orphanRemoval=true)
-     */
-    protected $externalSharedItems;
-
-    /**
      * @var bool
      *
      * @ORM\Column(type="boolean", options={"default": false})
@@ -131,7 +124,6 @@ class Item
         $this->originalItem = null;
         $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedItems = new ArrayCollection();
-        $this->externalSharedItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
         $this->itemMasks = new ArrayCollection();
     }
@@ -255,30 +247,6 @@ class Item
     public function setType(string $type): void
     {
         $this->type = $type;
-    }
-
-    /**
-     * @return ShareItem[]|Collection
-     */
-    public function getExternalSharedItems(): Collection
-    {
-        return $this->externalSharedItems;
-    }
-
-    /**
-     * @param ShareItem[]|Collection $externalSharedItems
-     */
-    public function setExternalSharedItems(Collection $externalSharedItems): void
-    {
-        $this->externalSharedItems = $externalSharedItems;
-    }
-
-    public function addExternalShareItem(ShareItem $shareItem): void
-    {
-        if (!$this->externalSharedItems->contains($shareItem)) {
-            $this->externalSharedItems->add($shareItem);
-            $shareItem->setItem($this);
-        }
     }
 
     /**
