@@ -10,7 +10,6 @@ use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
 use App\Factory\View\ItemViewFactory;
 use App\Factory\View\ListTreeViewFactory;
-use App\Factory\View\Share\ItemMaskViewFactory;
 use App\Form\Query\ItemListQueryType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemType;
@@ -599,7 +598,7 @@ final class ItemController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="Success item shared",
-     *     @Model(type=App\Model\View\Share\ItemMasksView::class, groups={"create_child_item"})
+     *     @Model(type=App\Model\View\CredentialsList\ItemView::class)
      * )
      * @SWG\Response(
      *     response=400,
@@ -644,11 +643,11 @@ final class ItemController extends AbstractController
      * @param Request $request
      * @param ChildItemHandler $childItemHandler
      *
-     * @param ItemMaskViewFactory $viewFactory
-     * @return \App\Model\View\Share\ItemMasksView|FormInterface
+     * @param ItemViewFactory $viewFactory
+     * @return ItemView|FormInterface
      * @throws \Exception
      */
-    public function childItemToItem(Item $item, Request $request, ChildItemHandler $childItemHandler, ItemMaskViewFactory $viewFactory)
+    public function childItemToItem(Item $item, Request $request, ChildItemHandler $childItemHandler, ItemViewFactory $viewFactory)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
@@ -659,9 +658,9 @@ final class ItemController extends AbstractController
             return $form;
         }
 
-        $items = $childItemHandler->createMasks($itemCollectionRequest);
+        $childItemHandler->childItemToItem($itemCollectionRequest);
 
-        return $viewFactory->create($items);
+        return $viewFactory->create($item);
     }
 
     /**

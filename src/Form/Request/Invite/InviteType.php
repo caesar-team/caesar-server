@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Form\Request\Invite;
 
 use App\DBAL\Types\Enum\AccessEnumType;
-use App\Entity\ItemMask;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 

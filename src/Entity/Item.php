@@ -19,6 +19,8 @@ use Ramsey\Uuid\UuidInterface;
  */
 class Item implements ChildItemAwareInterface
 {
+    const CAUSE_INVITE = 'invite';
+    const CAUSE_SHARE = 'share';
     /**
      * @var UuidInterface
      *
@@ -109,13 +111,6 @@ class Item implements ChildItemAwareInterface
     protected $sort = 0;
 
     /**
-     * @var ItemMask[]|Collection
-     *
-     * @ORM\OneToMany(targetEntity="ItemMask", mappedBy="originalItem", orphanRemoval=true)
-     */
-    protected $itemMasks;
-
-    /**
      * @var string|null
      * @ORM\Column(type="string", length=510, nullable=true)
      */
@@ -137,7 +132,6 @@ class Item implements ChildItemAwareInterface
         $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
-        $this->itemMasks = new ArrayCollection();
     }
 
     /**
@@ -323,33 +317,6 @@ class Item implements ChildItemAwareInterface
     public function setSort(int $sort): void
     {
         $this->sort = $sort;
-    }
-
-
-    /**
-     * @return Collection|ItemMask[]
-     */
-    public function getItemMasks(): Collection
-    {
-        return $this->itemMasks;
-    }
-
-    public function addItemMask(ItemMask $itemMask): void
-    {
-        if (!$this->itemMasks->contains($itemMask)) {
-            $this->itemMasks->add($itemMask);
-            $itemMask->setOriginalItem($this);
-        }
-    }
-
-    public function removeItemMask(ItemMask $itemMask): void
-    {
-        $this->itemMasks->removeElement($itemMask);
-    }
-
-    public function setItemMasks($itemMasks): void
-    {
-        $this->itemMasks = $itemMasks;
     }
 
     /**

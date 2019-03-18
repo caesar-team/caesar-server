@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Model\Request;
 
-use App\Entity\ItemMask;
+use App\Entity\Item;
 use App\Entity\User;
 
 class ChildItem
@@ -26,7 +26,7 @@ class ChildItem
     /**
      * @var string
      */
-    private $cause = ItemMask::CAUSE_INVITE;
+    private $cause = Item::CAUSE_INVITE;
     /**
      * @var string|null
      */

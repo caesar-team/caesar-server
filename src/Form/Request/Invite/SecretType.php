@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Request\Invite;
 
-use App\Entity\ItemMask;
+use App\Entity\Item;
 use App\Entity\User;
 use App\Model\Request\ChildItem;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -39,16 +39,16 @@ class SecretType extends AbstractType
                     new NotBlank(),
                     new Choice([
                         'choices' => [
-                            ItemMask::CAUSE_INVITE => ItemMask::CAUSE_INVITE,
-                            ItemMask::CAUSE_SHARE => ItemMask::CAUSE_SHARE,
+                            Item::CAUSE_INVITE => Item::CAUSE_INVITE,
+                            Item::CAUSE_SHARE => Item::CAUSE_SHARE,
                         ],
                     ]),
                 ],
                 'choices' => [
-                    ItemMask::CAUSE_INVITE => ItemMask::CAUSE_INVITE,
-                    ItemMask::CAUSE_SHARE => ItemMask::CAUSE_SHARE,
+                    Item::CAUSE_INVITE => Item::CAUSE_INVITE,
+                    Item::CAUSE_SHARE => Item::CAUSE_SHARE,
                 ],
-                'empty_data' => ItemMask::CAUSE_INVITE
+                'empty_data' => Item::CAUSE_INVITE
             ])
             ->add('link', TextType::class)
         ;
