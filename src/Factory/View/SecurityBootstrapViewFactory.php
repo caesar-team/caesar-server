@@ -166,6 +166,9 @@ class SecurityBootstrapViewFactory
             case $this->authorizationManager->hasInvitation($user) && SecurityBootstrapView::STATE_CREATE === $this->getMasterPasswordState($user):
                 $state = SecurityBootstrapView::STATE_CHECK;
                 break;
+            case $user->isFullUser():
+                $state = $user->getItemMasks()->count() ? SecurityBootstrapView::STATE_CHECK : SecurityBootstrapView::STATE_SKIP;
+                break;
             default:
                 $state = SecurityBootstrapView::STATE_SKIP;
         }

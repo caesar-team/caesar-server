@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace App\Factory\View\Share;
 
-
 use App\Entity\ItemMask;
 use App\Model\View\Share\ItemMasksView;
 use App\Model\View\Share\ItemMaskView;
