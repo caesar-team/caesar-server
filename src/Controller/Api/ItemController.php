@@ -659,9 +659,9 @@ final class ItemController extends AbstractController
             return $form;
         }
 
-        $childItemHandler->createMasks($itemCollectionRequest);
+        $items = $childItemHandler->createMasks($itemCollectionRequest);
 
-        return $viewFactory->create($itemCollectionRequest->getItems());
+        return $viewFactory->create($items);
     }
 
     /**

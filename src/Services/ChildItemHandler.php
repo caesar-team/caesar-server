@@ -107,6 +107,7 @@ class ChildItemHandler
     public function createMasks(ItemCollectionRequest $request)
     {
         $url = $this->router->generate('google_login', [], RouterInterface::ABSOLUTE_URL);
+        $masks = [];
         foreach ($request->getItems() as $invite) {
             $mask = new ItemMask();
             $mask->setOriginalItem($request->getOriginalItem());
@@ -118,9 +119,12 @@ class ChildItemHandler
 
             $this->entityManager->persist($mask);
             $this->sendInvitationMessage($mask, $url);
+            $masks[] = $mask;
         }
 
         $this->entityManager->flush();
+
+        return $masks;
     }
 
     private function sendInvitationMessage(ItemMask $mask, string $url)
