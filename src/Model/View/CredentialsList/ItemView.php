@@ -75,4 +75,8 @@ class ItemView extends NodeView
      * @var int
      */
     public $sort;
+    /**
+     * @var null|string
+     */
+    public $originalItemId;
 }

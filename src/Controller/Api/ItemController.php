@@ -676,7 +676,7 @@ final class ItemController extends AbstractController
      * @return ItemView[]|array
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getList(ItemListViewFactory $viewFactory)
+    public function getOfferedItemsList(ItemListViewFactory $viewFactory)
     {
         $user = $this->getUser();
         $offeredItems = DirectoryHelper::extractOfferedItems($user);

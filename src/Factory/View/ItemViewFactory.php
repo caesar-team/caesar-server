@@ -47,6 +47,7 @@ class ItemViewFactory
         $view->owner = $this->getOwner($item);
         $view->favorite = $item->isFavorite();
         $view->sort = $item->getSort();
+        $view->originalItemId = $item->getOriginalItem()->getId()->toString();
 
         return $view;
     }
