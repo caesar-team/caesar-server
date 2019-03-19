@@ -105,6 +105,10 @@ class ChildItemHandler
 
     private function sendInvitationMessage(ChildItem $childItem, string $url)
     {
+        if ($childItem->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)) {
+            return;
+        }
+
         try {
             $this->sender->send(MailRegistry::NEW_ITEM_MESSAGE, [$childItem->getUser()->getEmail()], [
                 'url' => $url,
