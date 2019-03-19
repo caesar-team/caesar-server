@@ -96,7 +96,7 @@ class ChildItemHandler
             /** @var User $user */
             [$item, $user] = $this->getItem($childItem->getUser(), $parentItem);
 
-            if ($currentOwner === $user || Item::CAUSE_SHARE === $childItem->getCause()) {
+            if ($currentOwner === $user || Item::CAUSE_SHARE === $item->getCause()) {
                 $item->setSecret($childItem->getSecret());
             } else {
                 $update = $this->extractUpdate($item, $currentOwner);
