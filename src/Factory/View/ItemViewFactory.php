@@ -6,6 +6,7 @@ namespace App\Factory\View;
 
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
+use App\Entity\User;
 use App\Model\View\CredentialsList\ChildItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
@@ -146,6 +147,7 @@ class ItemViewFactory
             $childItemView->lastUpdated = $item->getLastUpdated();
             $childItemView->access = $item->getAccess();
             $childItemView->link = $item->getLink();
+            $childItemView->isAccepted = User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
             $shares[] = $childItemView;
         }
 

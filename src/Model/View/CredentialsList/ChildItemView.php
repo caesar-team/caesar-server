@@ -50,4 +50,8 @@ class ChildItemView
      * @var string
      */
     public $link;
+    /**
+     * @var bool
+     */
+    public $isAccepted;
 }
