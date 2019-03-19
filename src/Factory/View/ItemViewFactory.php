@@ -63,21 +63,21 @@ class ItemViewFactory
             $ownerItem = $item->getOriginalItem();
         }
 
-        $invites = [];
+        $children = [];
         $sharedItems = $this->extractChildItemByCause($ownerItem->getSharedItems());
-        foreach ($sharedItems as $item) {
-            $user = $this->userRepository->getByItem($item);
+        foreach ($sharedItems as $childItem) {
+            $user = $this->userRepository->getByItem($childItem);
 
             $childItemView = new ChildItemView();
-            $childItemView->id = $item->getId()->toString();
+            $childItemView->id = $childItem->getId()->toString();
             $childItemView->userId = $user->getId()->toString();
             $childItemView->email = $user->getEmail();
-            $childItemView->lastUpdated = $item->getLastUpdated();
-            $childItemView->access = $item->getAccess();
-            $invites[] = $childItemView;
+            $childItemView->lastUpdated = $childItem->getLastUpdated();
+            $childItemView->access = $childItem->getAccess();
+            $children[] = $childItemView;
         }
 
-        return $invites;
+        return $children;
     }
 
     /**

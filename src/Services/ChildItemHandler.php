@@ -63,6 +63,7 @@ class ChildItemHandler
             $item->setSecret($childItem->getSecret());
             $item->setAccess($childItem->getAccess());
             $item->setType($request->getOriginalItem()->getType());
+            $item->setCause($childItem->getCause());
             $item->setStatus($this->getStatusByCause($childItem->getCause()));
 
             $this->entityManager->persist($item);
