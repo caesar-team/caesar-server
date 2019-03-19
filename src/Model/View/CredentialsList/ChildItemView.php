@@ -45,4 +45,9 @@ class ChildItemView
      * @SWG\Property(example="user@mail.com")
      */
     public $email;
+
+    /**
+     * @var string
+     */
+    public $link;
 }

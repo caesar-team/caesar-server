@@ -145,6 +145,7 @@ class ItemViewFactory
             $childItemView->email = $user->getEmail();
             $childItemView->lastUpdated = $item->getLastUpdated();
             $childItemView->access = $item->getAccess();
+            $childItemView->link = $item->getLink();
             $shares[] = $childItemView;
         }
 
