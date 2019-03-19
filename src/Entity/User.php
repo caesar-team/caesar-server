@@ -52,20 +52,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $googleId;
 
     /**
-     * @var Share[]|Collection
-     *
-     * @ORM\OneToMany(targetEntity="App\Entity\Share", mappedBy="owner")
-     */
-    protected $shares;
-
-    /**
-     * @var Share[]|Collection
-     *
-     * @ORM\OneToMany(targetEntity="App\Entity\Share", mappedBy="user")
-     */
-    protected $availableShares;
-
-    /**
      * @var Avatar|null
      *
      * @ORM\OneToOne(
@@ -184,13 +170,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $userGroups;
 
     /**
-     * @var ItemMask[]|Collection
-     *
-     * @ORM\OneToMany(targetEntity="ItemMask", mappedBy="recipient", orphanRemoval=true)
-     */
-    private $itemMasks;
-
-    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -203,11 +182,8 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->inbox = Directory::createInbox();
         $this->lists = Directory::createRootList();
         $this->trash = Directory::createTrash();
-        $this->shares = new ArrayCollection();
         $this->userGroups = new ArrayCollection();
-        $this->availableShares = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
-        $this->itemMasks = new ArrayCollection();
         if (null !== $srp) {
             $this->srp = $srp;
         }
@@ -343,43 +319,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getTrustedTokenVersion(): int
     {
         return $this->trustedVersion;
-    }
-
-    /**
-     * @return Share[]|Collection
-     */
-    public function getShares(): Collection
-    {
-        return $this->shares;
-    }
-
-    public function addShare(Share $share): void
-    {
-        if (!$this->shares->contains($share)) {
-            $this->shares->add($share);
-            $share->setOwner($this);
-        }
-    }
-
-    public function removeShare(Share $share): void
-    {
-        $this->shares->removeElement($share);
-    }
-
-    /**
-     * @return Share[]|Collection
-     */
-    public function getAvailableShares(): Collection
-    {
-        return $this->availableShares;
-    }
-
-    public function addAvailableShares(Share $availableShare): void
-    {
-        if ($this->availableShares->contains($availableShare)) {
-            $this->availableShares->add($availableShare);
-            $availableShare->setUser($this);
-        }
     }
 
     public function getEncryptedPrivateKey(): ?string
@@ -535,32 +474,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setUserGroups($userGroups): void
     {
         $this->userGroups = $userGroups;
-    }
-
-    /**
-     * @return Collection|ItemMask[]
-     */
-    public function getItemMasks(): Collection
-    {
-        return $this->itemMasks;
-    }
-
-    public function addItemMask(ItemMask $itemMask): void
-    {
-        if (!$this->itemMasks->contains($itemMask)) {
-            $this->itemMasks->add($itemMask);
-            $itemMask->setRecipient($this);
-        }
-    }
-
-    public function removeItemMask(ItemMask $itemMask): void
-    {
-        $this->itemMasks->removeElement($itemMask);
-    }
-
-    public function setItemMasks($itemMasks): void
-    {
-        $this->itemMasks = $itemMasks;
     }
 
     public function isFullUser(): bool

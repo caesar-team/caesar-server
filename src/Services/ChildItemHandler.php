@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Entity\Item;
-use App\Entity\ItemMask;
 use App\Entity\ItemUpdate;
 use App\Entity\User;
 use App\Mailer\MailRegistry;
+use App\Model\Request\ChildItem;
 use App\Model\Request\ItemCollectionRequest;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,10 +25,6 @@ class ChildItemHandler
      * @var UserRepository
      */
     private $userRepository;
-    /**
-     * @var \Doctrine\Common\Persistence\ObjectRepository
-     */
-    private $maskRepository;
     /**
      * @var SenderInterface
      */
@@ -48,7 +44,6 @@ class ChildItemHandler
     {
         $this->entityManager = $entityManager;
         $this->userRepository = $entityManager->getRepository(User::class);
-        $this->maskRepository = $entityManager->getRepository(ItemMask::class);
         $this->sender = $sender;
         $this->router = $router;
     }
@@ -56,10 +51,13 @@ class ChildItemHandler
     /**
      * @param ItemCollectionRequest $request
      *
+     * @return array
      * @throws \Exception
      */
     public function childItemToItem(ItemCollectionRequest $request)
     {
+        $url = $this->router->generate('google_login', [], RouterInterface::ABSOLUTE_URL);
+        $items = [];
         foreach ($request->getItems() as $childItem) {
             $item = new Item();
             $item->setParentList($childItem->getUser()->getInbox());
@@ -67,14 +65,25 @@ class ChildItemHandler
             $item->setSecret($childItem->getSecret());
             $item->setAccess($childItem->getAccess());
             $item->setType($request->getOriginalItem()->getType());
+            $item->setCause($childItem->getCause());
+            $item->setStatus($this->getStatusByCause($childItem->getCause()));
 
             $this->entityManager->persist($item);
+            $this->sendInvitationMessage($childItem, $url);
+            $items[] = $item;
         }
 
         $this->entityManager->flush();
         $this->entityManager->refresh($request->getOriginalItem());
+
+        return $items;
     }
 
+    /**
+     * @param ItemCollectionRequest $request
+     * @param User $currentOwner
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function updateChildItems(ItemCollectionRequest $request, User $currentOwner): void
     {
         $parentItem = $request->getOriginalItem();
@@ -87,11 +96,14 @@ class ChildItemHandler
             /** @var User $user */
             [$item, $user] = $this->getItem($childItem->getUser(), $parentItem);
 
-            if ($currentOwner === $user) {
+            if ($currentOwner === $user || Item::CAUSE_SHARE === $item->getCause()) {
                 $item->setSecret($childItem->getSecret());
             } else {
                 $update = $this->extractUpdate($item, $currentOwner);
                 $update->setSecret($childItem->getSecret());
+            }
+            if ($childItem->getLink()) {
+                $item->setLink($childItem->getLink());
             }
 
             $this->entityManager->persist($item);
@@ -100,31 +112,14 @@ class ChildItemHandler
         $this->entityManager->flush();
     }
 
-    /**
-     * @param ItemCollectionRequest $request
-     * @throws \Exception
-     */
-    public function createMasks(ItemCollectionRequest $request)
+    private function sendInvitationMessage(ChildItem $childItem, string $url)
     {
-        $url = $this->router->generate('google_login', [], RouterInterface::ABSOLUTE_URL);
-        foreach ($request->getItems() as $invite) {
-            $mask = new ItemMask();
-            $mask->setOriginalItem($request->getOriginalItem());
-            $mask->setRecipient($invite->getUser());
-            $mask->setSecret($invite->getSecret());
-            $mask->setAccess($invite->getAccess());
-
-            $this->entityManager->persist($mask);
-            $this->sendInvitationMessage($mask, $url);
+        if ($childItem->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)) {
+            return;
         }
 
-        $this->entityManager->flush();
-    }
-
-    private function sendInvitationMessage(ItemMask $mask, string $url)
-    {
         try {
-            $this->sender->send(MailRegistry::NEW_ITEM_MESSAGE, [$mask->getRecipient()->getEmail()], [
+            $this->sender->send(MailRegistry::NEW_ITEM_MESSAGE, [$childItem->getUser()->getEmail()], [
                 'url' => $url,
             ]);
         } catch (\Exception $exception) {
@@ -132,6 +127,12 @@ class ChildItemHandler
         }
     }
 
+    /**
+     * @param User $user
+     * @param Item $originalItem
+     * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     private function getItem(User $user, Item $originalItem): array
     {
         $owner = $this->userRepository->getByItem($originalItem);
@@ -156,5 +157,18 @@ class ChildItemHandler
         }
 
         return new ItemUpdate($item, $user);
+    }
+
+    private function getStatusByCause(string $cause): string
+    {
+        switch ($cause) {
+            case Item::CAUSE_INVITE:
+                $status = Item::STATUS_OFFERED;
+                break;
+            default:
+                $status = Item::STATUS_FINISHED;
+        }
+
+        return $status;
     }
 }

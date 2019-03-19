@@ -36,7 +36,7 @@ class ChildItemCollectionRequestType extends AbstractType
                     new NotBlank(),
                 ],
                 'allow_add' => true,
-                'entry_type' => InviteType::class,
+                'entry_type' => CreateChildItemType::class,
             ]);
 
         $builder->addEventListener(FormEvents::SUBMIT, [$this, 'validateChildItems']);

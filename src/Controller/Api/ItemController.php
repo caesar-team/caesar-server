@@ -13,21 +13,19 @@ use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemType;
-use App\Form\Request\Invite\BatchUpdateChildItemsRequestType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
-use App\Form\Request\Invite\UpdateChildItemsRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
 use App\Model\Query\ItemListQuery;
-use App\Model\Request\BatchChildItemsCollectionRequest;
 use App\Model\Request\ItemCollectionRequest;
+use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
-use App\Security\ChildItemVoter;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
 use App\Services\ChildItemHandler;
+use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -37,6 +35,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use FOS\RestBundle\Controller\Annotations as Rest;
+use Symfony\Component\Serializer\SerializerInterface;
 
 final class ItemController extends AbstractController
 {
@@ -103,10 +103,11 @@ final class ItemController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param Request             $request
+     * @param Request $request
      * @param ItemListViewFactory $viewFactory
      *
      * @return ItemView[]|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function itemListAction(Request $request, ItemListViewFactory $viewFactory)
     {
@@ -152,10 +153,11 @@ final class ItemController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param Item            $item
+     * @param Item $item
      * @param ItemViewFactory $factory
      *
      * @return ItemView
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function itemShowAction(Item $item, ItemViewFactory $factory)
     {
@@ -204,11 +206,12 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                $request
+     * @param Request $request
      * @param EntityManagerInterface $manager
      * @param CreatedItemViewFactory $viewFactory
      *
      * @return CreatedItemView|FormInterface
+     * @throws \Exception
      */
     public function createItemAction(Request $request, EntityManagerInterface $manager, CreatedItemViewFactory $viewFactory)
     {
@@ -365,10 +368,10 @@ final class ItemController extends AbstractController
      *
      * @return array|FormInterface
      */
-    public function editItemAction(Item $item, Request $request, EntityManagerInterface $entityManager)
+    public function editItem(Item $item, Request $request, EntityManagerInterface $entityManager)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-        if (null !== $item->getOriginalItem() || 0 !== $item->getSharedItems()->count()) {
+        if (0 !== $item->getSharedItems()->count()) {
             throw new BadRequestHttpException('Shared item. Can not edit as single.');
         }
 
@@ -472,6 +475,7 @@ final class ItemController extends AbstractController
      * @param ItemListViewFactory $viewFactory
      *
      * @return ItemView[]|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function favorite(ItemListViewFactory $viewFactory)
     {
@@ -593,7 +597,7 @@ final class ItemController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="Success item shared",
-     *     @Model(type=App\Model\View\CredentialsList\ItemView::class)
+     *     @Model(type=App\Model\View\CredentialsList\ItemView::class, groups={"child_item"})
      * )
      * @SWG\Response(
      *     response=400,
@@ -626,6 +630,7 @@ final class ItemController extends AbstractController
      *     response=404,
      *     description="No such item"
      * )
+     * @Rest\View(serializerGroups={"child_item"})
      *
      * @Route(
      *     path="/api/item/{id}/child_item",
@@ -639,7 +644,6 @@ final class ItemController extends AbstractController
      *
      * @param ItemViewFactory $viewFactory
      * @return ItemView|FormInterface
-     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Exception
      */
     public function childItemToItem(Item $item, Request $request, ChildItemHandler $childItemHandler, ItemViewFactory $viewFactory)
@@ -653,84 +657,114 @@ final class ItemController extends AbstractController
             return $form;
         }
 
-        $childItemHandler->createMasks($itemCollectionRequest);
+        $items = $childItemHandler->childItemToItem($itemCollectionRequest);
 
-        return $viewFactory->create($item);
+        return $viewFactory->createList($items);
+    }
+
+    /**
+     * Items collection
+     *
+     * @SWG\Tag(name="Item")
+     * @SWG\Response(
+     *     response=200,
+     *     description="Items collection",
+     * )
+     *
+     * @Route("/api/offered_item", methods={"GET"}, name="api_item_offered_list")
+     * @param ItemListViewFactory $viewFactory
+     * @return ItemView[]|array
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getOfferedItemsList(ItemListViewFactory $viewFactory)
+    {
+        $user = $this->getUser();
+        $offeredItems = DirectoryHelper::extractOfferedItems($user);
+
+        return $viewFactory->create($offeredItems);
     }
 
     /**
      * @SWG\Tag(name="Item")
-     *
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=App\Form\Request\Invite\BatchUpdateChildItemsRequestType::class)
+     *     @Model(type=App\Form\Request\AcceptItemsType::class)
      * )
      * @SWG\Response(
-     *     response=204,
-     *     description="Success items updated"
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns item share error"
+     *     response=200,
+     *     description="Items accepted",
      * )
      *
-     * @Route(
-     *     path="/api/item/batch",
-     *     name="api_item_batch_update",
-     *     methods={"PUT"}
-     * )
+     * @Route("/api/accept_item", methods={"PATCH"}, name="api_item_accept")
+     *
      * @param Request $request
-     * @param ChildItemHandler $childItemHandler
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $entityManager
      * @return null|FormInterface
      */
-    public function batchUpdateChildItems(Request $request, ChildItemHandler $childItemHandler)
+    public function acceptList(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManager)
     {
-        $batchChildItemsCollectionRequest = new BatchChildItemsCollectionRequest();
-        $form = $this->createForm(BatchUpdateChildItemsRequestType::class, $batchChildItemsCollectionRequest);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
+        /** @var ItemsCollectionRequest $itemsCollection */
+        $itemsCollection = $serializer->deserialize(json_encode($request->request->all()), ItemsCollectionRequest::class, 'json');
+
+        foreach ($itemsCollection->getItems() as $item) {
+            $item = $entityManager->getRepository(Item::class)->find($item['id']);
+            if ($item instanceof Item) {
+                $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+                $item->setStatus(Item::STATUS_FINISHED);
+            }
         }
-        foreach ($batchChildItemsCollectionRequest->getCollectionItems() as $itemCollectionRequest) {
-            $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $itemCollectionRequest->getOriginalItem());
-            $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
+        $entityManager->flush();
+
+        $offeredItems = DirectoryHelper::extractOfferedItems($this->getUser());
+        foreach ($offeredItems as $offeredItem) {
+            $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $offeredItem);
+            $entityManager->remove($offeredItem);
         }
+
+        $entityManager->flush();
 
         return null;
     }
 
     /**
-     * Update item with children
      * @SWG\Tag(name="Item")
      *
      * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=App\Form\Request\Invite\UpdateChildItemsRequestType::class)
+     *     name="itemId",
+     *     in="query",
+     *     description="Id of item",
+     *     type="string"
      * )
      * @SWG\Response(
-     *     response=204,
-     *     description="Success item updated"
+     *     response=200,
+     *     description="Item check"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="Shared item not found or expired"
+     * )
+     * @Route("api/anonymous/share/{item}/check", methods={"GET"})
+     * @param Item $item
+     * @return JsonResponse
+     */
+    public function checkSharedItem(Item $item)
+    {
+        return new JsonResponse(['id' => $item->getId()->toString()]);
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Item data",
+     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
      * )
      * @SWG\Response(
      *     response=400,
-     *     description="Returns item share error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="object",
-     *             property="errors",
-     *             @SWG\Property(
-     *                 type="array",
-     *                 property="userId",
-     *                 @SWG\Items(
-     *                     type="string",
-     *                     example="This value is not valid"
-     *                 )
-     *             )
-     *         )
-     *     )
+     *     description="No updates for this item"
      * )
      * @SWG\Response(
      *     response=401,
@@ -746,30 +780,33 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/item/{id}",
-     *     name="api_item_update",
-     *     methods={"PUT"}
+     *     path="/api/item/{id}/accept_update",
+     *     name="api_accept_item_update",
+     *     methods={"POST"}
      * )
      *
-     * @param Item          $item
-     * @param Request       $request
-     * @param ChildItemHandler $childItemHandler
+     * @param Item $item
+     * @param EntityManagerInterface $entityManager
+     * @param ItemViewFactory $factory
      *
-     * @return FormInterface|null
+     * @return null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function updateChildItems(Item $item, Request $request, ChildItemHandler $childItemHandler)
+    public function acceptItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
-        $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $item);
+        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
-        $itemCollectionRequest = new ItemCollectionRequest($item);
-        $form = $this->createForm(UpdateChildItemsRequestType::class, $itemCollectionRequest);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
+        $update = $item->getUpdate();
+        if (null === $update) {
+            throw new BadRequestHttpException('Item has no update to accept it');
         }
 
-        $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
+        $item->setSecret($update->getSecret());
+        $item->setUpdate(null);
 
-        return null;
+        $entityManager->persist($item);
+        $entityManager->flush();
+
+        return $factory->create($item);
     }
 }

@@ -9,7 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class InviteType extends SecretType
+class CreateChildItemType extends SecretType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -20,6 +20,7 @@ class InviteType extends SecretType
                     new NotBlank(),
                 ],
                 'choices' => AccessEnumType::getValues(),
-            ]);
+            ])
+        ;
     }
 }

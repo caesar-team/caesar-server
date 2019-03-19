@@ -4,28 +4,26 @@ declare(strict_types=1);
 
 namespace App\Form\Request;
 
-use App\Entity\ItemMask;
-use App\Model\Request\ItemMaskRequest;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Model\Request\ItemsCollectionRequest;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
-class ItemMaskType extends AbstractType
+class AcceptItemsType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('itemMask', EntityType::class, [
-            'constraints' => [new NotBlank()],
-            'class' => ItemMask::class,
+        $builder->add('items', CollectionType::class, [
+            'entry_type' => AcceptItemType::class,
+            'allow_add' => true
         ]);
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => ItemMaskRequest::class
+            'data_class' => ItemsCollectionRequest::class
         ]);
     }
 

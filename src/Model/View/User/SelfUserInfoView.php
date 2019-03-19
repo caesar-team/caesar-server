@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Model\View\User;
 
-use App\Model\View\Share\ShareView;
 use Swagger\Annotations as SWG;
 
 class SelfUserInfoView
@@ -42,9 +41,4 @@ class SelfUserInfoView
      * @SWG\Property(example="['ROLE_USER']")
      */
     public $roles = [];
-
-    /**
-     * @var ShareView[]
-     */
-    public $shares;
 }

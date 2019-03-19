@@ -116,11 +116,17 @@ class Directory
     }
 
     /**
-     * @return Item[]|Collection
+     * @param string|null $status
+     * @return Item[]
      */
-    public function getChildItems()
+    public function getChildItems(string $status = null)
     {
-        return $this->childItems;
+        if ($status) {
+            return array_filter($this->childItems->toArray(), function (Item $item) use ($status) {
+                return $status === $item->getStatus();
+            });
+        }
+        return $this->childItems->toArray();
     }
 
     public function addChildItem(Item $item)
