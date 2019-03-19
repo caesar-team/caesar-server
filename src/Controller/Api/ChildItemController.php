@@ -27,10 +27,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
-final class InviteController extends AbstractController
+final class ChildItemController extends AbstractController
 {
     /**
-     * @SWG\Tag(name="Invite")
+     * @SWG\Tag(name="Child Item")
      *
      * @SWG\Response(
      *     response=204,
@@ -50,8 +50,8 @@ final class InviteController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/invite/{id}",
-     *     name="api_revoke_invite",
+     *     path="/api/child_item/{id}",
+     *     name="api_revoke_child_item",
      *     methods={"DELETE"}
      * )
      *
@@ -60,7 +60,7 @@ final class InviteController extends AbstractController
      *
      * @return null
      */
-    public function revokeInviteAction(Item $item, EntityManagerInterface $entityManager)
+    public function revokeChildItemAction(Item $item, EntityManagerInterface $entityManager)
     {
         $this->denyAccessUnlessGranted(ChildItemVoter::REVOKE_CHILD_ITEM, $item);
 
@@ -71,7 +71,7 @@ final class InviteController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="Invite")
+     * @SWG\Tag(name="Child Item")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -115,8 +115,8 @@ final class InviteController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/invite/{id}",
-     *     name="api_update_invite",
+     *     path="/api/child_item/{id}/access",
+     *     name="api_update_child_item",
      *     methods={"PATCH"}
      * )
      *
@@ -126,7 +126,7 @@ final class InviteController extends AbstractController
      *
      * @return FormInterface|null
      */
-    public function updateInviteAccessAction(Item $item, Request $request, EntityManagerInterface $entityManager)
+    public function updateChildItemAccessAction(Item $item, Request $request, EntityManagerInterface $entityManager)
     {
         $this->denyAccessUnlessGranted(ChildItemVoter::CHANGE_ACCESS, $item);
 
@@ -143,16 +143,79 @@ final class InviteController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="Invite")
+     * @SWG\Tag(name="Child Item")
      *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=App\Form\Request\Invite\BatchUpdateChildItemsRequestType::class)
+     * )
      * @SWG\Response(
-     *     response=200,
-     *     description="Item data",
-     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
+     *     response=204,
+     *     description="Success items updated"
      * )
      * @SWG\Response(
      *     response=400,
-     *     description="No updates for this item"
+     *     description="Returns item share error"
+     * )
+     *
+     * @Route(
+     *     path="/api/child_item/batch",
+     *     name="api_item_batch_update",
+     *     methods={"PATCH"}
+     * )
+     * @param Request $request
+     * @param ChildItemHandler $childItemHandler
+     * @return null|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function batchUpdateChildItems(Request $request, ChildItemHandler $childItemHandler)
+    {
+        $batchChildItemsCollectionRequest = new BatchChildItemsCollectionRequest();
+        $form = $this->createForm(BatchUpdateChildItemsRequestType::class, $batchChildItemsCollectionRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+        foreach ($batchChildItemsCollectionRequest->getCollectionItems() as $itemCollectionRequest) {
+            $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $itemCollectionRequest->getOriginalItem());
+            $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
+        }
+
+        return null;
+    }
+
+    /**
+     * Update item with children
+     * @SWG\Tag(name="Child Item")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=App\Form\Request\Invite\UpdateChildItemsRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success item updated"
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="Returns item share error",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="object",
+     *             property="errors",
+     *             @SWG\Property(
+     *                 type="array",
+     *                 property="userId",
+     *                 @SWG\Items(
+     *                     type="string",
+     *                     example="This value is not valid"
+     *                 )
+     *             )
+     *         )
+     *     )
      * )
      * @SWG\Response(
      *     response=401,
@@ -168,33 +231,31 @@ final class InviteController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/item/{id}/accept_update",
-     *     name="api_accept_item_update",
-     *     methods={"POST"}
+     *     path="/api/child_item/{id}",
+     *     name="api_item_update",
+     *     methods={"PATCH"}
      * )
      *
      * @param Item $item
-     * @param EntityManagerInterface $entityManager
-     * @param ItemViewFactory $factory
+     * @param Request $request
+     * @param ChildItemHandler $childItemHandler
      *
-     * @return null
+     * @return FormInterface|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function acceptItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
+    public function updateChildItems(Item $item, Request $request, ChildItemHandler $childItemHandler)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $item);
 
-        $update = $item->getUpdate();
-        if (null === $update) {
-            throw new BadRequestHttpException('Item has no update to accept it');
+        $itemCollectionRequest = new ItemCollectionRequest($item);
+        $form = $this->createForm(UpdateChildItemsRequestType::class, $itemCollectionRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
         }
 
-        $item->setSecret($update->getSecret());
-        $item->setUpdate(null);
+        $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
 
-        $entityManager->persist($item);
-        $entityManager->flush();
-
-        return $factory->create($item);
+        return null;
     }
 }

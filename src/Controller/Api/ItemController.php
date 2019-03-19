@@ -31,7 +31,6 @@ use App\Security\ListVoter;
 use App\Services\ChildItemHandler;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
-use Http\Client\Common\Exception\HttpClientNotFoundException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -670,123 +669,6 @@ final class ItemController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=App\Form\Request\Invite\BatchUpdateChildItemsRequestType::class)
-     * )
-     * @SWG\Response(
-     *     response=204,
-     *     description="Success items updated"
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns item share error"
-     * )
-     *
-     * @Route(
-     *     path="/api/item/batch",
-     *     name="api_item_batch_update",
-     *     methods={"PUT"}
-     * )
-     * @param Request $request
-     * @param ChildItemHandler $childItemHandler
-     * @return null|FormInterface
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    public function batchUpdateChildItems(Request $request, ChildItemHandler $childItemHandler)
-    {
-        $batchChildItemsCollectionRequest = new BatchChildItemsCollectionRequest();
-        $form = $this->createForm(BatchUpdateChildItemsRequestType::class, $batchChildItemsCollectionRequest);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-        foreach ($batchChildItemsCollectionRequest->getCollectionItems() as $itemCollectionRequest) {
-            $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $itemCollectionRequest->getOriginalItem());
-            $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
-        }
-
-        return null;
-    }
-
-    /**
-     * Update item with children
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=App\Form\Request\Invite\UpdateChildItemsRequestType::class)
-     * )
-     * @SWG\Response(
-     *     response=204,
-     *     description="Success item updated"
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns item share error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="object",
-     *             property="errors",
-     *             @SWG\Property(
-     *                 type="array",
-     *                 property="userId",
-     *                 @SWG\Items(
-     *                     type="string",
-     *                     example="This value is not valid"
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of item"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="No such item"
-     * )
-     *
-     * @Route(
-     *     path="/api/item/{id}",
-     *     name="api_item_update",
-     *     methods={"PUT"}
-     * )
-     *
-     * @param Item $item
-     * @param Request $request
-     * @param ChildItemHandler $childItemHandler
-     *
-     * @return FormInterface|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    public function updateChildItems(Item $item, Request $request, ChildItemHandler $childItemHandler)
-    {
-        $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $item);
-
-        $itemCollectionRequest = new ItemCollectionRequest($item);
-        $form = $this->createForm(UpdateChildItemsRequestType::class, $itemCollectionRequest);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
-
-        return null;
-    }
-
-    /**
      * Items collection
      *
      * @SWG\Tag(name="Item")
@@ -873,23 +755,64 @@ final class ItemController extends AbstractController
      * @param Item $item
      * @return JsonResponse
      */
-    public function checkSharedItem (Item $item)
+    public function checkSharedItem(Item $item)
     {
-        $this->validateSharedItem($item);
-
         return new JsonResponse(['id' => $item->getId()->toString()]);
     }
 
-    private function validateSharedItem(Item $item)
+    /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Item data",
+     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
+     * )
+     * @SWG\Response(
+     *     response=400,
+     *     description="No updates for this item"
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not owner of item"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such item"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/{id}/accept_update",
+     *     name="api_accept_item_update",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Item $item
+     * @param EntityManagerInterface $entityManager
+     * @param ItemViewFactory $factory
+     *
+     * @return null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function acceptItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
-        $lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
-        $today = strtotime("today midnight");
-        $expire = strtotime($lastUpdated . Item::EXPIRATION_INTERVAL);
-        if (
-            Item::STATUS_FINISHED === $item->getStatus() ||
-            $today >= $expire
-        ) {
-            throw new NotFoundHttpException('Shared item not found or expired', null, Response::HTTP_NOT_FOUND);
+        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+
+        $update = $item->getUpdate();
+        if (null === $update) {
+            throw new BadRequestHttpException('Item has no update to accept it');
         }
+
+        $item->setSecret($update->getSecret());
+        $item->setUpdate(null);
+
+        $entityManager->persist($item);
+        $entityManager->flush();
+
+        return $factory->create($item);
     }
 }
