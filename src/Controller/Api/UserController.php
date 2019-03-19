@@ -229,7 +229,7 @@ final class UserController extends AbstractController
 
         /** @var User $oldUser */
         $oldUser = $entityManager->getUnitOfWork()->getOriginalEntityData($user);
-        if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
+        if (!$user->isFullUser()) {
             $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
 
         } else {
