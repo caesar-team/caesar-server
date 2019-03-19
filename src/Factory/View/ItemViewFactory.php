@@ -54,6 +54,7 @@ class ItemViewFactory
     /**
      * @param array|Item[] $items
      * @return ItemView
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function createList(array $items)
     {
@@ -63,6 +64,7 @@ class ItemViewFactory
             $childItem = new ChildItemView();
             $childItem->id = $item->getId()->toString();
             $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
+            $childItem->userId = $this->getOwner($item)->id;
             $childItems[] = $childItem;
         }
 
