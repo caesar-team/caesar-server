@@ -6,7 +6,7 @@ namespace App\Factory\View;
 
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
-use App\Model\View\CredentialsList\InviteView;
+use App\Model\View\CredentialsList\ChildItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
 use App\Model\View\User\UserView;
@@ -42,6 +42,7 @@ class ItemViewFactory
         $view->secret = $item->getSecret();
         $view->invited = $this->getInvitesCollection($item);
         $view->shared = $this->getSharesCollection($item);
+        $view->items = array_merge($view->invited, $view->shared);
         $view->update = $this->getUpdateView($item->getUpdate());
         $view->owner = $this->getOwner($item);
         $view->favorite = $item->isFavorite();
@@ -67,13 +68,13 @@ class ItemViewFactory
         foreach ($sharedItems as $item) {
             $user = $this->userRepository->getByItem($item);
 
-            $invite = new InviteView();
-            $invite->id = $item->getId()->toString();
-            $invite->userId = $user->getId()->toString();
-            $invite->email = $user->getEmail();
-            $invite->lastUpdated = $item->getLastUpdated();
-            $invite->access = $item->getAccess();
-            $invites[] = $invite;
+            $childItemView = new ChildItemView();
+            $childItemView->id = $item->getId()->toString();
+            $childItemView->userId = $user->getId()->toString();
+            $childItemView->email = $user->getEmail();
+            $childItemView->lastUpdated = $item->getLastUpdated();
+            $childItemView->access = $item->getAccess();
+            $invites[] = $childItemView;
         }
 
         return $invites;
@@ -138,13 +139,13 @@ class ItemViewFactory
         foreach ($sharedItems as $item) {
             $user = $this->userRepository->getByItem($item);
 
-            $invite = new InviteView();
-            $invite->id = $item->getId()->toString();
-            $invite->userId = $user->getId()->toString();
-            $invite->email = $user->getEmail();
-            $invite->lastUpdated = $item->getLastUpdated();
-            $invite->access = $item->getAccess();
-            $shares[] = $invite;
+            $childItemView = new ChildItemView();
+            $childItemView->id = $item->getId()->toString();
+            $childItemView->userId = $user->getId()->toString();
+            $childItemView->email = $user->getEmail();
+            $childItemView->lastUpdated = $item->getLastUpdated();
+            $childItemView->access = $item->getAccess();
+            $shares[] = $childItemView;
         }
 
         return $shares;

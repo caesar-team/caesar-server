@@ -13,19 +13,15 @@ use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemType;
-use App\Form\Request\Invite\BatchUpdateChildItemsRequestType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
-use App\Form\Request\Invite\UpdateChildItemsRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
 use App\Model\Query\ItemListQuery;
-use App\Model\Request\BatchChildItemsCollectionRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
-use App\Security\ChildItemVoter;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
 use App\Services\ChildItemHandler;
@@ -37,9 +33,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -603,7 +597,7 @@ final class ItemController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="Success item shared",
-     *     @Model(type=App\Model\View\CredentialsList\ItemView::class)
+     *     @Model(type=App\Model\View\CredentialsList\ItemView::class, groups={"child_item"})
      * )
      * @SWG\Response(
      *     response=400,
@@ -636,7 +630,7 @@ final class ItemController extends AbstractController
      *     response=404,
      *     description="No such item"
      * )
-     * @Rest\View(serializerGroups={"create_child_item"})
+     * @Rest\View(serializerGroups={"child_item"})
      *
      * @Route(
      *     path="/api/item/{id}/child_item",

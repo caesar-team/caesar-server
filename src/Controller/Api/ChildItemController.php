@@ -5,26 +5,19 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Entity\Item;
-use App\Factory\View\ItemViewFactory;
 use App\Form\Request\Invite\BatchUpdateChildItemsRequestType;
-use App\Form\Request\Invite\ChildItemCollectionRequestType;
 use App\Form\Request\Invite\InviteUpdateRequestType;
 use App\Form\Request\Invite\UpdateChildItemsRequestType;
-use App\Mailer\MailRegistry;
 use App\Model\Request\BatchChildItemsCollectionRequest;
 use App\Model\Request\ItemCollectionRequest;
-use App\Model\View\CredentialsList\ItemView;
 use App\Security\ChildItemVoter;
-use App\Security\ItemVoter;
 use App\Services\ChildItemHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 final class ChildItemController extends AbstractController
