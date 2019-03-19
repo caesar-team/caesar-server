@@ -97,7 +97,9 @@ class ChildItemHandler
                 $update = $this->extractUpdate($item, $currentOwner);
                 $update->setSecret($childItem->getSecret());
             }
-            $item->setLink($childItem->getLink());
+            if ($childItem->getLink()) {
+                $item->setLink($childItem->getLink());
+            }
 
             $this->entityManager->persist($item);
         }
