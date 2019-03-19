@@ -170,6 +170,7 @@ class ItemViewFactory
             $childItemView->access = $item->getAccess();
             $childItemView->link = $item->getLink();
             $childItemView->isAccepted = User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
+            $childItemView->publicKey = $user->getPublicKey();
             $shares[] = $childItemView;
         }
 

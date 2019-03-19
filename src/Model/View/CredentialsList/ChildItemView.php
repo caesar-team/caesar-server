@@ -54,4 +54,8 @@ class ChildItemView
      * @var bool
      */
     public $isAccepted;
+    /**
+     * @var string
+     */
+    public $publicKey;
 }
