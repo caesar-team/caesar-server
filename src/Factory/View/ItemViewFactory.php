@@ -43,12 +43,31 @@ class ItemViewFactory
         $view->secret = $item->getSecret();
         $view->invited = $this->getInvitesCollection($item);
         $view->shared = $this->getSharesCollection($item);
-        $view->items = array_merge($view->invited, $view->shared);
         $view->update = $this->getUpdateView($item->getUpdate());
         $view->owner = $this->getOwner($item);
         $view->favorite = $item->isFavorite();
         $view->sort = $item->getSort();
 
+        return $view;
+    }
+
+    /**
+     * @param array|Item[] $items
+     * @return ItemView
+     */
+    public function createList(array $items)
+    {
+        $view = new ItemView();
+        $childItems = [];
+        foreach ($items as $item) {
+            $childItem = new ChildItemView();
+            $childItem->id = $item->getId()->toString();
+            $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
+            $childItems[] = $childItem;
+        }
+
+
+        $view->items = $childItems;
         return $view;
     }
 

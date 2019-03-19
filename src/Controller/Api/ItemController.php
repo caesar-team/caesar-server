@@ -657,9 +657,9 @@ final class ItemController extends AbstractController
             return $form;
         }
 
-        $childItemHandler->childItemToItem($itemCollectionRequest);
+        $items = $childItemHandler->childItemToItem($itemCollectionRequest);
 
-        return $viewFactory->create($item);
+        return $viewFactory->createList($items);
     }
 
     /**

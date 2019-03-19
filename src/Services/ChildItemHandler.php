@@ -51,11 +51,13 @@ class ChildItemHandler
     /**
      * @param ItemCollectionRequest $request
      *
+     * @return array
      * @throws \Exception
      */
     public function childItemToItem(ItemCollectionRequest $request)
     {
         $url = $this->router->generate('google_login', [], RouterInterface::ABSOLUTE_URL);
+        $items = [];
         foreach ($request->getItems() as $childItem) {
             $item = new Item();
             $item->setParentList($childItem->getUser()->getInbox());
@@ -68,10 +70,13 @@ class ChildItemHandler
 
             $this->entityManager->persist($item);
             $this->sendInvitationMessage($childItem, $url);
+            $items[] = $item;
         }
 
         $this->entityManager->flush();
         $this->entityManager->refresh($request->getOriginalItem());
+
+        return $items;
     }
 
     /**
