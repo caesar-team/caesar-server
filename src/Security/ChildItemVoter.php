@@ -51,6 +51,9 @@ class ChildItemVoter extends Voter
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
+        //todo: rework this validation by new work flow
+        return true;
+
         /** @var User $user */
         $user = $token->getUser();
 
