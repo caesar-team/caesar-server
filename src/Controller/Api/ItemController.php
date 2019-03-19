@@ -371,7 +371,7 @@ final class ItemController extends AbstractController
     public function editItem(Item $item, Request $request, EntityManagerInterface $entityManager)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-        if (null !== $item->getOriginalItem() || 0 !== $item->getSharedItems()->count()) {
+        if (0 !== $item->getSharedItems()->count()) {
             throw new BadRequestHttpException('Shared item. Can not edit as single.');
         }
 
