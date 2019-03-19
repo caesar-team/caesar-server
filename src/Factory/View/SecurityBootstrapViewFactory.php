@@ -79,7 +79,7 @@ class SecurityBootstrapViewFactory
             case $isCompleteJwt:
                 $state = SecurityBootstrapView::STATE_SKIP;
                 break;
-            case $user->hasRole(User::ROLE_ANONYMOUS_USER):
+            case !$user->isFullUser():
                 $state = SecurityBootstrapView::STATE_SKIP;
                 break;
             case !$user->isGoogleAuthenticatorEnabled():
@@ -111,7 +111,7 @@ class SecurityBootstrapViewFactory
     {
         switch (true) {
             case $user->hasRole(User::ROLE_READ_ONLY_USER):
-                $state = User::FLOW_STATUS_CHANGE_PASSWORD === $user->getFlowStatus() ? SecurityBootstrapView::STATE_CHANGE : SecurityBootstrapView::STATE_SKIP;
+                $state = SecurityBootstrapView::STATE_SKIP;
                 break;
             case $user->isFullUser() && $this->authorizationManager->hasInvitation($user):
                 $state = SecurityBootstrapView::STATE_CHANGE;
@@ -127,12 +127,6 @@ class SecurityBootstrapViewFactory
     {
         switch (true) {
             case $user->hasRole(User::ROLE_READ_ONLY_USER):
-                $flowStatuses = [
-                    User::FLOW_STATUS_CHANGE_PASSWORD,
-                    User::FLOW_STATUS_INCOMPLETE,
-                ];
-                $state = in_array($user->getFlowStatus(), $flowStatuses) ? SecurityBootstrapView::STATE_CREATE : SecurityBootstrapView::STATE_CHECK;
-                break;
             case $user->hasRole(User::ROLE_ANONYMOUS_USER):
                 $state = SecurityBootstrapView::STATE_CHECK;
                 break;
