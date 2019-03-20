@@ -18,12 +18,6 @@ spec:
     spec:
       containers:
       - env:
-        - name: INVITATION_SALT
-          valueFrom:
-            secretKeyRef:
-              key: INVITATION_SALT
-              name: caesarapp-server
-              optional: false
         - name: AVAILABLE_REQUEST_SIGNATURE
           value: "false"
         - name: WEB_CLIENT_URL
