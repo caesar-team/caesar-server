@@ -20,6 +20,8 @@ spec:
       - env:
         - name: AVAILABLE_REQUEST_SIGNATURE
           value: "false"
+        - name: WEB_CLIENT_URL
+          value: "https://demo.caesar.team"
         - name: DB_VERSION
           value: "9.6"
         - name: HTTPS
@@ -106,12 +108,6 @@ spec:
           valueFrom:
             secretKeyRef:
               key: BACKUP_CODE_HASH_LENGTH
-              name: caesarapp-server
-              optional: false
-        - name: CAESAR_APP_ABSOLUTE_PATH
-          valueFrom:
-            secretKeyRef:
-              key: CAESAR_APP_ABSOLUTE_PATH
               name: caesarapp-server
               optional: false
         - name: INVITATION_SALT
