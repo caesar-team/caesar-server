@@ -37,6 +37,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class SrpController extends AbstractController
 {
@@ -83,20 +85,34 @@ final class SrpController extends AbstractController
      * @param UserManagerInterface $userManager
      *
      * @param GroupManager $groupManager
+     * @param TranslatorInterface $translator
      * @param AuthorizationManager $authorizationManager
      * @return null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Exception
      */
     public function registerAction(
         Request $request,
         UserManagerInterface $userManager,
         GroupManager $groupManager,
+        TranslatorInterface $translator,
         AuthorizationManager $authorizationManager
     )
     {
+        $email = $request->request->get('email');
         /** @var User $user */
-        $user = $authorizationManager->findUserByInvitation($request->request->get('email'));
-        $user = $user && $user->getSrp() ? $user : new User(new Srp());
+        $user = $userManager->findUserByEmail($email);
+        if ($authorizationManager->hasInvitation($user)) {
+            $errorMessage = $translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]);
+            $error = [
+                'code' => AuthorizationManager::ERROR_UNFINISHED_FLOW_USER,
+                'description' => $errorMessage
+            ];
+
+            return new JsonResponse($error, Response::HTTP_FORBIDDEN);
+        }
+
+        $user = new User(new Srp());
 
         $form = $this->createForm(RegistrationType::class, $user);
         $form->submit($request->request->all());

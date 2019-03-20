@@ -34,7 +34,7 @@ class FosUserMailer extends Mailer implements MailerInterface
      */
     public function sendResettingEmailMessage(UserInterface $user)
     {
-        $url = getenv('CAESAR_APP_ABSOLUTE_PATH').'/resetting/'.$user->getConfirmationToken();
+        $url = getenv('WEB_CLIENT_URL').'/resetting/'.$user->getConfirmationToken();
 
         $rendered = $this->templating->render('email/password_resetting.email.html.twig', array(
             'user' => $user,

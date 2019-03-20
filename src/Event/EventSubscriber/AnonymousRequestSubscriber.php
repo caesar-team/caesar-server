@@ -44,11 +44,15 @@ class AnonymousRequestSubscriber implements EventSubscriberInterface
         $route = $request->get('_route');
         /** @var User $user */
         $user = $this->security->getUser();
+        if (!$user instanceof User) {
+            return;
+        }
+
         if (!$user->hasRole(User::ROLE_ANONYMOUS_USER)) {
             return;
         }
 
-        if ($user instanceof User && in_array($route, self::AVAILABLE_ROUTES)) {
+        if (in_array($route, self::AVAILABLE_ROUTES)) {
             return;
         }
 

@@ -17,9 +17,11 @@ use HWI\Bundle\OAuthBundle\Security\Core\User\FOSUBUserProvider as BaseUserProvi
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FOSUBUserProvider extends BaseUserProvider
 {
@@ -107,35 +109,37 @@ class FOSUBUserProvider extends BaseUserProvider
     }
 
     /**
-     * @param string|null $email
-     *
-     * @throws AuthenticationException
-     */
-    private function checkEmailDomain(?string $email): void
-    {
-        preg_match('/(?<=@)(.+)$/', $email, $matches);
-        $domain = $matches[1];
-        if (!in_array($domain, explode(',', getenv('OAUTH_ALLOWED_DOMAINS')), true)
-            && !$this->userRepository->findOneBy(['email' => $email])
-        ) {
-            throw new AuthenticationException($this->translator->trans('authentication.email_domain_restriction', ['%domain%' => $domain]));
-        }
-    }
-
-    /**
      * @param UserResponseInterface $response
      * @param User|null $user
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function denyAccessUnlessGranted(UserResponseInterface $response, User $user = null)
     {
-        if ($user instanceof User && !$this->authorizationManager->hasInvitation($user)) {
-            $this->checkEmailDomain($response->getEmail());
+        if (!$user instanceof User) {
+            return;
         }
 
-        if ($user instanceof User && $user->hasRole(User::ROLE_ANONYMOUS_USER)) {
+        $email = $response->getEmail();
+        if ($this->authorizationManager->hasInvitation($user)) {
+
+            $errorMessage = $this->translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]);
+            $error = [
+                'code' => AuthorizationManager::ERROR_UNFINISHED_FLOW_USER,
+                'description' => $errorMessage
+            ];
+
+            throw new AccessDeniedHttpException(
+                json_encode($error),
+                null,
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        $this->authorizationManager->checkEmailDomain($email);
+
+        if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
             throw new AuthenticationException(
-                $this->translator->trans('authentication.user_restriction', ['%email%' => $response->getEmail()])
+                $this->translator->trans('authentication.user_restriction', ['%email%' => $email])
             );
         }
     }
