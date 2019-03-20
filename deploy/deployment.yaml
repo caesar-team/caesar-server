@@ -18,6 +18,8 @@ spec:
     spec:
       containers:
       - env:
+        - name: INVITATION_SALT
+          value: "sdpOUYSDFHJASDNFA'ASIGB"
         - name: AVAILABLE_REQUEST_SIGNATURE
           value: "false"
         - name: DB_VERSION
@@ -145,8 +147,6 @@ spec:
           name: caesar-shared-static
       dnsPolicy: ClusterFirst
       imagePullSecrets:
-      - name: dockerhub
-      - name: dockerhub
       - name: dockerhub
       initContainers:
       - args:
