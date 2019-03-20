@@ -745,7 +745,7 @@ final class ItemController extends AbstractController
      *     response=404,
      *     description="Shared item not found or expired"
      * )
-     * @Route("api/anonymous/share/{item}/check", methods={"GET"})
+     * @Route("api/anonymous/share/{item}/check", methods={"GET"}, name="api_item_check_shared_item")
      * @param Item $item
      * @return JsonResponse
      */
