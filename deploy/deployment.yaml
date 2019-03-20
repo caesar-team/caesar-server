@@ -33,15 +33,15 @@ spec:
         - name: STRICT_AUDIT_TRAIL
           value: "false"
         - name: SENDER_ADDRESS
-          valueFrom:
-            secretKeyRef:
-              key: SENDER_ADDRESS
-              name: caesarapp-server
-              optional: false
+          value: "noemail@demo.caesar.team"
         - name: OAUTH_ALLOWED_DOMAINS
+          value: "4xxi.com"
+        - name: TWO_FACTOR_SERVER_NAME
+          value: "Caesar"
+        - name: INVITATION_SALT
           valueFrom:
             secretKeyRef:
-              key: OAUTH_ALLOWED_DOMAINS
+              key: INVITATION_SALT
               name: caesarapp-server
               optional: false
         - name: GOOGLE_ID
@@ -66,12 +66,6 @@ spec:
           valueFrom:
             secretKeyRef:
               key: SUPERADMIN_PASS
-              name: caesarapp-server
-              optional: false
-        - name: TWO_FACTOR_SERVER_NAME
-          valueFrom:
-            secretKeyRef:
-              key: TWO_FACTOR_SERVER_NAME
               name: caesarapp-server
               optional: false
         - name: ALLOW_FRONT_REDIRECT_PATTERN
@@ -108,12 +102,6 @@ spec:
           valueFrom:
             secretKeyRef:
               key: BACKUP_CODE_HASH_LENGTH
-              name: caesarapp-server
-              optional: false
-        - name: INVITATION_SALT
-          valueFrom:
-            secretKeyRef:
-              key: INVITATION_SALT
               name: caesarapp-server
               optional: false
         image: caesarteam/caesar-server:${CICD_GIT_BRANCH}
@@ -156,7 +144,7 @@ spec:
               key: DATABASE_URL
               name: caesarapp-server
               optional: false
-        image: caesarteam/caesar-server:develop
+        image: caesarteam/caesar-server:${CICD_GIT_BRANCH}
         imagePullPolicy: IfNotPresent
         name: copy-public
         volumeMounts:
