@@ -26,6 +26,11 @@ class AuthorizationManager
         $this->entityManager = $entityManager;
     }
 
+    /**
+     * @param string $email
+     * @return UserInterface|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function findUserByInvitation(string $email): ?UserInterface
     {
         $user = $this->userManager->findUserByEmail($email);
@@ -36,10 +41,15 @@ class AuthorizationManager
         return $user;
     }
 
+    /**
+     * @param UserInterface $user
+     * @return bool
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     public function hasInvitation(UserInterface $user): bool
     {
         $hash = (InvitationEncoder::initEncoder())->encode($user->getEmail());
-        $invitation = $this->entityManager->getRepository(Invitation::class)->findOneBy(['hash' => $hash]);
+        $invitation = $this->entityManager->getRepository(Invitation::class)->findOneFreshByHash($hash);
 
         if($invitation) {
             return true;

@@ -6,15 +6,20 @@ namespace App\Entity\Security;
 
 use App\Security\AuthorizationManager\InvitationEncoder;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
  * Class Invitation
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\InvitationRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Invitation
 {
+    use TimestampableEntity;
+
+    const DEFAULT_SHELF_LIFE = '+1 day';
     /**
      * @var UuidInterface
      *
@@ -28,6 +33,12 @@ class Invitation
      * @ORM\Column(unique=true, type="text", nullable=false)
      */
     protected $hash;
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=10, nullable=false, options={"default"="+1 day"})
+     */
+    protected $shelfLife = self::DEFAULT_SHELF_LIFE;
 
     /**
      * Invitation constructor.
@@ -53,5 +64,21 @@ class Invitation
     {
         $encoder = InvitationEncoder::initEncoder();
         $this->hash = $encoder->encode($email);
+    }
+
+    /**
+     * @return string
+     */
+    public function getShelfLife(): string
+    {
+        return $this->shelfLife;
+    }
+
+    /**
+     * @param string $shelfLife
+     */
+    public function setShelfLife(string $shelfLife): void
+    {
+        $this->shelfLife = $shelfLife;
     }
 }

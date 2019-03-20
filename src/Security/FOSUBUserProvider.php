@@ -122,9 +122,14 @@ class FOSUBUserProvider extends BaseUserProvider
         }
     }
 
+    /**
+     * @param UserResponseInterface $response
+     * @param User|null $user
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     private function denyAccessUnlessGranted(UserResponseInterface $response, User $user = null)
     {
-        if ($user instanceof User ?? !$this->authorizationManager->hasInvitation($user)) {
+        if ($user instanceof User && !$this->authorizationManager->hasInvitation($user)) {
             $this->checkEmailDomain($response->getEmail());
         }
 

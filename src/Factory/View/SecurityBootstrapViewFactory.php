@@ -107,6 +107,11 @@ class SecurityBootstrapViewFactory
         return true;
     }
 
+    /**
+     * @param User $user
+     * @return string
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     private function getPasswordState(User $user): string
     {
         switch (true) {
@@ -123,6 +128,11 @@ class SecurityBootstrapViewFactory
         return $state;
     }
 
+    /**
+     * @param User $user
+     * @return string
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     private function getMasterPasswordState(User $user): string
     {
         switch (true) {
