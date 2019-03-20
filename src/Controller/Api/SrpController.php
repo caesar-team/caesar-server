@@ -102,7 +102,7 @@ final class SrpController extends AbstractController
         $email = $request->request->get('email');
         /** @var User $user */
         $user = $userManager->findUserByEmail($email);
-        if ($authorizationManager->hasInvitation($user)) {
+        if ($user instanceof User && $authorizationManager->hasInvitation($user)) {
             $errorMessage = $translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]);
             $error = [
                 'code' => AuthorizationManager::ERROR_UNFINISHED_FLOW_USER,
