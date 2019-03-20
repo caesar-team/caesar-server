@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Security\AuthorizationManager;
 
 use App\Entity\Security\Invitation;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
+use MongoDB\Driver\Exception\AuthenticationException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AuthorizationManager
 {
+    const ERROR_UNFINISHED_FLOW_USER = 'ERROR_UNFINISHED_FLOW_USER';
     /**
      * @var UserManagerInterface
      */
@@ -19,11 +23,20 @@ class AuthorizationManager
      * @var EntityManagerInterface
      */
     private $entityManager;
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
 
-    public function __construct(UserManagerInterface $userManager, EntityManagerInterface $entityManager)
+    public function __construct(
+        UserManagerInterface $userManager,
+        EntityManagerInterface $entityManager,
+        TranslatorInterface $translator
+    )
     {
         $this->userManager = $userManager;
         $this->entityManager = $entityManager;
+        $this->translator = $translator;
     }
 
     /**
@@ -56,5 +69,17 @@ class AuthorizationManager
         }
 
         return false;
+    }
+
+    public function checkEmailDomain(?string $email): void
+    {
+        $userRepository = $this->entityManager->getRepository(User::class);
+        preg_match('/(?<=@)(.+)$/', $email, $matches);
+        $domain = $matches[1];
+        if (!in_array($domain, explode(',', getenv('OAUTH_ALLOWED_DOMAINS')), true)
+            && !$userRepository->findOneBy(['email' => $email])
+        ) {
+            throw new AuthenticationException($this->translator->trans('authentication.email_domain_restriction', ['%domain%' => $domain]));
+        }
     }
 }
