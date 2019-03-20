@@ -19,7 +19,11 @@ spec:
       containers:
       - env:
         - name: INVITATION_SALT
-          value: "sdpOUYSDFHJASDNFA'ASIGB"
+          valueFrom:
+            secretKeyRef:
+              key: INVITATION_SALT
+              name: caesarapp-server
+              optional: false
         - name: AVAILABLE_REQUEST_SIGNATURE
           value: "false"
         - name: DB_VERSION
