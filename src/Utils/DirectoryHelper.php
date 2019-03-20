@@ -46,6 +46,6 @@ class DirectoryHelper
             }
         }
 
-        return $items;
+        return array_filter($items, [DirectoryHelper::class, 'filterByOffered']);
     }
 }

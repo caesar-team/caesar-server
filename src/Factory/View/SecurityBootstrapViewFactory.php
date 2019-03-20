@@ -168,6 +168,11 @@ class SecurityBootstrapViewFactory
         return false;
     }
 
+    /**
+     * @param User $user
+     * @return string
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     private function getSharedItemsStepState(User $user): string
     {
 
