@@ -18,6 +18,8 @@ spec:
     spec:
       containers:
       - env:
+        - name: DELIVERY_NAME
+          value: "Caesar"
         - name: AVAILABLE_REQUEST_SIGNATURE
           value: "false"
         - name: WEB_CLIENT_URL
