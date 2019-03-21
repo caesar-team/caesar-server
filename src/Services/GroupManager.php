@@ -27,7 +27,7 @@ class GroupManager
      * @param string $role
      * @throws \Exception
      */
-    public function addGroupToUser(User $user, string $role = UserGroup::DEEFAULT_USER_ROLE, Group $group = null)
+    public function addGroupToUser(User $user, string $role = UserGroup::DEFAULT_USER_ROLE, Group $group = null)
     {
         $group = $group ?: $this->findDefaultGroup();
         $userGroup = new UserGroup();
@@ -46,5 +46,16 @@ class GroupManager
         }
 
         return $group;
+    }
+
+    public function findUserGroupByAlias(User $user, string $alias): ?UserGroup
+    {
+        foreach ($user->getUserGroups() as $userGroup) {
+            if ($alias === $userGroup->getGroup()->getAlias()) {
+                return $userGroup;
+            }
+        }
+
+        return null;
     }
 }

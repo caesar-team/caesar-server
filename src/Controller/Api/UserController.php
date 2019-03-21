@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Entity\Group;
 use App\Entity\Security\Invitation;
 use App\Entity\Srp;
 use App\Entity\User;
@@ -238,7 +239,8 @@ final class UserController extends AbstractController
 
         if ($user->isFullUser()) {
             $this->removeInvitation($user, $entityManager);
-            $groupManager->addGroupToUser($user);
+            $userGroup = $groupManager->findUserGroupByAlias($user, Group::DEFAULT_GROUP_ALIAS);
+            $userGroup->setUserRole(UserGroup::USER_ROLE_MEMBER);
         }
 
         $entityManager->flush();
