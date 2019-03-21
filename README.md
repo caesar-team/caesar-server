@@ -43,3 +43,4 @@ Just go to [http://localhost](http://localhost)
 ```bash
 APP_ENV=test vendor/bin/phpunit -d memory_limit=-1 #Phpunit
 ```
+
