@@ -18,7 +18,7 @@ class UserGroup
 {
     use TimestampableEntity;
 
-    const DEEFAULT_USER_ROLE = self::USER_ROLE_MEMBER;
+    const DEFAULT_USER_ROLE = self::USER_ROLE_MEMBER;
     const USER_ROLE_MEMBER = 'member';
     const USER_ROLE_ADMIN = 'admin';
     const USER_ROLE_GUEST = 'guest';
@@ -51,7 +51,7 @@ class UserGroup
      * @var string
      * @ORM\Column(type="string", nullable=false, length=50, options={"default"="member"})
      */
-    private $userRole = self::DEEFAULT_USER_ROLE;
+    private $userRole = self::DEFAULT_USER_ROLE;
 
     /**
      * UserGroup constructor.
