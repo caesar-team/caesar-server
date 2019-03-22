@@ -12,6 +12,7 @@ use App\Model\Request\ChildItem;
 use App\Model\Request\ItemCollectionRequest;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use OldSound\RabbitMqBundle\RabbitMq\Producer;
 use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
@@ -33,19 +34,30 @@ class ChildItemHandler
      * @var RouterInterface
      */
     protected $router;
+    /**
+     * @var Producer
+     */
+    private $producer;
 
     /**
      * InviteHandler constructor.
      * @param EntityManagerInterface $entityManager
      * @param SenderInterface $sender
      * @param RouterInterface $router
+     * @param Producer $producer
      */
-    public function __construct(EntityManagerInterface $entityManager, SenderInterface $sender, RouterInterface $router)
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        SenderInterface $sender,
+        RouterInterface $router,
+        Producer $producer
+    )
     {
         $this->entityManager = $entityManager;
         $this->userRepository = $entityManager->getRepository(User::class);
         $this->sender = $sender;
         $this->router = $router;
+        $this->producer = $producer;
     }
 
     /**
@@ -119,9 +131,9 @@ class ChildItemHandler
         }
 
         try {
-            $this->sender->send(MailRegistry::NEW_ITEM_MESSAGE, [$childItem->getUser()->getEmail()], [
-                'url' => $url,
-            ]);
+            $msg = array('email' => $childItem->getUser()->getEmail(), 'url' => $url, 'email_code' => MailRegistry::NEW_ITEM_MESSAGE);
+            $this->producer->setContentType('application/json');
+            $this->producer->publish(json_encode($msg), 'send_message_producer');
         } catch (\Exception $exception) {
             throw new \LogicException($exception->getMessage(), Response::HTTP_BAD_REQUEST);
         }
