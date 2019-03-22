@@ -1,4 +1,8 @@
-{% block subject %}{% endblock %}
+{% block subject %}{{ constant('App\\Services\\ChildItemHandler::EVENT_NEW_ITEM') == event ? 'You got new secure data' : 'You got updated secure data' }}{% endblock %}
 {% block body %}
-    {{ 'mail.share.new_item.message' | trans({'%url%': url}) }}
+    {% if constant('App\\Services\\ChildItemHandler::EVENT_NEW_ITEM') == event %}
+        {{ 'mail.share.new_item.message' | trans({'%url%': url}) }}
+    {% else %}
+        {{ 'mail.share.updated_item.message' | trans({'%url%': url}) }}
+    {% endif %}
 {% endblock %}

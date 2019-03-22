@@ -18,6 +18,8 @@ use Symfony\Component\Routing\RouterInterface;
 
 class ChildItemHandler
 {
+    const EVENT_NEW_ITEM = 'new';
+    const EVENT_UPDATED_ITEM = 'updated';
     /** @var EntityManagerInterface */
     private $entityManager;
 
@@ -56,7 +58,7 @@ class ChildItemHandler
      */
     public function childItemToItem(ItemCollectionRequest $request)
     {
-        $url = $this->router->generate('google_login', [], RouterInterface::ABSOLUTE_URL);
+        $url = $this->router->generate('root', [], RouterInterface::ABSOLUTE_URL);
         $items = [];
         foreach ($request->getItems() as $childItem) {
             $item = new Item();
@@ -69,7 +71,7 @@ class ChildItemHandler
             $item->setStatus($this->getStatusByCause($childItem->getCause()));
 
             $this->entityManager->persist($item);
-            $this->sendInvitationMessage($childItem, $url);
+            $this->sendItemMessage($childItem, $url);
             $items[] = $item;
         }
 
@@ -91,6 +93,7 @@ class ChildItemHandler
             $parentItem = $parentItem->getOriginalItem();
         }
 
+        $url = $this->router->generate('root', [], RouterInterface::ABSOLUTE_URL);
         foreach ($request->getItems() as $childItem) {
             /** @var Item $item */
             /** @var User $user */
@@ -107,12 +110,13 @@ class ChildItemHandler
             }
 
             $this->entityManager->persist($item);
+            $this->sendItemMessage($childItem, $url, self::EVENT_UPDATED_ITEM);
         }
 
         $this->entityManager->flush();
     }
 
-    private function sendInvitationMessage(ChildItem $childItem, string $url)
+    private function sendItemMessage(ChildItem $childItem, string $url, string $event = self::EVENT_NEW_ITEM)
     {
         if ($childItem->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)) {
             return;
@@ -121,6 +125,7 @@ class ChildItemHandler
         try {
             $this->sender->send(MailRegistry::NEW_ITEM_MESSAGE, [$childItem->getUser()->getEmail()], [
                 'url' => $url,
+                'event' => $event,
             ]);
         } catch (\Exception $exception) {
             throw new \LogicException($exception->getMessage(), Response::HTTP_BAD_REQUEST);
