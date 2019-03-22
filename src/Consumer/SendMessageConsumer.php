@@ -24,10 +24,8 @@ class SendMessageConsumer implements ConsumerInterface
     {
         $msg = json_decode($msg->getBody());
         $email = $msg['email'];
-        $url = $msg['url'];
+        $options = $msg['options'];
         $code = $msg['email_code'];
-        $this->sender->send($code, [$email], [
-            'url' => $url,
-        ]);
+        $this->sender->send($code, [$email], $options);
     }
 }

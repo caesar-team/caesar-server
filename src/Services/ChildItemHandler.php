@@ -135,11 +135,11 @@ class ChildItemHandler
         }
 
         try {
-            $this->sender->send(MailRegistry::NEW_ITEM_MESSAGE, [$childItem->getUser()->getEmail()], [
+            $options = [
                 'url' => $url,
                 'event' => $event,
-            ]);
-            $msg = array('email' => $childItem->getUser()->getEmail(), 'url' => $url, 'email_code' => MailRegistry::NEW_ITEM_MESSAGE);
+            ];
+            $msg = array('email' => $childItem->getUser()->getEmail(), 'options' => $options, 'email_code' => MailRegistry::NEW_ITEM_MESSAGE);
             $this->producer->setContentType('application/json');
             $this->producer->publish(json_encode($msg), 'send_message_producer');
         } catch (\Exception $exception) {
