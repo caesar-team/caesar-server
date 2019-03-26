@@ -11,6 +11,10 @@ stages:
   steps:
   - applyYamlConfig:
         path: ./deploy/deployment.yaml
-# branch conditions for the pipeline
 branch:
-    include: [develop, master]
+  include: [ develop, master ]
+notification:
+  recipients:
+  - recipient: "#caesarapp-notify"
+    notifier: "slack"
+  condition: [ Success, Changed, Failed ]
