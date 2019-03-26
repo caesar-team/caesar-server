@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Consumer;
 
+use App\Model\DTO\Message;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
 use Sylius\Component\Mailer\Sender\SenderInterface;
@@ -22,10 +23,14 @@ class SendMessageConsumer implements ConsumerInterface
 
     public function execute(AMQPMessage $msg)
     {
-        $msg = json_decode($msg->getBody(), true);
-        $email = $msg['email'];
-        $options = $msg['options'];
-        $code = $msg['email_code'];
+        $message = unserialize($msg->getBody());
+        if (!$message instanceof Message) {
+            return;
+        }
+        $email = $message->email;
+        $options = $message->options;
+        $code = $message->emailCode;
+
         try {
             $this->sender->send($code, [$email], $options);
         } catch (\Exception $exception) {

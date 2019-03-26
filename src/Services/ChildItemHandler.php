@@ -8,6 +8,7 @@ use App\Entity\Item;
 use App\Entity\ItemUpdate;
 use App\Entity\User;
 use App\Mailer\MailRegistry;
+use App\Model\DTO\Message;
 use App\Model\Request\ChildItem;
 use App\Model\Request\ItemCollectionRequest;
 use App\Repository\UserRepository;
@@ -37,29 +38,29 @@ class ChildItemHandler
      */
     protected $router;
     /**
-     * @var Producer
+     * @var Messenger
      */
-    private $producer;
+    private $messenger;
 
     /**
      * InviteHandler constructor.
      * @param EntityManagerInterface $entityManager
      * @param SenderInterface $sender
      * @param RouterInterface $router
-     * @param Producer $producer
+     * @param Messenger $messenger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         SenderInterface $sender,
         RouterInterface $router,
-        Producer $producer
+        Messenger $messenger
     )
     {
         $this->entityManager = $entityManager;
         $this->userRepository = $entityManager->getRepository(User::class);
         $this->sender = $sender;
         $this->router = $router;
-        $this->producer = $producer;
+        $this->messenger = $messenger;
     }
 
     /**
@@ -138,9 +139,8 @@ class ChildItemHandler
             'url' => $url,
             'event' => $event,
         ];
-        $msg = array('email' => $childItem->getUser()->getEmail(), 'options' => $options, 'email_code' => MailRegistry::NEW_ITEM_MESSAGE);
-        $this->producer->setContentType('application/json');
-        $this->producer->publish(json_encode($msg));
+        $message = new Message($childItem->getUser()->getEmail(), MailRegistry::NEW_ITEM_MESSAGE, $options);
+        $this->messenger->send($childItem->getUser(), $message);
     }
 
     /**
@@ -186,13 +186,5 @@ class ChildItemHandler
         }
 
         return $status;
-    }
-
-    /**
-     * @return Producer
-     */
-    public function getProducer(): Producer
-    {
-        return $this->producer;
     }
 }
