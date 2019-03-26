@@ -10,8 +10,8 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * @ORM\Table(name="message_history", indexes={@ORM\Index(name="search_by_recipient_idx", columns={"recipient_id"}),@ORM\Index(name="search_by_sender_idx", columns={"sender_id"})})
- * @ORM\Entity
+ * @ORM\Table(name="message_history", indexes={@ORM\Index(name="search_by_recipient_idx", columns={"recipient_id"})})
+ * @ORM\Entity(repositoryClass="App\Repository\MessageHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class MessageHistory
@@ -38,11 +38,6 @@ class MessageHistory
      * @ORM\Column(type="string", nullable=false)
      */
     private $recipientId;
-    /**
-     * @var string
-     * @ORM\Column(type="string", nullable=false)
-     */
-    private $senderId;
     /**
      * @var string
      * @ORM\Column(type="string", length=50, nullable=false, options={"default"="email"})
@@ -109,22 +104,6 @@ class MessageHistory
     public function setRecipientId(string $recipientId): void
     {
         $this->recipientId = $recipientId;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSenderId(): string
-    {
-        return $this->senderId;
-    }
-
-    /**
-     * @param string $senderId
-     */
-    public function setSenderId(string $senderId): void
-    {
-        $this->senderId = $senderId;
     }
 
     /**
