@@ -134,17 +134,13 @@ class ChildItemHandler
             return;
         }
 
-        try {
-            $options = [
-                'url' => $url,
-                'event' => $event,
-            ];
-            $msg = array('email' => $childItem->getUser()->getEmail(), 'options' => $options, 'email_code' => MailRegistry::NEW_ITEM_MESSAGE);
-            $this->producer->setContentType('application/json');
-            $this->producer->publish(json_encode($msg), 'send_message_producer');
-        } catch (\Exception $exception) {
-            throw new \LogicException($exception->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
+        $options = [
+            'url' => $url,
+            'event' => $event,
+        ];
+        $msg = array('email' => $childItem->getUser()->getEmail(), 'options' => $options, 'email_code' => MailRegistry::NEW_ITEM_MESSAGE);
+        $this->producer->setContentType('application/json');
+        $this->producer->publish(json_encode($msg));
     }
 
     /**
@@ -190,5 +186,13 @@ class ChildItemHandler
         }
 
         return $status;
+    }
+
+    /**
+     * @return Producer
+     */
+    public function getProducer(): Producer
+    {
+        return $this->producer;
     }
 }

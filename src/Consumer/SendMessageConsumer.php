@@ -22,10 +22,14 @@ class SendMessageConsumer implements ConsumerInterface
 
     public function execute(AMQPMessage $msg)
     {
-        $msg = json_decode($msg->getBody());
+        $msg = json_decode($msg->getBody(), true);
         $email = $msg['email'];
         $options = $msg['options'];
         $code = $msg['email_code'];
-        $this->sender->send($code, [$email], $options);
+        try {
+            $this->sender->send($code, [$email], $options);
+        } catch (\Exception $exception) {
+        } catch (\Throwable $error) {
+        }
     }
 }
