@@ -8,10 +8,12 @@ use App\Entity\Item;
 use App\Entity\ItemUpdate;
 use App\Entity\User;
 use App\Mailer\MailRegistry;
+use App\Model\DTO\Message;
 use App\Model\Request\ChildItem;
 use App\Model\Request\ItemCollectionRequest;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use OldSound\RabbitMqBundle\RabbitMq\Producer;
 use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
@@ -35,19 +37,30 @@ class ChildItemHandler
      * @var RouterInterface
      */
     protected $router;
+    /**
+     * @var Messenger
+     */
+    private $messenger;
 
     /**
      * InviteHandler constructor.
      * @param EntityManagerInterface $entityManager
      * @param SenderInterface $sender
      * @param RouterInterface $router
+     * @param Messenger $messenger
      */
-    public function __construct(EntityManagerInterface $entityManager, SenderInterface $sender, RouterInterface $router)
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        SenderInterface $sender,
+        RouterInterface $router,
+        Messenger $messenger
+    )
     {
         $this->entityManager = $entityManager;
         $this->userRepository = $entityManager->getRepository(User::class);
         $this->sender = $sender;
         $this->router = $router;
+        $this->messenger = $messenger;
     }
 
     /**
@@ -122,14 +135,12 @@ class ChildItemHandler
             return;
         }
 
-        try {
-            $this->sender->send(MailRegistry::NEW_ITEM_MESSAGE, [$childItem->getUser()->getEmail()], [
-                'url' => $url,
-                'event' => $event,
-            ]);
-        } catch (\Exception $exception) {
-            throw new \LogicException($exception->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
+        $options = [
+            'url' => $url,
+            'event' => $event,
+        ];
+        $message = new Message($childItem->getUser()->getEmail(), MailRegistry::NEW_ITEM_MESSAGE, $options);
+        $this->messenger->send($childItem->getUser(), $message);
     }
 
     /**

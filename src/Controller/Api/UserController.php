@@ -20,6 +20,7 @@ use App\Form\Request\SaveKeysType;
 use App\Form\Request\SendInvitesType;
 use App\Form\Request\SendInviteType;
 use App\Mailer\MailRegistry;
+use App\Model\DTO\Message;
 use App\Model\Query\UserQuery;
 use App\Model\Request\SendInviteRequest;
 use App\Model\Request\SendInviteRequests;
@@ -29,12 +30,12 @@ use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
 use App\Security\AuthorizationManager\InvitationEncoder;
 use App\Services\GroupManager;
+use App\Services\Messenger;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
-use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -415,12 +416,11 @@ final class UserController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request         $request
-     * @param SenderInterface $sender
-     *
+     * @param Request $request
+     * @param Messenger $messenger
      * @return FormInterface
      */
-    public function sendInvitation(Request $request, SenderInterface $sender)
+    public function sendInvitation(Request $request, Messenger $messenger)
     {
         $sendRequest = new SendInviteRequest();
 
@@ -430,9 +430,10 @@ final class UserController extends AbstractController
             return $form;
         }
 
-        $sender->send(MailRegistry::INVITE_SEND_MESSAGE, [$sendRequest->getUser()->getEmail()], [
+        $message = new Message($sendRequest->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
             'url' => $sendRequest->getUrl(),
         ]);
+        $messenger->send($sendRequest->getUser(), $message);
 
         return null;
     }
@@ -461,10 +462,10 @@ final class UserController extends AbstractController
      * )
      *
      * @param Request $request
-     * @param SenderInterface $sender
+     * @param Messenger $messenger
      * @return null|FormInterface
      */
-    public function sendInvitations(Request $request, SenderInterface $sender)
+    public function sendInvitations(Request $request, Messenger $messenger)
     {
         $sendRequests = new SendInviteRequests();
 
@@ -474,10 +475,11 @@ final class UserController extends AbstractController
             return $form;
         }
 
-        foreach ($sendRequests->getMessages() as $message) {
-            $sender->send(MailRegistry::INVITE_SEND_MESSAGE, [$message->getUser()->getEmail()], [
-                'url' => $message->getUrl(),
+        foreach ($sendRequests->getMessages() as $requestMessage) {
+            $message = new Message($requestMessage->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
+                'url' => $requestMessage->getUrl(),
             ]);
+            $messenger->send($requestMessage->getUser(), $message);
         }
 
         return null;
