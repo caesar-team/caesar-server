@@ -40,6 +40,22 @@ spec:
           value: "4xxi.com"
         - name: TWO_FACTOR_SERVER_NAME
           value: "Caesar"
+        - name: RABBITMQ_HOST
+          value: rabbitmq
+        - name: RABBITMQ_VHOST
+          value: /
+        - name: RABBITMQ_DEFAULT_USER
+          valueFrom:
+            secretKeyRef:
+              key: RABBITMQ_DEFAULT_USER
+              name: rabbitmq
+              optional: false
+        - name: RABBITMQ_DEFAULT_PASS
+          valueFrom:
+            secretKeyRef:
+              key: RABBITMQ_DEFAULT_PASS
+              name: rabbitmq
+              optional: false
         - name: INVITATION_SALT
           valueFrom:
             secretKeyRef:
