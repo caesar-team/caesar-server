@@ -6,8 +6,8 @@ namespace App\Services;
 
 
 use App\Entity\User;
-use App\Model\DTO\Message;
 use OldSound\RabbitMqBundle\RabbitMq\Producer;
+use App\Model\DTO\Message;
 
 class Messenger
 {
