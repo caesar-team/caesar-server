@@ -7,10 +7,14 @@ stages:
         pushRemote: true
         tag: caesarteam/caesar-server:${CICD_GIT_BRANCH}
         registry: index.docker.io
-- name: Deploy
+- name: Deployment backend
   steps:
   - applyYamlConfig:
         path: ./deploy/deployment.yaml
+- name: Deployment CronJob
+  steps:
+  - applyYamlConfig:
+        path: ./deploy/cronjob.yaml
 branch:
   include: [ develop, master ]
 notification:
