@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: cronjobs
+  name: send-message
   namespace: default
 spec:
   schedule: "*/1 * * * *"
@@ -13,26 +13,12 @@ spec:
           - env:
             - name: DELIVERY_NAME
               value: "Caesar"
-            - name: AVAILABLE_REQUEST_SIGNATURE
-              value: "false"
             - name: WEB_CLIENT_URL
               value: "https://demo.caesar.team"
-            - name: DB_VERSION
-              value: "9.6"
-            - name: HTTPS
-              value: "on"
-            - name: HTTP_X_FORWARDED_PROTO
-              value: https
             - name: JWT_TOKEN_TTL
               value: "86400"
-            - name: STRICT_AUDIT_TRAIL
-              value: "false"
             - name: SENDER_ADDRESS
               value: "noemail@demo.caesar.team"
-            - name: OAUTH_ALLOWED_DOMAINS
-              value: "4xxi.com"
-            - name: TWO_FACTOR_SERVER_NAME
-              value: "Caesar"
             - name: RABBITMQ_HOST
               value: rabbitmq
             - name: RABBITMQ_VHOST
@@ -55,34 +41,10 @@ spec:
                   key: INVITATION_SALT
                   name: caesarapp-server
                   optional: false
-            - name: GOOGLE_ID
-              valueFrom:
-                secretKeyRef:
-                  key: GOOGLE_ID
-                  name: caesarapp-server
-                  optional: false
-            - name: GOOGLE_SECRET
-              valueFrom:
-                secretKeyRef:
-                  key: GOOGLE_SECRET
-                  name: caesarapp-server
-                  optional: false
             - name: JWT_PASSPHRASE
               valueFrom:
                 secretKeyRef:
                   key: JWT_PASSPHRASE
-                  name: caesarapp-server
-                  optional: false
-            - name: SUPERADMIN_PASS
-              valueFrom:
-                secretKeyRef:
-                  key: SUPERADMIN_PASS
-                  name: caesarapp-server
-                  optional: false
-            - name: ALLOW_FRONT_REDIRECT_PATTERN
-              valueFrom:
-                secretKeyRef:
-                  key: ALLOW_FRONT_REDIRECT_PATTERN
                   name: caesarapp-server
                   optional: false
             - name: APP_SECRET
@@ -101,18 +63,6 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: MAILER_URL
-                  name: caesarapp-server
-                  optional: false
-            - name: BACKUP_CODE_SALT
-              valueFrom:
-                secretKeyRef:
-                  key: BACKUP_CODE_SALT
-                  name: caesarapp-server
-                  optional: false
-            - name: BACKUP_CODE_HASH_LENGTH
-              valueFrom:
-                secretKeyRef:
-                  key: BACKUP_CODE_HASH_LENGTH
                   name: caesarapp-server
                   optional: false
             name: send-message
