@@ -29,28 +29,28 @@
         "snc/redis-bundle": "^2.1",
         "stof/doctrine-extensions-bundle": "^1.3",
         "sylius/mailer-bundle": "^1.3",
-        "symfony/asset": "^4.1",
-        "symfony/console": "^4.1",
-        "symfony/expression-language": "^4.1",
-        "symfony/flex": "^1.0",
-        "symfony/framework-bundle": "^4.1",
-        "symfony/http-foundation": "^4.1",
+        "symfony/asset": "^4.2",
+        "symfony/console": "^4.2",
+        "symfony/expression-language": "^4.2",
+        "symfony/flex": "^1.2",
+        "symfony/framework-bundle": "^4.2",
+        "symfony/http-foundation": "^4.2",
         "symfony/lts": "^4@dev",
         "symfony/monolog-bundle": "^3.3",
         "symfony/orm-pack": "^1.0",
         "symfony/serializer-pack": "^1.0",
         "symfony/swiftmailer-bundle": "^3.2",
-        "symfony/twig-bundle": "^4.1",
-        "symfony/yaml": "^4.1"
+        "symfony/twig-bundle": "^4.2",
+        "symfony/yaml": "^4.2"
     },
     "require-dev": {
         "deployer/deployer": "^6.2",
         "friendsofphp/php-cs-fixer": "^2.0",
         "phpunit/phpunit": "^7.2",
-        "symfony/browser-kit": "^4.1",
+        "symfony/browser-kit": "^4.2",
         "symfony/debug-pack": "^1.0",
-        "symfony/dotenv": "^4.1",
-        "symfony/maker-bundle": "^1.5"
+        "symfony/dotenv": "^4.2",
+        "symfony/maker-bundle": "^1.11"
     },
     "config": {
         "preferred-install": {
