@@ -123,7 +123,9 @@ class ChildItemHandler
             }
 
             $this->entityManager->persist($item);
-            $this->sendItemMessage($childItem, $url, self::EVENT_UPDATED_ITEM);
+            if ($currentOwner !== $user) {
+                $this->sendItemMessage($childItem, $url, self::EVENT_UPDATED_ITEM);
+            }
         }
 
         $this->entityManager->flush();
@@ -139,7 +141,7 @@ class ChildItemHandler
             'url' => $url,
             'event' => $event,
         ];
-        $message = new Message($childItem->getUser()->getEmail(), MailRegistry::NEW_ITEM_MESSAGE, $options);
+        $message = new Message($childItem->getUser()->getId()->toString(), $childItem->getUser()->getEmail(), MailRegistry::NEW_ITEM_MESSAGE, $options);
         $this->messenger->send($childItem->getUser(), $message);
     }
 

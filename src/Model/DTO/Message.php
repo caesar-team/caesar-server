@@ -17,13 +17,18 @@ class Message
     /**
      * @var string
      */
-    public $emailCode;
+    public $code;
+    /**
+     * @var string
+     */
+    public $recipientId;
 
-    public function __construct(string $email = null, string $emailCode = null, array $options = [])
+    public function __construct(string $recipientId, string $email = null, string $emailCode = null, array $options = [])
     {
         $this->email = $email;
         $this->options = $options;
-        $this->emailCode = $emailCode;
+        $this->code = $emailCode;
+        $this->recipientId = $recipientId;
     }
 
 }

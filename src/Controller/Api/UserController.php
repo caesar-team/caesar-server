@@ -430,7 +430,7 @@ final class UserController extends AbstractController
             return $form;
         }
 
-        $message = new Message($sendRequest->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
+        $message = new Message($sendRequest->getUser()->getId()->toString(),$sendRequest->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
             'url' => $sendRequest->getUrl(),
         ]);
         $messenger->send($sendRequest->getUser(), $message);
@@ -476,7 +476,7 @@ final class UserController extends AbstractController
         }
 
         foreach ($sendRequests->getMessages() as $requestMessage) {
-            $message = new Message($requestMessage->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
+            $message = new Message($requestMessage->getUser()->getId()->toString(), $requestMessage->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
                 'url' => $requestMessage->getUrl(),
             ]);
             $messenger->send($requestMessage->getUser(), $message);
