@@ -1,3 +1,5 @@
+parameters:
+    env(JWT_TOKEN_TTL): '86400'
 lexik_jwt_authentication:
     secret_key: '%kernel.root_dir%/../var/jwt/private.pem'
     public_key:  '%kernel.root_dir%/../var/jwt/public.pem'
