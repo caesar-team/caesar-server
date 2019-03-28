@@ -3,8 +3,8 @@ scheb_two_factor:
     security_tokens:
         - Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken
     google:
-        server_name: '%env(TWO_FACTOR_SERVER_NAME)%'
+        server_name: '%env(COMPANY_NAME)%'
         enabled: true
-        issuer: '%env(TWO_FACTOR_SERVER_NAME)%'
+        issuer: '%env(COMPANY_NAME)%'
     backup_codes:
         enabled: true

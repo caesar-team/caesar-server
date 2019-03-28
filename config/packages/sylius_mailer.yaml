@@ -1,6 +1,6 @@
 sylius_mailer:
     sender:
-        name: '%env(DELIVERY_NAME)%'
+        name: '%env(COMPANY_NAME)%'
         address: '%env(SENDER_ADDRESS)%'
     emails:
         !php/const App\Mailer\MailRegistry::INVITE_SEND_MESSAGE:
