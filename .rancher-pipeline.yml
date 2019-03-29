@@ -19,6 +19,10 @@ stages:
   steps:
   - applyYamlConfig:
         path: ./deploy/cronjob.yaml
+- name: Object update Ingress
+  steps:
+  - applyYamlConfig:
+        path: ./deploy/ingress.yaml
 branch:
   include: [ develop, master ]
 notification:
