@@ -15,12 +15,10 @@ easy_admin:
           - email
           - lastLogin
           - domain
-          - guest
           - enabled
       form:
         fields:
           - enabled
-          - guest
           - username
           - email
           - domain
