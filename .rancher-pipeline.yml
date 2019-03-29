@@ -10,19 +10,19 @@ stages:
 - name: Object update ConfigMap
   steps:
   - applyYamlConfig:
-        path: ./deploy/configmap.yaml
+        path: ./k8s/configmap.yaml
 - name: Object update Deployment
   steps:
   - applyYamlConfig:
-        path: ./deploy/deployment.yaml
+        path: ./k8s/deployment.yaml
 - name: Object update CronJob
   steps:
   - applyYamlConfig:
-        path: ./deploy/cronjob.yaml
+        path: ./k8s/cronjob.yaml
 - name: Object update Ingress
   steps:
   - applyYamlConfig:
-        path: ./deploy/ingress.yaml
+        path: ./k8s/ingress.yaml
 branch:
   include: [ develop, master ]
 notification:
