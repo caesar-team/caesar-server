@@ -47,7 +47,9 @@ class SendMessageConsumer implements ConsumerInterface
             $this->entityManager->persist($messageHistory);
             $this->entityManager->flush();
         } catch (\Exception $exception) {
+            print($exception->getMessage());
         } catch (\Throwable $error) {
+            print($error->getMessage());
         }
     }
 }
