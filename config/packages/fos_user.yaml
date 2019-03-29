@@ -4,7 +4,7 @@ fos_user:
     firewall_name: main
     from_email:
         address: "%env(SENDER_ADDRESS)%"
-        sender_name: "%env(COMPANY_NAME)%"
+        sender_name: "%env(APP_NAME)%"
     registration:
         confirmation:
             enabled: true

@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - env:
-        - name: COMPANY_NAME
+        - name: APP_NAME
           value: "Caesar"
         - name: SENDER_ADDRESS
           value: "noemail@demo.caesar.team"
