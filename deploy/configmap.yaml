@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: default
+  labels:
+    app: caesarapp-server
+    CICD_GIT_COMMIT: ${CICD_GIT_COMMIT}
+data:
+  nginx.conf: |
+    events {
+      worker_connections 2048;
+      multi_accept on;
+      use epoll;
+    }
+
+    http {
+      sendfile on;
+      tcp_nodelay on;
+      tcp_nopush on;
+      server_tokens off;
+      include /etc/nginx/mime.types;
+      default_type application/octet-stream;
+
+      keepalive_timeout 15;
+      types_hash_max_size 2048;
+      client_body_temp_path /tmp 1 2;
+      client_body_in_file_only off;
+      client_max_body_size 10M;
+
+      gzip on;
+      gzip_disable "msie6";
+      open_file_cache max=100;
+
+      log_format main '$remote_addr - $upstream_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+      access_log /var/log/nginx/access.log main;
+      error_log /var/log/nginx/error.log error;
+
+      upstream php_upstream {
+        server 127.0.0.1:9000;
+      }
+
+      server {
+        server_name _;
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        root /var/www/html/public;
+
+        location / {
+          try_files $uri /index.php$is_args$args;
+        }
+
+        location ~ ^/index\.php(/|$) {
+          fastcgi_pass php_upstream;
+          fastcgi_split_path_info ^(.+\.php)(/.*)$;
+          include fastcgi_params;
+          fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+          fastcgi_param DOCUMENT_ROOT $realpath_root;
+          internal;
+        }
+
+        location ~ \.php$ { return 404; }
+      }
+    }
