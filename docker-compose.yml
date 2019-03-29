@@ -29,7 +29,7 @@ services:
     db:
         image: "postgres:9"
         ports:
-            - "${POSTGRES_EXTERNAL_PORT}:5432"
+            - "5432:5432"
         volumes:
             - db:/var/lib/postgresql/data
         environment:

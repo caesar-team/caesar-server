@@ -18,32 +18,16 @@ spec:
     spec:
       containers:
       - env:
-        - name: DELIVERY_NAME
+        - name: APP_NAME
           value: "Caesar"
-        - name: AVAILABLE_REQUEST_SIGNATURE
-          value: "false"
-        - name: WEB_CLIENT_URL
-          value: "https://demo.caesar.team"
-        - name: DB_VERSION
-          value: "9.6"
-        - name: HTTPS
-          value: "on"
-        - name: HTTP_X_FORWARDED_PROTO
-          value: https
-        - name: JWT_TOKEN_TTL
-          value: "86400"
-        - name: STRICT_AUDIT_TRAIL
-          value: "false"
         - name: SENDER_ADDRESS
           value: "noemail@demo.caesar.team"
+        - name: WEB_CLIENT_URL
+          value: "https://demo.caesar.team"
         - name: OAUTH_ALLOWED_DOMAINS
           value: "4xxi.com"
-        - name: TWO_FACTOR_SERVER_NAME
-          value: "Caesar"
         - name: RABBITMQ_HOST
           value: rabbitmq
-        - name: RABBITMQ_VHOST
-          value: /
         - name: RABBITMQ_DEFAULT_USER
           valueFrom:
             secretKeyRef:
