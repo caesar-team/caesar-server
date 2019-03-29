@@ -76,7 +76,7 @@ final class SrpController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/srp/registration",
+     *     path="/api/auth/srpp/registration",
      *     name="api_srp_registration",
      *     methods={"POST"}
      * )
@@ -164,7 +164,7 @@ final class SrpController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/srp/login_prepare",
+     *     path="/api/auth/srpp/login_prepare",
      *     name="api_srp_login_prepare",
      *     methods={"POST"}
      * )
@@ -254,7 +254,7 @@ final class SrpController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/srp/login",
+     *     path="/api/auth/srpp/login",
      *     name="api_srp_login",
      *     methods={"POST"}
      * )
@@ -307,7 +307,7 @@ final class SrpController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/srp/password",
+     *     path="/api/auth/srpp/password",
      *     name="api_srp_update_password",
      *     methods={"PATCH"}
      * )

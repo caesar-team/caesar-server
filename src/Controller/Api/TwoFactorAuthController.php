@@ -62,7 +62,7 @@ final class TwoFactorAuthController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/2fa/activate",
+     *     path="/api/auth/2fa/activate",
      *     name="api_security_2fa_activate",
      *     methods={"POST"}
      * )
@@ -122,7 +122,7 @@ final class TwoFactorAuthController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/2fa",
+     *     path="/api/auth/2fa",
      *     name="api_security_2fa_code",
      *     methods={"GET"}
      * )
@@ -198,7 +198,7 @@ final class TwoFactorAuthController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/2fa",
+     *     path="/api/auth/2fa",
      *     name="2fa_check",
      *     methods={"POST"}
      * )
