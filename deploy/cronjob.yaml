@@ -11,7 +11,7 @@ spec:
         spec:
           containers:
           - env:
-            - name: DELIVERY_NAME
+            - name: APP_NAME
               value: "Caesar"
             - name: WEB_CLIENT_URL
               value: "https://demo.caesar.team"
