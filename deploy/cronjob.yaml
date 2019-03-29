@@ -1,24 +1,28 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: send-message
+  name: cron-send-message
   namespace: default
 spec:
   schedule: "*/1 * * * *"
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       template:
         spec:
           containers:
-          - env:
+          - name: send-message
+            image: "caesarteam/caesar-server:develop"
+            command: ["/usr/local/bin/php", "bin/console", "rabbitmq:consumer", "-e", "prod", "-w", "-m", "30", "send_message"]
+            env:
             - name: APP_NAME
               value: "Caesar"
+            - name: SENDER_ADDRESS
+              value: "noemail@demo.caesar.team"
             - name: WEB_CLIENT_URL
               value: "https://demo.caesar.team"
             - name: JWT_TOKEN_TTL
               value: "86400"
-            - name: SENDER_ADDRESS
-              value: "noemail@demo.caesar.team"
             - name: RABBITMQ_HOST
               value: rabbitmq
             - name: RABBITMQ_VHOST
@@ -65,7 +69,36 @@ spec:
                   key: MAILER_URL
                   name: caesarapp-server
                   optional: false
-            name: send-message
+          restartPolicy: OnFailure
+
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cron-clear-message-history
+  namespace: default
+spec:
+  schedule: "0 12 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: clear-message-history
             image: "caesarteam/caesar-server:develop"
-            command: ["/usr/local/bin/php", "bin/console", "rabbitmq:consumer", "-e", "prod", "-w", "-m", "30", "send_message"]
-          restartPolicy: Never
+            command: ["/usr/local/bin/php", "bin/console", "app:clear-message-history", "-e", "prod"]
+            env:
+            - name: APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: APP_SECRET
+                  name: caesarapp-server
+                  optional: false
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  key: DATABASE_URL
+                  name: caesarapp-server
+                  optional: false
+          restartPolicy: OnFailure
