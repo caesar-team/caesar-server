@@ -1,6 +1,21 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: caesarapp-config
+  namespace: default
+  labels:
+    app: caesarapp-server
+data:
+  API_URI: "https://demo.caesar.team"
+  APP_URI: "https://demo.caesar.team"
+  APP_NAME: "Caesar"
+  SENDER_ADDRESS: "noemail@demo.caesar.team"
+  OAUTH_ALLOWED_DOMAINS: "4xxi.com,caesar.team"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: nginx-config
   namespace: default
   labels:
