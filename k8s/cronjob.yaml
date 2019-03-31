@@ -19,8 +19,6 @@ spec:
               value: "Caesar"
             - name: SENDER_ADDRESS
               value: "noemail@demo.caesar.team"
-            - name: WEB_CLIENT_URL
-              value: "https://demo.caesar.team"
             - name: JWT_TOKEN_TTL
               value: "86400"
             - name: RABBITMQ_HOST
