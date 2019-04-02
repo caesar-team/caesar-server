@@ -34,7 +34,8 @@ openssl rsa -pubout -in var/jwt/private.pem -out var/jwt/public.pem
 ```
 
 ### 5. Update .env:
-- Insert pass phrase - JWT_PASSPHRASE  
+- Create a config file .env by .env.dist
+- Fill required values by instruction inside .env
 
 ### 6. Open project
 Just go to [http://localhost](http://localhost)
@@ -43,3 +44,4 @@ Just go to [http://localhost](http://localhost)
 ```bash
 APP_ENV=test vendor/bin/phpunit -d memory_limit=-1 #Phpunit
 ```
+
