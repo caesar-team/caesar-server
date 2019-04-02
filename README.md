@@ -18,7 +18,7 @@ docker-sync-stack start
 ```
 ### 2. Install vendors
 ```bash
-docker-compose exec composer install
+docker-compose exec php composer install
 ```
 ### 3. Run migrations, install fixtures
 ```bash
@@ -36,11 +36,10 @@ openssl rsa -pubout -in var/jwt/private.pem -out var/jwt/public.pem
 ### 5. Update .env:
 - Insert pass phrase - JWT_PASSPHRASE  
 
-### 5. Open project
+### 6. Open project
 Just go to [http://localhost](http://localhost)
 
 ####Run tests:
 ```bash
 APP_ENV=test vendor/bin/phpunit -d memory_limit=-1 #Phpunit
 ```
-

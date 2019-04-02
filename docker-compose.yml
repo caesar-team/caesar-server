@@ -5,7 +5,6 @@ services:
         build: .
         volumes:
             - .:/var/www/html
-            - trash:/var/www/
         expose:
             - 9000
         environment:
