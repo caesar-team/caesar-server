@@ -1,10 +1,8 @@
 # ---- Base Image ----
 FROM php:7.3-fpm-alpine AS base
+RUN mkdir -p /var/www/html && chown -R www-data /var/www/html
 # Set working directory
 WORKDIR /var/www/html
-RUN mkdir -p var/cache var/logs var/sessions && chown -R www-data: var
-# Preparing
-RUN mkdir -p /var/www/html && chown -R www-data /var
 
 RUN apk --update add \
     build-base \
@@ -48,12 +46,16 @@ RUN APP_ENV=prod composer install --prefer-dist --no-plugins --no-scripts --no-d
 # ---- Release ----
 FROM base AS release
 # copy production vendors
+USER www-data
 COPY . .
 COPY --from=dependencies /var/www/html/vendor /var/www/html/vendor
 COPY ./config/docker/php/symfony.ini /usr/local/etc/php/conf.d
 COPY ./config/docker/php/symfony.pool.conf /usr/local/etc/php-fpm.d/
 COPY entrypoint.sh /usr/local/bin/
+RUN mkdir -p var/cache var/logs var/sessions
+# Preparing
 RUN php bin/console assets:install public
+USER root
 # expose port and define CMD
 EXPOSE 9000
 ENTRYPOINT ["entrypoint.sh"]
