@@ -46,14 +46,13 @@ RUN APP_ENV=prod composer install --prefer-dist --no-plugins --no-scripts --no-d
 # ---- Release ----
 FROM base AS release
 # copy production vendors
-USER www-data
 COPY . .
 COPY --from=dependencies /var/www/html/vendor /var/www/html/vendor
 COPY ./config/docker/php/symfony.ini /usr/local/etc/php/conf.d
 COPY ./config/docker/php/symfony.pool.conf /usr/local/etc/php-fpm.d/
 COPY entrypoint.sh /usr/local/bin/
-RUN mkdir -p var/cache var/logs var/sessions
-# Preparing
+RUN mkdir -p var/cache var/logs var/sessions && chown -R www-data /var/www/html
+USER www-data
 RUN php bin/console assets:install public
 USER root
 # expose port and define CMD
