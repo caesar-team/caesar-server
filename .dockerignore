@@ -1,8 +1,16 @@
 .git*
+.DS_Store
+.idea
+.rancher-pipeline.yml
+./*.md
+./*.yml
+phpunit.xml.dist
 Dockerfile
 docker-compose.yml
 README.md
 .env.*
+.env
+.php_cs.dist
 /vendor/*
 /var/cache/*
 /var/jwt/*
