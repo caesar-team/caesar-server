@@ -29,6 +29,10 @@ spec:
         - name: RABBITMQ_HOST
           value: rabbitmq
         - name: RABBITMQ_DEFAULT_USER
+        - name: HTTPS
+          value: "on"
+        - name: HTTP_X_FORWARDED_PROTO
+          value: https
           valueFrom:
             secretKeyRef:
               key: RABBITMQ_DEFAULT_USER

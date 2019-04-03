@@ -54,7 +54,6 @@ COPY ./config/docker/php/symfony.ini /usr/local/etc/php/conf.d
 COPY ./config/docker/php/symfony.pool.conf /usr/local/etc/php-fpm.d/
 COPY entrypoint.sh /usr/local/bin/
 RUN php bin/console assets:install public
-
 # expose port and define CMD
 EXPOSE 9000
 ENTRYPOINT ["entrypoint.sh"]
