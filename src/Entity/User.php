@@ -181,6 +181,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->id = Uuid::uuid4();
         $this->inbox = Directory::createInbox();
         $this->lists = Directory::createRootList();
+        $this->lists->addChildList(Directory::createDefaultList());
         $this->trash = Directory::createTrash();
         $this->userGroups = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
