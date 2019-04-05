@@ -45,7 +45,7 @@ security:
                 authenticators:
                     - App\Security\ShareAuthenticator
         srp:
-            pattern: ^/api/srp
+            pattern: ^/api/auth/srpp
             stateless: true
             context: srp
             anonymous: true
@@ -68,7 +68,7 @@ security:
             stateless: true
             anonymous: ~
             two_factor:
-                check_path: /api/2fa
+                check_path: /api/auth/2fa
                 provider: fos.user.provider
                 auth_code_parameter_name: authCode
                 success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
