@@ -1,7 +1,7 @@
 #!/bin/sh
-
-mkdir -p var/cache var/logs var/sessions
-chown -R www-data: var
-bin/console d:m:m -n
+# su www-data -s /bin/sh ./bin/genkeys.sh
+# su www-data -s /bin/sh ./bin/cache.sh
+# su www-data -s /bin/sh -c "php-fpm -R"
 ./bin/genkeys.sh
+./bin/cache.sh
 php-fpm -R

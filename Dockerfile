@@ -1,10 +1,37 @@
 # ---- Base Image ----
-FROM 4xxi/php-pgsql:flex AS base
-# Preparing
-RUN mkdir -p /var/www/html && chown -R www-data /var && rm -rf /var/lib/apt/lists/* && \
-apt-get update && apt-get install -y --no-install-recommends libgpgme11-dev && pecl install gnupg redis && docker-php-ext-enable gnupg redis
+FROM php:7.3-fpm-alpine AS base
+RUN mkdir -p /var/www/html
 # Set working directory
 WORKDIR /var/www/html
+
+RUN apk --update add \
+    build-base \
+    autoconf \
+    git \
+    icu-dev \
+    gpgme-dev \
+    gpgme \
+    libzip-dev \
+    postgresql-dev \
+    zip
+
+RUN docker-php-ext-install \
+    intl \
+    bcmath\
+    opcache \
+    pdo \
+    pdo_pgsql \
+    zip
+
+RUN pecl install gnupg redis \
+    && docker-php-ext-enable redis
+
+# Composer part
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+ENV COMPOSER_MEMORY_LIMIT -1
+ENV COMPOSER_ALLOW_SUPERUSER 1
+RUN composer global require hirak/prestissimo  --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-interaction --no-plugins --no-scripts
+
 # Run in production mode
 ENV APP_ENV=prod
 # Copy project file
@@ -14,18 +41,19 @@ COPY composer.lock .
 # ---- Dependencies ----
 FROM base AS dependencies
 # install vendors
-RUN composer global require hirak/prestissimo  --prefer-dist --no-progress --no-suggest --optimize-autoloader  --no-interaction
-RUN APP_ENV=prod composer install --prefer-dist --no-progress --no-suggest --no-interaction --optimize-autoloader --no-scripts
-# copy production vendor aside
+RUN APP_ENV=prod composer install --prefer-dist --no-plugins --no-scripts --no-dev --optimize-autoloader
 
 # ---- Release ----
 FROM base AS release
-# copy production vendors
-COPY --from=dependencies /var/www/html/vendor ./vendor
-COPY . .
-COPY entrypoint.sh /usr/local/bin/
-COPY ./www.conf /usr/local/etc/php-fpm.d/
-RUN bin/console assets:install public
-# expose port and define CMD
 EXPOSE 9000
+USER www-data
+# copy production vendors
+COPY --chown=www-data:www-data . .
+COPY --chown=www-data:www-data --from=dependencies /var/www/html/vendor /var/www/html/vendor
+COPY ./config/docker/php/symfony.ini /usr/local/etc/php/conf.d
+COPY ./config/docker/php/symfony.pool.conf /usr/local/etc/php-fpm.d/
+COPY entrypoint.sh /usr/local/bin/
+RUN php bin/console assets:install public
+RUN mkdir -p var/cache var/logs var/sessions && chown -R www-data var 
+# expose port and define CMD
 ENTRYPOINT ["entrypoint.sh"]

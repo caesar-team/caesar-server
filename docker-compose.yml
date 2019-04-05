@@ -10,6 +10,8 @@ services:
         environment:
             - PARENT_USER_ID
             - APP_ENV
+            - JWT_PASSPHRASE
+        user: "$UID:$UID"
         depends_on:
             - db
             - redis
@@ -42,11 +44,6 @@ services:
             - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
         volumes:
             - "redis:/etc/redis/database/caesarapp"
-#    mailer:
-#        image: schickling/mailcatcher
-#        ports:
-#            - "${MAILER_PORT_1080}:1080"
-#            - "${MAILER_PORT_1025}:1025"
     rabbitmq:
         image: "rabbitmq:3-management-alpine"
         environment:
@@ -60,6 +57,5 @@ services:
           - "rmq:/var/lib/rabbitmq"
 volumes:
     db:
-    trash:
     redis:
     rmq:
