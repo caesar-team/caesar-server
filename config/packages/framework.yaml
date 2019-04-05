@@ -33,5 +33,9 @@ framework:
         version: 1
 parameters:
     env(IDE_STRING): ''
+    env(WEB_CLIENT_URL): ''
+    env(BACKUP_CODE_HASH_LENGTH): 10
+    env(APP_NAME): 'Caesar App'
+    env(DELIVERY_ADDRESS): ''
     locale: 'en'
     frontend_uris: ['%env(ALLOW_FRONT_REDIRECT_PATTERN)%']

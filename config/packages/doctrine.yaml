@@ -1,5 +1,6 @@
 parameters:
-    env(DATABASE_URL): ''
+    env(DATABASE_PORT): '5432'
+    env(DATABASE_URL): 'postgres://%env(POSTGRES_USER)%:%env(POSTGRES_PASSWORD)%@%env(DATABASE_HOST)%:%env(DATABASE_PORT)%/%env(POSTGRES_DB)%'
     env(DB_VERSION): '9.6'
 doctrine:
     dbal:
