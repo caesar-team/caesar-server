@@ -6,6 +6,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Exception\ApiException;
 use App\Factory\View\Srp\SrpPrepareViewFactory;
 use App\Form\Request\Srp\LoginPrepareType;
 use App\Form\Request\Srp\LoginType;
@@ -18,6 +19,7 @@ use App\Security\PasswordRecoveryManager;
 use App\Services\GroupManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
+use App\Utils\ErrorMessageFormatter;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Event\FilterUserResponseEvent;
 use FOS\UserBundle\Event\FormEvent;
@@ -104,12 +106,10 @@ final class SrpController extends AbstractController
         $user = $userManager->findUserByEmail($email);
         if ($user instanceof User && $authorizationManager->hasInvitation($user)) {
             $errorMessage = $translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]);
-            $error = [
-                'code' => AuthorizationManager::ERROR_UNFINISHED_FLOW_USER,
-                'description' => $errorMessage
-            ];
+            $exception = new AccessDeniedHttpException($errorMessage);
+            $errorData = ErrorMessageFormatter::errorFormat($exception, AuthorizationManager::ERROR_UNFINISHED_FLOW_USER);
 
-            return new JsonResponse($error, Response::HTTP_FORBIDDEN);
+            throw new ApiException($errorData, Response::HTTP_BAD_REQUEST);
         }
 
         $user = new User(new Srp());
@@ -169,12 +169,13 @@ final class SrpController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                $request
+     * @param Request $request
      * @param EntityManagerInterface $entityManager
-     * @param SrpHandler             $srpHandler
-     * @param SrpPrepareViewFactory  $viewFactory
+     * @param SrpHandler $srpHandler
+     * @param SrpPrepareViewFactory $viewFactory
      *
      * @return PreparedSrpView|FormInterface|JsonResponse
+     * @throws \Exception
      */
     public function prepareLoginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler, SrpPrepareViewFactory $viewFactory)
     {
@@ -182,12 +183,12 @@ final class SrpController extends AbstractController
         /** @var User $user */
         $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
         if (null === $user) {
-            return new JsonResponse(['error' => 'No such user'], Response::HTTP_BAD_REQUEST);
+            throw new AccessDeniedHttpException('No such user', null, Response::HTTP_BAD_REQUEST);
         }
         $srp = $user->getSrp();
 
         if (is_null($srp)) {
-            return new JsonResponse(['error' => 'Invalid Srp'], Response::HTTP_BAD_REQUEST);
+            throw new AccessDeniedHttpException('Invalid Srp', null, Response::HTTP_BAD_REQUEST);
         }
 
         $form = $this->createForm(LoginPrepareType::class, $srp);

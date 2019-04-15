@@ -1,8 +1,5 @@
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+imports:
+    - {resource: events.yaml }
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -27,10 +24,6 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    App\Event\EventSubscriber\MigrationEventSubscriber:
-        tags:
-            - { name: doctrine.event_subscriber, connection: default }
-
     App\Security\FOSUBUserProvider:
         arguments:
             $properties: { google: googleId}
@@ -38,12 +31,6 @@ services:
     App\Security\FrontendUriHandler:
         arguments:
             $validUriCollection: '%frontend_uris%'
-
-    App\Event\EntityListener\FileListener:
-        arguments: [ '%kernel.project_dir%' ]
-        tags:
-        - { name: doctrine.orm.entity_listener }
-        - { name: doctrine.orm.entity_listener, entity_manager: custom }
 
     App\Controller\Admin\UserController:
         arguments:
@@ -86,8 +73,3 @@ services:
     App\Services\Messenger:
         arguments:
             $producer: '@old_sound_rabbit_mq.send_message_producer'
-
-    App\Event\EventSubscriber\ItemRevokeSubscriber:
-        tags:
-            - { name: doctrine.event_subscriber, connection: default }
-
