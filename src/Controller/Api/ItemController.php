@@ -392,7 +392,7 @@ final class ItemController extends AbstractController
         }
 
         $entityManager->persist($item);
-        if ($itemRequest->getOriginalItem()) {
+        if ($itemRequest->getOriginalItem()->getSecret()) {
             $itemHandler->updateItem($item->getOriginalItem(), $itemRequest->getOriginalItem()->getSecret(), $this->getUser());
         }
         $entityManager->flush();

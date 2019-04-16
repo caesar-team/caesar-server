@@ -17,11 +17,7 @@ class EditOriginalItemType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('secret', TextType::class, [
-                'constraints' => [
-                    new NotBlank(),
-                ],
-            ])
+            ->add('secret', TextType::class)
         ;
     }
 

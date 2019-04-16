@@ -9,14 +9,14 @@ namespace App\Model\Request;
 class ItemUpdateRequest
 {
     /**
-     * @var string
+     * @var string|null
      */
     private $secret;
 
     /**
      * @return string
      */
-    public function getSecret(): string
+    public function getSecret(): ?string
     {
         return $this->secret;
     }
@@ -24,7 +24,7 @@ class ItemUpdateRequest
     /**
      * @param string $secret
      */
-    public function setSecret(string $secret): void
+    public function setSecret(?string $secret): void
     {
         $this->secret = $secret;
     }
