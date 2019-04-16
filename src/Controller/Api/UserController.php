@@ -312,6 +312,7 @@ final class UserController extends AbstractController
 
         if ($user->isFullUser()) {
             $groupManager->addGroupToUser($user, UserGroup::USER_ROLE_PRETENDER);
+            $this->removeInvitation($user, $entityManager);
             $invitation = new Invitation();
             $invitation->setHash($user->getEmail());
             $entityManager->persist($invitation);
