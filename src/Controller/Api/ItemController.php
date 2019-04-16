@@ -383,6 +383,7 @@ final class ItemController extends AbstractController
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
         /** @var EditItemRequest $itemRequest */
         $itemRequest = $serializer->deserialize($request->getContent(), EditItemRequest::class, 'json');
+        $item->setSecret($itemRequest->getItem()->getSecret());
 
         $form = $this->createForm(EditItemRequestType::class, $itemRequest);
         $form->submit($request->request->all());
