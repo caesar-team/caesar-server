@@ -12,16 +12,19 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
 
-    App\Event\EventSubscriber\ItemRevokeSubscriber:
+    app.event.item_revoke_subscriber:
+        class: App\Event\EventSubscriber\ItemRevokeSubscriber
         tags:
             - { name: doctrine.event_subscriber, connection: default }
 
-    App\Event\EventSubscriber\MigrationEventSubscriber:
+    app.event.migration_subscriber:
+        class: App\Event\EventSubscriber\MigrationEventSubscriber
         tags:
             - { name: doctrine.event_subscriber, connection: default }
 
-    App\Event\EntityListener\FileListener:
+    app.event.file_listener:
+        class: App\Event\EntityListener\FileListener
         arguments: [ '%kernel.project_dir%' ]
         tags:
-        - { name: doctrine.orm.entity_listener }
-        - { name: doctrine.orm.entity_listener, entity_manager: custom }
+            - { name: doctrine.orm.entity_listener }
+            - { name: doctrine.orm.entity_listener, entity_manager: custom }
