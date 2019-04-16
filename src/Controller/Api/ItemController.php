@@ -12,11 +12,13 @@ use App\Factory\View\ItemViewFactory;
 use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
 use App\Form\Request\CreateItemType;
+use App\Form\Request\EditItemRequestType;
 use App\Form\Request\EditItemType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
 use App\Model\Query\ItemListQuery;
+use App\Model\Request\EditItemRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
@@ -310,7 +312,7 @@ final class ItemController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\EditItemType::class)
+     *     @Model(type=\App\Form\Request\EditItemRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
@@ -362,23 +364,36 @@ final class ItemController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @param Item                   $item
-     * @param Request                $request
+     * @param Item $item
+     * @param Request $request
      * @param EntityManagerInterface $entityManager
      *
+     * @param SerializerInterface $serializer
+     * @param ChildItemHandler $itemHandler
      * @return array|FormInterface
      */
-    public function editItem(Item $item, Request $request, EntityManagerInterface $entityManager)
+    public function editItem(
+        Item $item,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        SerializerInterface $serializer,
+        ChildItemHandler $itemHandler
+    )
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        /** @var EditItemRequest $itemRequest */
+        $itemRequest = $serializer->deserialize($request->getContent(), EditItemRequest::class, 'json');
 
-        $form = $this->createForm(EditItemType::class, $item);
+        $form = $this->createForm(EditItemRequestType::class, $itemRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
         $entityManager->persist($item);
+        if ($itemRequest->getOriginalItem()) {
+            $itemHandler->updateParentItem($item, $itemRequest->getOriginalItem()->getSecret(), $this->getUser());
+        }
         $entityManager->flush();
 
         return [
