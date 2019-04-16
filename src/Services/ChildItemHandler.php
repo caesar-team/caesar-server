@@ -20,6 +20,7 @@ use Symfony\Component\Routing\RouterInterface;
 
 class ChildItemHandler
 {
+    const URL_ROOT = 'root';
     const EVENT_NEW_ITEM = 'new';
     const EVENT_UPDATED_ITEM = 'updated';
     /** @var EntityManagerInterface */
@@ -41,6 +42,10 @@ class ChildItemHandler
      * @var Messenger
      */
     private $messenger;
+    /**
+     * @var string
+     */
+    private $absoluteUrl;
 
     /**
      * InviteHandler constructor.
@@ -61,6 +66,7 @@ class ChildItemHandler
         $this->sender = $sender;
         $this->router = $router;
         $this->messenger = $messenger;
+        $this->absoluteUrl = $this->router->generate(self::URL_ROOT, [], RouterInterface::ABSOLUTE_URL);
     }
 
     /**
@@ -71,7 +77,6 @@ class ChildItemHandler
      */
     public function childItemToItem(ItemCollectionRequest $request)
     {
-        $url = $this->router->generate('root', [], RouterInterface::ABSOLUTE_URL);
         $items = [];
         foreach ($request->getItems() as $childItem) {
             $item = new Item();
@@ -84,7 +89,7 @@ class ChildItemHandler
             $item->setStatus($this->getStatusByCause($childItem->getCause()));
 
             $this->entityManager->persist($item);
-            $this->sendItemMessage($childItem, $url);
+            $this->sendItemMessage($childItem);
             $items[] = $item;
         }
 
@@ -106,7 +111,6 @@ class ChildItemHandler
             $parentItem = $parentItem->getOriginalItem();
         }
 
-        $url = $this->router->generate('root', [], RouterInterface::ABSOLUTE_URL);
         foreach ($request->getItems() as $childItem) {
             /** @var Item $item */
             /** @var User $user */
@@ -124,21 +128,21 @@ class ChildItemHandler
 
             $this->entityManager->persist($item);
             if ($currentOwner !== $user) {
-                $this->sendItemMessage($childItem, $url, self::EVENT_UPDATED_ITEM);
+                $this->sendItemMessage($childItem, self::EVENT_UPDATED_ITEM);
             }
         }
 
         $this->entityManager->flush();
     }
 
-    private function sendItemMessage(ChildItem $childItem, string $url, string $event = self::EVENT_NEW_ITEM)
+    private function sendItemMessage(ChildItem $childItem, string $event = self::EVENT_NEW_ITEM)
     {
         if ($childItem->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)) {
             return;
         }
 
         $options = [
-            'url' => $url,
+            'url' => $this->absoluteUrl,
             'event' => $event,
         ];
         $message = new Message($childItem->getUser()->getId()->toString(), $childItem->getUser()->getEmail(), MailRegistry::NEW_ITEM_MESSAGE, $options);
