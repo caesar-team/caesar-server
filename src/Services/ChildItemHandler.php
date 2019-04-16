@@ -135,9 +135,9 @@ class ChildItemHandler
         $this->entityManager->flush();
     }
 
-    public function updateParentItem(Item $item, string $secret, User $currentOwner): void
+    public function updateItem(Item $item, string $secret, User $currentOwner): void
     {
-        $update = $this->extractUpdate($item->getOriginalItem(), $currentOwner);
+        $update = $this->extractUpdate($item, $currentOwner);
         $update->setSecret($secret);
         $this->entityManager->persist($update);
     }
