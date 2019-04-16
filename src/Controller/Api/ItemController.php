@@ -819,10 +819,6 @@ final class ItemController extends AbstractController
      *     @Model(type="\App\Model\View\CredentialsList\ItemView")
      * )
      * @SWG\Response(
-     *     response=400,
-     *     description="No updates for this item"
-     * )
-     * @SWG\Response(
      *     response=401,
      *     description="Unauthorized"
      * )
