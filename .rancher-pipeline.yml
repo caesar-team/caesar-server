@@ -7,10 +7,26 @@ stages:
         pushRemote: true
         tag: caesarteam/caesar-server:${CICD_GIT_BRANCH}
         registry: index.docker.io
-- name: Deploy
+- name: Object update ConfigMap
   steps:
   - applyYamlConfig:
-        path: ./deploy/deployment.yaml
-# branch conditions for the pipeline
+        path: ./k8s/configmap.yaml
+- name: Object update Deployment
+  steps:
+  - applyYamlConfig:
+        path: ./k8s/deployment.yaml
+- name: Object update CronJob
+  steps:
+  - applyYamlConfig:
+        path: ./k8s/cronjob.yaml
+- name: Object update Ingress
+  steps:
+  - applyYamlConfig:
+        path: ./k8s/ingress.yaml
 branch:
-    include: [master]
+  include: [ develop, master ]
+notification:
+  recipients:
+  - recipient: "#caesarapp-notify"
+    notifier: "slack"
+  condition: [ Success, Changed, Failed ]

@@ -70,7 +70,7 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        return new JsonResponse(['errors' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
+        throw new AuthenticationException($exception->getMessage(), Response::HTTP_BAD_REQUEST);
     }
 
     /**

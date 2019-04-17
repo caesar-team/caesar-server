@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Model\View\CredentialsList;
 
-use App\Entity\User;
 use App\Model\View\User\UserView;
 use Swagger\Annotations as SWG;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 class ItemView extends NodeView
 {
@@ -25,14 +25,20 @@ class ItemView extends NodeView
     public $secret;
 
     /**
-     * @var InviteView[]
+     * @var ChildItemView[]
      */
     public $invited;
 
     /**
-     * @var ShareView[]
+     * @var ChildItemView[]
      */
     public $shared;
+
+    /**
+     * @var ChildItemView[]
+     * @Groups({"child_item"})
+     */
+    public $items;
 
     /**
      * @var UpdateView
@@ -64,4 +70,13 @@ class ItemView extends NodeView
      * @var UserView
      */
     public $owner;
+
+    /**
+     * @var int
+     */
+    public $sort;
+    /**
+     * @var null|string
+     */
+    public $originalItemId;
 }

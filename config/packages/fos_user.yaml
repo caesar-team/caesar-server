@@ -3,10 +3,12 @@ fos_user:
     user_class: App\Entity\User
     firewall_name: main
     from_email:
-        address: "%env(ROBOT_EMAIL_ADDRESS)%"
-        sender_name: "%env(ROBOT_EMAIL_NAME)%"
+        address: "%env(SENDER_ADDRESS)%"
+        sender_name: "%env(APP_NAME)%"
     registration:
         confirmation:
             enabled: true
         form:
             type: App\Form\RegistrationType
+    service:
+        mailer: app.fos_user_mailer

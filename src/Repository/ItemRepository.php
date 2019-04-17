@@ -19,7 +19,9 @@ class ItemRepository extends EntityRepository
         return $qb
             ->join('item.parentList', 'parentList')
             ->where($qb->expr()->eq('parentList', ':list'))
+            ->andWhere('item.status =:status')
             ->setParameter('list', $query->list)
+            ->setParameter('status', Item::STATUS_FINISHED)
             ->getQuery()
             ->getResult();
     }

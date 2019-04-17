@@ -52,20 +52,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $googleId;
 
     /**
-     * @var Share[]|Collection
-     *
-     * @ORM\OneToMany(targetEntity="App\Entity\Share", mappedBy="owner")
-     */
-    protected $shares;
-
-    /**
-     * @var Share[]|Collection
-     *
-     * @ORM\OneToMany(targetEntity="App\Entity\Share", mappedBy="user")
-     */
-    protected $availableShares;
-
-    /**
      * @var Avatar|null
      *
      * @ORM\OneToOne(
@@ -177,6 +163,13 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $backupCodes = [];
 
     /**
+     * @var UserGroup[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="UserGroup", mappedBy="user", cascade={"persist"}, orphanRemoval=true)
+     */
+    private $userGroups;
+
+    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -188,9 +181,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->id = Uuid::uuid4();
         $this->inbox = Directory::createInbox();
         $this->lists = Directory::createRootList();
+        $this->lists->addChildList(Directory::createDefaultList());
         $this->trash = Directory::createTrash();
-        $this->shares = new ArrayCollection();
-        $this->availableShares = new ArrayCollection();
+        $this->userGroups = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
         if (null !== $srp) {
             $this->srp = $srp;
@@ -329,43 +322,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->trustedVersion;
     }
 
-    /**
-     * @return Share[]|Collection
-     */
-    public function getShares(): Collection
-    {
-        return $this->shares;
-    }
-
-    public function addShare(Share $share): void
-    {
-        if (!$this->shares->contains($share)) {
-            $this->shares->add($share);
-            $share->setOwner($this);
-        }
-    }
-
-    public function removeShare(Share $share): void
-    {
-        $this->shares->removeElement($share);
-    }
-
-    /**
-     * @return Share[]|Collection
-     */
-    public function getAvailableShares(): Collection
-    {
-        return $this->availableShares;
-    }
-
-    public function addAvailableShares(Share $availableShare): void
-    {
-        if ($this->availableShares->contains($availableShare)) {
-            $this->availableShares->add($availableShare);
-            $availableShare->setUser($this);
-        }
-    }
-
     public function getEncryptedPrivateKey(): ?string
     {
         return $this->encryptedPrivateKey;
@@ -493,5 +449,36 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }
 
         return $codes;
+    }
+
+    /**
+     * @return UserGroup[]|Collection
+     */
+    public function getUserGroups(): Collection
+    {
+        return $this->userGroups;
+    }
+
+    public function addUserGroup(UserGroup $userGroup): void
+    {
+        if (!$this->userGroups->contains($userGroup)) {
+            $this->userGroups->add($userGroup);
+            $userGroup->setUser($this);
+        }
+    }
+
+    public function removeUserGroup(UserGroup $userGroup): void
+    {
+        $this->userGroups->removeElement($userGroup);
+    }
+
+    public function setUserGroups($userGroups): void
+    {
+        $this->userGroups = $userGroups;
+    }
+
+    public function isFullUser(): bool
+    {
+        return !$this->hasRole(self::ROLE_ANONYMOUS_USER) && !$this->hasRole(self::ROLE_READ_ONLY_USER) ;
     }
 }

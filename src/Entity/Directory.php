@@ -11,14 +11,19 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Table
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\DirectoryRepository")
  * @UniqueEntity(fields={"label"}, errorPath="label", message="list.create.label.already_exists")
  */
 class Directory
 {
+    const LIST_DEFAULT = 'default';
+    const LIST_TRASH = 'trash';
+    const LIST_ROOT_LIST = 'lists';
+    const LIST_INBOX = 'inbox';
     /**
      * @var UuidInterface
      *
@@ -30,7 +35,8 @@ class Directory
     /**
      * @var Collection|Directory[]
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList", cascade={"remove"})
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList", cascade={"remove", "persist"})
+     * @ORM\OrderBy({"sort" = "ASC"})
      */
     protected $childLists;
 
@@ -38,6 +44,7 @@ class Directory
      * @var Directory|null
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childLists")
+     * @Gedmo\SortableGroup
      */
     protected $parentList;
 
@@ -45,7 +52,7 @@ class Directory
      * @var Collection|Item[]
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="parentList", cascade={"remove"})
-     * @ORM\OrderBy({"lastUpdated" = "DESC"})
+     * @ORM\OrderBy({"sort" = "ASC", "lastUpdated" = "DESC"})
      */
     protected $childItems;
 
@@ -55,6 +62,13 @@ class Directory
      * @ORM\Column
      */
     protected $label;
+
+    /**
+     * @var int
+     * @ORM\Column(type="integer", options={"default": 0}, nullable=false)
+     * @Gedmo\SortablePosition
+     */
+    protected $sort = 0;
 
     /**
      * @var string
@@ -75,26 +89,34 @@ class Directory
 
     public static function createTrash()
     {
-        $trashList = new self('trash');
-        $trashList->type = NodeEnumType::TYPE_TRASH;
+        $list = new self(self::LIST_TRASH);
+        $list->type = NodeEnumType::TYPE_TRASH;
 
-        return $trashList;
+        return $list;
     }
 
     public static function createRootList()
     {
-        $trashList = new self('lists');
-        $trashList->type = NodeEnumType::TYPE_LIST;
+        $list = new self(self::LIST_ROOT_LIST);
+        $list->type = NodeEnumType::TYPE_LIST;
 
-        return $trashList;
+        return $list;
+    }
+
+    public static function createDefaultList()
+    {
+        $list = new self(self::LIST_DEFAULT);
+        $list->type = NodeEnumType::TYPE_LIST;
+
+        return $list;
     }
 
     public static function createInbox()
     {
-        $trashList = new self('inbox');
-        $trashList->type = NodeEnumType::TYPE_LIST;
+        $list = new self(self::LIST_INBOX);
+        $list->type = NodeEnumType::TYPE_LIST;
 
-        return $trashList;
+        return $list;
     }
 
     /**
@@ -106,11 +128,17 @@ class Directory
     }
 
     /**
-     * @return Item[]|Collection
+     * @param string|null $status
+     * @return Item[]
      */
-    public function getChildItems()
+    public function getChildItems(string $status = null)
     {
-        return $this->childItems;
+        if ($status) {
+            return array_filter($this->childItems->toArray(), function (Item $item) use ($status) {
+                return $status === $item->getStatus();
+            });
+        }
+        return $this->childItems->toArray();
     }
 
     public function addChildItem(Item $item)
@@ -183,5 +211,21 @@ class Directory
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSort(): int
+    {
+        return $this->sort;
+    }
+
+    /**
+     * @param int $sort
+     */
+    public function setSort(int $sort): void
+    {
+        $this->sort = $sort;
     }
 }

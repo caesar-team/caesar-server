@@ -7,7 +7,9 @@ namespace App\Security;
 use App\Entity\User;
 use App\Model\Event\AppEvents;
 use App\Repository\UserRepository;
+use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\File\FileDownloader;
+use App\Services\GroupManager;
 use FOS\UserBundle\Model\UserManagerInterface;
 use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
 use HWI\Bundle\OAuthBundle\Security\Core\Exception\AccountNotLinkedException;
@@ -15,9 +17,11 @@ use HWI\Bundle\OAuthBundle\Security\Core\User\FOSUBUserProvider as BaseUserProvi
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FOSUBUserProvider extends BaseUserProvider
 {
@@ -34,6 +38,14 @@ class FOSUBUserProvider extends BaseUserProvider
      * @var TranslatorInterface
      */
     private $translator;
+    /**
+     * @var GroupManager
+     */
+    private $groupManager;
+    /**
+     * @var AuthorizationManager
+     */
+    private $authorizationManager;
 
     public function __construct(
         UserManagerInterface $userManager,
@@ -41,17 +53,24 @@ class FOSUBUserProvider extends BaseUserProvider
         EventDispatcherInterface $eventDispatcher,
         UserRepository $userRepository,
         TranslatorInterface $translator,
-        array $properties
+        array $properties,
+        GroupManager $groupManager,
+        AuthorizationManager $authorizationManager
     ) {
         parent::__construct($userManager, $properties);
         $this->eventDispatcher = $eventDispatcher;
         $this->downloader = $downloader;
         $this->userRepository = $userRepository;
         $this->translator = $translator;
+        $this->groupManager = $groupManager;
+        $this->authorizationManager = $authorizationManager;
     }
 
     /**
-     * {@inheritdoc}
+     * @param UserResponseInterface $response
+     * @return User|\FOS\UserBundle\Model\UserInterface|null|\Symfony\Component\Security\Core\User\UserInterface
+     * @throws \Exception
+     * @throws \TypeError
      */
     public function loadUserByOAuthUserResponse(UserResponseInterface $response)
     {
@@ -60,12 +79,7 @@ class FOSUBUserProvider extends BaseUserProvider
         } catch (AccountNotLinkedException $e) {
             $user = $this->userManager->findUserByEmail($response->getEmail());
 
-            $this->checkEmailDomain($response->getEmail());
-            if ($user instanceof User && $user->hasRole(User::ROLE_ANONYMOUS_USER)) {
-                throw new AuthenticationException(
-                    $this->translator->trans('authentication.user_restriction', ['%email%' => $response->getEmail()])
-                );
-            }
+            $this->denyAccessUnlessGranted($response, $user);
 
             if (!$user) {
                 /** @var User $user */
@@ -74,6 +88,7 @@ class FOSUBUserProvider extends BaseUserProvider
                 $user->setPlainPassword(md5(uniqid('', true)));
                 $user->setUsername($response->getNickname());
                 $user->setEnabled(true);
+                $this->groupManager->addGroupToUser($user);
 
                 $avatar = $this->downloader->createAvatarFromLink($response->getProfilePicture());
                 $user->setAvatar($avatar);
@@ -94,18 +109,38 @@ class FOSUBUserProvider extends BaseUserProvider
     }
 
     /**
-     * @param string|null $email
-     *
-     * @throws AuthenticationException
+     * @param UserResponseInterface $response
+     * @param User|null $user
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    private function checkEmailDomain(?string $email): void
+    private function denyAccessUnlessGranted(UserResponseInterface $response, User $user = null)
     {
-        preg_match('/(?<=@)(.+)$/', $email, $matches);
-        $domain = $matches[1];
-        if (!in_array($domain, explode(',', getenv('OAUTH_ALLOWED_DOMAINS')), true)
-            && !$this->userRepository->findOneBy(['email' => $email])
-        ) {
-            throw new AuthenticationException($this->translator->trans('authentication.email_domain_restriction', ['%domain%' => $domain]));
+        if (!$user instanceof User) {
+            return;
+        }
+
+        $email = $response->getEmail();
+        if ($this->authorizationManager->hasInvitation($user)) {
+
+            $errorMessage = $this->translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]);
+            $error = [
+                'code' => AuthorizationManager::ERROR_UNFINISHED_FLOW_USER,
+                'description' => $errorMessage
+            ];
+
+            throw new AccessDeniedHttpException(
+                json_encode($error),
+                null,
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        $this->authorizationManager->checkEmailDomain($email);
+
+        if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
+            throw new AuthenticationException(
+                $this->translator->trans('authentication.user_restriction', ['%email%' => $email])
+            );
         }
     }
 }

@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Factory\View;
 
-use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
-use App\Entity\Share;
 use App\Entity\User;
-use App\Model\View\CredentialsList\InviteView;
+use App\Model\View\CredentialsList\ChildItemView;
 use App\Model\View\CredentialsList\ItemView;
-use App\Model\View\CredentialsList\ShareView;
 use App\Model\View\CredentialsList\UpdateView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
+use App\Utils\ChildItemAwareInterface;
+use Doctrine\Common\Collections\Collection;
 
 class ItemViewFactory
 {
@@ -47,10 +46,39 @@ class ItemViewFactory
         $view->update = $this->getUpdateView($item->getUpdate());
         $view->owner = $this->getOwner($item);
         $view->favorite = $item->isFavorite();
+        $view->sort = $item->getSort();
+        $view->originalItemId = $item->getOriginalItem()?$item->getOriginalItem()->getId()->toString():null;
 
         return $view;
     }
 
+    /**
+     * @param array|Item[] $items
+     * @return ItemView
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function createList(array $items)
+    {
+        $view = new ItemView();
+        $childItems = [];
+        foreach ($items as $item) {
+            $childItem = new ChildItemView();
+            $childItem->id = $item->getId()->toString();
+            $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
+            $childItem->userId = $this->getOwner($item)->id;
+            $childItems[] = $childItem;
+        }
+
+
+        $view->items = $childItems;
+        return $view;
+    }
+
+    /**
+     * @param Item $item
+     * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     protected function getInvitesCollection(Item $item)
     {
         $ownerItem = $item;
@@ -58,21 +86,21 @@ class ItemViewFactory
             $ownerItem = $item->getOriginalItem();
         }
 
-        $inviteViewCollection = [];
-        foreach ($ownerItem->getSharedItems() as $item) {
-            $user = $this->userRepository->getByItem($item);
+        $children = [];
+        $sharedItems = $this->extractChildItemByCause($ownerItem->getSharedItems());
+        foreach ($sharedItems as $childItem) {
+            $user = $this->userRepository->getByItem($childItem);
 
-            $invite = new InviteView();
-            $invite->id = $item->getId()->toString();
-            $invite->userId = $user->getId()->toString();
-            $invite->email = $user->getEmail();
-            $invite->lastUpdated = $item->getLastUpdated();
-            $invite->access = $item->getAccess();
-
-            $inviteViewCollection[] = $invite;
+            $childItemView = new ChildItemView();
+            $childItemView->id = $childItem->getId()->toString();
+            $childItemView->userId = $user->getId()->toString();
+            $childItemView->email = $user->getEmail();
+            $childItemView->lastUpdated = $childItem->getLastUpdated();
+            $childItemView->access = $childItem->getAccess();
+            $children[] = $childItemView;
         }
 
-        return $inviteViewCollection;
+        return $children;
     }
 
     /**
@@ -106,41 +134,46 @@ class ItemViewFactory
     }
 
     /**
-     * @param Item $item
-     * @return array|ShareView
+     * @param \Countable|ChildItemAwareInterface[]|Collection $childItems
+     * @param string $cause
+     * @return array
      */
-    private function getSharesCollection(Item $item): array
+    private function extractChildItemByCause(\Countable $childItems, string $cause = Item::CAUSE_INVITE): array
     {
+        return array_filter($childItems->toArray(), function(ChildItemAwareInterface $childItem) use ($cause) {
+            return $cause === $childItem->getCause();
+        });
+    }
+
+    /**
+     * @param Item $item
+     * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    private function getSharesCollection(Item $item)
+    {
+        $ownerItem = $item;
+        if (null !== $item->getOriginalItem()) {
+            $ownerItem = $item->getOriginalItem();
+        }
+
         $shares = [];
-        foreach ($item->getExternalSharedItems() as $shareItem) {
-            $shareView = new ShareView();
-            $share = $shareItem->getShare();
-            $user = $share->getUser();
-            $shareView->userId = $user->getId();
-            $shareView->email = $user->getEmail();
-            $shareView->roles = $user->getRoles();
-            $shareView->id = $share->getId();
-            $shareView->link = $share->getLink();
-            $shareView->status = $this->getStatus($share);
-            $shareView->updatedAt = $share->getUpdatedAt();
-            $shareView->createdAt = $share->getCreatedAt();
-            $shareView->publicKey = $user->getPublicKey();
-            $shareView->setLeft(new \DateTime());
-            $shares[] = $shareView;
+        $sharedItems = $this->extractChildItemByCause($ownerItem->getSharedItems(), Item::CAUSE_SHARE);
+        foreach ($sharedItems as $item) {
+            $user = $this->userRepository->getByItem($item);
+
+            $childItemView = new ChildItemView();
+            $childItemView->id = $item->getId()->toString();
+            $childItemView->userId = $user->getId()->toString();
+            $childItemView->email = $user->getEmail();
+            $childItemView->lastUpdated = $item->getLastUpdated();
+            $childItemView->access = $item->getAccess();
+            $childItemView->link = $item->getLink();
+            $childItemView->isAccepted = User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
+            $childItemView->publicKey = $user->getPublicKey();
+            $shares[] = $childItemView;
         }
 
         return $shares;
-    }
-
-    private function getStatus(Share $share): string
-    {
-        switch (true) {
-            case $share->getUser()->getLastLogin():
-                $status = Share::STATUS_ACCEPTED;
-                break;
-            default:
-                $status = Share::STATUS_WAITING;
-        }
-        return $status;
     }
 }

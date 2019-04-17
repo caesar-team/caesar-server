@@ -1,0 +1,21 @@
+old_sound_rabbit_mq:
+    connections:
+        default:
+            host:     '%env(RABBITMQ_HOST)%'
+            port:     5672
+            user:     '%env(RABBITMQ_DEFAULT_USER)%'
+            password: '%env(RABBITMQ_DEFAULT_PASS)%'
+            lazy: true
+            connection_timeout: 1
+    producers:
+        send_message:
+            connection:       default
+            exchange_options: {name: 'send-message', type: direct}
+    consumers:
+        send_message:
+            connection:       default
+            exchange_options: {name: 'send-message', type: direct}
+            queue_options:    {name: 'send-message'}
+            callback:         app.send_message_consumer
+            idle_timeout: 60
+            idle_timeout_exit_code: 0

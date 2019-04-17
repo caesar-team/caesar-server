@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\DBAL\Types\Enum\NodeEnumType;
+use App\Utils\ChildItemAwareInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -16,8 +17,14 @@ use Ramsey\Uuid\UuidInterface;
  * @ORM\Entity(repositoryClass="App\Repository\ItemRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class Item
+class Item implements ChildItemAwareInterface
 {
+    const CAUSE_INVITE = 'invite';
+    const CAUSE_SHARE = 'share';
+    const STATUS_FINISHED = 'finished';
+    const STATUS_OFFERED = 'offered';
+    const STATUS_DEFAULT = self::STATUS_FINISHED;
+    const EXPIRATION_INTERVAL = '+ 1 day';
     /**
      * @var UuidInterface
      *
@@ -70,13 +77,6 @@ class Item
     protected $sharedItems;
 
     /**
-     * @var ShareItem[]|Collection
-     *
-     * @ORM\OneToMany(targetEntity="App\Entity\ShareItem", mappedBy="item", orphanRemoval=true)
-     */
-    protected $externalSharedItems;
-
-    /**
      * @var bool
      *
      * @ORM\Column(type="boolean", options={"default": false})
@@ -108,13 +108,39 @@ class Item
      */
     protected $update;
 
+    /**
+     * @var int
+     * @ORM\Column(type="integer", options={"default": 0}, nullable=false)
+     */
+    protected $sort = 0;
+
+    /**
+     * @var string|null
+     * @ORM\Column(type="string", length=510, nullable=true)
+     */
+    protected $link;
+    /**
+     * @var string|null
+     * @ORM\Column(type="string", length=10, nullable=true, options={"default"="invite"})
+     */
+    protected $cause;
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", nullable=false, options={"default"="finished"}, length=10)
+     */
+    protected $status = self::STATUS_DEFAULT;
+
+    /**
+     * Item constructor.
+     * @throws \Exception
+     */
     public function __construct()
     {
         $this->id = Uuid::uuid4();
         $this->originalItem = null;
         $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedItems = new ArrayCollection();
-        $this->externalSharedItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
     }
 
@@ -240,30 +266,6 @@ class Item
     }
 
     /**
-     * @return ShareItem[]|Collection
-     */
-    public function getExternalSharedItems(): Collection
-    {
-        return $this->externalSharedItems;
-    }
-
-    /**
-     * @param ShareItem[]|Collection $externalSharedItems
-     */
-    public function setExternalSharedItems(Collection $externalSharedItems): void
-    {
-        $this->externalSharedItems = $externalSharedItems;
-    }
-
-    public function addExternalShareItem(ShareItem $shareItem): void
-    {
-        if (!$this->externalSharedItems->contains($shareItem)) {
-            $this->externalSharedItems->add($shareItem);
-            $shareItem->setItem($this);
-        }
-    }
-
-    /**
      * @return Collection|Tag[]
      */
     public function getTags(): Collection
@@ -309,5 +311,69 @@ class Item
     public function setUpdate(?ItemUpdate $update): void
     {
         $this->update = $update;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSort(): int
+    {
+        return $this->sort;
+    }
+
+    /**
+     * @param int $sort
+     */
+    public function setSort(int $sort): void
+    {
+        $this->sort = $sort;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getLink(): ?string
+    {
+        return $this->link;
+    }
+
+    /**
+     * @param null|string $link
+     */
+    public function setLink(?string $link): void
+    {
+        $this->link = $link;
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getCause(): ?string
+    {
+        return $this->cause;
+    }
+
+    /**
+     * @param null|string $cause
+     */
+    public function setCause(?string $cause): void
+    {
+        $this->cause = $cause;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param string $status
+     */
+    public function setStatus(?string $status): void
+    {
+        $this->status = $status;
     }
 }

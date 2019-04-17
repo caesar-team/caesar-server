@@ -5,3 +5,9 @@ google_connect:
 
 _security_logout:
     path: /logout
+fos_user:
+    resource: "@FOSUserBundle/Resources/config/routing/resetting.xml"
+fos_user_resetting_reset:
+    path: /api/auth/srpp/reset/{token}
+    defaults: { _controller: App\Controller\Api\SrpController:resetPassword }
+    methods: ["PATCH"]

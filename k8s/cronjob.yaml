@@ -1,0 +1,102 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cron-send-message
+  namespace: default
+spec:
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: send-message
+            image: "caesarteam/caesar-server:develop"
+            command: ["/usr/local/bin/php", "bin/console", "rabbitmq:consumer", "-e", "prod", "-w", "-m", "30", "send_message"]
+            env:
+            - name: APP_NAME
+              value: "Caesar"
+            - name: SENDER_ADDRESS
+              value: "noemail@demo.caesar.team"
+            - name: JWT_TOKEN_TTL
+              value: "86400"
+            - name: RABBITMQ_HOST
+              value: rabbitmq
+            - name: RABBITMQ_VHOST
+              value: /
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                secretKeyRef:
+                  key: RABBITMQ_DEFAULT_USER
+                  name: rabbitmq
+                  optional: false
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  key: RABBITMQ_DEFAULT_PASS
+                  name: rabbitmq
+                  optional: false
+            - name: INVITATION_SALT
+              valueFrom:
+                secretKeyRef:
+                  key: INVITATION_SALT
+                  name: caesarapp-server
+                  optional: false
+            - name: JWT_PASSPHRASE
+              valueFrom:
+                secretKeyRef:
+                  key: JWT_PASSPHRASE
+                  name: caesarapp-server
+                  optional: false
+            - name: APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: APP_SECRET
+                  name: caesarapp-server
+                  optional: false
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  key: DATABASE_URL
+                  name: caesarapp-server
+                  optional: false
+            - name: MAILER_URL
+              valueFrom:
+                secretKeyRef:
+                  key: MAILER_URL
+                  name: caesarapp-server
+                  optional: false
+          restartPolicy: OnFailure
+
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cron-clear-message-history
+  namespace: default
+spec:
+  schedule: "0 12 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: clear-message-history
+            image: "caesarteam/caesar-server:develop"
+            command: ["/usr/local/bin/php", "bin/console", "app:clear-message-history", "-e", "prod"]
+            env:
+            - name: APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: APP_SECRET
+                  name: caesarapp-server
+                  optional: false
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  key: DATABASE_URL
+                  name: caesarapp-server
+                  optional: false
+          restartPolicy: OnFailure

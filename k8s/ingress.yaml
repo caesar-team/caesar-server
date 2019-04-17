@@ -1,0 +1,54 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: web
+  namespace: default
+  labels:
+    app: caesarapp-server
+    CICD_GIT_COMMIT: ${CICD_GIT_COMMIT}
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+spec:
+  rules:
+  - host: demo.caesar.team
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: caesarapp-web-app
+          servicePort: 3000
+      - path: /api
+        backend:
+          serviceName: caesarapp-server
+          servicePort: 80
+      - path: /admin
+        backend:
+          serviceName: caesarapp-server
+          servicePort: 80
+      - path: /bundles
+        backend:
+          serviceName: caesarapp-server
+          servicePort: 80
+      - path: /connect
+        backend:
+          serviceName: caesarapp-server
+          servicePort: 80
+      - path: /doc
+        backend:
+          serviceName: caesarapp-server
+          servicePort: 80
+      - path: /login
+        backend:
+          serviceName: caesarapp-server
+          servicePort: 80
+      - path: /login_check
+        backend:
+          serviceName: caesarapp-server
+          servicePort: 80
+      - path: /static/images/user/
+        backend:
+          serviceName: caesarapp-server
+          servicePort: 80
+  tls:
+  - hosts:
+    - demo.caesar.team
