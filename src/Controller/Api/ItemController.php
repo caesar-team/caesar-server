@@ -289,12 +289,14 @@ final class ItemController extends AbstractController
     public function moveItemAction(Item $item, Request $request, EntityManagerInterface $manager)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        $oldParentList = $item->getParentList();
 
         $form = $this->createForm(MoveItemType::class, $item);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
+        $item->setPreviousList($oldParentList);
 
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
 
