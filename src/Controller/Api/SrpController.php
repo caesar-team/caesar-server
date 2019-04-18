@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Controller\AbstractController;
 use App\Entity\Srp;
 use App\Entity\User;
 use App\Exception\ApiException;
@@ -15,7 +16,6 @@ use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
 use App\Security\AuthorizationManager\AuthorizationManager;
-use App\Security\PasswordRecoveryManager;
 use App\Services\GroupManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
@@ -29,7 +29,6 @@ use FOS\UserBundle\Model\UserManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -39,7 +38,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class SrpController extends AbstractController
@@ -183,12 +181,14 @@ final class SrpController extends AbstractController
         /** @var User $user */
         $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
         if (null === $user) {
-            throw new AccessDeniedHttpException('No such user', null, Response::HTTP_BAD_REQUEST);
+            $message = $this->translator->trans('app.exception.user_not_found');
+            throw new AccessDeniedHttpException($message, null, Response::HTTP_BAD_REQUEST);
         }
         $srp = $user->getSrp();
 
         if (is_null($srp)) {
-            throw new AccessDeniedHttpException('Invalid Srp', null, Response::HTTP_BAD_REQUEST);
+            $message = $this->translator->trans('app.exception.invalid_srp');
+            throw new AccessDeniedHttpException($message, null, Response::HTTP_BAD_REQUEST);
         }
 
         $form = $this->createForm(LoginPrepareType::class, $srp);
@@ -278,7 +278,8 @@ final class SrpController extends AbstractController
         $sessionMatcher = $srpUserManager->getMatcherSession($loginRequest);
 
         if ($sessionMatcher->getMatcher() !== $loginRequest->getMatcher()) {
-            throw new BadRequestHttpException('Matchers are not equals');
+            $message = $this->translator->trans('app.exception.not_equal_matchers');
+            throw new BadRequestHttpException($message);
         }
 
         $secondMatcher = $srpUserManager->generateSecondMatcher($loginRequest, $sessionMatcher);
@@ -327,7 +328,8 @@ final class SrpController extends AbstractController
         }
 
         if (is_null($user->getSrp())) {
-            throw new BadRequestHttpException('Invalid user SRP');
+            $message = $this->translator->trans('app.exception.invalid_srp');
+            throw new BadRequestHttpException($message);
         }
 
         $form = $this->createForm(UpdatePasswordType::class, $user);
@@ -381,7 +383,8 @@ final class SrpController extends AbstractController
         }
 
         if (is_null($user->getSrp())) {
-            throw new BadRequestHttpException('Invalid user SRP');
+            $message = $this->translator->trans('app.exception.invalid_srp');
+            throw new BadRequestHttpException($message);
         }
 
         $event = new GetResponseUserEvent($user, $request);
