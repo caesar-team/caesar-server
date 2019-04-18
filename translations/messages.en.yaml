@@ -6,3 +6,4 @@ mail.share.created_link.message: 'You have access to a secured item. Follow this
 mail.share.updated_link.message: 'Shared item updated. Follow the new link %url%'
 mail.share.new_item.message: 'You got access to new secure data. Follow this link %url%'
 mail.share.updated_item.message: 'You got update for your secure data. Follow this link %url%'
+mail.share.incomplete_authorization.message: "You may not have authorized by link yet"

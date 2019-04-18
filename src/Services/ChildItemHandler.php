@@ -144,6 +144,7 @@ class ChildItemHandler
         $options = [
             'url' => $this->absoluteUrl,
             'event' => $event,
+            'isNotFinishedStatusFlow' => User::FLOW_STATUS_FINISHED !== $childItem->getUser()->getFlowStatus(),
         ];
         $message = new Message($childItem->getUser()->getId()->toString(), $childItem->getUser()->getEmail(), MailRegistry::NEW_ITEM_MESSAGE, $options);
         $this->messenger->send($childItem->getUser(), $message);
