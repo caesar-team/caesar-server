@@ -9,11 +9,19 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 
 /**
  * Class Group
  * @ORM\Entity
- * @ORM\Table(name="groups")
+ * @ORM\Table(name="groups",
+ *    uniqueConstraints={
+ *        @UniqueConstraint(name="unique_alias",
+ *            columns={"alias"}),
+ *        @UniqueConstraint(name="unique_title",
+ *            columns={"title"}),
+ *    }
+ * )
  */
 class Group
 {
