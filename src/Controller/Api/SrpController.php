@@ -15,7 +15,6 @@ use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
 use App\Security\AuthorizationManager\AuthorizationManager;
-use App\Security\PasswordRecoveryManager;
 use App\Services\GroupManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
