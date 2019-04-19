@@ -806,4 +806,51 @@ final class ItemController extends AbstractController
 
         return $factory->create($item);
     }
+
+    /**
+     *
+     * Decline an item update
+     *
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Item data",
+     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not owner of item"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such item"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/{id}/decline_update",
+     *     name="api_decline_item_update",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Item $item
+     * @param EntityManagerInterface $entityManager
+     * @param ItemViewFactory $factory
+     * @return ItemView
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function declineItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
+    {
+        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        $item->setUpdate(null);
+
+        $entityManager->persist($item);
+        $entityManager->flush();
+
+        return $factory->create($item);
+    }
 }
