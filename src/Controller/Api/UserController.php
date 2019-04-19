@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Controller\AbstractController;
 use App\Entity\Group;
 use App\Entity\Security\Invitation;
 use App\Entity\Srp;
@@ -37,7 +38,6 @@ use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -301,7 +301,8 @@ final class UserController extends AbstractController
         if (!$user) {
             $user = new User(new Srp());
         } elseif (null !== $user->getPublicKey()) {
-            throw new BadRequestHttpException('User already exists');
+            $message = $this->translator->trans('app.exception.user_already_exists');
+            throw new BadRequestHttpException($message);
         }
 
         $form = $this->createForm(CreateInvitedUserType::class, $user);

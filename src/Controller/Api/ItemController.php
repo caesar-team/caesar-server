@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use App\Factory\View\CreatedItemViewFactory;
@@ -31,7 +32,6 @@ use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -454,7 +454,8 @@ final class ItemController extends AbstractController
     {
         $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
         if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
-            throw new BadRequestHttpException('You can fully delete item only from trash');
+            $message = $this->translator->trans('app.exception.delete_trash_only');
+            throw new BadRequestHttpException($message);
         }
 
         $manager->remove($item);
@@ -813,7 +814,8 @@ final class ItemController extends AbstractController
 
         $update = $item->getUpdate();
         if (null === $update) {
-            throw new BadRequestHttpException('Item has no update to accept it');
+            $message = $this->translator->trans('app.exception.item_has_no_update_to_accept');
+            throw new BadRequestHttpException($message);
         }
 
         $item->setSecret($update->getSecret());
