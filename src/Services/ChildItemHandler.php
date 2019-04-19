@@ -135,6 +135,13 @@ class ChildItemHandler
         $this->entityManager->flush();
     }
 
+    public function updateItem(Item $item, string $secret, User $currentOwner): void
+    {
+        $update = $this->extractUpdate($item, $currentOwner);
+        $update->setSecret($secret);
+        $this->entityManager->persist($update);
+    }
+
     private function sendItemMessage(ChildItem $childItem, string $event = self::EVENT_NEW_ITEM)
     {
         if ($childItem->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)) {
@@ -173,7 +180,7 @@ class ChildItemHandler
         throw new \LogicException('No Such user in original invite '.$user->getId()->toString());
     }
 
-    private function extractUpdate(Item $item, User $user): ItemUpdate
+    public function extractUpdate(Item $item, User $user): ItemUpdate
     {
         if ($item->getUpdate()) {
             return $item->getUpdate();

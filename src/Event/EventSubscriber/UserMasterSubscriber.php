@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UserMasterSubscriber implements EventSubscriberInterface
 {
@@ -32,10 +33,15 @@ class UserMasterSubscriber implements EventSubscriberInterface
      * @var Security
      */
     private $security;
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
 
-    public function __construct(Security $security)
+    public function __construct(Security $security, TranslatorInterface $translator)
     {
         $this->security = $security;
+        $this->translator = $translator;
     }
 
     /**
@@ -53,9 +59,18 @@ class UserMasterSubscriber implements EventSubscriberInterface
         $request = $event->getRequest();
 
         $user = $this->security->getUser();
-        if ($user instanceof User && User::FLOW_STATUS_INCOMPLETE === $user->getFlowStatus()) {
+        if (!$user instanceof User) {
+            return;
+        }
+
+        if ($user->hasRole(User::ROLE_SUPER_ADMIN) || $user->hasRole(User::ROLE_ADMIN)) {
+            return;
+        }
+
+        if (User::FLOW_STATUS_INCOMPLETE === $user->getFlowStatus()) {
             if (!in_array($request->get('_route'), self::GRANTED_ROUTES)) {
-                $event->setResponse(new JsonResponse(['master' => 'You must update your master password'], Response::HTTP_UNAUTHORIZED));
+                $message = $this->translator->trans('app.exception.update_master_password');
+                $event->setResponse(new JsonResponse(['master' => $message], Response::HTTP_UNAUTHORIZED));
             }
         }
     }

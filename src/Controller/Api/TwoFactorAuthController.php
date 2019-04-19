@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Controller\AbstractController;
 use App\Entity\User;
 use App\Form\Request\TwoFactoryAuthEnableType;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
 use Swagger\Annotations as SWG;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -205,7 +205,8 @@ final class TwoFactorAuthController extends AbstractController
      */
     public function check()
     {
-        throw new \RuntimeException('You must configure the check path to be handled by the firewall using form_login in your security firewall configuration.');
+        $message = $this->translator->trans('app.exception.authentication_required');
+        throw new \RuntimeException($message);
     }
 
     /**

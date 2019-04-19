@@ -67,12 +67,6 @@ spec:
               key: JWT_PASSPHRASE
               name: caesarapp-server
               optional: false
-        - name: SUPERADMIN_PASS
-          valueFrom:
-            secretKeyRef:
-              key: SUPERADMIN_PASS
-              name: caesarapp-server
-              optional: false
         - name: ALLOW_FRONT_REDIRECT_PATTERN
           valueFrom:
             secretKeyRef:
