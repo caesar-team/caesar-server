@@ -98,4 +98,24 @@ class ItemUpdate
     {
         return $this->updatedBy;
     }
+
+    /**
+     * @param Item $item|null
+     */
+    public function setItem(?Item $item): void
+    {
+        $this->item = $item;
+    }
+
+    public function getUser(): User
+    {
+        return $this->getUpdatedBy();
+    }
+
+    public function setUser(?User $user): void
+    {
+        if ($user) {
+            $this->updatedBy = $user;
+        }
+    }
 }

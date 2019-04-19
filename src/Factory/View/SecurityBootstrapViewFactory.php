@@ -54,6 +54,7 @@ class SecurityBootstrapViewFactory
     /**
      * @param User $user
      * @return SecurityBootstrapView
+     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
      */
     public function create(User $user):SecurityBootstrapView

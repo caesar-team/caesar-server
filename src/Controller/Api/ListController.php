@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Controller\AbstractController;
 use App\Entity\Directory;
 use App\Form\Request\CreateListType;
 use App\Form\Request\EditListType;
@@ -14,11 +15,9 @@ use App\Services\ItemDisplacer;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -162,7 +161,8 @@ final class ListController extends AbstractController
     {
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
         if (null === $list->getParentList()) { //root list
-            throw new BadRequestHttpException('You can`t edit root list');
+            $message = $this->translator->trans('app.exception.cant_edit_root_list');
+            throw new BadRequestHttpException($message);
         }
 
         $form = $this->createForm(EditListType::class, $list);
@@ -229,7 +229,8 @@ final class ListController extends AbstractController
         $this->denyAccessUnlessGranted(ListVoter::DELETE_LIST, $list);
 
         if (null === $list->getParentList()) { //root list
-            throw new BadRequestHttpException('You can`t delete root list');
+            $message = $this->translator->trans('app.exception.cant_delete_root_list');
+            throw new BadRequestHttpException($message);
         }
 
         $itemDisplacer->moveChildItemsToTrash($list, $this->getUser());
@@ -288,7 +289,8 @@ final class ListController extends AbstractController
     {
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
         if (null === $list->getParentList()) { //root list
-            throw new BadRequestHttpException('You can`t edit root list');
+            $message = $this->translator->trans('app.exception.cant_edit_root_list');
+            throw new BadRequestHttpException($message);
         }
 
         $form = $this->createForm(SortListType::class, $list);
