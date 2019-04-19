@@ -17,3 +17,4 @@ app.exception.not_equal_matchers: 'Matchers are not equals.'
 app.exception.authentication_required: 'You must configure the check path to be handled by the firewall using form_login in your security firewall configuration.'
 app.exception.user_already_exists: 'User already exists.'
 app.exception.unavailable_request: 'Unavailable request: %route%.'
+mail.share.incomplete_authorization.message: "You may not have authorized by link yet"
