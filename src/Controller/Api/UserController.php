@@ -30,6 +30,7 @@ use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
 use App\Security\AuthorizationManager\InvitationEncoder;
 use App\Services\GroupManager;
+use App\Services\InvitationManager;
 use App\Services\Messenger;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -311,6 +312,7 @@ final class UserController extends AbstractController
 
         if ($user->isFullUser()) {
             $groupManager->addGroupToUser($user, UserGroup::USER_ROLE_PRETENDER);
+            $this->removeInvitation($user, $entityManager);
             $invitation = new Invitation();
             $invitation->setHash($user->getEmail());
             $entityManager->persist($invitation);
@@ -379,6 +381,7 @@ final class UserController extends AbstractController
      *
      * @param SecurityBootstrapViewFactory $bootstrapViewFactory
      * @return JsonResponse
+     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
      */
     public function bootstrap(SecurityBootstrapViewFactory $bootstrapViewFactory): JsonResponse
@@ -503,10 +506,6 @@ final class UserController extends AbstractController
 
     private function removeInvitation(User $user, EntityManagerInterface $entityManager)
     {
-        $hash = (InvitationEncoder::initEncoder())->encode($user->getEmail());
-        $invitation = $entityManager->getRepository(Invitation::class)->findOneBy(['hash' => $hash]);
-        if ($invitation) {
-            $entityManager->remove($invitation);
-        }
+        InvitationManager::removeInvitation($user, $entityManager);
     }
 }

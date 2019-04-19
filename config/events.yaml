@@ -28,3 +28,8 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener }
             - { name: doctrine.orm.entity_listener, entity_manager: custom }
+
+    app.event.invitation_remove_subscriber:
+        class: App\Event\EventSubscriber\InvitationRemoveSubscriber
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
