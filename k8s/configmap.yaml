@@ -6,11 +6,11 @@ metadata:
   labels:
     app: caesarapp-server
 data:
-  API_URI: "https://demo.caesar.team"
-  APP_URI: "https://demo.caesar.team"
+  API_URI: "${API_URI}"
+  APP_URI: "${APP_URI}"
   APP_NAME: "Caesar"
-  SENDER_ADDRESS: "noemail@demo.caesar.team"
-  OAUTH_ALLOWED_DOMAINS: "4xxi.com,caesar.team"
+  SENDER_ADDRESS: "${SENDER_ADDRESS}"
+  OAUTH_ALLOWED_DOMAINS: "${OAUTH_ALLOWED_DOMAINS}"
 
 ---
 apiVersion: v1
