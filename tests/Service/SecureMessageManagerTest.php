@@ -28,8 +28,12 @@ class SecureMessageManagerTest extends TestCase
         $this->secureMessageManager = new SecureMessageManager($redis, $serializer);
     }
 
-    public function testSave(SecureMessage $message)
+    public function testSave()
     {
+        $message = new SecureMessage();
+        $message->setMessage('test');
+        $message->setRequestsLimit(1);
+        $message->setSecondsLimit(80000);
         $this->secureMessageManager->save($message);
 
         $this->assertInstanceOf(SecureMessage::class, $this->secureMessageManager->get($message->getId()));
