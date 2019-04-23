@@ -1,3 +1,21 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name:  caesarapp-server
+  namespace: default
+spec:
+  selector:
+    app:  caesarapp-server
+  type:  NodePort
+  ports:
+    - name:  http
+      port:  80
+      targetPort:  80
+    - name:  php-fpm
+      port:  9000
+      targetPort:  9000
+
+---
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
@@ -7,150 +25,54 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      workload.user.cattle.io/workloadselector: deployment-default-caesar
+      app: caesarapp-server
   template:
     metadata:
       labels:
-        CICD_GIT_COMMIT: ${CICD_GIT_COMMIT}
         app: caesarapp-server
-        com.centurylinklabs.watchtower.enable: "true"
-        workload.user.cattle.io/workloadselector: deployment-default-caesar
+        CICD_GIT_COMMIT: ${CICD_GIT_COMMIT}
     spec:
       containers:
-      - env:
-        - name: APP_NAME
-          value: "Caesar"
-        - name: SENDER_ADDRESS
-          value: "noemail@demo.caesar.team"
-        - name: OAUTH_ALLOWED_DOMAINS
-          value: "4xxi.com"
-        - name: RABBITMQ_HOST
-          value: rabbitmq
-        - name: RABBITMQ_DEFAULT_USER
-        - name: HTTPS
-          value: "on"
-        - name: HTTP_X_FORWARDED_PROTO
-          value: "https"
-        - name: RABBITMQ_DEFAULT_USER
-          valueFrom:
-            secretKeyRef:
-              key: RABBITMQ_DEFAULT_USER
-              name: rabbitmq
-              optional: false
-        - name: RABBITMQ_DEFAULT_PASS
-          valueFrom:
-            secretKeyRef:
-              key: RABBITMQ_DEFAULT_PASS
-              name: rabbitmq
-              optional: false
-        - name: INVITATION_SALT
-          valueFrom:
-            secretKeyRef:
-              key: INVITATION_SALT
-              name: caesarapp-server
-              optional: false
-        - name: GOOGLE_ID
-          valueFrom:
-            secretKeyRef:
-              key: GOOGLE_ID
-              name: caesarapp-server
-              optional: false
-        - name: GOOGLE_SECRET
-          valueFrom:
-            secretKeyRef:
-              key: GOOGLE_SECRET
-              name: caesarapp-server
-              optional: false
-        - name: JWT_PASSPHRASE
-          valueFrom:
-            secretKeyRef:
-              key: JWT_PASSPHRASE
-              name: caesarapp-server
-              optional: false
-        - name: ALLOW_FRONT_REDIRECT_PATTERN
-          valueFrom:
-            secretKeyRef:
-              key: ALLOW_FRONT_REDIRECT_PATTERN
-              name: caesarapp-server
-              optional: false
-        - name: APP_SECRET
-          valueFrom:
-            secretKeyRef:
-              key: APP_SECRET
-              name: caesarapp-server
-              optional: false
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              key: DATABASE_URL
-              name: caesarapp-server
-              optional: false
-        - name: MAILER_URL
-          valueFrom:
-            secretKeyRef:
-              key: MAILER_URL
-              name: caesarapp-server
-              optional: false
-        - name: BACKUP_CODE_SALT
-          valueFrom:
-            secretKeyRef:
-              key: BACKUP_CODE_SALT
-              name: caesarapp-server
-              optional: false
-        - name: BACKUP_CODE_HASH_LENGTH
-          valueFrom:
-            secretKeyRef:
-              key: BACKUP_CODE_HASH_LENGTH
-              name: caesarapp-server
-              optional: false
-        image: caesarteam/caesar-server:${CICD_GIT_BRANCH}
+      - name: caesarapp-server
+        image: "caesarteam/caesar-server:${CICD_GIT_BRANCH}"
         imagePullPolicy: Always
-        name: caesarapp-server
+        envFrom:
+        - configMapRef:
+            name: caesarapp-config
+        - secretRef:
+            name: caesarapp-secret
+        - configMapRef:
+            name: rabbitmq-config
+        - secretRef:
+            name: rabbitmq-secret
         ports:
-        - containerPort: 9000
-          name: 9000tcp00
-          protocol: TCP
+        - name: php-fpm
+          containerPort: 9000
         volumeMounts:
         - mountPath: /var/www/html/public
           name: caesar-shared-static
-      - image: nginx:alpine
+      - name: nginx
+        image: "nginx:alpine"
         imagePullPolicy: IfNotPresent
-        name: nginx
         ports:
-        - containerPort: 80
-          name: 80tcp00
-          protocol: TCP
+        - name: http
+          containerPort: 80
         volumeMounts:
         - mountPath: /etc/nginx/nginx.conf
           name: nginx-config-volume
           subPath: nginx.conf
         - mountPath: /var/www/html/public
           name: caesar-shared-static
-      dnsPolicy: ClusterFirst
-      imagePullSecrets:
-      - name: dockerhub
       initContainers:
-      - args:
-        - -r
-        - public/.
-        - public_site/
-        command:
-        - cp
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              key: DATABASE_URL
-              name: caesarapp-server
-              optional: false
-        image: caesarteam/caesar-server:${CICD_GIT_BRANCH}
+      - name: copy-public
+        image: "caesarteam/caesar-server:${CICD_GIT_BRANCH}"
         imagePullPolicy: IfNotPresent
-        name: copy-public
+        command: [ "/bin/cp", "-r", "public/.", "public_site/" ]
         volumeMounts:
         - mountPath: /var/www/html/public_site
           name: caesar-shared-static
-      restartPolicy: Always
       volumes:
+        ## TODO: need remove temp PVC. Use empty memory volume!
       - name: caesar-shared-static
         persistentVolumeClaim:
           claimName: caesar-shared-static
