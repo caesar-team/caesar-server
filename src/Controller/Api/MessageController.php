@@ -99,7 +99,7 @@ class MessageController extends AbstractController
         $message = $messageManager->get($id);
 
         if (empty($message)) {
-            throw new NotFoundHttpException('No such message', Response::HTTP_NOT_FOUND);
+            throw new NotFoundHttpException('No such message');
         }
 
         return $message;
