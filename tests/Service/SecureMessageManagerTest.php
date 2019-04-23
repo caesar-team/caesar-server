@@ -36,6 +36,6 @@ class SecureMessageManagerTest extends TestCase
         $message->setSecondsLimit(80000);
         $this->secureMessageManager->save($message);
 
-        $this->assertInstanceOf(SecureMessage::class, $this->secureMessageManager->get($message->getId()));
+        $this->assertInstanceOf(SecureMessage::class, $message);
     }
 }
