@@ -42,6 +42,14 @@ class Item implements ChildItemAwareInterface
     protected $parentList;
 
     /**
+     * @var Directory|null
+     *
+     * @ORM\ManyToOne(targetEntity="App\Entity\Directory")
+     * @ORM\JoinColumn(nullable=true, referencedColumnName="id", onDelete="SET NULL")
+     */
+    protected $previousList;
+
+    /**
      * @var string|null
      *
      * @ORM\Column(type="text")
@@ -375,5 +383,21 @@ class Item implements ChildItemAwareInterface
     public function setStatus(?string $status): void
     {
         $this->status = $status;
+    }
+
+    /**
+     * @return Directory|null
+     */
+    public function getPreviousList(): ?Directory
+    {
+        return $this->previousList;
+    }
+
+    /**
+     * @param Directory|null $previousList
+     */
+    public function setPreviousList(?Directory $previousList): void
+    {
+        $this->previousList = $previousList;
     }
 }

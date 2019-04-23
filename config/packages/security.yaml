@@ -2,17 +2,14 @@ security:
     encoders:
         FOS\UserBundle\Model\UserInterface: bcrypt
         Symfony\Component\Security\Core\User\User: bcrypt
+    role_hierarchy:
+        ROLE_ADMIN:       ROLE_USER
+        ROLE_SUPER_ADMIN: ROLE_ADMIN
     providers:
         fos.user.provider:
             id: fos_user.user_provider.username_email
         hwi_oauth.user.provider:
             id: hwi_oauth.user.provider
-        in_memory:
-            memory:
-                users:
-                    admin:
-                        password:            '%env(SUPERADMIN_PASS)%'
-                        roles:               ROLE_ADMIN
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -28,13 +25,13 @@ security:
             http_basic: ~
             anonymous: ~
             context: admin
-            provider: in_memory
+            provider: fos.user.provider
         admin:
             pattern: ^/admin
             http_basic: ~
-            anonymous: ~
+            anonymous: false
             context: admin
-            provider: in_memory
+            provider: fos.user.provider
         share:
             pattern: "^/api/share/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
             provider:  fos.user.provider
@@ -45,7 +42,7 @@ security:
                 authenticators:
                     - App\Security\ShareAuthenticator
         srp:
-            pattern: ^/api/srp
+            pattern: ^/api/auth/srpp
             stateless: true
             context: srp
             anonymous: true
@@ -68,7 +65,7 @@ security:
             stateless: true
             anonymous: ~
             two_factor:
-                check_path: /api/2fa
+                check_path: /api/auth/2fa
                 provider: fos.user.provider
                 auth_code_parameter_name: authCode
                 success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
@@ -99,5 +96,5 @@ security:
         - { path: ^/api/anonymous, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/auth/srpp, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api, roles: [ROLE_USER]}
-        - { path: ^/doc, roles: [ROLE_ADMIN]}
+        - { path: ^/doc, roles: [ROLE_SUPER_ADMIN]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}

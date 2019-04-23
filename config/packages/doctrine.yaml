@@ -1,6 +1,6 @@
 parameters:
-    env(DATABASE_URL): ''
     env(DB_VERSION): '9.6'
+    env(DATABASE_URL): ''
 doctrine:
     dbal:
         # configure these for your database server

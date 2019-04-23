@@ -11,6 +11,7 @@ use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AnonymousRequestSubscriber implements EventSubscriberInterface
 {
@@ -26,10 +27,15 @@ class AnonymousRequestSubscriber implements EventSubscriberInterface
      * @var Security
      */
     private $security;
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
 
-    public function __construct(Security $security)
+    public function __construct(Security $security, TranslatorInterface $translator)
     {
         $this->security = $security;
+        $this->translator = $translator;
     }
     public static function getSubscribedEvents()
     {
@@ -56,6 +62,7 @@ class AnonymousRequestSubscriber implements EventSubscriberInterface
             return;
         }
 
-        throw new BadRequestHttpException(sprintf('Unavailable request: %s', $route));
+        $message = $this->translator->trans('app.exception.unavailable_request', ['route' => $route]);
+        throw new BadRequestHttpException($message);
     }
 }

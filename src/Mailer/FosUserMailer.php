@@ -34,7 +34,11 @@ class FosUserMailer extends Mailer implements MailerInterface
      */
     public function sendResettingEmailMessage(UserInterface $user)
     {
-        $url = getenv('APP_URI').'/resetting/'.$user->getEmail().'/'.$user->getConfirmationToken();
+        $webClientUrl
+            = getenv('WEB_CLIENT_URL') ?:
+            $this->router->generate('root', [], UrlGeneratorInterface::ABSOLUTE_URL)
+        ;
+        $url = $webClientUrl.'/resetting/'.$user->getEmail().'/'.$user->getConfirmationToken();
 
         $rendered = $this->templating->render('email/password_resetting.email.html.twig', array(
             'user' => $user,

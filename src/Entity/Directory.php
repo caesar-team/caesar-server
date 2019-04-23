@@ -20,6 +20,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class Directory
 {
+    const LIST_DEFAULT = 'default';
+    const LIST_TRASH = 'trash';
+    const LIST_ROOT_LIST = 'lists';
+    const LIST_INBOX = 'inbox';
     /**
      * @var UuidInterface
      *
@@ -31,7 +35,7 @@ class Directory
     /**
      * @var Collection|Directory[]
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList", cascade={"remove"})
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList", cascade={"remove", "persist"})
      * @ORM\OrderBy({"sort" = "ASC"})
      */
     protected $childLists;
@@ -85,26 +89,34 @@ class Directory
 
     public static function createTrash()
     {
-        $trashList = new self('trash');
-        $trashList->type = NodeEnumType::TYPE_TRASH;
+        $list = new self(self::LIST_TRASH);
+        $list->type = NodeEnumType::TYPE_TRASH;
 
-        return $trashList;
+        return $list;
     }
 
     public static function createRootList()
     {
-        $trashList = new self('lists');
-        $trashList->type = NodeEnumType::TYPE_LIST;
+        $list = new self(self::LIST_ROOT_LIST);
+        $list->type = NodeEnumType::TYPE_LIST;
 
-        return $trashList;
+        return $list;
+    }
+
+    public static function createDefaultList()
+    {
+        $list = new self(self::LIST_DEFAULT);
+        $list->type = NodeEnumType::TYPE_LIST;
+
+        return $list;
     }
 
     public static function createInbox()
     {
-        $trashList = new self('inbox');
-        $trashList->type = NodeEnumType::TYPE_LIST;
+        $list = new self(self::LIST_INBOX);
+        $list->type = NodeEnumType::TYPE_LIST;
 
-        return $trashList;
+        return $list;
     }
 
     /**
