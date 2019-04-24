@@ -37,6 +37,15 @@ services:
             - POSTGRES_DB
             - POSTGRES_USER
             - POSTGRES_PASSWORD
+    db_test:
+        image: postgres:9
+        ports:
+            - "5433:5432"
+        command: ["postgres", "-c", "fsync=off", "-c", "full_page_writes=off"]
+        environment:
+            - POSTGRES_DB
+            - POSTGRES_USER
+            - POSTGRES_PASSWORD
     redis:
         image: 'redis:5-alpine'
         environment:
