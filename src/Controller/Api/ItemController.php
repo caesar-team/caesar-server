@@ -14,7 +14,6 @@ use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemRequestType;
-use App\Form\Request\EditItemType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
@@ -291,14 +290,13 @@ final class ItemController extends AbstractController
     public function moveItemAction(Item $item, Request $request, EntityManagerInterface $manager)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-        $oldParentList = $item->getParentList();
+        $item->setPreviousList($item->getParentList());
 
         $form = $this->createForm(MoveItemType::class, $item);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
-        $item->setPreviousList($oldParentList);
 
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
 
