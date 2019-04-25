@@ -60,12 +60,41 @@ class UserController extends BaseController
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
+    public function reset_2faAction()
+    {
+        $id = $this->request->query->get('id');
+        /** @var $user User */
+        $user = $this->em->getRepository(User::class)->find($id);
+        $this->em->flush();
+
+        $user->setGoogleAuthenticatorSecret(null);
+        $user->setFlowStatus(User::FLOW_STATUS_INCOMPLETE);
+        $this->userManager->updateUser($user);
+
+        return $this->redirectToRoute('easyadmin', array(
+            'action' => 'list',
+            'entity' => $this->request->query->get('entity'),
+        ));
+    }
+
+    /**
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function resetPasswordAction()
     {
         $id = $this->request->query->get('id');
         /** @var $user User */
         $user = $this->em->getRepository(User::class)->find($id);
         $this->em->flush();
+
+        if (is_null($user->getSrp())) {
+            return $this->redirectToRoute('easyadmin', array(
+                'action' => 'list',
+                'errors' => ['resetPassword' => 'Invalid Srp'],
+                'entity' => $this->request->query->get('entity'),
+            ));
+        }
 
         $event = new GetResponseNullableUserEvent($user, $this->request);
         $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_INITIALIZE, $event);
@@ -91,8 +120,6 @@ class UserController extends BaseController
             }
             $this->fosUserMailer->sendResettingEmailMessage($user);
             $user->setPasswordRequestedAt(new \DateTime());
-            $user->setGoogleAuthenticatorSecret(null);
-            $user->setFlowStatus(User::FLOW_STATUS_INCOMPLETE);
             $this->userManager->updateUser($user);
             $event = new GetResponseUserEvent($user, $this->request);
             $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_COMPLETED, $event);

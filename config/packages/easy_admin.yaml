@@ -6,7 +6,7 @@ easy_admin:
       class: App\Entity\User
       label: 'User'
       list:
-        actions: ['resetPassword']
+        actions: ['resetPassword', 'reset_2fa']
         title: 'Users'
         fields:
           - id
@@ -16,6 +16,7 @@ easy_admin:
           - lastLogin
           - domain
           - enabled
+          - srp.id
       form:
         fields:
           - enabled
