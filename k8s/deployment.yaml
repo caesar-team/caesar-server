@@ -25,12 +25,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: caesarapp-server
-  strategy:
-    rollingUpdate:
-      maxSurge: 0
-      maxUnavailable: 25%
-    type: RollingUpdate   
+      app: caesarapp-server  
   template:
     metadata:
       labels:
@@ -56,6 +51,8 @@ spec:
         volumeMounts:
         - mountPath: /var/www/html/public
           name: caesar-shared-static
+        - mountPath: /var/www/html/var/jwt
+          name: caesar-certificate  
       - name: nginx
         image: "nginx:alpine"
         imagePullPolicy: IfNotPresent
@@ -77,10 +74,13 @@ spec:
         - mountPath: /var/www/html/public_site
           name: caesar-shared-static
       volumes:
-        ## TODO: need remove temp PVC. Use empty memory volume!
-      - name: caesar-shared-static
+      - name: caesar-certificate
         persistentVolumeClaim:
-          claimName: caesar-shared-static
+          claimName: caesar-certificate
+      - name: caesar-shared-static
+        emptyDir:
+          medium: Memory
+          sizeLimit: "1Gi"
       - configMap:
           defaultMode: 256
           name: nginx-config
