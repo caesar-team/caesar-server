@@ -16,6 +16,7 @@ easy_admin:
           - lastLogin
           - domain
           - enabled
+          - srp.id
       form:
         fields:
           - enabled

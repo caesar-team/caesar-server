@@ -67,6 +67,14 @@ class UserController extends BaseController
         $user = $this->em->getRepository(User::class)->find($id);
         $this->em->flush();
 
+        if (is_null($user->getSrp())) {
+            return $this->redirectToRoute('easyadmin', array(
+                'action' => 'list',
+                'errors' => ['resetPassword' => 'Invalid Srp'],
+                'entity' => $this->request->query->get('entity'),
+            ));
+        }
+
         $event = new GetResponseNullableUserEvent($user, $this->request);
         $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_INITIALIZE, $event);
 

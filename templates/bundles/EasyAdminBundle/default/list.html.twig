@@ -1,0 +1,303 @@
+{% set _entity_config = easyadmin_entity(app.request.query.get('entity')) %}
+{% trans_default_domain _entity_config.translation_domain %}
+{% set _trans_parameters = { '%entity_name%': _entity_config.name|trans, '%entity_label%': _entity_config.label|trans } %}
+
+{% extends _entity_config.templates.layout %}
+
+{% set _request_parameters = app.request.query.all|merge(_request_parameters|default({}))|merge({
+    action: app.request.get('action'),
+    entity: _entity_config.name,
+    menuIndex: app.request.get('menuIndex'),
+    submenuIndex: app.request.get('submenuIndex'),
+    sortField: app.request.get('sortField', ''),
+    sortDirection: app.request.get('sortDirection', 'DESC'),
+    page: app.request.get('page', 1),
+    referer: null
+}) %}
+
+{% if 'search' == app.request.get('action') %}
+    {% set _request_parameters = _request_parameters|merge({
+        query: app.request.get('query')|default(''),
+        sortField: _entity_config.search.sort.field|default(app.request.get('sortField', '')),
+        sortDirection: _entity_config.search.sort.direction|default(app.request.get('sortDirection', 'DESC')),
+    }) %}
+{% endif %}
+
+{% set _request_parameters = _request_parameters|merge({ referer: path('easyadmin', _request_parameters)|url_encode }) %}
+{% set _has_batch_actions = batch_form is defined and batch_form.vars.batch_actions|length > 0 %}
+
+{% block body_id 'easyadmin-list-' ~ _entity_config.name %}
+{% block body_class 'list list-' ~ _entity_config.name|lower %}
+
+{% block content_title %}
+{% spaceless %}
+    {% if 'search' == app.request.get('action') %}
+        {% set _default_title = 'search.page_title'|transchoice(paginator.nbResults, {}, 'EasyAdminBundle') %}
+        {{ (_entity_config.search.title is defined ? _entity_config.search.title|transchoice(paginator.nbResults) : _default_title)|raw }}
+    {% else %}
+        {% set _default_title = 'list.page_title'|trans(_trans_parameters, 'EasyAdminBundle') %}
+        {{ (_entity_config.list.title is defined ? _entity_config.list.title|trans(_trans_parameters) : _default_title)|raw }}
+    {% endif %}
+{% endspaceless %}
+{% endblock %}
+
+{% block global_actions %}
+    {% if easyadmin_action_is_enabled_for_list_view('search', _entity_config.name) %}
+        {% set _action = easyadmin_get_action_for_list_view('search', _entity_config.name) %}
+
+        {% block search_action %}
+            <div class="form-action form-action-search {{ _action.css_class|default('') }}">
+                <form method="get" action="{{ path('easyadmin') }}">
+                    {% block search_form %}
+                        <input type="hidden" name="action" value="search">
+                        <input type="hidden" name="entity" value="{{ _request_parameters.entity }}">
+                        <input type="hidden" name="sortField" value="{{ _entity_config.search.sort.field|default(_request_parameters.sortField) }}">
+                        <input type="hidden" name="sortDirection" value="{{ _entity_config.search.sort.direction|default(_request_parameters.sortDirection) }}">
+                        <input type="hidden" name="menuIndex" value="{{ _request_parameters.menuIndex }}">
+                        <input type="hidden" name="submenuIndex" value="{{ _request_parameters.submenuIndex }}">
+                        <div class="form-group">
+                            <div class="form-widget">
+                                <input class="form-control" type="search" name="query" value="{{ app.request.get('query')|default('') }}" placeholder="{{ _action.label|default('action.search')|trans(_trans_parameters) }}">
+                            </div>
+                        </div>
+                    {% endblock %}
+                </form>
+            </div>
+        {% endblock search_action %}
+    {% endif %}
+
+    {% if easyadmin_action_is_enabled_for_list_view('new', _entity_config.name) %}
+        {% set _action = easyadmin_get_action_for_list_view('new', _entity_config.name) %}
+        {% block new_action %}
+            <div class="button-action">
+                <a class="{{ _action.css_class|default('') }}" href="{{ path('easyadmin', _request_parameters|merge({ action: _action.name })) }}" target="{{ _action.target }}">
+                    {% if _action.icon %}<i class="fa fa-{{ _action.icon }}"></i>{% endif %}
+                    {{ _action.label is defined and not _action.label is empty ? _action.label|trans(_trans_parameters) }}
+                </a>
+            </div>
+        {% endblock new_action %}
+    {% endif %}
+{% endblock global_actions %}
+
+{% block batch_actions %}
+    {% if _has_batch_actions %}
+        <div class="batch-actions" style="display: none">
+            {% form_theme batch_form with easyadmin_config('design.form_theme') %}
+            {{ form(batch_form) }}
+        </div>
+    {% endif %}
+{% endblock batch_actions %}
+
+{% block content_header %}
+    {% set errors = app.request.get('errors')|default({}) %}
+    {% if errors %}
+        {% for error in errors %}
+            <p class="badge badge-danger">{{ error }}</p>
+        {% endfor %}
+    {% endif %}
+    {{ parent() }}
+    {{ block('batch_actions') }}
+{% endblock content_header %}
+
+{% block main %}
+    {% set _list_item_actions = easyadmin_get_actions_for_list_item(_entity_config.name) %}
+
+    <table class="table datagrid">
+        <thead>
+        {% block table_head %}
+            <tr>
+                {% if _has_batch_actions %}
+                    <th width="1px"><span><input type="checkbox" class="form-batch-checkbox-all"></span></th>
+                {% endif %}
+
+                {% for field, metadata in fields %}
+                    {% set isSortingField = (metadata.property == app.request.get('sortField')) or ('association' == metadata.type and app.request.get('sortField') starts with metadata.property ~ '.') %}
+                    {% set nextSortDirection = isSortingField ? (app.request.get('sortDirection') == 'DESC' ? 'ASC' : 'DESC') : 'DESC' %}
+                    {% set _column_label = metadata.label|trans(_trans_parameters) %}
+                    {% set _column_icon = isSortingField ? (nextSortDirection == 'DESC' ? 'fa-arrow-up' : 'fa-arrow-down') : 'fa-sort' %}
+
+                    <th class="{{ isSortingField ? 'sorted' }} {{ metadata.virtual ? 'virtual' }} {{ metadata.dataType|lower }} {{ metadata.css_class }}" {{ easyadmin_config('design.rtl') ? 'dir="rtl"' }}>
+                        {% if metadata.sortable %}
+                            <a href="{{ path('easyadmin', _request_parameters|merge({ page: 1, sortField: metadata.property, sortDirection: nextSortDirection })) }}">
+                                {{ _column_label|raw }} <i class="fa {{ _column_icon }}"></i>
+                            </a>
+                        {% else %}
+                            <span>{{ _column_label|raw }}</span>
+                        {% endif %}
+                    </th>
+                {% endfor %}
+
+                {% if _list_item_actions|length > 0 %}
+                    <th {% if _entity_config.list.collapse_actions %}width="10px"{% endif %} {{ easyadmin_config('design.rtl') ? 'dir="rtl"' }}>
+                        <span class="sr-only">{{ 'list.row_actions'|trans(_trans_parameters, 'EasyAdminBundle') }}</span>
+                    </th>
+                {% endif %}
+            </tr>
+        {% endblock table_head %}
+        </thead>
+
+        <tbody>
+        {% block table_body %}
+            {% for item in paginator.currentPageResults %}
+                {# the empty string concatenation is needed when the primary key is an object (e.g. an Uuid object) #}
+                {% set _item_id = '' ~ attribute(item, _entity_config.primary_key_field_name) %}
+                <tr data-id="{{ _item_id }}">
+                    {% if _has_batch_actions %}
+                        <td><input type="checkbox" class="form-batch-checkbox" value="{{ _item_id }}"></td>
+                    {% endif %}
+
+                    {% for field, metadata in fields %}
+                        {% set isSortingField = metadata.property == app.request.get('sortField') %}
+                        {% set _column_label =  (metadata.label ?: field|humanize)|trans(_trans_parameters)  %}
+
+                        <td class="{{ isSortingField ? 'sorted' }} {{ metadata.dataType|lower }} {{ metadata.css_class }}" {{ easyadmin_config('design.rtl') ? 'dir="rtl"' }}>
+                            {{ easyadmin_render_field_for_list_view(_entity_config.name, item, metadata) }}
+                        </td>
+                    {% endfor %}
+
+                    {% if _list_item_actions|length > 0 %}
+                        {% set _column_label =  'list.row_actions'|trans(_trans_parameters, 'EasyAdminBundle') %}
+                        <td class="actions">
+                        {% block item_actions %}
+                            {% set _actions_template = _entity_config.list.collapse_actions
+                                ? '@EasyAdmin/default/includes/_actions_dropdown.html.twig'
+                                : '@EasyAdmin/default/includes/_actions.html.twig'
+                            %}
+                            {{ include(_actions_template, {
+                                actions: _list_item_actions,
+                                request_parameters: _request_parameters,
+                                translation_domain: _entity_config.translation_domain,
+                                trans_parameters: _trans_parameters,
+                                item_id: _item_id,
+                                item: item
+                            }, with_context = false) }}
+                        {% endblock item_actions %}
+                        </td>
+                    {% endif %}
+                </tr>
+            {% else %}
+                <tr>
+                    <td class="no-results" colspan="{{ _list_item_actions|length > 0 ? fields|length + 1 : fields|length }}">
+                        {{ 'search.no_results'|trans(_trans_parameters, 'EasyAdminBundle') }}
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endblock table_body %}
+        </tbody>
+    </table>
+
+    {% block delete_form %}
+        {% set referer = paginator.currentPage == paginator.nbPages and 1 != paginator.currentPage and 1 == paginator.currentPageResults|length
+            ? path('easyadmin', app.request.query|merge({ page: app.request.query.get('page') - 1 }))
+            : app.request.requestUri
+        %}
+
+        {{ include('@EasyAdmin/default/includes/_delete_form.html.twig', {
+            view: 'list',
+            referer: referer|url_encode,
+            delete_form: delete_form_template,
+            _translation_domain: _entity_config.translation_domain,
+            _trans_parameters: _trans_parameters,
+            _entity_config: _entity_config,
+        }, with_context = false) }}
+    {% endblock delete_form %}
+{% endblock main %}
+
+{% block content_footer %}
+    {% block paginator %}
+        {{ include(_entity_config.templates.paginator) }}
+    {% endblock paginator %}
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+
+    <script type="text/javascript">
+        $(function() {
+            const toggles = document.querySelectorAll('.checkbox-switch input[type="checkbox"]');
+            for (i = 0; i < toggles.length; i++) {
+                toggles[i].addEventListener('change', function () {
+                    const toggle = this;
+                    const newValue = this.checked;
+                    const oldValue = !newValue;
+                    const propertyName = this.closest('.checkbox-switch').dataset.propertyname;
+
+                    const toggleUrl = "{{ path('easyadmin', { action: 'edit', entity: _entity_config.name, view: 'list' })|raw }}"
+                        + "&id=" + this.closest('tr').dataset.id
+                        + "&property=" + propertyName
+                        + "&newValue=" + newValue.toString();
+
+                    let toggleRequest = $.ajax({ type: "GET", url: toggleUrl, data: {} });
+
+                    toggleRequest.done(function(result) {});
+
+                    toggleRequest.fail(function() {
+                        // in case of error, restore the original value and disable the toggle
+                        toggle.checked = oldValue;
+                        toggle.disabled = true;
+                        toggle.closest('.checkbox-switch').classList.add('disabled');
+                    });
+                });
+            }
+
+            $('.action-delete').on('click', function(e) {
+                e.preventDefault();
+                const id = $(this).parents('tr').first().data('id');
+
+                $('#modal-delete').modal({ backdrop: true, keyboard: true })
+                    .off('click', '#modal-delete-button')
+                    .on('click', '#modal-delete-button', function () {
+                        let deleteForm = $('#delete-form');
+                        deleteForm.attr('action', deleteForm.attr('action').replace('__id__', id));
+                        deleteForm.trigger('submit');
+                    });
+            });
+
+            {% if _has_batch_actions %}
+            const titleContent = $('.content-header-title > .title').html();
+            $(document).on('click', '.deselect-batch-button', function () {
+                $(this).closest('.content').find(':checkbox.form-batch-checkbox-all').prop('checked', false).trigger('change');
+            });
+            $(document).on('change', '.form-batch-checkbox-all', function () {
+                $(this).closest('.content').find(':checkbox.form-batch-checkbox').prop('checked', $(this).prop('checked')).trigger('change');
+            });
+            $(document).on('change', '.form-batch-checkbox', function () {
+                const $content = $(this).closest('.content');
+                let $input = $content.find(':hidden#batch_form_ids');
+                let ids = $input.val() ? $input.val().split(',') : [];
+                const id = $(this).val();
+
+                if ($(this).prop('checked')) {
+                    if (-1 === ids.indexOf(id)) {
+                        ids.push(id);
+                    }
+                } else {
+                    ids = ids.filter(function(value) { return value !== id });
+                    $content.find(':checkbox.form-batch-checkbox-all').prop('checked', false);
+                }
+
+                if (0 === ids.length) {
+                    $content.find('.global-actions').show();
+                    $content.find('.batch-actions').hide();
+                    $content.find('table').removeClass('table-batch');
+                } else {
+                    $content.find('.batch-actions').show();
+                    $content.find('.global-actions').hide();
+                    $content.find('table').addClass('table-batch');
+                }
+
+                $input.val(ids.join(','));
+                $content.find('.content-header-title > .title').html(0 === ids.length ? titleContent : '');
+            });
+            {% endif %}
+        });
+    </script>
+
+    {% if 'search' == app.request.get('action') %}
+        <script type="text/javascript">
+            const _search_query = "{{ app.request.get('query')|default('')|e('js') }}";
+            // the original query is prepended to allow matching exact phrases in addition to single words
+            $('#main').find('table tbody').highlight($.merge([_search_query], _search_query.split(' ')));
+        </script>
+    {% endif %}
+{% endblock %}
