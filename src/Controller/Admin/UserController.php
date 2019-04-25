@@ -63,7 +63,7 @@ class UserController extends BaseController
     public function resetPasswordAction()
     {
         $id = $this->request->query->get('id');
-        /** @var $user UserInterface */
+        /** @var $user User */
         $user = $this->em->getRepository(User::class)->find($id);
         $this->em->flush();
 
@@ -91,6 +91,8 @@ class UserController extends BaseController
             }
             $this->fosUserMailer->sendResettingEmailMessage($user);
             $user->setPasswordRequestedAt(new \DateTime());
+            $user->setGoogleAuthenticatorSecret(null);
+            $user->setFlowStatus(User::FLOW_STATUS_INCOMPLETE);
             $this->userManager->updateUser($user);
             $event = new GetResponseUserEvent($user, $this->request);
             $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_COMPLETED, $event);
