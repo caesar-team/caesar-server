@@ -6,7 +6,7 @@ easy_admin:
       class: App\Entity\User
       label: 'User'
       list:
-        actions: ['resetPassword']
+        actions: ['resetPassword', 'reset_2fa']
         title: 'Users'
         fields:
           - id
