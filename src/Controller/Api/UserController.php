@@ -423,6 +423,7 @@ final class UserController extends AbstractController
      * @param Request $request
      * @param Messenger $messenger
      * @return FormInterface
+     * @throws \Exception
      */
     public function sendInvitation(Request $request, Messenger $messenger)
     {
