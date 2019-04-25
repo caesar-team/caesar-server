@@ -11,11 +11,3 @@ old_sound_rabbit_mq:
         send_message:
             connection:       default
             exchange_options: {name: 'send-message', type: direct}
-    consumers:
-        send_message:
-            connection:       default
-            exchange_options: {name: 'send-message', type: direct}
-            queue_options:    {name: 'send-message'}
-            callback:         app.send_message_consumer
-            idle_timeout: 60
-            idle_timeout_exit_code: 0

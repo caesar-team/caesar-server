@@ -8,30 +8,37 @@ namespace App\Services;
 use App\Entity\MessageHistory;
 use App\Entity\User;
 use App\Mailer\MailRegistry;
+use App\Mailer\Sender\MailSender;
 use App\Repository\MessageHistoryRepository;
-use OldSound\RabbitMqBundle\RabbitMq\Producer;
 use App\Model\DTO\Message;
+use Doctrine\ORM\EntityManagerInterface;
 
 class Messenger
 {
     /**
-     * @var Producer
-     */
-    private $producer;
-    /**
      * @var MessageHistoryRepository
      */
     private $historyRepository;
+    /**
+     * @var MailSender
+     */
+    private $mailSender;
+    /**
+     * @var EntityManagerInterface
+     */
+    private $entityManager;
 
-    public function __construct(Producer $producer, MessageHistoryRepository $historyRepository)
+    public function __construct(MailSender $mailSender, MessageHistoryRepository $historyRepository, EntityManagerInterface $entityManager)
     {
-        $this->producer = $producer;
         $this->historyRepository = $historyRepository;
+        $this->mailSender = $mailSender;
+        $this->entityManager = $entityManager;
     }
 
     /**
      * @param User $user
      * @param Message $message
+     * @throws \Exception
      */
     public function send(User $user, Message $message)
     {
@@ -42,7 +49,12 @@ class Messenger
             return;
         }
 
-        $this->producer->publish(serialize($message));
+        $this->mailSender->send($message->code, [$message->email], $message->options);
+        $messageHistory = new MessageHistory();
+        $messageHistory->setRecipientId($message->recipientId);
+        $messageHistory->setCode($message->code);
+        $this->entityManager->persist($messageHistory);
+        $this->entityManager->flush();
     }
 
     /**

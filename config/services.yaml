@@ -50,10 +50,15 @@ services:
         arguments:
             $redis: '@snc_redis.default'
 
+    mailer.rabbit_sender_adapter:
+        class: App\Mailer\RabbitMqMailerAdapter
+        arguments:
+            $producer: '@old_sound_rabbit_mq.send_message_producer'
+
     App\Mailer\Sender\MailSender:
         arguments:
             - "@sylius.email_renderer.adapter"
-            - "@sylius.email_sender.adapter"
+            - "@mailer.rabbit_sender_adapter"
             - "@sylius.email_provider"
             - "@sylius.mailer.default_settings_provider"
 
@@ -70,6 +75,4 @@ services:
         class: App\Mailer\FosUserMailer
     app.send_message_consumer:
         class: App\Consumer\SendMessageConsumer
-    App\Services\Messenger:
-        arguments:
-            $producer: '@old_sound_rabbit_mq.send_message_producer'
+
