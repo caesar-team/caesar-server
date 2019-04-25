@@ -57,9 +57,7 @@ final class MailSender implements SenderInterface
 
         $renderedEmail = $this->rendererAdapter->render($email, $data);
 
-        $this->metaData['email'] = $email;
         $this->metaData['sender'] = [$senderAddress, $senderName];
-        $this->metaData['rendered'] = $renderedEmail;
 
         $this->senderAdapter->send(
             $recipients,
