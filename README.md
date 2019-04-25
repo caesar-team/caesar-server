@@ -41,6 +41,7 @@ openssl rsa -pubout -in var/jwt/private.pem -out var/jwt/public.pem
 Just go to [http://localhost](http://localhost)
 
 ####Run tests:
+Reveal `TEST_DATABASE_URL` from .env
 ```bash
 APP_ENV=test vendor/bin/phpunit -d memory_limit=-1 #Phpunit
 ```
