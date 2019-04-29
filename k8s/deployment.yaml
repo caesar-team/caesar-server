@@ -25,7 +25,9 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: caesarapp-server  
+      app: caesarapp-server
+  strategy:
+    type: Recreate   
   template:
     metadata:
       labels:
@@ -45,6 +47,8 @@ spec:
             name: rabbitmq-config
         - secretRef:
             name: rabbitmq-secret
+        - configMapRef:
+            name: redis-config    
         ports:
         - name: php-fpm
           containerPort: 9000
