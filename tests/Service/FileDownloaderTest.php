@@ -20,7 +20,7 @@ class FileDownloaderTest extends TestCase
         $this->fileDownloader = new FileDownloader();
     }
 
-    public function testCreateAvatarFromLink()
+    public function testCreateAvatarFromLink(): void
     {
         $link = self::LINK;
         $avatar = $this->fileDownloader->createAvatarFromLink($link);

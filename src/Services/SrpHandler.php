@@ -53,24 +53,14 @@ class SrpHandler
         return $result;
     }
 
-    public function generateToken(): string
+    public function generateFirstMatcher(string $publicClientEphemeral, string $publicServerEphemeral, string $session): string
     {
-        return $this->getRandomSeed(64);
-    }
-
-    public function generateFirstMatcher(string $publicClientEphemeral, string $publiceServerEphemeral, string $session): string
-    {
-        return $this->hash($publicClientEphemeral.$publiceServerEphemeral.$session);
+        return $this->hash($publicClientEphemeral.$publicServerEphemeral.$session);
     }
 
     public function generateSecondMatcher(string $publicClienEphemeral, string $firstMatcher, string $session): string
     {
         return $this->hash($publicClienEphemeral.$firstMatcher.$session);
-    }
-
-    public function generateSessionKey(string $session)
-    {
-        return $this->hash($session);
     }
 
     protected function generateU(string $publicClientEphemeral, string $publicServerEphemeral): string
