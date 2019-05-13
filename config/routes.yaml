@@ -11,3 +11,15 @@ fos_user_resetting_reset:
     path: /api/auth/srpp/reset/{token}
     defaults: { _controller: App\Controller\Api\SrpController:resetPassword }
     methods: ["PATCH"]
+fos_user_resetting_request:
+    path: /api/auth/request
+    defaults: { _controller: fos_user.resetting.controller:requestAction }
+    methods: ["GET"]
+fos_user_resetting_send_email:
+    path: /api/auth/send-email
+    defaults: { _controller: fos_user.resetting.controller:sendEmailAction }
+    methods: ["POST"]
+fos_user_resetting_check_email:
+    path: /api/auth/check-email
+    defaults: { _controller: fos_user.resetting.controller:checkEmailAction }
+    methods: ["GET"]

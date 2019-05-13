@@ -33,7 +33,7 @@ spec:
         backend:
           serviceName: caesarapp-server
           servicePort: 80
-      - path: /doc
+      - path: /api/doc
         backend:
           serviceName: caesarapp-server
           servicePort: 80

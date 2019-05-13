@@ -21,7 +21,7 @@ security:
             pattern: ^/api/anonymous
             anonymous: true
         doc:
-            pattern: ^/doc
+            pattern: ^/api/doc
             http_basic: ~
             anonymous: ~
             context: admin
@@ -95,7 +95,7 @@ security:
         - { path: ^/api/message, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/anonymous, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
-        - { path: ^/api/auth/srpp, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api/auth, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api, roles: [ROLE_USER]}
-        - { path: ^/doc, roles: [ROLE_SUPER_ADMIN]}
+        - { path: ^/api/doc, roles: [ROLE_SUPER_ADMIN]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}
