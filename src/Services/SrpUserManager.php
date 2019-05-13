@@ -11,19 +11,13 @@ use Doctrine\ORM\EntityManagerInterface;
 class SrpUserManager
 {
     /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    /**
      * @var SrpHandler
      */
     private $srpHandler;
 
-    public function __construct(SrpHandler $srpHandler, EntityManagerInterface $entityManager)
+    public function __construct(SrpHandler $srpHandler)
     {
         $this->srpHandler = $srpHandler;
-        $this->entityManager = $entityManager;
     }
 
     public function getMatcherSession(LoginRequest $request): SessionMatcher

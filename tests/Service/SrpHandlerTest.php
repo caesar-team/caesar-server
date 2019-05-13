@@ -4,36 +4,21 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
-use App\Entity\Srp;
-use App\Entity\User;
-use App\Services\SrpHandler;
 use PHPUnit\Framework\TestCase;
 
 class SrpHandlerTest extends TestCase
 {
-    const VERIFIER = 'test';
-    const PUBLIC_CLIENT_VALUE = 'test';
     /**
-     * @var SrpHandler
+     * @var SrpTestHelper
      */
-    private $srpHandler;
-    /**
-     * @var User
-     */
-    private $user;
+    private $srpTestHelper;
 
     /**
      * @throws \Exception
      */
     public function setUp(): void
     {
-        $this->srpHandler = new SrpHandler();
-        $srp = new Srp();
-        $srp->setPublicClientEphemeralValue(self::PUBLIC_CLIENT_VALUE);
-        $srp->setPrivateServerEphemeralValue($this->srpHandler->getRandomSeed());
-        $srp->setVerifier(self::VERIFIER);
-        $this->user = new User($srp);
-        $this->user->getSrp()->setPublicServerEphemeralValue($this->getPublicServerEphemeral());
+        $this->srpTestHelper = new SrpTestHelper();
     }
 
     /**
@@ -41,14 +26,14 @@ class SrpHandlerTest extends TestCase
      */
     public function testGeneratePublicServerEphemeral(): void
     {
-        $publicValue = $this->getPublicServerEphemeral();
+        $publicValue = $this->srpTestHelper->getPublicServerEphemeral();
 
         $this->assertIsString($publicValue);
     }
 
     public function testGenerateSessionServer(): void
     {
-        $serverSession = $this->getSessionServer();
+        $serverSession = $this->srpTestHelper->getSessionServer();
 
         $this->assertIsString($serverSession);
     }
@@ -56,9 +41,9 @@ class SrpHandlerTest extends TestCase
     public function testGetRandomSeed(): void
     {
         $randomSeeds = [];
-        $randomSeeds[] = $this->srpHandler->getRandomSeed();
-        $randomSeeds[] = $this->srpHandler->getRandomSeed();
-        $randomSeeds[] = $this->srpHandler->getRandomSeed();
+        $randomSeeds[] = $this->srpTestHelper->getSrpHandler()->getRandomSeed();
+        $randomSeeds[] = $this->srpTestHelper->getSrpHandler()->getRandomSeed();
+        $randomSeeds[] = $this->srpTestHelper->getSrpHandler()->getRandomSeed();
         $seedsCount = count($randomSeeds);
         $filteredSeedsCount = array_unique($randomSeeds);
         $this->assertEquals($seedsCount, count($filteredSeedsCount));
@@ -66,48 +51,20 @@ class SrpHandlerTest extends TestCase
 
     public function testGenerateFirstMatcher(): void
     {
-        $firstMatcher = $this->getFirstMatcher();
+        $firstMatcher = $this->srpTestHelper->getFirstMatcher();
 
         $this->assertIsString($firstMatcher);
     }
 
     public function testGenerateSecondMatcher(): void
     {
-        $srp = $this->user->getSrp();
-        $secondMatcher = $this->srpHandler->generateSecondMatcher($srp->getPublicClientEphemeralValue(), $this->getFirstMatcher(), $this->getSessionServer());
+        $srp = $this->srpTestHelper->getUser()->getSrp();
+        $secondMatcher = $this->srpTestHelper->getSrpHandler()->generateSecondMatcher(
+            $srp->getPublicClientEphemeralValue(),
+            $this->srpTestHelper->getFirstMatcher(),
+            $this->srpTestHelper->getSessionServer()
+        );
 
         $this->assertIsString($secondMatcher);
-    }
-
-    private function getFirstMatcher(): string
-    {
-        $srp = $this->user->getSrp();
-        return $this->srpHandler->generateFirstMatcher(
-            $srp->getPublicClientEphemeralValue(),
-            $srp->getPublicServerEphemeralValue(),
-            $this->getSessionServer()
-        );
-    }
-
-    /**
-     * @return string
-     * @throws \Exception
-     */
-    private function getPublicServerEphemeral(): string
-    {
-        $privateEphemeral = $this->user->getSrp()->getPrivateServerEphemeralValue();
-
-        return $this->srpHandler->generatePublicServerEphemeral($privateEphemeral, $this->user->getSrp()->getVerifier());
-    }
-
-    private function getSessionServer(): string
-    {
-        $srp = $this->user->getSrp();
-        return $this->srpHandler->generateSessionServer(
-            $srp->getPublicClientEphemeralValue(),
-            $srp->getPublicServerEphemeralValue(),
-            $srp->getPrivateServerEphemeralValue(),
-            $srp->getVerifier()
-        );
     }
 }
