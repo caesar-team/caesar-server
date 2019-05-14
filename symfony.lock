@@ -113,18 +113,6 @@
     "egulias/email-validator": {
         "version": "2.1.4"
     },
-    "eightpoints/guzzle-bundle": {
-        "version": "7.0",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "7.0",
-            "ref": "e5e657ce5a4ebc99f3c76916938aa0a5f8ef7736"
-        },
-        "files": [
-            "config/packages/eight_points_guzzle.yaml"
-        ]
-    },
     "exsyst/swagger": {
         "version": "v0.4.0"
     },
