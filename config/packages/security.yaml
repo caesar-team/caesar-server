@@ -93,6 +93,7 @@ security:
     access_control:
         - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/message, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api/recaptcha, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/anonymous, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/auth, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}

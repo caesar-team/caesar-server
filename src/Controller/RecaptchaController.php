@@ -11,17 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class RecaptchaController extends AbstractController
 {
     /**
-     * @Route("/recaptcha", name="recaptcha_get", methods={"GET"})
-     */
-    public function index()
-    {
-        return $this->render('recaptcha/index.html.twig', [
-            'controller_name' => 'RecaptchaController',
-        ]);
-    }
-
-    /**
-     * @Route("/recaptcha", name="recaptcha_post", methods={"POST"})
+     * @Route("/api/recaptcha", name="recaptcha_post", methods={"POST"})
      * @param Request $request
      *
      * @return JsonResponse
