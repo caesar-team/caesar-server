@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use App\Factory\View\CreatedItemViewFactory;
@@ -12,11 +13,12 @@ use App\Factory\View\ItemViewFactory;
 use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
 use App\Form\Request\CreateItemType;
-use App\Form\Request\EditItemType;
+use App\Form\Request\EditItemRequestType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
 use App\Model\Query\ItemListQuery;
+use App\Model\Request\EditItemRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
@@ -29,7 +31,6 @@ use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -289,6 +290,7 @@ final class ItemController extends AbstractController
     public function moveItemAction(Item $item, Request $request, EntityManagerInterface $manager)
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        $item->setPreviousList($item->getParentList());
 
         $form = $this->createForm(MoveItemType::class, $item);
         $form->submit($request->request->all());
@@ -310,7 +312,7 @@ final class ItemController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\EditItemType::class)
+     *     @Model(type=\App\Form\Request\EditItemRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
@@ -362,23 +364,37 @@ final class ItemController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @param Item                   $item
-     * @param Request                $request
+     * @param Item $item
+     * @param Request $request
      * @param EntityManagerInterface $entityManager
      *
+     * @param SerializerInterface $serializer
+     * @param ChildItemHandler $itemHandler
      * @return array|FormInterface
      */
-    public function editItem(Item $item, Request $request, EntityManagerInterface $entityManager)
+    public function editItem(
+        Item $item,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        SerializerInterface $serializer,
+        ChildItemHandler $itemHandler
+    )
     {
         $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        /** @var EditItemRequest $itemRequest */
+        $itemRequest = $serializer->deserialize($request->getContent(), EditItemRequest::class, 'json');
+        $item->setSecret($itemRequest->getItem()->getSecret());
 
-        $form = $this->createForm(EditItemType::class, $item);
+        $form = $this->createForm(EditItemRequestType::class, $itemRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
         $entityManager->persist($item);
+        if ($itemRequest->getOriginalItem()->getSecret()) {
+            $itemHandler->updateItem($item->getOriginalItem(), $itemRequest->getOriginalItem()->getSecret(), $this->getUser());
+        }
         $entityManager->flush();
 
         return [
@@ -436,7 +452,8 @@ final class ItemController extends AbstractController
     {
         $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
         if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
-            throw new BadRequestHttpException('You can fully delete item only from trash');
+            $message = $this->translator->trans('app.exception.delete_trash_only');
+            throw new BadRequestHttpException($message);
         }
 
         $manager->remove($item);
@@ -795,10 +812,58 @@ final class ItemController extends AbstractController
 
         $update = $item->getUpdate();
         if (null === $update) {
-            throw new BadRequestHttpException('Item has no update to accept it');
+            $message = $this->translator->trans('app.exception.item_has_no_update_to_accept');
+            throw new BadRequestHttpException($message);
         }
 
         $item->setSecret($update->getSecret());
+        $item->setUpdate(null);
+
+        $entityManager->persist($item);
+        $entityManager->flush();
+
+        return $factory->create($item);
+    }
+
+    /**
+     *
+     * Decline an item update
+     *
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Item data",
+     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not owner of item"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such item"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/{id}/decline_update",
+     *     name="api_decline_item_update",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Item $item
+     * @param EntityManagerInterface $entityManager
+     * @param ItemViewFactory $factory
+     * @return ItemView
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function declineItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
+    {
+        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
         $item->setUpdate(null);
 
         $entityManager->persist($item);

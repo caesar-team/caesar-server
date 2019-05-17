@@ -48,7 +48,8 @@
         "phpunit/phpunit": "^8.0",
         "symfony/browser-kit": "^4.2",
         "symfony/debug-pack": "^1.0",
-        "symfony/maker-bundle": "^1.11"
+        "symfony/maker-bundle": "^1.11",
+        "symfony/phpunit-bridge": "^4.2"
     },
     "config": {
         "preferred-install": {

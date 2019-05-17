@@ -38,6 +38,7 @@ class ItemViewFactory
         $view->type = $item->getType();
         $view->lastUpdated = $item->getLastUpdated();
         $view->listId = $item->getParentList()->getId()->toString();
+        $view->previousListId = $item->getPreviousList() ? $item->getPreviousList()->getId()->toString() : null;
         $view->tags = array_map('strval', $item->getTags()->toArray());
 
         $view->secret = $item->getSecret();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Consumer;
 
 use App\Entity\MessageHistory;
+use App\Mailer\Sender\MailSender;
 use App\Model\DTO\Message;
 use Doctrine\ORM\EntityManagerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
@@ -14,7 +15,7 @@ use Sylius\Component\Mailer\Sender\SenderInterface;
 class SendMessageConsumer implements ConsumerInterface
 {
     /**
-     * @var SenderInterface
+     * @var SenderInterface|MailSender
      */
     private $sender;
     /**
@@ -40,6 +41,7 @@ class SendMessageConsumer implements ConsumerInterface
         $recipient = $message->recipientId;
 
         try {
+            print($this->sender->getMetaData());
             $this->sender->send($code, [$email], $options);
             $messageHistory = new MessageHistory();
             $messageHistory->setRecipientId($recipient);

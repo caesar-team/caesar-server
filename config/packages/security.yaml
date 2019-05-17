@@ -2,17 +2,14 @@ security:
     encoders:
         FOS\UserBundle\Model\UserInterface: bcrypt
         Symfony\Component\Security\Core\User\User: bcrypt
+    role_hierarchy:
+        ROLE_ADMIN:       ROLE_USER
+        ROLE_SUPER_ADMIN: ROLE_ADMIN
     providers:
         fos.user.provider:
             id: fos_user.user_provider.username_email
         hwi_oauth.user.provider:
             id: hwi_oauth.user.provider
-        in_memory:
-            memory:
-                users:
-                    admin:
-                        password:            '%env(SUPERADMIN_PASS)%'
-                        roles:               ROLE_ADMIN
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -24,17 +21,17 @@ security:
             pattern: ^/api/anonymous
             anonymous: true
         doc:
-            pattern: ^/doc
+            pattern: ^/api/doc
             http_basic: ~
             anonymous: ~
             context: admin
-            provider: in_memory
+            provider: fos.user.provider
         admin:
             pattern: ^/admin
             http_basic: ~
-            anonymous: ~
+            anonymous: false
             context: admin
-            provider: in_memory
+            provider: fos.user.provider
         share:
             pattern: "^/api/share/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
             provider:  fos.user.provider
@@ -95,9 +92,10 @@ security:
                 success_handler: App\Security\JwtRedirectHandler
     access_control:
         - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api/message, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/anonymous, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
-        - { path: ^/api/auth/srpp, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api/auth, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api, roles: [ROLE_USER]}
-        - { path: ^/doc, roles: [ROLE_ADMIN]}
+        - { path: ^/api/doc, roles: [ROLE_SUPER_ADMIN]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}

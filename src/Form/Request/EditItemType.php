@@ -6,6 +6,7 @@ namespace App\Form\Request;
 
 use App\Entity\Item;
 use App\Form\EventListener\InjectTagListener;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -27,7 +28,6 @@ class EditItemType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        parent::buildForm($builder, $options);
         $builder
             ->add('secret', TextType::class, [
                 'constraints' => [
@@ -50,7 +50,6 @@ class EditItemType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        parent::configureOptions($resolver);
         $resolver->setDefaults([
             'data_class' => Item::class,
         ]);
