@@ -54,7 +54,7 @@ spec:
           containerPort: 9000
         volumeMounts:
         - mountPath: /var/www/html/public
-          name: caesar-shared-static
+          name: caesar-static-files
         - mountPath: /var/www/html/var/jwt
           name: caesar-certificate  
       - name: nginx
@@ -68,7 +68,7 @@ spec:
           name: nginx-config-volume
           subPath: nginx.conf
         - mountPath: /var/www/html/public
-          name: caesar-shared-static
+          name: caesar-static-files
       initContainers:
       - name: copy-public
         image: "caesarteam/caesar-server:${CICD_GIT_BRANCH}"
@@ -76,15 +76,14 @@ spec:
         command: [ "/bin/cp", "-r", "public/.", "public_site/" ]
         volumeMounts:
         - mountPath: /var/www/html/public_site
-          name: caesar-shared-static
+          name: caesar-static-files
       volumes:
       - name: caesar-certificate
         persistentVolumeClaim:
           claimName: caesar-certificate
-      - name: caesar-shared-static
-        emptyDir:
-          medium: Memory
-          sizeLimit: "1Gi"
+      - name: caesar-static-files
+        persistentVolumeClaim:
+          claimName: caesar-static-files
       - configMap:
           defaultMode: 256
           name: nginx-config
