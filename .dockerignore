@@ -11,9 +11,9 @@ README.md
 .env.*
 .env
 .php_cs.dist
-/vendor/*
-/var/cache/*
-/var/jwt/*
-/var/log/*
-/public/bundles
-/public/static/*
+vendor/*
+var/cache/*
+var/jwt/*
+var/log/*
+public/bundles
+public/static/*
