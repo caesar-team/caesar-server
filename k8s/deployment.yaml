@@ -60,6 +60,8 @@ spec:
       - name: nginx
         image: "nginx:alpine"
         imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 0  
         ports:
         - name: http
           containerPort: 80
@@ -77,6 +79,10 @@ spec:
         volumeMounts:
         - mountPath: /var/www/html/public_site
           name: caesar-static-files
+      securityContext:
+        runAsUser: 82
+        runAsGroup: 82
+        fsGroup: 82
       volumes:
       - name: caesar-certificate
         persistentVolumeClaim:
