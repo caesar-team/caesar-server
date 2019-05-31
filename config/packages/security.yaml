@@ -32,15 +32,6 @@ security:
             anonymous: false
             context: admin
             provider: fos.user.provider
-        share:
-            pattern: "^/api/share/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-            provider:  fos.user.provider
-            stateless: true
-            anonymous: ~
-            logout: ~
-            guard:
-                authenticators:
-                    - App\Security\ShareAuthenticator
         srp:
             pattern: ^/api/auth/srpp
             stateless: true
