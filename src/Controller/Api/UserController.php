@@ -36,6 +36,7 @@ use App\Services\Messenger;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
@@ -422,10 +423,11 @@ final class UserController extends AbstractController
      *
      * @param Request $request
      * @param Messenger $messenger
+     * @param LoggerInterface $logger
      * @return FormInterface
      * @throws \Exception
      */
-    public function sendInvitation(Request $request, Messenger $messenger)
+    public function sendInvitation(Request $request, Messenger $messenger, LoggerInterface $logger)
     {
         $sendRequest = new SendInviteRequest();
 
@@ -439,6 +441,9 @@ final class UserController extends AbstractController
             'url' => $sendRequest->getUrl(),
         ]);
         $messenger->send($sendRequest->getUser(), $message);
+
+        $logger->debug('Registered in UserController::sendInvitation');
+        $logger->debug(sprintf('Username: %s', $sendRequest->getUser()->getUsername()));
 
         return null;
     }
@@ -469,6 +474,7 @@ final class UserController extends AbstractController
      * @param Request $request
      * @param Messenger $messenger
      * @return null|FormInterface
+     * @throws \Exception
      */
     public function sendInvitations(Request $request, Messenger $messenger)
     {
