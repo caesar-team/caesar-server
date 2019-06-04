@@ -14,6 +14,7 @@ use App\Model\Request\ItemCollectionRequest;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\Producer;
+use Psr\Log\LoggerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
@@ -46,6 +47,10 @@ class ChildItemHandler
      * @var string
      */
     private $absoluteUrl;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
     /**
      * InviteHandler constructor.
@@ -53,12 +58,14 @@ class ChildItemHandler
      * @param SenderInterface $sender
      * @param RouterInterface $router
      * @param Messenger $messenger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         SenderInterface $sender,
         RouterInterface $router,
-        Messenger $messenger
+        Messenger $messenger,
+        LoggerInterface $logger
     )
     {
         $this->entityManager = $entityManager;
@@ -67,6 +74,7 @@ class ChildItemHandler
         $this->router = $router;
         $this->messenger = $messenger;
         $this->absoluteUrl = $this->router->generate(self::URL_ROOT, [], RouterInterface::ABSOLUTE_URL);
+        $this->logger = $logger;
     }
 
     /**
@@ -155,6 +163,8 @@ class ChildItemHandler
         ];
         $message = new Message($childItem->getUser()->getId()->toString(), $childItem->getUser()->getEmail(), MailRegistry::NEW_ITEM_MESSAGE, $options);
         $this->messenger->send($childItem->getUser(), $message);
+
+        $this->logger->debug('Registered in ChildItemHandler');
     }
 
     /**

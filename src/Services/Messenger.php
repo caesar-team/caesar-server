@@ -12,6 +12,7 @@ use App\Mailer\Sender\MailSender;
 use App\Repository\MessageHistoryRepository;
 use App\Model\DTO\Message;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 
 class Messenger
 {
@@ -27,12 +28,22 @@ class Messenger
      * @var EntityManagerInterface
      */
     private $entityManager;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
-    public function __construct(MailSender $mailSender, MessageHistoryRepository $historyRepository, EntityManagerInterface $entityManager)
+    public function __construct(
+        MailSender $mailSender,
+        MessageHistoryRepository $historyRepository,
+        EntityManagerInterface $entityManager,
+        LoggerInterface $logger
+    )
     {
         $this->historyRepository = $historyRepository;
         $this->mailSender = $mailSender;
         $this->entityManager = $entityManager;
+        $this->logger = $logger;
     }
 
     /**
@@ -49,6 +60,8 @@ class Messenger
             return;
         }
 
+        $this->logger->debug('Registered in Messenger');
+        $this->logger->debug(sprintf('a message with address %s is formed', $message->email));
         $this->mailSender->send($message->code, [$message->email], $message->options);
         $messageHistory = new MessageHistory();
         $messageHistory->setRecipientId($message->recipientId);
