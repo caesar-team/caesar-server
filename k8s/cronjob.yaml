@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: cron-send-message
+  name: send-message-consumer
   namespace: default
 spec:
   schedule: "*/1 * * * *"
@@ -11,14 +11,14 @@ spec:
       template:
         spec:
           containers:
-          - name: send-message
+          - name: clear-message-history
             image: "caesarteam/caesar-server:develop"
-            command: ["/usr/local/bin/php", "bin/console", "rabbitmq:consumer", "-e", "prod", "-w", "-m", "30", "send_message"]
+            command: ["/usr/local/bin/php", "bin/console", "rabbitmq:consumer", "send_message", "-e", "prod", "-m", "${RABBITMQ_MAX_COUNT}"]
             envFrom:
             - configMapRef:
-                name: caesarapp-config
+                name: caesar-server-config
             - secretRef:
-                name: caesarapp-secret
+                name: caesar-server-secret
             - configMapRef:
                 name: rabbitmq-config
             - secretRef:
