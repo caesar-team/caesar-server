@@ -17,4 +17,6 @@ old_sound_rabbit_mq:
             exchange_options: {name: 'send-message', type: direct}
             queue_options:    {name: 'send-message'}
             callback:         app.send_message_consumer
+            idle_timeout:           '%env(RABBITMQ_IDLE_TIMEOUT)%'
+            idle_timeout_exit_code: 0
 
