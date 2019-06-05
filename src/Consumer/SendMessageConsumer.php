@@ -35,6 +35,7 @@ class SendMessageConsumer implements ConsumerInterface
         if (!$message instanceof Message) {
             return;
         }
+
         $email = $message->email;
         $options = $message->options;
         $code = $message->code;
