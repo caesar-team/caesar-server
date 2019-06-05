@@ -38,16 +38,10 @@ class SendMessageConsumer implements ConsumerInterface
         $email = $message->email;
         $options = $message->options;
         $code = $message->code;
-        $recipient = $message->recipientId;
 
         try {
             print($this->sender->getMetaData());
             $this->sender->send($code, [$email], $options);
-            $messageHistory = new MessageHistory();
-            $messageHistory->setRecipientId($recipient);
-            $messageHistory->setCode($code);
-            $this->entityManager->persist($messageHistory);
-            $this->entityManager->flush();
         } catch (\Exception $exception) {
             print($exception->getMessage());
         } catch (\Throwable $error) {
