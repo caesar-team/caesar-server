@@ -8,31 +8,42 @@ namespace App\Services;
 use App\Entity\MessageHistory;
 use App\Entity\User;
 use App\Mailer\MailRegistry;
-use App\Mailer\Sender\MailSender;
 use App\Repository\MessageHistoryRepository;
 use App\Model\DTO\Message;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use OldSound\RabbitMqBundle\RabbitMq\Producer;
 
 class Messenger
 {
+    /**
+     * @var Producer
+     */
+    private $producer;
     /**
      * @var MessageHistoryRepository
      */
     private $historyRepository;
     /**
-     * @var MailSender
-     */
-    private $mailSender;
-    /**
      * @var EntityManagerInterface
      */
     private $entityManager;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
-    public function __construct(MailSender $mailSender, MessageHistoryRepository $historyRepository, EntityManagerInterface $entityManager)
+    public function __construct(
+        Producer $producer,
+        MessageHistoryRepository $historyRepository,
+        EntityManagerInterface $entityManager,
+        LoggerInterface $logger
+    )
     {
         $this->historyRepository = $historyRepository;
-        $this->mailSender = $mailSender;
         $this->entityManager = $entityManager;
+        $this->logger = $logger;
+        $this->producer = $producer;
     }
 
     /**
@@ -49,7 +60,9 @@ class Messenger
             return;
         }
 
-        $this->mailSender->send($message->code, [$message->email], $message->options);
+        $this->logger->debug('Registered in Messenger');
+        $this->logger->debug(sprintf('a message with address %s is formed', $message->email));
+        $this->producer->publish(serialize($message));
         $messageHistory = new MessageHistory();
         $messageHistory->setRecipientId($message->recipientId);
         $messageHistory->setCode($message->code);

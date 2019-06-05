@@ -40,9 +40,9 @@ spec:
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
-            name: caesarapp-config
+            name: caesar-server-config
         - secretRef:
-            name: caesarapp-secret
+            name: caesar-server-secret
         - configMapRef:
             name: rabbitmq-config
         - secretRef:
