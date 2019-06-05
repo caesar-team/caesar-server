@@ -40,7 +40,6 @@ class SendMessageConsumer implements ConsumerInterface
         $code = $message->code;
 
         try {
-            print($this->sender->getMetaData());
             $this->sender->send($code, [$email], $options);
         } catch (\Exception $exception) {
             print($exception->getMessage());
