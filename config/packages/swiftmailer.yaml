@@ -4,7 +4,7 @@ swiftmailer:
     host: '%env(MAILER_HOST)%'
     port: '%env(MAILER_PORT)%'
     encryption: tls
-    user: '%env(MAILER_USER)%'
+    username: '%env(MAILER_USER)%'
     password: '%env(MAILER_PASSWORD)%'
     # DNS-like url
     #url: '%env(MAILER_URL)%'
