@@ -1,4 +1,13 @@
 swiftmailer:
-    url: '%env(MAILER_URL)%'
+# oldschool
+    transport:  '%env(MAILER_TRANSPORT)%'
+    host: '%env(MAILER_HOST)%'
+    port: '%env(MAILER_PORT)%'
+    encryption: tls
+    username: '%env(MAILER_USER)%'
+    password: '%env(MAILER_PASSWORD)%'
+    auth_mode: login
+    # DNS-like url
+    #url: '%env(MAILER_URL)%'
     local_domain: "127.0.0.1"
     spool: { type: 'memory' }
