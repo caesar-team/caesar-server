@@ -2,23 +2,28 @@ stages:
 - name: Publish image
   steps:
   - publishImageConfig:
-        dockerfilePath: ./Dockerfile
-        buildContext: .
-        pushRemote: true
-        tag: caesarteam/caesar-server:${CICD_GIT_BRANCH}
-        registry: index.docker.io
+      dockerfilePath: ./Dockerfile
+      buildContext: .
+      tag: caesarteam/caesar-server:${CICD_GIT_BRANCH}
+      pushRemote: true
+      registry: index.docker.io
 - name: Object update Deployment
   steps:
   - applyYamlConfig:
-        path: ./k8s/deployment.yaml
+      path: ./k8s/deployment.yaml
 - name: Object update CronJob
   steps:
   - applyYamlConfig:
-        path: ./k8s/cronjob.yaml
+      path: ./k8s/cronjob.yaml
 branch:
-  include: [ develop, master ]
+  include:
+  - develop
+  - master
 notification:
   recipients:
-  - recipient: "#caesarapp-notify"
-    notifier: "slack"
-  condition: [ Success, Changed, Failed ]
+  - recipient: '#pipeline'
+    notifier: c-qzkvv:n-qqrqq
+  condition:
+  - Success
+  - Changed
+  - Failed
