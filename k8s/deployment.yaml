@@ -1,41 +1,31 @@
-kind: Service
-apiVersion: v1
-metadata:
-  name:  caesarapp-server
-  namespace: default
-spec:
-  selector:
-    app:  caesarapp-server
-  type:  NodePort
-  ports:
-    - name:  http
-      port:  80
-      targetPort:  80
-    - name:  php-fpm
-      port:  9000
-      targetPort:  9000
-
 ---
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: caesarapp-server
-  namespace: default
+  name: caesar-server
+  namespace: dev-caesar-team
+  labels:
+    app: caesar-server
+    CICD_GIT_COMMIT: ${CICD_GIT_COMMIT}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: caesarapp-server
+      app: caesar-server
   strategy:
-    type: Recreate   
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 25%
+    type: RollingUpdate 
   template:
     metadata:
+      namespace: dev-caesar-team
       labels:
-        app: caesarapp-server
+        app: caesar-server
         CICD_GIT_COMMIT: ${CICD_GIT_COMMIT}
     spec:
       containers:
-      - name: caesarapp-server
+      - name: caesar-server
         image: "caesarteam/caesar-server:${CICD_GIT_BRANCH}"
         imagePullPolicy: Always
         envFrom:
@@ -43,15 +33,21 @@ spec:
             name: caesar-server-config
         - secretRef:
             name: caesar-server-secret
+        - secretRef:
+            name: postgres-secret
+        - secretRef:
+            name: rabbitmq-secret 
         - configMapRef:
             name: rabbitmq-config
-        - secretRef:
-            name: rabbitmq-secret
         - configMapRef:
-            name: redis-config    
+            name: redis-config
+        - secretRef:
+            name: mailer-secret
+        - configMapRef:
+            name: mailer-config        
         ports:
         - name: php-fpm
-          containerPort: 9000
+          containerPort: 9000 
         volumeMounts:
         - mountPath: /var/www/html/public
           name: caesar-static-files
@@ -61,7 +57,7 @@ spec:
         image: "nginx:alpine"
         imagePullPolicy: IfNotPresent
         securityContext:
-          runAsUser: 0  
+          runAsUser: 0 
         ports:
         - name: http
           containerPort: 80
@@ -95,3 +91,4 @@ spec:
           name: nginx-config
           optional: false
         name: nginx-config-volume
+        
