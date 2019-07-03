@@ -1,36 +1,13 @@
-apiVersion: batch/v1beta1
-kind: CronJob
-metadata:
-  name: send-message-consumer
-  namespace: default
-spec:
-  schedule: "*/1 * * * *"
-  concurrencyPolicy: Replace
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-          - name: clear-message-history
-            image: "caesarteam/caesar-server:develop"
-            command: ["/usr/local/bin/php", "bin/console", "rabbitmq:consumer", "send_message", "-e", "prod", "-m", "${RABBITMQ_MAX_COUNT}"]
-            envFrom:
-            - configMapRef:
-                name: caesar-server-config
-            - secretRef:
-                name: caesar-server-secret
-            - configMapRef:
-                name: rabbitmq-config
-            - secretRef:
-                name: rabbitmq-secret
-          restartPolicy: OnFailure
-
 ---
+# Source: caesar/templates/server/003_server-cronjob.yml
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: cron-clear-message-history
-  namespace: default
+  namespace: dev-caesar-team
+  labels:
+    app: cron-clear-message-history
+    CICD_GIT_COMMIT: ${CICD_GIT_COMMIT}
 spec:
   schedule: "0 12 * * *"
   concurrencyPolicy: Replace
@@ -40,9 +17,46 @@ spec:
         spec:
           containers:
           - name: clear-message-history
-            image: "caesarteam/caesar-server:develop"
+            image: "caesarteam/caesar-server:${CICD_GIT_BRANCH}"
             command: ["/usr/local/bin/php", "bin/console", "app:clear-message-history", "-e", "prod"]
             envFrom:
             - secretRef:
-                name: caesarapp-secret
+                name: caesar-server-secret
           restartPolicy: OnFailure
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: send-message-consumer
+  namespace: dev-caesar-team
+  labels:
+    app: send-message-consumer
+    CICD_GIT_COMMIT: ${CICD_GIT_COMMIT}
+spec:
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: Replace
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: clear-message-history
+            image: "caesarteam/caesar-server:${CICD_GIT_BRANCH}"
+            command: ["/usr/local/bin/php", "bin/console"]
+            args: ["rabbitmq:consumer", "send_message", "-e", "prod", "-m", "$(RABBITMQ_MAX_COUNT)"]
+            envFrom:
+            - configMapRef:
+                name: caesar-server-config
+            - secretRef:
+                name: caesar-server-secret
+            - configMapRef:
+                name: rabbitmq-config
+            - secretRef:
+                name: rabbitmq-secret
+            - secretRef:
+                name: mailer-secret
+            - configMapRef:
+                name: mailer-config      
+          restartPolicy: OnFailure
+          terminationGracePeriodSeconds: 30
