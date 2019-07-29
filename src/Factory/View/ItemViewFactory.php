@@ -41,6 +41,7 @@ class ItemViewFactory
         $view->previousListId = $item->getPreviousList() ? $item->getPreviousList()->getId()->toString() : null;
         $view->tags = array_map('strval', $item->getTags()->toArray());
 
+        $view->name = $item->getName();
         $view->secret = $item->getSecret();
         $view->invited = $this->getInvitesCollection($item);
         $view->shared = $this->getSharesCollection($item);

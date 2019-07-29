@@ -31,6 +31,10 @@ class ChildItem
      * @var string|null
      */
     private $link;
+    /**
+     * @var string
+     */
+    private $name;
 
     /**
      * @return User
@@ -95,5 +99,15 @@ class ChildItem
     public function setLink(?string $link): void
     {
         $this->link = $link;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
     }
 }

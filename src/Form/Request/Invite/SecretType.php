@@ -22,6 +22,7 @@ class SecretType extends AbstractType
     {
         parent::buildForm($builder, $options);
         $builder
+            ->add('name')
             ->add('userId', EntityType::class, [
                 'property_path' => 'user',
                 'class' => User::class,

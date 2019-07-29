@@ -31,6 +31,12 @@ class ItemUpdate
     protected $secret;
 
     /**
+     * @var string
+     * @ORM\Column(options={"default":"unknown"})
+     */
+    protected $name = 'unknown';
+
+    /**
      * @var Item
      *
      * @ORM\OneToOne(targetEntity="App\Entity\Item", inversedBy="update")
@@ -117,5 +123,15 @@ class ItemUpdate
         if ($user) {
             $this->updatedBy = $user;
         }
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
     }
 }

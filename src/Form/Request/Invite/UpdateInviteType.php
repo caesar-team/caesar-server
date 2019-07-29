@@ -26,6 +26,7 @@ class UpdateInviteType extends AbstractType
                     new NotBlank(),
                 ],
             ])
+            ->add('name')
             ->add('secret', TextType::class, [
                 'constraints' => [
                     new NotBlank(),

@@ -140,6 +140,12 @@ class Item implements ChildItemAwareInterface
     protected $status = self::STATUS_DEFAULT;
 
     /**
+     * @var string
+     * @ORM\Column(options={"default":"unknown"})
+     */
+    protected $name = 'unknown';
+
+    /**
      * Item constructor.
      * @throws \Exception
      */
@@ -399,5 +405,15 @@ class Item implements ChildItemAwareInterface
     public function setPreviousList(?Directory $previousList): void
     {
         $this->previousList = $previousList;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): void
+    {
+        $this->name = $name;
     }
 }

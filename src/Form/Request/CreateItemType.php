@@ -48,6 +48,11 @@ class CreateItemType extends AbstractType
                     NodeEnumType::TYPE_DOCUMENT,
                 ],
             ])
+            ->add('name', null, [
+                'constraints' => [
+                    new NotBlank(),
+                ],
+            ])
             ->add('secret', TextType::class, [
                 'constraints' => [
                     new NotBlank(),

@@ -17,6 +17,7 @@ class EditOriginalItemType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
+            ->add('name')
             ->add('secret', TextType::class)
         ;
     }

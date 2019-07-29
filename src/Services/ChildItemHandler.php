@@ -89,6 +89,7 @@ class ChildItemHandler
         foreach ($request->getItems() as $childItem) {
             $item = new Item();
             $item->setParentList($childItem->getUser()->getInbox());
+            $item->setName($childItem->getName());
             $item->setOriginalItem($request->getOriginalItem());
             $item->setSecret($childItem->getSecret());
             $item->setAccess($childItem->getAccess());
@@ -126,9 +127,11 @@ class ChildItemHandler
 
             if ($currentOwner === $user || Item::CAUSE_SHARE === $item->getCause()) {
                 $item->setSecret($childItem->getSecret());
+                $item->setName($childItem->getName());
             } else {
                 $update = $this->extractUpdate($item, $currentOwner);
                 $update->setSecret($childItem->getSecret());
+                $update->setName($childItem->getName());
             }
             if ($childItem->getLink()) {
                 $item->setLink($childItem->getLink());

@@ -19,6 +19,11 @@ class ItemView extends NodeView
 
     /**
      * @var string
+     */
+    public $name;
+
+    /**
+     * @var string
      *
      * @SWG\Property(example="-----BEGIN PGP MESSAGE----- Version: OpenPGP.js v4.2.2 ....")
      */
