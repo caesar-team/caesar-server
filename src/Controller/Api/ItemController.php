@@ -12,6 +12,7 @@ use App\Factory\View\ItemListViewFactory;
 use App\Factory\View\ItemViewFactory;
 use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
+use App\Form\Request\CreateItemsType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemRequestType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
@@ -870,5 +871,56 @@ final class ItemController extends AbstractController
         $entityManager->flush();
 
         return $factory->create($item);
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\CreateItemsType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success items created"
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/batch",
+     *     name="api_batch_create_items",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Request $request
+     * @param EntityManagerInterface $manager
+     * @param ItemListViewFactory $viewFactory
+     * @return ItemView[]|array|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function batchCreate(Request $request, EntityManagerInterface $manager, ItemListViewFactory $viewFactory)
+    {
+        $itemsRequest = new ItemsCollectionRequest();
+
+        $form = $this->createForm(CreateItemsType::class, $itemsRequest);
+
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        foreach ($itemsRequest->getItems() as $item) {
+            $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
+
+            $manager->persist($item);
+
+        }
+        $manager->flush();
+
+        return $viewFactory->create($itemsRequest->getItems());
     }
 }
