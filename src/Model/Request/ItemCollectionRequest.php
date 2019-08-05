@@ -57,4 +57,9 @@ class ItemCollectionRequest
     {
         $this->originalItem = $originalItem;
     }
+
+    public function setItems(array $items): void
+    {
+        $this->items = $items;
+    }
 }

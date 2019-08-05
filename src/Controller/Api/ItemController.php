@@ -13,6 +13,7 @@ use App\Factory\View\ItemListViewFactory;
 use App\Factory\View\ItemViewFactory;
 use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
+use App\Form\Request\BatchShareRequestType;
 use App\Form\Request\CreateItemsType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemRequestType;
@@ -20,12 +21,14 @@ use App\Form\Request\Invite\ChildItemCollectionRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
 use App\Model\Query\ItemListQuery;
+use App\Model\Request\BatchShareRequest;
 use App\Model\Request\EditItemRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
+use App\Repository\ItemRepository;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
 use App\Services\ChildItemHandler;
@@ -1002,5 +1005,49 @@ final class ItemController extends AbstractController
         $manager->flush();
 
         return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Share")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=App\Form\Request\BatchShareRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success items updated"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/batch/share",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Request $request
+     * @param ChildItemHandler $childItemHandler
+     * @return BatchShareRequest|FormInterface
+     * @throws \Exception
+     */
+    public function batchShare(Request $request, ChildItemHandler $childItemHandler)
+    {
+        //todo: vote
+        $collectionRequest = new BatchShareRequest();
+        $form = $this->createForm(BatchShareRequestType::class, $collectionRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $items = [];
+        foreach ($collectionRequest->getOriginalItems() as $originalItem) {
+            $itemCollection = new ItemCollectionRequest($originalItem->getOriginalItem());
+            $itemCollection->setItems($originalItem->getItems());
+            $items[] = $childItemHandler->childItemToItem($itemCollection);
+        }
+
+        return $collectionRequest;
+
     }
 }
