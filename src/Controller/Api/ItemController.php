@@ -150,7 +150,7 @@ final class ItemController extends AbstractController
     public function batchDelete(Request $request, EntityManagerInterface $manager, SerializerInterface $serializer)
     {
         /** @var ItemsCollectionRequest $itemsCollection */
-        $itemsCollection = $serializer->deserialize(json_encode($request->request->all()), ItemsCollectionRequest::class, 'json');
+        $itemsCollection = $serializer->deserialize(json_encode($request->query->all()), ItemsCollectionRequest::class, 'json');
 
         foreach ($itemsCollection->getItems() as $item) {
             $item = $manager->getRepository(Item::class)->find($item);
