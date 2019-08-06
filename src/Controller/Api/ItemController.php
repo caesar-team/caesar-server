@@ -1009,7 +1009,7 @@ final class ItemController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="Share")
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -1033,7 +1033,6 @@ final class ItemController extends AbstractController
      */
     public function batchShare(Request $request, ChildItemHandler $childItemHandler, ItemRepository $itemRepository)
     {
-        //todo: vote
         $collectionRequest = new BatchShareRequest();
         $form = $this->createForm(BatchShareRequestType::class, $collectionRequest);
         $form->submit($request->request->all());
@@ -1044,6 +1043,7 @@ final class ItemController extends AbstractController
         $items = [];
         foreach ($collectionRequest->getOriginalItems() as $originalItem) {
             $parentItem = $itemRepository->find($originalItem->getOriginalItem());
+            $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $parentItem);
             $itemCollection = new ItemCollectionRequest($parentItem);
             array_map(function (ChildItem $item) use ($itemCollection) {
                 $itemCollection->addItem($item);
@@ -1053,6 +1053,5 @@ final class ItemController extends AbstractController
         }
 
         return $collectionRequest;
-
     }
 }
