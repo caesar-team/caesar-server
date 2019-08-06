@@ -1028,7 +1028,7 @@ final class ItemController extends AbstractController
      *
      * @param Request $request
      * @param ChildItemHandler $childItemHandler
-     * @return BatchShareRequest|FormInterface
+     * @return array|FormInterface
      * @throws \Exception
      */
     public function batchShare(Request $request, ChildItemHandler $childItemHandler, ItemRepository $itemRepository)
@@ -1049,9 +1049,9 @@ final class ItemController extends AbstractController
                 $itemCollection->addItem($item);
             }, $originalItem->getItems()->toArray());
 
-            $items[] = $childItemHandler->childItemToItem($itemCollection);
+            $items[$originalItem->getOriginalItem()] = $childItemHandler->childItemToItem($itemCollection);
         }
 
-        return $collectionRequest;
+        return $items;
     }
 }
