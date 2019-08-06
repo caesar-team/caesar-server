@@ -22,6 +22,7 @@ use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
 use App\Model\Query\ItemListQuery;
 use App\Model\Request\BatchShareRequest;
+use App\Model\Request\ChildItem;
 use App\Model\Request\EditItemRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Model\Request\ItemsCollectionRequest;
@@ -1030,7 +1031,7 @@ final class ItemController extends AbstractController
      * @return BatchShareRequest|FormInterface
      * @throws \Exception
      */
-    public function batchShare(Request $request, ChildItemHandler $childItemHandler)
+    public function batchShare(Request $request, ChildItemHandler $childItemHandler, ItemRepository $itemRepository)
     {
         //todo: vote
         $collectionRequest = new BatchShareRequest();
@@ -1042,8 +1043,12 @@ final class ItemController extends AbstractController
 
         $items = [];
         foreach ($collectionRequest->getOriginalItems() as $originalItem) {
-            $itemCollection = new ItemCollectionRequest($originalItem->getOriginalItem());
-            $itemCollection->setItems($originalItem->getItems());
+            $parentItem = $itemRepository->find($originalItem->getOriginalItem());
+            $itemCollection = new ItemCollectionRequest($parentItem);
+            array_map(function (ChildItem $item) use ($itemCollection) {
+                $itemCollection->addItem($item);
+            }, $originalItem->getItems()->toArray());
+
             $items[] = $childItemHandler->childItemToItem($itemCollection);
         }
 

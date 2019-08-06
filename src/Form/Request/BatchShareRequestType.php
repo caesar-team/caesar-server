@@ -16,7 +16,7 @@ class BatchShareRequestType extends AbstractType
     {
         $builder->add('originalItems', CollectionType::class, [
             'entry_type' => BatchChildItemsRequestType::class,
-            'allow_add' => true
+            'allow_add' => true,
         ]);
     }
 

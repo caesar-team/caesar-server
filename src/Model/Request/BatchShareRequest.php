@@ -7,12 +7,12 @@ namespace App\Model\Request;
 final class BatchShareRequest
 {
     /**
-     * @var ItemCollectionRequest[]
+     * @var BatchItemCollectionRequest[]
      */
     private $originalItems = [];
 
     /**
-     * @return ItemCollectionRequest[]
+     * @return BatchItemCollectionRequest[]
      */
     public function getOriginalItems(): array
     {
@@ -22,5 +22,10 @@ final class BatchShareRequest
     public function setOriginalItems(array $originalItems): void
     {
         $this->originalItems = $originalItems;
+    }
+
+    public function addOriginalItem(BatchItemCollectionRequest $item)
+    {
+        $this->originalItems[] = $item;
     }
 }

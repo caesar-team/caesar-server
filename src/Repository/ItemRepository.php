@@ -7,11 +7,17 @@ namespace App\Repository;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Model\Query\ItemListQuery;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 
-class ItemRepository extends EntityRepository
+class ItemRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Item::class);
+    }
+
     public function getByQuery(ItemListQuery $query): array
     {
         $qb = $this->createQueryBuilder('item');
