@@ -5,76 +5,33 @@ declare(strict_types=1);
 namespace App\Model\View\CredentialsList;
 
 use Swagger\Annotations as SWG;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 class ShareView
 {
     /**
      * @var string
+     * @Groups({"child_item"})
      *
      * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      */
-    public $id;
+    public $originalItemId;
 
     /**
-     * @var string
-     *
-     * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
+     * @var array|ChildItemView[]
+     * @Groups({"child_item"})
      */
-    public $userId;
+    public $items = [];
 
-    /**
-     * @var string
-     *
-     * @SWG\Property(example="user@mail.com")
-     */
-    public $email;
 
-    /**
-     * @var string
-     * @SWG\Property(example="WAITING|ACCEPTED")
-     */
-    public $status;
-
-    /**
-     * @var string
-     * @SWG\Property(example="asfd7sdfasdf8dsfdsfgdfg8dfg7sdfg")
-     */
-    public $link;
-
-    /**
-     * @var string[]
-     * @SWG\Property(example="['ROLE_USER']")
-     */
-    public $roles;
-    /**
-     * @var \DateTime
-     */
-    public $createdAt;
-    /**
-     * @var \DateTime
-     */
-    public $updatedAt;
-    /**
-     * @var string
-     * @SWG\Property(example="asfd7sdfasdf8dsfdsfgdfg8dfg7sdfg")
-     */
-    public $publicKey;
-    /**
-     * @var string
-     */
-    private $left;
-
-    public function setLeft(\DateTime $date)
+    public static function create(string $id, array $items): self
     {
-        $interval = $this->updatedAt ? $this->updatedAt->diff($date) : $this->createdAt->diff($date);
-        $this->left = $interval->format('%h');
-    }
+        $view = new self();
+        $view->originalItemId = $id;
+        foreach ($items as $item) {
+            $view->items[] = ChildItemView::create($item);
+        }
 
-    /**
-     * @return int
-     */
-    public function getLeft(): int
-    {
-        return (int) $this->left;
+        return $view;
     }
 }

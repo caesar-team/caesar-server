@@ -29,6 +29,7 @@ use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
+use App\Model\View\CredentialsList\ShareListView;
 use App\Repository\ItemRepository;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
@@ -1025,10 +1026,11 @@ final class ItemController extends AbstractController
      *     path="/api/item/batch/share",
      *     methods={"POST"}
      * )
+     * @Rest\View(serializerGroups={"child_item"})
      *
      * @param Request $request
      * @param ChildItemHandler $childItemHandler
-     * @return array|FormInterface
+     * @return ShareListView|FormInterface
      * @throws \Exception
      */
     public function batchShare(Request $request, ChildItemHandler $childItemHandler, ItemRepository $itemRepository)
@@ -1052,6 +1054,6 @@ final class ItemController extends AbstractController
             $items[$originalItem->getOriginalItem()] = $childItemHandler->childItemToItem($itemCollection);
         }
 
-        return $items;
+        return ShareListView::create($items);
     }
 }
