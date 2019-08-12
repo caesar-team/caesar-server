@@ -1026,7 +1026,7 @@ final class ItemController extends AbstractController
      *     path="/api/item/batch/share",
      *     methods={"POST"}
      * )
-     * @Rest\View(serializerGroups={"child_item"})
+     * @Rest\View(serializerGroups={"batch_child_item"})
      *
      * @param Request $request
      * @param ChildItemHandler $childItemHandler
