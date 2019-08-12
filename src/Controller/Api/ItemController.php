@@ -8,6 +8,7 @@ use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
+use App\Factory\View\BatchListItemViewFactory;
 use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
 use App\Factory\View\ItemViewFactory;
@@ -1030,10 +1031,16 @@ final class ItemController extends AbstractController
      *
      * @param Request $request
      * @param ChildItemHandler $childItemHandler
-     * @return ShareListView|FormInterface
+     * @param ItemRepository $itemRepository
+     * @return FormInterface|void
      * @throws \Exception
      */
-    public function batchShare(Request $request, ChildItemHandler $childItemHandler, ItemRepository $itemRepository)
+    public function batchShare(
+        Request $request,
+        ChildItemHandler $childItemHandler,
+        ItemRepository $itemRepository,
+        BatchListItemViewFactory $viewFactory
+    )
     {
         $collectionRequest = new BatchShareRequest();
         $form = $this->createForm(BatchShareRequestType::class, $collectionRequest);
@@ -1054,6 +1061,6 @@ final class ItemController extends AbstractController
             $items[$originalItem->getOriginalItem()] = $childItemHandler->childItemToItem($itemCollection);
         }
 
-        return ShareListView::create($items);
+        return $viewFactory->createList($items);
     }
 }

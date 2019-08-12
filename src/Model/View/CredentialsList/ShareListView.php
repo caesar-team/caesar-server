@@ -11,7 +11,7 @@ final class ShareListView
 {
     /**
      * @var array|ShareView[]
-     * @Groups({"batch_child_item"})
+     * @Groups({"child_item"})
      */
     public $shares;
 
