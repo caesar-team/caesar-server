@@ -69,9 +69,31 @@ class ItemViewFactory
             $childItem->userId = $this->getOwner($item)->id;
             $childItems[] = $childItem;
         }
-
-
         $view->items = $childItems;
+
+        return $view;
+    }
+
+    /**
+     * @param array|Item[] $items
+     * @return ItemView
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function createSharedItems(string $id, array $items)
+    {
+        $view = new ItemView();
+        $view->originalItemId = $id;
+        $childItems = [];
+        foreach ($items as $item) {
+            $childItem = new ChildItemView();
+            $childItem->id = $item->getId()->toString();
+            $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
+            $user = $this->userRepository->getByItem($item);
+            $childItem->userId = $user->getId()->toString();
+            $childItems[] = $childItem;
+        }
+        $view->items = $childItems;
+
         return $view;
     }
 

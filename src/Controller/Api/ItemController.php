@@ -8,11 +8,13 @@ use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
+use App\Factory\View\BatchListItemViewFactory;
 use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
 use App\Factory\View\ItemViewFactory;
 use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
+use App\Form\Request\BatchShareRequestType;
 use App\Form\Request\CreateItemsType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemRequestType;
@@ -20,12 +22,16 @@ use App\Form\Request\Invite\ChildItemCollectionRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
 use App\Model\Query\ItemListQuery;
+use App\Model\Request\BatchShareRequest;
+use App\Model\Request\ChildItem;
 use App\Model\Request\EditItemRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
+use App\Model\View\CredentialsList\ShareListView;
+use App\Repository\ItemRepository;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
 use App\Services\ChildItemHandler;
@@ -1002,5 +1008,59 @@ final class ItemController extends AbstractController
         $manager->flush();
 
         return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=App\Form\Request\BatchShareRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success items updated"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/batch/share",
+     *     methods={"POST"}
+     * )
+     * @Rest\View(serializerGroups={"child_item"})
+     *
+     * @param Request $request
+     * @param ChildItemHandler $childItemHandler
+     * @param ItemRepository $itemRepository
+     * @return ShareListView|FormInterface
+     * @throws \Exception
+     */
+    public function batchShare(
+        Request $request,
+        ChildItemHandler $childItemHandler,
+        ItemRepository $itemRepository,
+        BatchListItemViewFactory $viewFactory
+    )
+    {
+        $collectionRequest = new BatchShareRequest();
+        $form = $this->createForm(BatchShareRequestType::class, $collectionRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $items = [];
+        foreach ($collectionRequest->getOriginalItems() as $originalItem) {
+            $parentItem = $itemRepository->find($originalItem->getOriginalItem());
+            $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $parentItem);
+            $itemCollection = new ItemCollectionRequest($parentItem);
+            array_map(function (ChildItem $item) use ($itemCollection) {
+                $itemCollection->addItem($item);
+            }, $originalItem->getItems()->toArray());
+
+            $items[$originalItem->getOriginalItem()] = $childItemHandler->childItemToItem($itemCollection);
+        }
+
+        return $viewFactory->createList($items);
     }
 }

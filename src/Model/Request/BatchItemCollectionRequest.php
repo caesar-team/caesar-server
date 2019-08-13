@@ -7,7 +7,7 @@ namespace App\Model\Request;
 use App\Entity\Item;
 use Doctrine\Common\Collections\ArrayCollection;
 
-class ItemCollectionRequest
+class BatchItemCollectionRequest
 {
     /**
      * @var ChildItem[]|ArrayCollection
@@ -15,19 +15,13 @@ class ItemCollectionRequest
     protected $items;
 
     /**
-     * @var Item|null
+     * @var string|null
      */
     protected $originalItem;
 
-    public function __construct(Item $item = null)
+    public function __construct()
     {
-        $this->originalItem = $item;
         $this->items = new ArrayCollection();
-    }
-
-    public function getOriginalItem(): ?Item
-    {
-        return $this->originalItem;
     }
 
     /**
@@ -50,16 +44,18 @@ class ItemCollectionRequest
         $this->items->removeElement($childItem);
     }
 
-    /**
-     * @param Item $originalItem
-     */
-    public function setOriginalItem(?Item $originalItem): void
-    {
-        $this->originalItem = $originalItem;
-    }
-
     public function setItems(array $items): void
     {
         $this->items = $items;
+    }
+
+    public function getOriginalItem(): ?string
+    {
+        return $this->originalItem;
+    }
+
+    public function setOriginalItem(?string $originalItem): void
+    {
+        $this->originalItem = $originalItem;
     }
 }

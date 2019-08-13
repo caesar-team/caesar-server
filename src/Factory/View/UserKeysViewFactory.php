@@ -20,6 +20,7 @@ class UserKeysViewFactory
         $view->userId = $user->getId()->toString();
         $view->encryptedPrivateKey = $user->getEncryptedPrivateKey();
         $view->publicKey = $user->getPublicKey();
+        $view->email = $user->getEmail();
 
         return $view;
     }

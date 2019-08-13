@@ -31,4 +31,10 @@ class UserKeysView
      * @Groups({"key_detail_read", "public"})
      */
     public $publicKey;
+
+    /**
+     * @var string
+     * @Groups({"public"})
+     */
+    public $email;
 }

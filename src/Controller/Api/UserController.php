@@ -17,12 +17,14 @@ use App\Factory\View\UserListViewFactory;
 use App\Factory\View\UserSecurityInfoViewFactory;
 use App\Form\Query\UserQueryType;
 use App\Form\Request\CreateInvitedUserType;
+use App\Form\Request\Invite\PublicKeysRequestType;
 use App\Form\Request\SaveKeysType;
 use App\Form\Request\SendInvitesType;
 use App\Form\Request\SendInviteType;
 use App\Mailer\MailRegistry;
 use App\Model\DTO\Message;
 use App\Model\Query\UserQuery;
+use App\Model\Request\PublicKeysRequest;
 use App\Model\Request\SendInviteRequest;
 use App\Model\Request\SendInviteRequests;
 use App\Model\View\User\SelfUserInfoView;
@@ -494,6 +496,90 @@ final class UserController extends AbstractController
         }
 
         return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Invitation")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type="\App\Form\Request\Invite\PublicKeysRequestType")
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/key/batch",
+     *     methods={"POST"}
+     * )
+     * @Rest\View(serializerGroups={"public"})
+     *
+     * @param Request $request
+     * @param UserKeysViewFactory $viewFactory
+     * @return array|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function batchPublicKeyAction(Request $request, UserKeysViewFactory $viewFactory, UserRepository $userRepository)
+    {
+        $keysRequest = new PublicKeysRequest();
+        $form = $this->createForm(PublicKeysRequestType::class, $keysRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $view = [];
+        foreach ($keysRequest->getEmails() as $email) {
+            if ($user = $userRepository->findByEmail($email)) {
+                $view[] = $viewFactory->create($user);
+            }
+        }
+
+        return $view;
+    }
+
+    /**
+     * @Route(
+     *     path="/api/user/batch",
+     *     methods={"POST"}
+     * )
+     * @param Request $request
+     * @return array|FormInterface
+     * @throws \Exception
+     */
+    public function batchCreateUser(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        GroupManager $groupManager
+    )
+    {
+        $requestUsers = $request->request->get('users');
+        $users = [];
+        foreach ($requestUsers as $requestUser) {
+            $user = new User(new Srp());
+            $form = $this->createForm(CreateInvitedUserType::class, $user);
+            $form->submit($requestUser);
+            if (!$form->isValid()) {
+                return $form;
+            }
+
+            if ($user->isFullUser()) {
+                $groupManager->addGroupToUser($user, UserGroup::USER_ROLE_PRETENDER);
+                $this->removeInvitation($user, $entityManager);
+                $invitation = new Invitation();
+                $invitation->setHash($user->getEmail());
+                $entityManager->persist($invitation);
+            }
+
+            $entityManager->persist($user);
+            $users[] = $user->getId()->toString();
+        }
+
+        $entityManager->flush();
+
+        return ["users" => $users];
     }
 
     private function setFlowStatus(string $currentFlowStatus): string

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Model\View\CredentialsList;
 
+use App\Entity\Item;
 use App\Swagger\Annotations as AppSwagger;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -17,6 +18,13 @@ class ChildItemView
      * @Groups({"child_item"})
      */
     public $id;
+
+    /**
+     * @var string
+     *
+     * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
+     */
+    public $originalItemId;
 
     /**
      * @var string
@@ -58,4 +66,14 @@ class ChildItemView
      * @var string
      */
     public $publicKey;
+
+    public static function create(Item $item): self
+    {
+        $view = new self();
+        $view->id = $item->getId()->toString();
+        $view->userId = "";
+        $view->lastUpdated = $item->getLastUpdated();
+
+        return $view;
+    }
 }

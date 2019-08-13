@@ -1,0 +1,31 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Model\Request;
+
+final class BatchShareRequest
+{
+    /**
+     * @var BatchItemCollectionRequest[]
+     */
+    private $originalItems = [];
+
+    /**
+     * @return BatchItemCollectionRequest[]
+     */
+    public function getOriginalItems(): array
+    {
+        return $this->originalItems;
+    }
+
+    public function setOriginalItems(array $originalItems): void
+    {
+        $this->originalItems = $originalItems;
+    }
+
+    public function addOriginalItem(BatchItemCollectionRequest $item)
+    {
+        $this->originalItems[] = $item;
+    }
+}
