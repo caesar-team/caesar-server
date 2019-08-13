@@ -46,3 +46,6 @@ Reveal `TEST_DATABASE_URL` from .env
 APP_ENV=test vendor/bin/phpunit -d memory_limit=-1 #Phpunit
 ```
 
+####Access to the admin panel:
+Create and promote admin user: `bin/console fos:user:create --super-admin`
+Promote an existing user: `bin/console fos:user:promote`

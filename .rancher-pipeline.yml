@@ -2,23 +2,68 @@ stages:
 - name: Publish image
   steps:
   - publishImageConfig:
-        dockerfilePath: ./Dockerfile
-        buildContext: .
-        pushRemote: true
-        tag: caesarteam/caesar-server:${CICD_GIT_BRANCH}
-        registry: index.docker.io
-- name: Object update Deployment
+      dockerfilePath: ./Dockerfile
+      buildContext: .
+      tag: caesarteam/caesar-server:${CICD_GIT_BRANCH}
+      pushRemote: true
+      registry: index.docker.io
+    when:
+      branch:
+        include:
+        - develop
+        - hotfix/*
+        - feature/*
+  - publishImageConfig:
+      dockerfilePath: ./Dockerfile
+      buildContext: .
+      tag: caesarteam/caesar-server:${CICD_GIT_TAG}
+      pushRemote: true
+      registry: index.docker.io
+    when:
+      event:
+        include:
+        - tag
+- name: Deploy
   steps:
   - applyYamlConfig:
-        path: ./k8s/deployment.yaml
+      path: ./k8s/deployment.yaml
+    when:
+      branch:
+        include:
+        - develop
+        - hotfix/*
+- name: Webhook
+  steps:
+  - runScriptConfig:
+      image: caesarteam/alpine-curl
+      shellScript: 'curl -X POST -H "Content-Type: application/json" --header "Authorization:
+        Basic ${!WEBHOOK_TOKEN}" -d ''{"name": "caesarteam/caesar-server","tag":
+        "${!CICD_GIT_TAG}"}'' ${WEBHOOK_URL}'
+    envFrom:
+    - sourceName: build-webhook
+      sourceKey: WEBHOOK_URL
+      targetKey: WEBHOOK_URL
+    - sourceName: build-webhook
+      sourceKey: WEBHOOK_TOKEN
+      targetKey: WEBHOOK_TOKEN
+  when:
+    event:
+      include:
+      - tag        
 - name: Object update CronJob
   steps:
   - applyYamlConfig:
-        path: ./k8s/cronjob.yaml
-branch:
-  include: [ develop, master ]
+      path: ./k8s/cronjob.yaml
+    when:
+      branch:
+        include:
+        - develop
+        - hotfix/*
 notification:
   recipients:
-  - recipient: "#caesarapp-notify"
-    notifier: "slack"
-  condition: [ Success, Changed, Failed ]
+  - recipient: '#pipeline'
+    notifier: c-qzkvv:n-qqrqq
+  condition:
+  - Success
+  - Changed
+  - Failed

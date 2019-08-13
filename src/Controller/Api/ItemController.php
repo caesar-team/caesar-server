@@ -6,12 +6,14 @@ namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
+use App\Entity\Directory;
 use App\Entity\Item;
 use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
 use App\Factory\View\ItemViewFactory;
 use App\Factory\View\ListTreeViewFactory;
 use App\Form\Query\ItemListQueryType;
+use App\Form\Request\CreateItemsType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\EditItemRequestType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
@@ -125,6 +127,46 @@ final class ItemController extends AbstractController
         $itemCollection = $this->getDoctrine()->getRepository(Item::class)->getByQuery($itemListQuery);
 
         return $viewFactory->create($itemCollection);
+    }
+
+
+    /**
+     * @SWG\Tag(name="Item")
+     * @SWG\Response(
+     *     response=204,
+     *     description="Items deleted",
+     * )
+     * @Route(
+     *     path="/api/item/batch",
+     *     name="api_batch_delete_items",
+     *     methods={"DELETE"}
+     * )
+     *
+     * @param Request $request
+     * @param EntityManagerInterface $manager
+     * @param SerializerInterface $serializer
+     * @return null
+     */
+    public function batchDelete(Request $request, EntityManagerInterface $manager, SerializerInterface $serializer)
+    {
+        /** @var ItemsCollectionRequest $itemsCollection */
+        $itemsCollection = $serializer->deserialize(json_encode($request->query->all()), ItemsCollectionRequest::class, 'json');
+
+        foreach ($itemsCollection->getItems() as $item) {
+            $item = $manager->getRepository(Item::class)->find($item);
+            if ($item instanceof Item) {
+                $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
+                if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
+                    $message = $this->translator->trans('app.exception.delete_trash_only');
+                    throw new BadRequestHttpException($message);
+                }
+
+                $manager->remove($item);
+            }
+        }
+        $manager->flush();
+
+        return null;
     }
 
     /**
@@ -870,5 +912,95 @@ final class ItemController extends AbstractController
         $entityManager->flush();
 
         return $factory->create($item);
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\CreateItemsType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success items created"
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/batch",
+     *     name="api_batch_create_items",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Request $request
+     * @param EntityManagerInterface $manager
+     * @param ItemListViewFactory $viewFactory
+     * @return ItemView[]|array|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function batchCreate(Request $request, EntityManagerInterface $manager, ItemListViewFactory $viewFactory)
+    {
+        $itemsRequest = new ItemsCollectionRequest();
+
+        $form = $this->createForm(CreateItemsType::class, $itemsRequest);
+
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        foreach ($itemsRequest->getItems() as $item) {
+            $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
+
+            $manager->persist($item);
+
+        }
+        $manager->flush();
+
+        return $viewFactory->create($itemsRequest->getItems());
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
+     * @SWG\Response(
+     *     response=204,
+     *     description="Items moved",
+     * )
+     *
+     * @Route(
+     *     path="/api/item/batch/move/list/{directory}",
+     *     name="api_batch_move_items",
+     *     methods={"PATCH"}
+     * )
+     *
+     * @param Request $request
+     * @param Directory $directory
+     * @param EntityManagerInterface $manager
+     * @param SerializerInterface $serializer
+     * @return null|FormInterface
+     */
+    public function batchMove(Request $request, Directory $directory, EntityManagerInterface $manager, SerializerInterface $serializer)
+    {
+        /** @var ItemsCollectionRequest $itemsCollection */
+        $itemsCollection = $serializer->deserialize(json_encode($request->request->all()), ItemsCollectionRequest::class, 'json');
+
+        foreach ($itemsCollection->getItems() as $item) {
+            $item = $manager->getRepository(Item::class)->find($item);
+            if ($item instanceof Item) {
+                $this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
+                $item->setPreviousList($item->getParentList());
+                $item->setParentList($directory);
+
+                $manager->persist($item);
+            }
+        }
+        $manager->flush();
+
+        return null;
     }
 }
