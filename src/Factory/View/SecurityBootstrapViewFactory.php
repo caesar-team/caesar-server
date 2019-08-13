@@ -77,14 +77,14 @@ class SecurityBootstrapViewFactory
     {
         $isCompleteJwt = $this->isCompleteJwt($user);
         switch (true) {
+            case !$user->isGoogleAuthenticatorEnabled():
+                $state = SecurityBootstrapView::STATE_CREATE;
+                break;
             case $isCompleteJwt:
                 $state = SecurityBootstrapView::STATE_SKIP;
                 break;
             case !$user->isFullUser():
                 $state = SecurityBootstrapView::STATE_SKIP;
-                break;
-            case !$user->isGoogleAuthenticatorEnabled():
-                $state = SecurityBootstrapView::STATE_CREATE;
                 break;
             case $this->isExpiredFingerprint($user):
                 $state = SecurityBootstrapView::STATE_CHECK;
