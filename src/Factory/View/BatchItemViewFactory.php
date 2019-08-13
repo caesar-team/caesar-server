@@ -24,6 +24,6 @@ final class BatchItemViewFactory
      */
     public function  create(array $items)
     {
-        return $this->itemViewFactory->createList($items);
+        return $this->itemViewFactory->createSharedItems($items);
     }
 }
