@@ -68,7 +68,6 @@ class UserController extends BaseController
         $this->em->flush();
 
         $user->setGoogleAuthenticatorSecret(null);
-        $user->setFlowStatus(User::FLOW_STATUS_INCOMPLETE);
         $this->userManager->updateUser($user);
 
         return $this->redirectToRoute('easyadmin', array(
