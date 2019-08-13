@@ -79,9 +79,10 @@ class ItemViewFactory
      * @return ItemView
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function createSharedItems(array $items)
+    public function createSharedItems(string $id, array $items)
     {
         $view = new ItemView();
+        $view->originalItemId = $id;
         $childItems = [];
         foreach ($items as $item) {
             $childItem = new ChildItemView();

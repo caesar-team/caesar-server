@@ -22,8 +22,8 @@ final class BatchItemViewFactory
      * @return \App\Model\View\CredentialsList\ItemView
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function  create(array $items)
+    public function create(string $d, array $items)
     {
-        return $this->itemViewFactory->createSharedItems($items);
+        return $this->itemViewFactory->createSharedItems($d, $items);
     }
 }

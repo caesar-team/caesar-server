@@ -28,7 +28,7 @@ final class BatchListItemViewFactory
         $view = new ShareListView();
         foreach ($items as $id => $item)
         {
-            $view->shares[] = $this->itemViewFactory->create($item);
+            $view->shares[] = $this->itemViewFactory->create($id, $item);
         }
 
         return $view;
