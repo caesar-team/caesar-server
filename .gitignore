@@ -16,3 +16,9 @@ vendor/
 !/public/static/documents/.gitignore
 /public/static/documents/
 phpunit.xml
+
+###> symfony/phpunit-bridge ###
+.phpunit
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
