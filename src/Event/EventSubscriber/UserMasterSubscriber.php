@@ -27,6 +27,7 @@ class UserMasterSubscriber implements EventSubscriberInterface
         '2fa_check',
         'api_security_2fa_backup_codes',
         'api_srp_update_password',
+        'api_user_get_info',
     ];
 
     /**
