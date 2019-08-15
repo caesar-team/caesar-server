@@ -78,3 +78,15 @@ services:
     App\Services\Messenger:
         arguments:
             $producer: '@old_sound_rabbit_mq.send_message_producer'
+
+    App\Repository\PublicKeyCredentialSourceRepository: ~
+
+    Nyholm\Psr7\Factory\Psr17Factory:
+        public: false
+    Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory:
+        public: false
+        arguments:
+            - '@Nyholm\Psr7\Factory\Psr17Factory'
+            - '@Nyholm\Psr7\Factory\Psr17Factory'
+            - '@Nyholm\Psr7\Factory\Psr17Factory'
+            - '@Nyholm\Psr7\Factory\Psr17Factory'

@@ -28,4 +28,7 @@ return [
     Sylius\Bundle\MailerBundle\SyliusMailerBundle::class => ['all' => true],
     OldSound\RabbitMqBundle\OldSoundRabbitMqBundle::class => ['all' => true],
     Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle::class => ['all' => true],
+    SpomkyLabs\CborBundle\SpomkyLabsCborBundle::class => ['all' => true],
+    Webauthn\Bundle\WebauthnBundle::class => ['all' => true],
+    Webauthn\SecurityBundle\WebauthnSecurityBundle::class => ['all' => true],
 ];

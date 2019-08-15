@@ -7,8 +7,10 @@ fos_rest:
         view_response_listener:  'force'
     format_listener:
         rules:
+            - { path: '^/api/anonymous/fido', prefer_extension: true, fallback_format: html, priorities: [ html ] }
             - { path: '^/api', prefer_extension: true, fallback_format: json, priorities: [ json ] }
             - { path: '^/status', prefer_extension: true, fallback_format: json, priorities: [ json ] }
+
     zone:
         - { path: ^/api }
         - { path: ^/status }

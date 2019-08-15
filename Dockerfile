@@ -13,7 +13,8 @@ RUN apk --update add \
     gpgme \
     libzip-dev \
     postgresql-dev \
-    zip
+    zip \
+    gmp-dev
 
 RUN docker-php-ext-install \
     intl \
@@ -21,7 +22,8 @@ RUN docker-php-ext-install \
     opcache \
     pdo \
     pdo_pgsql \
-    zip
+    zip \
+    gmp
 
 RUN pecl install gnupg redis \
     && docker-php-ext-enable redis
