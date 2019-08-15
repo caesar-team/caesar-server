@@ -44,7 +44,8 @@
         "symfony/swiftmailer-bundle": "3.2.6",
         "symfony/twig-bundle": "4.2.7",
         "symfony/yaml": "4.2.7",
-        "web-auth/webauthn-framework": "1.2.2"
+        "web-auth/webauthn-framework": "1.2.2",
+        "zendframework/zend-diactoros": "^2.1"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "2.15.1",

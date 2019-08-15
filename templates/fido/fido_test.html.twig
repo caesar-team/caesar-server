@@ -35,9 +35,10 @@
                 }
             };
 
-            window.location = '/request_post?data='+btoa(JSON.stringify(publicKeyCredential));
+            window.location = '/api/anonymous/fido/register?data='+btoa(JSON.stringify(publicKeyCredential));
         }, function (error) {
-            console.log(error);
+            alert(error);
+            //console.log(error);
             console.log('we are there');
         });
 </script>
