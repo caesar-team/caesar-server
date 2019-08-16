@@ -7,6 +7,9 @@ namespace App\Controller\Api\Fido;
 use App\Controller\AbstractController;
 use App\Entity\PublicKeyCredentialSource;
 use App\Entity\User;
+use App\Fido\CredentialOptionsBuilder\CreationOptionsBuilder;
+use App\Fido\PublicKeyCredentialBootstrap;
+use App\Fido\PublicKeyCredentialOptionsContext;
 use App\Repository\PublicKeyCredentialSourceRepository;
 use App\Repository\UserRepository;
 use CBOR\Decoder;
@@ -45,60 +48,27 @@ use Cose\Algorithm\Signature\RSA;
 use Webauthn\TokenBinding\TokenBindingNotSupportedHandler;
 
 /**
- * @Route(path="/api/anonymous/fido")
+ * @Route(path="/api/fido")
  */
 final class FidoController extends AbstractController
 {
     /**
-     * @Route(path="/prepare", name="fido_prepare")
+     * @Route(path="/create", name="fido_get_creation_options", methods={"GET"})
      * @param Request $request
-     * @return Response
+     * @return string
      */
-    public function prepare(Request $request, UserRepository $userRepository): Response
+    public function creationOptions(Request $request, PublicKeyCredentialOptionsContext $credentialOptionsContext)
     {
-        $rpEntity = new PublicKeyCredentialRpEntity(
-            getenv('APP_NAME'),
-            null, // null - current domain
-            // icon path must be secured (https)
-            'https://fourxxi.atlassian.net/secure/projectavatar?pid=15003&avatarId=18528&size=xxlarge'
-        );
-
         /** @var User $user */
-        $user = $userRepository->findOneBy(['email' => 'gribanovskiy.mihail@gmail.com']);
-        $userEntity = new PublicKeyCredentialUserEntity(
-            $user->getEmail(),
-            $user->getId()->toString(),
-            $user->getUsername(),
-            'https://fourxxi.atlassian.net/secure/projectavatar?pid=15003&avatarId=18528&size=xxlarge'
-        );
-        $challenge = random_bytes(32);
-        $publicKeyCredentialParametersList = [
-            new PublicKeyCredentialParameters(PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY, Algorithms::COSE_ALGORITHM_ES256),
-            new PublicKeyCredentialParameters(PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY, Algorithms::COSE_ALGORITHM_RS256),
-        ];
-        $excludedPublicKeyDescriptors = [];
-        $timeout = 20000;
-        $authenticatorSelectionCriteria = new AuthenticatorSelectionCriteria();
-        $extensions = new AuthenticationExtensionsClientInputs();
-        $extensions->add(new AuthenticationExtension('loc', true));
+        $user = $this->getUser();
 
-        $publicKeyCredentialCreationOptions = new PublicKeyCredentialCreationOptions(
-            $rpEntity,
-            $userEntity,
-            $challenge,
-            $publicKeyCredentialParametersList,
-            $timeout,
-            $excludedPublicKeyDescriptors,
-            $authenticatorSelectionCriteria,
-            PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
-            $extensions
-        );
-        $encodedOptions = json_encode($publicKeyCredentialCreationOptions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $credentialCreationOptions = $credentialOptionsContext->create($user);
+        $encodedOptions = json_encode($credentialCreationOptions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         $session = $request->getSession();
         $session->set('publicKeyCredentialCreationOptions', $encodedOptions);
 
-        return $this->render('fido/fido_prepare.html.twig', ['options' => $encodedOptions]);
+        return $encodedOptions;
     }
 
     /**
@@ -208,7 +178,7 @@ final class FidoController extends AbstractController
         $extensions->add(new AuthenticationExtension('loc', true));
         /** @var User $user */
         $user = $userRepository->findOneBy(['email' => 'gribanovskiy.mihail@gmail.com']);
-        $publicKeyCredential = User::createPublicKeyCredential($user);
+        $publicKeyCredential = $user->getPublicKeyCredential();
         /** @var PublicKeyCredentialSource[] $sources */
         $sources = $publicKeyCredentialSourceRepository->findAllForUserEntity($publicKeyCredential);
 

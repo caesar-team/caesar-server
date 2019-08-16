@@ -173,6 +173,12 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $userGroups;
 
     /**
+     * @var bool
+     * @ORM\Column(type="boolean", options={"default":false})
+     */
+    private $fidoRegistered = false;
+
+    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -485,14 +491,24 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return !$this->hasRole(self::ROLE_ANONYMOUS_USER) && !$this->hasRole(self::ROLE_READ_ONLY_USER) ;
     }
 
-    public static function createPublicKeyCredential(User $user): PublicKeyCredentialUserEntity
+    public function getPublicKeyCredential(): PublicKeyCredentialUserEntity
     {
         $publicKeyCredential = new PublicKeyCredentialUserEntity(
-            $user->getEmail(),
-            $user->getId()->toString(),
-            $user->getUsername()
+            $this->getEmail(),
+            $this->getId()->toString(),
+            $this->getUsername()
         );
 
         return $publicKeyCredential;
+    }
+
+    public function isFidoRegistered(): bool
+    {
+        return $this->fidoRegistered;
+    }
+
+    public function setFidoRegistered(bool $fidoRegistered): void
+    {
+        $this->fidoRegistered = $fidoRegistered;
     }
 }
