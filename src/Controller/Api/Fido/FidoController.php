@@ -7,8 +7,6 @@ namespace App\Controller\Api\Fido;
 use App\Controller\AbstractController;
 use App\Entity\PublicKeyCredentialSource;
 use App\Entity\User;
-use App\Fido\CredentialOptionsBuilder\CreationOptionsBuilder;
-use App\Fido\PublicKeyCredentialBootstrap;
 use App\Fido\PublicKeyCredentialOptionsContext;
 use App\Repository\PublicKeyCredentialSourceRepository;
 use App\Repository\UserRepository;
@@ -32,15 +30,10 @@ use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAssertionResponseValidator;
 use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\AuthenticatorAttestationResponseValidator;
-use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialDescriptor;
 use Webauthn\PublicKeyCredentialLoader;
 use Webauthn\PublicKeyCredentialRequestOptions;
-use Webauthn\PublicKeyCredentialRpEntity;
-use Webauthn\PublicKeyCredentialUserEntity;
-use Cose\Algorithms;
-use Webauthn\PublicKeyCredentialParameters;
 use Symfony\Component\Routing\Annotation\Route;
 use Cose\Algorithm\Manager;
 use Cose\Algorithm\Signature\ECDSA;
@@ -52,6 +45,8 @@ use Webauthn\TokenBinding\TokenBindingNotSupportedHandler;
  */
 final class FidoController extends AbstractController
 {
+    private const SESSION_CREDENTIAL_CREATION_OPTIONS = 'publicKeyCredentialCreationOptions';
+
     /**
      * @Route(path="/create", name="fido_get_creation_options", methods={"GET"})
      * @param Request $request
@@ -59,16 +54,19 @@ final class FidoController extends AbstractController
      */
     public function creationOptions(Request $request, PublicKeyCredentialOptionsContext $credentialOptionsContext)
     {
+        $session = $request->getSession();
+        $session->set(self::SESSION_CREDENTIAL_CREATION_OPTIONS, null);
         /** @var User $user */
         $user = $this->getUser();
 
         $credentialCreationOptions = $credentialOptionsContext->create($user);
         $encodedOptions = json_encode($credentialCreationOptions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $session->set(self::SESSION_CREDENTIAL_CREATION_OPTIONS, $encodedOptions);
 
-        $session = $request->getSession();
-        $session->set('publicKeyCredentialCreationOptions', $encodedOptions);
+        $response = new Response($encodedOptions);
+        $response->headers->set('Content-Type', 'application/json');
 
-        return $encodedOptions;
+        return $response;
     }
 
     /**
@@ -85,7 +83,7 @@ final class FidoController extends AbstractController
     {
         $session = $request->getSession();
         // Retrieve the PublicKeyCredentialCreationOptions object created earlier
-        $publicKeyCredentialCreationOptions = $session->get('publicKeyCredentialCreationOptions');
+        $publicKeyCredentialCreationOptions = $session->get(self::SESSION_CREDENTIAL_CREATION_OPTIONS);
         $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::createFromString($publicKeyCredentialCreationOptions);
 
         // Retrieve de data sent by the device
@@ -162,13 +160,13 @@ final class FidoController extends AbstractController
     }
 
     /**
-     * @Route(path="/login", name="fido_login")
+     * @Route(path="/login_prepare", name="fido_login_prepare")
      * @param Request $request
      * @param PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository
      * @param UserRepository $userRepository
      * @return Response
      */
-    public function login(
+    public function loginPrepare(
         Request $request,
         PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository,
         UserRepository $userRepository

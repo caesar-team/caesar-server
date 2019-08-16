@@ -9,7 +9,6 @@ use App\Fido\CredentialOptionsBuilder\OptionsBuilderInterface;
 
 final class PublicKeyCredentialOptionsContext
 {
-
     /**
      * @var OptionsBuilderInterface[]
      */
@@ -29,5 +28,7 @@ final class PublicKeyCredentialOptionsContext
 
             continue;
         }
+
+        throw new OptionsBuilderNotFoundException();
     }
 }

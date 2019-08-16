@@ -60,7 +60,7 @@ final class CreationOptionsBuilder implements OptionsBuilderInterface
 
     public function canCreate(User $user): bool
     {
-        return !$user->isFidoRegistered();
+        return User::FLOW_STATUS_FINISHED !== $user->getFlowStatus();
     }
 
     public function create(User $user): \JsonSerializable

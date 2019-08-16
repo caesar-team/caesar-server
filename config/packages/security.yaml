@@ -87,7 +87,7 @@ security:
         - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/anonymous, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/auth, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
-        - { path: ^/api/user/self, , roles: [IS_AUTHENTICATED_FULLY], methods: [GET] }
+        - { path: ^/api/user/self, roles: [IS_AUTHENTICATED_FULLY], methods: [GET] }
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/api/doc, roles: [ROLE_SUPER_ADMIN]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}

@@ -173,12 +173,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $userGroups;
 
     /**
-     * @var bool
-     * @ORM\Column(type="boolean", options={"default":false})
-     */
-    private $fidoRegistered = false;
-
-    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -500,15 +494,5 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         );
 
         return $publicKeyCredential;
-    }
-
-    public function isFidoRegistered(): bool
-    {
-        return $this->fidoRegistered;
-    }
-
-    public function setFidoRegistered(bool $fidoRegistered): void
-    {
-        $this->fidoRegistered = $fidoRegistered;
     }
 }

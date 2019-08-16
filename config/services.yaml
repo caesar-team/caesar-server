@@ -21,6 +21,10 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
+    App\Fido\CredentialOptionsBuilder\:
+        resource: '../src/Fido/CredentialOptionsBuilder'
+        tags: ['fido.options_builder']
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
