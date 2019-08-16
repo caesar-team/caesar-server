@@ -5,19 +5,17 @@ declare(strict_types=1);
 namespace App\Controller\Api\Fido;
 
 use App\Controller\AbstractController;
+use App\Entity\PublicKeyCredentialSource;
 use App\Entity\User;
 use App\Repository\PublicKeyCredentialSourceRepository;
 use App\Repository\UserRepository;
-use Assert\Assertion;
 use CBOR\Decoder;
 use CBOR\OtherObject\OtherObjectManager;
 use CBOR\Tag\TagObjectManager;
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Serializer\SerializerInterface;
 use Webauthn\AttestationStatement\AndroidKeyAttestationStatementSupport;
-use Webauthn\AttestationStatement\AndroidSafetyNetAttestationStatementSupport;
 use Webauthn\AttestationStatement\AttestationObjectLoader;
 use Webauthn\AttestationStatement\AttestationStatementSupportManager;
 use Webauthn\AttestationStatement\FidoU2FAttestationStatementSupport;
@@ -27,12 +25,15 @@ use Webauthn\AttestationStatement\TPMAttestationStatementSupport;
 use Webauthn\AuthenticationExtensions\AuthenticationExtension;
 use Webauthn\AuthenticationExtensions\AuthenticationExtensionsClientInputs;
 use Webauthn\AuthenticationExtensions\ExtensionOutputCheckerHandler;
+use Webauthn\AuthenticatorAssertionResponse;
+use Webauthn\AuthenticatorAssertionResponseValidator;
 use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\AuthenticatorAttestationResponseValidator;
 use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialDescriptor;
 use Webauthn\PublicKeyCredentialLoader;
+use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
 use Webauthn\PublicKeyCredentialUserEntity;
 use Cose\Algorithms;
@@ -40,10 +41,8 @@ use Webauthn\PublicKeyCredentialParameters;
 use Symfony\Component\Routing\Annotation\Route;
 use Cose\Algorithm\Manager;
 use Cose\Algorithm\Signature\ECDSA;
-use Cose\Algorithm\Signature\EdDSA;
 use Cose\Algorithm\Signature\RSA;
 use Webauthn\TokenBinding\TokenBindingNotSupportedHandler;
-use Zend\Diactoros\Response\JsonResponse;
 
 /**
  * @Route(path="/api/anonymous/fido")
@@ -59,7 +58,7 @@ final class FidoController extends AbstractController
     {
         $rpEntity = new PublicKeyCredentialRpEntity(
             getenv('APP_NAME'),
-            'e80e96f8.ngrok.io',
+            null, // null - current domain
             // icon path must be secured (https)
             'https://fourxxi.atlassian.net/secure/projectavatar?pid=15003&avatarId=18528&size=xxlarge'
         );
@@ -67,20 +66,17 @@ final class FidoController extends AbstractController
         /** @var User $user */
         $user = $userRepository->findOneBy(['email' => 'gribanovskiy.mihail@gmail.com']);
         $userEntity = new PublicKeyCredentialUserEntity(
-            $user->getUsername(),
+            $user->getEmail(),
             $user->getId()->toString(),
             $user->getUsername(),
             'https://fourxxi.atlassian.net/secure/projectavatar?pid=15003&avatarId=18528&size=xxlarge'
         );
         $challenge = random_bytes(32);
         $publicKeyCredentialParametersList = [
-            new PublicKeyCredentialParameters('public-key', Algorithms::COSE_ALGORITHM_ES256),
-            new PublicKeyCredentialParameters('public-key', Algorithms::COSE_ALGORITHM_RS256),
+            new PublicKeyCredentialParameters(PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY, Algorithms::COSE_ALGORITHM_ES256),
+            new PublicKeyCredentialParameters(PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY, Algorithms::COSE_ALGORITHM_RS256),
         ];
-        $excludedPublicKeyDescriptors = [
-            new PublicKeyCredentialDescriptor(PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY, 'ABCDEFGH'),
-            new PublicKeyCredentialDescriptor(PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY, 'ABCDEFGH'),
-        ];
+        $excludedPublicKeyDescriptors = [];
         $timeout = 20000;
         $authenticatorSelectionCriteria = new AuthenticatorSelectionCriteria();
         $extensions = new AuthenticationExtensionsClientInputs();
@@ -102,17 +98,19 @@ final class FidoController extends AbstractController
         $session = $request->getSession();
         $session->set('publicKeyCredentialCreationOptions', $encodedOptions);
 
-        return $this->render('fido/fido_test.html.twig', ['options' => $encodedOptions]);
+        return $this->render('fido/fido_prepare.html.twig', ['options' => $encodedOptions]);
     }
 
     /**
      * @Route(path="/register", name="fido_register")
      * @param Request $request
+     *
+     * @return Response
+     * @throws \Exception
      */
     public function register(
         Request $request,
-        PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository,
-        SerializerInterface $serializer
+        PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository
     )
     {
         $session = $request->getSession();
@@ -126,11 +124,7 @@ final class FidoController extends AbstractController
         // Cose Algorithm Manager
         $coseAlgorithmManager = new Manager();
         $coseAlgorithmManager->add(new ECDSA\ES256());
-        $coseAlgorithmManager->add(new ECDSA\ES512());
-        $coseAlgorithmManager->add(new EdDSA\EdDSA());
-        $coseAlgorithmManager->add(new RSA\RS1());
         $coseAlgorithmManager->add(new RSA\RS256());
-        $coseAlgorithmManager->add(new RSA\RS512());
 
         // Create a CBOR Decoder object
         $otherObjectManager = new OtherObjectManager();
@@ -188,30 +182,134 @@ final class FidoController extends AbstractController
         // Everything is OK here.
 
         // You can get the Public Key Credential Source. This object should be persisted using the Public Key Credential Source repository
-        $publicKeyCredentialSource = \Webauthn\PublicKeyCredentialSource::createFromPublicKeyCredential(
+        $publicKeyCredentialSource = PublicKeyCredentialSource::createFromPublicKeyCredential(
             $publicKeyCredential,
             $publicKeyCredentialCreationOptions->getUser()->getId()
         );
+        $publicKeyCredentialSourceRepository->saveCredentialSource($publicKeyCredentialSource);
 
+        return $this->render('fido/fido_register.html.twig', ['response' => $response]);
+    }
 
-        //You can also get the PublicKeyCredentialDescriptor.
-        $publicKeyCredentialDescriptor = $publicKeyCredential->getPublicKeyCredentialDescriptor();
+    /**
+     * @Route(path="/login", name="fido_login")
+     * @param Request $request
+     * @param PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository
+     * @param UserRepository $userRepository
+     * @return Response
+     */
+    public function login(
+        Request $request,
+        PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository,
+        UserRepository $userRepository
+    )
+    {
+        $extensions = new AuthenticationExtensionsClientInputs();
+        $extensions->add(new AuthenticationExtension('loc', true));
+        /** @var User $user */
+        $user = $userRepository->findOneBy(['email' => 'gribanovskiy.mihail@gmail.com']);
+        $publicKeyCredential = User::createPublicKeyCredential($user);
+        /** @var PublicKeyCredentialSource[] $sources */
+        $sources = $publicKeyCredentialSourceRepository->findAllForUserEntity($publicKeyCredential);
 
-        // Normally this condition should be true. Just make sure you received the credential data
-        $attestedCredentialData = null;
-        if ($response->getAttestationObject()->getAuthData()->hasAttestedCredentialData()) {
-            $attestedCredentialData = $response->getAttestationObject()->getAuthData()->getAttestedCredentialData();
+        $descriptors = [];
+        foreach ($sources as $source) {
+            $descriptors[] = new PublicKeyCredentialDescriptor(
+                $source->getType(),
+                $source->getPublicKeyCredentialId(),
+                $source->getTransports()
+            );
         }
 
-        //You could also access to the following information.
-        $response->getAttestationObject()->getAuthData()->getSignCount(); // Current counter
-        $response->getAttestationObject()->getAuthData()->isUserVerified(); // Indicates if the user was verified
-        $response->getAttestationObject()->getAuthData()->isUserPresent(); // Indicates if the user was present
-        $response->getAttestationObject()->getAuthData()->hasExtensions(); // Extensions are available
-        $response->getAttestationObject()->getAuthData()->getExtensions(); // The extensions
-        $response->getAttestationObject()->getAuthData()->getReservedForFutureUse1(); //Not used at the moment
-        $response->getAttestationObject()->getAuthData()->getReservedForFutureUse2(); //Not used at the moment
+        // Public Key Credential Request Options
+        $publicKeyCredentialRequestOptions = new PublicKeyCredentialRequestOptions(
+            random_bytes(32),                                                           // Challenge
+            60000,                                                                      // Timeout
+            null,                                                          // Relying Party ID
+            $descriptors,                                  // Registered PublicKeyCredentialDescriptor classes
+            PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_PREFERRED, // User verification requirement
+            $extensions
+        );
+        $encodedOptions = json_encode($publicKeyCredentialRequestOptions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $session = $request->getSession();
+        $session->set('publicKeyCredentialRequestOptions', $encodedOptions);
 
-        return $this->render('fido/fido_response.html.twig', ['response' => $response]);
+        return $this->render('fido/fido_login.html.twig', ['options' => $encodedOptions]);
+    }
+
+    /**
+     * @Route(path="/login_check", name="fido_login_check")
+     */
+    public function loginCheck(
+        Request $request,
+        PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository,
+        UserRepository $userRepository
+    )
+    {
+        $session = $request->getSession();
+        $publicKeyCredentialRequestOptions = $session->get('publicKeyCredentialRequestOptions');
+        $publicKeyCredentialRequestOptions = PublicKeyCredentialRequestOptions::createFromString($publicKeyCredentialRequestOptions);
+        $data = base64_decode($request->query->get('data'));
+
+        $coseAlgorithmManager = new Manager();
+        $coseAlgorithmManager->add(new ECDSA\ES256());
+        $coseAlgorithmManager->add(new RSA\RS256());
+
+        $otherObjectManager = new OtherObjectManager();
+        $tagObjectManager = new TagObjectManager();
+        $decoder = new Decoder($tagObjectManager, $otherObjectManager);
+
+        $attestationStatementSupportManager = new AttestationStatementSupportManager();
+        $attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
+        $attestationStatementSupportManager->add(new FidoU2FAttestationStatementSupport($decoder));
+        $attestationStatementSupportManager->add(new PackedAttestationStatementSupport($decoder, $coseAlgorithmManager));
+
+        $attestationObjectLoader = new AttestationObjectLoader($attestationStatementSupportManager, $decoder);
+
+        $publicKeyCredentialLoader = new PublicKeyCredentialLoader($attestationObjectLoader, $decoder);
+        $tokenBindnigHandler = new TokenBindingNotSupportedHandler();
+
+        $extensionOutputCheckerHandler = new ExtensionOutputCheckerHandler();
+
+        $authenticatorAssertionResponseValidator = new AuthenticatorAssertionResponseValidator(
+            $publicKeyCredentialSourceRepository,
+            $decoder,
+            $tokenBindnigHandler,
+            $extensionOutputCheckerHandler,
+            $coseAlgorithmManager
+        );
+
+        $user = $userRepository->findOneBy(['email' => 'gribanovskiy.mihail@gmail.com']);
+
+        try {
+            // We init the PSR7 Request object
+            $symfonyRequest = Request::createFromGlobals();
+            $psr7Request = (new DiactorosFactory())->createRequest($symfonyRequest);
+
+            // Load the data
+            $publicKeyCredential = $publicKeyCredentialLoader->load($data);
+            /** @var AuthenticatorAssertionResponse $response */
+            $response = $publicKeyCredential->getResponse();
+
+            // Check if the response is an Authenticator Assertion Response
+            if (!$response instanceof AuthenticatorAssertionResponse) {
+                throw new \RuntimeException('Not an authenticator assertion response');
+            }
+
+
+            // Check the response against the attestation request
+            $authenticatorAssertionResponseValidator->check(
+                $publicKeyCredential->getRawId(),
+                $response,
+                $publicKeyCredentialRequestOptions,
+                $psr7Request,
+                $user ? $user->getId()->toString() : null
+            );
+
+            return $this->render('fido/fido_done.html.twig');
+        } catch (\Throwable $throwable) {
+            dump($throwable->getTraceAsString());
+            dump($throwable->getMessage()); die;
+        }
     }
 }

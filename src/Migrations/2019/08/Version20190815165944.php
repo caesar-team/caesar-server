@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20190814125003 extends AbstractMigration
+final class Version20190815165944 extends AbstractMigration
 {
     public function getDescription() : string
     {
@@ -29,8 +29,6 @@ final class Version20190814125003 extends AbstractMigration
         $this->addSql('COMMENT ON COLUMN public_key_credential_source.trust_path IS \'(DC2Type:trust_path)\'');
         $this->addSql('COMMENT ON COLUMN public_key_credential_source.aaguid IS \'(DC2Type:base64)\'');
         $this->addSql('COMMENT ON COLUMN public_key_credential_source.credential_public_key IS \'(DC2Type:base64)\'');
-        $this->addSql('ALTER TABLE item DROP name');
-        $this->addSql('ALTER TABLE item_update DROP name');
     }
 
     public function down(Schema $schema) : void
@@ -39,7 +37,5 @@ final class Version20190814125003 extends AbstractMigration
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'postgresql', 'Migration can only be executed safely on \'postgresql\'.');
 
         $this->addSql('DROP TABLE public_key_credential_source');
-        $this->addSql('ALTER TABLE item ADD name VARCHAR(255) DEFAULT \'unknown\' NOT NULL');
-        $this->addSql('ALTER TABLE item_update ADD name VARCHAR(255) DEFAULT \'unknown\' NOT NULL');
     }
 }

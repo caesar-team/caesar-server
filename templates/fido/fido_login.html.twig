@@ -1,0 +1,41 @@
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+<script>
+    let publicKey = {{ options|raw }};
+
+    function arrayToBase64String(a) {
+        return btoa(String.fromCharCode(...a));
+    }
+
+    publicKey.challenge = Uint8Array.from(window.atob(publicKey.challenge), c=>c.charCodeAt(0));
+    publicKey.allowCredentials = publicKey.allowCredentials.map(function(data) {
+        return {
+            ...data,
+            'id': Uint8Array.from(atob(data.id), c=>c.charCodeAt(0))
+    };
+    });
+
+    navigator.credentials.get({publicKey})
+        .then(data => {
+        let publicKeyCredential = {
+            id: data.id,
+            type: data.type,
+            rawId: arrayToBase64String(new Uint8Array(data.rawId)),
+            response: {
+                authenticatorData: arrayToBase64String(new Uint8Array(data.response.authenticatorData)),
+                clientDataJSON: arrayToBase64String(new Uint8Array(data.response.clientDataJSON)),
+                signature: arrayToBase64String(new Uint8Array(data.response.signature)),
+                userHandle: data.response.userHandle ? arrayToBase64String(new Uint8Array(data.response.userHandle)) : null
+            }
+        };
+    window.location = '{{ path('fido_login_check') }}?data='+btoa(JSON.stringify(publicKeyCredential));
+    }, error => {
+        console.log(error); // Example: timeout, interaction refused...
+    });
+</script>
+<h1>Login</h1>
+</body>
+</html>

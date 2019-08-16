@@ -14,6 +14,7 @@ use Ramsey\Uuid\UuidInterface;
 use Scheb\TwoFactorBundle\Model\BackupCodeInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
+use Webauthn\PublicKeyCredentialUserEntity;
 
 /**
  * User.
@@ -482,5 +483,16 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function isFullUser(): bool
     {
         return !$this->hasRole(self::ROLE_ANONYMOUS_USER) && !$this->hasRole(self::ROLE_READ_ONLY_USER) ;
+    }
+
+    public static function createPublicKeyCredential(User $user): PublicKeyCredentialUserEntity
+    {
+        $publicKeyCredential = new PublicKeyCredentialUserEntity(
+            $user->getEmail(),
+            $user->getId()->toString(),
+            $user->getUsername()
+        );
+
+        return $publicKeyCredential;
     }
 }

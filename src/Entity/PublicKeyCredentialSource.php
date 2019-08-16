@@ -7,6 +7,7 @@ namespace App\Entity;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialSource as BasePublicKeyCredentialSource;
 use Webauthn\TrustPath\TrustPath;
 
@@ -48,5 +49,29 @@ class PublicKeyCredentialSource extends BasePublicKeyCredentialSource
     public function getId(): UuidInterface
     {
         return $this->id;
+    }
+
+    /**
+     * @param PublicKeyCredential $publicKeyCredential
+     * @param string $userHandle
+     * @return BasePublicKeyCredentialSource
+     * @throws \Exception
+     */
+    public static function createFromPublicKeyCredential(PublicKeyCredential $publicKeyCredential, string $userHandle): BasePublicKeyCredentialSource
+    {
+        $source = BasePublicKeyCredentialSource::createFromPublicKeyCredential($publicKeyCredential, $userHandle);
+        $child = new self(
+            $source->getPublicKeyCredentialId(),
+            $source->getType(),
+            $source->getTransports(),
+            $source->getAttestationType(),
+            $source->getTrustPath(),
+            $source->getAaguid(),
+            $source->getCredentialPublicKey(),
+            $source->getUserHandle(),
+            $source->getCounter()
+        );
+
+        return $child;
     }
 }
