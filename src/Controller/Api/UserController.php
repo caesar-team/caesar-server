@@ -67,6 +67,7 @@ final class UserController extends AbstractController
      *     name="api_user_get_info",
      *     methods={"GET"}
      * )
+     * @Rest\View(serializerGroups={"public"})
      *
      * @param SelfUserInfoViewFactory $viewFactory
      *
