@@ -19,7 +19,7 @@ final class PublicKeyCredentialOptionsContext
         $this->optionsBuilderInterfaces = $optionsBuilderInterfaces;
     }
 
-    public function create(User $user): \JsonSerializable
+    public function createOptions(User $user): ?\JsonSerializable
     {
         foreach ($this->optionsBuilderInterfaces as $optionsBuilder) {
             if ($optionsBuilder->canCreate($user)) {

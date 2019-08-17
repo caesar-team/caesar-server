@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Fido\PublicKeyCredentialOptionsContext;
 use App\Repository\PublicKeyCredentialSourceRepository;
 use App\Repository\UserRepository;
+use App\Validator\AttestationResponseValidator;
 use CBOR\Decoder;
 use CBOR\OtherObject\OtherObjectManager;
 use CBOR\Tag\TagObjectManager;
@@ -41,7 +42,8 @@ use Cose\Algorithm\Signature\RSA;
 use Webauthn\TokenBinding\TokenBindingNotSupportedHandler;
 
 /**
- * @Route(path="/api/fido")
+ * Route(path="/api/fido")
+ * @Route(path="/api/anonymous/fido")
  */
 final class FidoController extends AbstractController
 {
@@ -49,36 +51,50 @@ final class FidoController extends AbstractController
 
     /**
      * @Route(path="/create", name="fido_get_creation_options", methods={"GET"})
+     * @Route(path="/create", name="fido_get_creation_options", methods={"GET"})
      * @param Request $request
+     * @param PublicKeyCredentialOptionsContext $credentialOptionsContext
+     * @param UserRepository $userRepository
      * @return string
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function creationOptions(Request $request, PublicKeyCredentialOptionsContext $credentialOptionsContext)
+    public function creationOptions(
+        Request $request,
+        PublicKeyCredentialOptionsContext $credentialOptionsContext, UserRepository $userRepository
+    )
     {
         $session = $request->getSession();
         $session->set(self::SESSION_CREDENTIAL_CREATION_OPTIONS, null);
         /** @var User $user */
         $user = $this->getUser();
 
-        $credentialCreationOptions = $credentialOptionsContext->create($user);
+        $user = $userRepository->findByEmail('gribanovskiy.mihail@gmail.com');
+
+        $user->setIsTryingRegister(true);
+        $credentialCreationOptions = $credentialOptionsContext->createOptions($user);
+
         $encodedOptions = json_encode($credentialCreationOptions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $session->set(self::SESSION_CREDENTIAL_CREATION_OPTIONS, $encodedOptions);
 
-        $response = new Response($encodedOptions);
-        $response->headers->set('Content-Type', 'application/json');
+        return $this->render('fido/fido_register_prepare.html.twig', ['options' => $encodedOptions]);
 
-        return $response;
+//        $response = new Response($encodedOptions);
+//        $response->headers->set('Content-Type', 'application/json');
+//
+//        return $response;
     }
 
     /**
      * @Route(path="/register", name="fido_register")
      * @param Request $request
      *
-     * @return Response
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
      * @throws \Exception
      */
     public function register(
         Request $request,
-        PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository
+        PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository,
+        AttestationResponseValidator $responseValidator
     )
     {
         $session = $request->getSession();
@@ -89,74 +105,16 @@ final class FidoController extends AbstractController
         // Retrieve de data sent by the device
         $data = base64_decode($request->query->get('data'));
 
-        // Cose Algorithm Manager
-        $coseAlgorithmManager = new Manager();
-        $coseAlgorithmManager->add(new ECDSA\ES256());
-        $coseAlgorithmManager->add(new RSA\RS256());
-
-        // Create a CBOR Decoder object
-        $otherObjectManager = new OtherObjectManager();
-        $tagObjectManager = new TagObjectManager();
-        $decoder = new Decoder($tagObjectManager, $otherObjectManager);
-
-        // The token binding handler
-        $tokenBindnigHandler = new TokenBindingNotSupportedHandler();
-
-        // Attestation Statement Support Manager
-        $attestationStatementSupportManager = new AttestationStatementSupportManager();
-        $attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
-        $attestationStatementSupportManager->add(new FidoU2FAttestationStatementSupport($decoder));
-        $attestationStatementSupportManager->add(new AndroidKeyAttestationStatementSupport($decoder));
-        $attestationStatementSupportManager->add(new TPMAttestationStatementSupport());
-        $attestationStatementSupportManager->add(new PackedAttestationStatementSupport($decoder, $coseAlgorithmManager));
-
-        // Attestation Object Loader
-        $attestationObjectLoader = new AttestationObjectLoader($attestationStatementSupportManager, $decoder);
-
-        // Public Key Credential Loader
-        $publicKeyCredentialLoader = new PublicKeyCredentialLoader($attestationObjectLoader, $decoder);
-
-        // Extension Output Checker Handler
-        $extensionOutputCheckerHandler = new ExtensionOutputCheckerHandler();
-
-        // Authenticator Attestation Response Validator
-        $authenticatorAttestationResponseValidator = new AuthenticatorAttestationResponseValidator(
-            $attestationStatementSupportManager,
-            $publicKeyCredentialSourceRepository,
-            $tokenBindnigHandler,
-            $extensionOutputCheckerHandler
-        );
-
         try {
-            // We init the PSR7 Request object
-            $symfonyRequest = Request::createFromGlobals();
-            $psr7Request = (new DiactorosFactory())->createRequest($symfonyRequest);
-
-            // Load the data
-            $publicKeyCredential = $publicKeyCredentialLoader->load($data);
-            $response = $publicKeyCredential->getResponse();
-
-            // Check if the response is an Authenticator Attestation Response
-            if (!$response instanceof AuthenticatorAttestationResponse) {
-                throw new \RuntimeException('Not an authenticator attestation response');
-            }
-
-            // Check the response against the request
-            $authenticatorAttestationResponseValidator->check($response, $publicKeyCredentialCreationOptions, $psr7Request);
+            $responseValidator->check($data, $publicKeyCredentialCreationOptions);
         } catch (\Throwable $exception) {
-            $this->redirectToRoute('fido_prepare');
+            $this->redirectToRoute('fido_get_creation_options');
         }
 
-        // Everything is OK here.
-
-        // You can get the Public Key Credential Source. This object should be persisted using the Public Key Credential Source repository
-        $publicKeyCredentialSource = PublicKeyCredentialSource::createFromPublicKeyCredential(
-            $publicKeyCredential,
-            $publicKeyCredentialCreationOptions->getUser()->getId()
-        );
+        $publicKeyCredentialSource = $responseValidator->getVerifiedPublicKeyCredentialSource($publicKeyCredentialCreationOptions);
         $publicKeyCredentialSourceRepository->saveCredentialSource($publicKeyCredentialSource);
 
-        return $this->render('fido/fido_register.html.twig', ['response' => $response]);
+        return $this->redirectToRoute('fido_login_prepare');
     }
 
     /**
@@ -165,17 +123,18 @@ final class FidoController extends AbstractController
      * @param PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository
      * @param UserRepository $userRepository
      * @return Response
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function loginPrepare(
         Request $request,
-        PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository,
-        UserRepository $userRepository
+        PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository, UserRepository $userRepository
     )
     {
         $extensions = new AuthenticationExtensionsClientInputs();
         $extensions->add(new AuthenticationExtension('loc', true));
         /** @var User $user */
-        $user = $userRepository->findOneBy(['email' => 'gribanovskiy.mihail@gmail.com']);
+        $user = $this->getUser();
+        $user = $userRepository->findByEmail('gribanovskiy.mihail@gmail.com');
         $publicKeyCredential = $user->getPublicKeyCredential();
         /** @var PublicKeyCredentialSource[] $sources */
         $sources = $publicKeyCredentialSourceRepository->findAllForUserEntity($publicKeyCredential);
@@ -264,7 +223,6 @@ final class FidoController extends AbstractController
                 throw new \RuntimeException('Not an authenticator assertion response');
             }
 
-
             // Check the response against the attestation request
             $authenticatorAssertionResponseValidator->check(
                 $publicKeyCredential->getRawId(),
@@ -276,8 +234,7 @@ final class FidoController extends AbstractController
 
             return $this->render('fido/fido_done.html.twig');
         } catch (\Throwable $throwable) {
-            dump($throwable->getTraceAsString());
-            dump($throwable->getMessage()); die;
+            $this->redirectToRoute('fido_get_creation_options');
         }
     }
 }

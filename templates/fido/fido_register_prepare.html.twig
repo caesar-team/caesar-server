@@ -35,7 +35,7 @@
                 }
             };
 
-            window.location = '/api/anonymous/fido/register?data='+btoa(JSON.stringify(publicKeyCredential));
+            window.location = '{{ path('fido_register') }}?data='+btoa(JSON.stringify(publicKeyCredential));
         }, function (error) {
             alert(error);
             //console.log(error);

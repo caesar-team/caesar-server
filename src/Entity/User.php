@@ -173,6 +173,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $userGroups;
 
     /**
+     * @var bool
+     */
+    private $isTryingRegister = false;
+
+    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -494,5 +499,15 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         );
 
         return $publicKeyCredential;
+    }
+
+    public function isTryingRegister(): bool
+    {
+        return $this->isTryingRegister;
+    }
+
+    public function setIsTryingRegister(bool $isTryingRegister): void
+    {
+        $this->isTryingRegister = $isTryingRegister;
     }
 }
