@@ -10,18 +10,24 @@ use App\Factory\Validator\FidoResponseValidatorFactory;
 use App\Fido\PublicKeyCredentialOptionsContext;
 use App\Fido\Response\CreationResponse;
 use App\Fido\Response\RequestResponse;
+use App\Form\Request\WebAuthnDataType;
+use App\Model\Request\WebAuthnDataRequest;
 use App\Repository\PublicKeyCredentialSourceRepository;
-use App\Repository\UserRepository;
+use App\Security\Authentication\TwoFactorAuthenticationHandler;
 use App\Validator\Fido\AttestationResponseValidator;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use Symfony\Component\Routing\Annotation\Route;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Swagger\Annotations as SWG;
 
 /**
- * Route(path="/api/fido")
- * @Route(path="/api/anonymous/fido")
+ * @Route(path="/api/webauthn")
  */
 final class FidoController extends AbstractController
 {
@@ -29,17 +35,22 @@ final class FidoController extends AbstractController
     private const SESSION_CREDENTIAL_REQUEST_OPTIONS = 'publicKeyCredentialRequestOptions';
 
     /**
-     * @Route(path="/create", name="fido_get_creation_options", methods={"GET"})
-     * @Route(path="/create", name="fido_get_creation_options", methods={"GET"})
+     * @SWG\Tag(name="Webauthn")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Fido creation response",
+     *     @Model(type="\Webauthn\PublicKeyCredentialCreationOptions")
+     * )
+     *
+     * @Route(path="/register", name="fido_create", methods={"GET"})
      * @param Request $request
      * @param PublicKeyCredentialOptionsContext $credentialOptionsContext
-     * @param UserRepository $userRepository
      * @return string
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function create(
+    public function register(
         Request $request,
-        PublicKeyCredentialOptionsContext $credentialOptionsContext, UserRepository $userRepository
+        PublicKeyCredentialOptionsContext $credentialOptionsContext
     )
     {
         $session = $request->getSession();
@@ -47,30 +58,36 @@ final class FidoController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        $user = $userRepository->findByEmail('gribanovskiy.mihail@gmail.com');
-
         $user->setIsTryingRegister(true);
         $credentialCreationOptions = $credentialOptionsContext->createOptions($user);
 
         $encodedOptions = json_encode($credentialCreationOptions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $session->set(self::SESSION_CREDENTIAL_CREATION_OPTIONS, $encodedOptions);
 
-        return $this->render('fido/fido_register_prepare.html.twig', ['options' => $encodedOptions]);
-
-//        $response = new Response($encodedOptions);
-//        $response->headers->set('Content-Type', 'application/json');
-//
-//        return $response;
+        return new JsonResponse($credentialCreationOptions);
     }
 
     /**
-     * @Route(path="/register", name="fido_register")
+     * @SWG\Tag(name="Webauthn")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\WebAuthnDataType::class)
+     * )
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Register success"
+     * )
+     *
+     * @Route(path="/register_check", name="fido_register", methods={"POST"})
      * @param Request $request
      *
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @return \Symfony\Component\Form\FormInterface|JsonResponse
      * @throws \Exception
      */
-    public function register(
+    public function registerCheck(
         Request $request,
         PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository,
         FidoResponseValidatorFactory $validatorFactory
@@ -81,8 +98,14 @@ final class FidoController extends AbstractController
         $publicKeyCredentialCreationOptions = $session->get(self::SESSION_CREDENTIAL_CREATION_OPTIONS);
         $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::createFromString($publicKeyCredentialCreationOptions);
 
-        // Retrieve de data sent by the device
-        $data = base64_decode($request->query->get('data'));
+        $data = new WebAuthnDataRequest();
+        $form = $this->createForm(WebAuthnDataType::class, $data);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $data = base64_decode($data->getData());
 
         try {
             $response = new CreationResponse($data, $publicKeyCredentialCreationOptions);
@@ -93,24 +116,28 @@ final class FidoController extends AbstractController
                 $publicKeyCredentialSourceRepository->saveCredentialSource($publicKeyCredentialSource);
             }
         } catch (\Throwable $exception) {
-            $this->redirectToRoute('fido_get_creation_options');
+            return new JsonResponse(['success' => false]);
         }
 
-        return $this->redirectToRoute('fido_login_prepare');
+        return new JsonResponse(['success' => true]);
     }
 
     /**
-     * @Route(path="/login_prepare", name="fido_login_prepare")
+     * @SWG\Tag(name="Webauthn")
+     * @SWG\Response(
+     *     response=200,
+     *     description="Fido request response",
+     *     @Model(type="\Webauthn\PublicKeyCredentialRequestOptions")
+     * )
+     *
+     * @Route(path="/login", name="fido_login_prepare", methods={"GET"})
      * @param Request $request
-     * @param PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository
-     * @param UserRepository $userRepository
+     * @param PublicKeyCredentialOptionsContext $credentialOptionsContext
      * @return Response
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function loginPrepare(
+    public function login(
         Request $request,
-        PublicKeyCredentialOptionsContext $credentialOptionsContext,
-        UserRepository $userRepository
+        PublicKeyCredentialOptionsContext $credentialOptionsContext
     )
     {
         $session = $request->getSession();
@@ -118,41 +145,62 @@ final class FidoController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
-        $user = $userRepository->findByEmail('gribanovskiy.mihail@gmail.com');
 
         // Public Key Credential Request Options
         $publicKeyCredentialRequestOptions = $credentialOptionsContext->createOptions($user);
         $encodedOptions = json_encode($publicKeyCredentialRequestOptions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $session->set(self::SESSION_CREDENTIAL_REQUEST_OPTIONS, $encodedOptions);
 
-        return $this->render('fido/fido_login.html.twig', ['options' => $encodedOptions]);
+        return new JsonResponse($publicKeyCredentialRequestOptions);
     }
 
     /**
-     * @Route(path="/login_check", name="fido_login_check")
+     * @SWG\Tag(name="Webauthn")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\WebAuthnDataType::class)
+     * )
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Login success"
+     * )
+     *
+     * @Route(path="/login_check", name="fido_login_check", methods={"POST"})
      */
     public function loginCheck(
         Request $request,
-        UserRepository $userRepository,
-        FidoResponseValidatorFactory $validatorFactory
+        FidoResponseValidatorFactory $validatorFactory,
+        TwoFactorAuthenticationHandler $authenticationHandler,
+        TokenStorageInterface $tokenStorage
     )
     {
         $session = $request->getSession();
         $publicKeyCredentialRequestOptions = $session->get(self::SESSION_CREDENTIAL_REQUEST_OPTIONS);
 
         $publicKeyCredentialRequestOptions = PublicKeyCredentialRequestOptions::createFromString($publicKeyCredentialRequestOptions);
-        $data = base64_decode($request->query->get('data'));
+
+        $data = new WebAuthnDataRequest();
+        $form = $this->createForm(WebAuthnDataType::class, $data);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $data = base64_decode($data->getData());
 
         /** @var User $user */
-        $user = $userRepository->findOneBy(['email' => 'gribanovskiy.mihail@gmail.com']);
+        $user = $this->getUser();
 
         try {
             $response = new RequestResponse($data, $publicKeyCredentialRequestOptions, $user);
             $validatorFactory->check($response);
 
-            return $this->render('fido/fido_done.html.twig');
+            return $authenticationHandler->onAuthenticationSuccess($request, $tokenStorage->getToken());
         } catch (\Throwable $throwable) {
-            return $this->redirectToRoute('fido_get_creation_options');
+            throw new AccessDeniedHttpException();
         }
     }
 }
