@@ -132,8 +132,6 @@ final class AttestationResponseValidator
         // Extension Output Checker Handler
         $extensionOutputCheckerHandler = new ExtensionOutputCheckerHandler();
 
-
-
         // Authenticator Attestation Response Validator
         $this->validator = new AuthenticatorAttestationResponseValidator(
             $this->attestationStatementSupportManager,
