@@ -25,6 +25,8 @@ final class FidoResponseValidatorFactory
             if ($responseValidator->canCheck($response)) {
                 $responseValidator->check($response);
 
+
+
                 return $responseValidator;
             }
         }

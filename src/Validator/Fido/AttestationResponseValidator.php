@@ -7,51 +7,23 @@ namespace App\Validator\Fido;
 use App\Entity\PublicKeyCredentialSource;
 use App\Fido\Response\CreationResponse;
 use App\Fido\Response\FidoResponseInterface;
+use App\Fido\ResponseValidatorBootstrap;
 use App\Repository\PublicKeyCredentialSourceRepository;
-use CBOR\Decoder;
-use CBOR\OtherObject\OtherObjectManager;
-use CBOR\Tag\TagObjectManager;
-use Cose\Algorithm\Manager;
+use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use Symfony\Component\HttpFoundation\Request;
-use Webauthn\AttestationStatement\AndroidKeyAttestationStatementSupport;
-use Webauthn\AttestationStatement\AttestationObjectLoader;
-use Webauthn\AttestationStatement\AttestationStatementSupportManager;
-use Webauthn\AttestationStatement\FidoU2FAttestationStatementSupport;
-use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
-use Webauthn\AttestationStatement\PackedAttestationStatementSupport;
-use Webauthn\AttestationStatement\TPMAttestationStatementSupport;
-use Webauthn\AuthenticationExtensions\ExtensionOutputCheckerHandler;
 use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\AuthenticatorAttestationResponseValidator;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
-use Cose\Algorithm\Signature\ECDSA;
-use Cose\Algorithm\Signature\RSA;
 use Webauthn\PublicKeyCredentialLoader;
-use Webauthn\TokenBinding\TokenBindingNotSupportedHandler;
 
 final class AttestationResponseValidator implements ResponseValidatorInterface
 {
     /**
-     * @var AuthenticatorAttestationResponseValidator
-     */
-    private $validator;
-
-    /**
-     * @var AttestationStatementSupportManager
-     */
-    private $attestationStatementSupportManager;
-
-    /**
      * @var PublicKeyCredentialSourceRepository
      */
     private $publicKeyCredentialSourceRepository;
-
-    /**
-     * @var AttestationObjectLoader
-     */
-    private $attestationObjectLoader;
 
     /**
      * @var PublicKeyCredential
@@ -59,14 +31,17 @@ final class AttestationResponseValidator implements ResponseValidatorInterface
     private $publicKeyCredential;
 
     /**
-     * @var Decoder
+     * @var ResponseValidatorBootstrap
      */
-    private $decoder;
+    private $bootstrap;
 
-    public function __construct(PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository)
+    public function __construct(
+        PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository,
+        ResponseValidatorBootstrap $bootstrap
+    )
     {
         $this->publicKeyCredentialSourceRepository = $publicKeyCredentialSourceRepository;
-        $this->bootstrap();
+        $this->bootstrap = $bootstrap;
     }
 
     public function check(
@@ -74,7 +49,7 @@ final class AttestationResponseValidator implements ResponseValidatorInterface
     ): void
     {
         // Public Key Credential Loader
-        $publicKeyCredentialLoader = new PublicKeyCredentialLoader($this->attestationObjectLoader, $this->decoder);
+        $publicKeyCredentialLoader = new PublicKeyCredentialLoader($this->bootstrap->getAttestationObjectLoader(), $this->bootstrap->getDecoder());
         // Load the data
         $this->publicKeyCredential = $publicKeyCredentialLoader->load($fidoResponse->getData());
         $response = $this->publicKeyCredential->getResponse();
@@ -84,9 +59,11 @@ final class AttestationResponseValidator implements ResponseValidatorInterface
             throw new \RuntimeException('Not an authenticator attestation response');
         }
 
-        $symfonyRequest = Request::createFromGlobals();
-        $psr7Request = (new DiactorosFactory())->createRequest($symfonyRequest);
-        $this->validator->check($response, $fidoResponse->getOptions(), $psr7Request);
+        $psr7Request = $this->createPsr7Request();
+
+        $validator = $this->createValidator();
+
+        $validator->check($response, $fidoResponse->getOptions(), $psr7Request);
     }
 
     /**
@@ -104,46 +81,25 @@ final class AttestationResponseValidator implements ResponseValidatorInterface
         );
     }
 
-    private function bootstrap(): void
+    private function createValidator(): AuthenticatorAttestationResponseValidator
     {
-        // Cose Algorithm Manager
-        $coseAlgorithmManager = new Manager();
-        $coseAlgorithmManager->add(new ECDSA\ES256());
-        $coseAlgorithmManager->add(new RSA\RS256());
-
-        // Create a CBOR Decoder object
-        $otherObjectManager = new OtherObjectManager();
-        $tagObjectManager = new TagObjectManager();
-        $this->decoder = new Decoder($tagObjectManager, $otherObjectManager);
-
-        // Attestation Statement Support Manager
-        $this->attestationStatementSupportManager = new AttestationStatementSupportManager();
-        $this->attestationStatementSupportManager->add(new NoneAttestationStatementSupport());
-        $this->attestationStatementSupportManager->add(new FidoU2FAttestationStatementSupport($this->decoder));
-        $this->attestationStatementSupportManager->add(new AndroidKeyAttestationStatementSupport($this->decoder));
-        $this->attestationStatementSupportManager->add(new TPMAttestationStatementSupport());
-        $this->attestationStatementSupportManager->add(new PackedAttestationStatementSupport($this->decoder, $coseAlgorithmManager));
-
-        // Attestation Object Loader
-        $this->attestationObjectLoader = new AttestationObjectLoader($this->attestationStatementSupportManager, $this->decoder);
-
-        // The token binding handler
-        $tokenBindnigHandler = new TokenBindingNotSupportedHandler();
-
-        // Extension Output Checker Handler
-        $extensionOutputCheckerHandler = new ExtensionOutputCheckerHandler();
-
-        // Authenticator Attestation Response Validator
-        $this->validator = new AuthenticatorAttestationResponseValidator(
-            $this->attestationStatementSupportManager,
+        return new AuthenticatorAttestationResponseValidator(
+            $this->bootstrap->getAttestationStatementSupportManager(),
             $this->publicKeyCredentialSourceRepository,
-            $tokenBindnigHandler,
-            $extensionOutputCheckerHandler
+            $this->bootstrap->getTokenBindnigHandler(),
+            $this->bootstrap->getExtensionOutputCheckerHandler()
         );
     }
 
     public function canCheck(FidoResponseInterface $response): bool
     {
         return $response instanceof CreationResponse;
+    }
+
+    private function createPsr7Request(): ServerRequestInterface
+    {
+        $symfonyRequest = Request::createFromGlobals();
+
+        return (new DiactorosFactory())->createRequest($symfonyRequest);
     }
 }

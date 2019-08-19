@@ -139,6 +139,7 @@ final class FidoController extends AbstractController
     {
         $session = $request->getSession();
         $publicKeyCredentialRequestOptions = $session->get(self::SESSION_CREDENTIAL_REQUEST_OPTIONS);
+
         $publicKeyCredentialRequestOptions = PublicKeyCredentialRequestOptions::createFromString($publicKeyCredentialRequestOptions);
         $data = base64_decode($request->query->get('data'));
 
@@ -148,7 +149,6 @@ final class FidoController extends AbstractController
         try {
             $response = new RequestResponse($data, $publicKeyCredentialRequestOptions, $user);
             $validatorFactory->check($response);
-            ;
 
             return $this->render('fido/fido_done.html.twig');
         } catch (\Throwable $throwable) {
