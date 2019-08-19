@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Validator;
+namespace App\Validator\Fido;
 
 use App\Entity\PublicKeyCredentialSource;
+use App\Fido\Response\CreationResponse;
+use App\Fido\Response\FidoResponseInterface;
 use App\Repository\PublicKeyCredentialSourceRepository;
 use CBOR\Decoder;
 use CBOR\OtherObject\OtherObjectManager;
@@ -29,7 +31,7 @@ use Cose\Algorithm\Signature\RSA;
 use Webauthn\PublicKeyCredentialLoader;
 use Webauthn\TokenBinding\TokenBindingNotSupportedHandler;
 
-final class AttestationResponseValidator
+final class AttestationResponseValidator implements ResponseValidatorInterface
 {
     /**
      * @var AuthenticatorAttestationResponseValidator
@@ -68,14 +70,13 @@ final class AttestationResponseValidator
     }
 
     public function check(
-        string $data,
-        PublicKeyCredentialCreationOptions $publicKeyCredentialCreationOptions
+        FidoResponseInterface $fidoResponse
     ): void
     {
         // Public Key Credential Loader
         $publicKeyCredentialLoader = new PublicKeyCredentialLoader($this->attestationObjectLoader, $this->decoder);
         // Load the data
-        $this->publicKeyCredential = $publicKeyCredentialLoader->load($data);
+        $this->publicKeyCredential = $publicKeyCredentialLoader->load($fidoResponse->getData());
         $response = $this->publicKeyCredential->getResponse();
 
         // Check if the response is an Authenticator Attestation Response
@@ -85,7 +86,7 @@ final class AttestationResponseValidator
 
         $symfonyRequest = Request::createFromGlobals();
         $psr7Request = (new DiactorosFactory())->createRequest($symfonyRequest);
-        $this->validator->check($response, $publicKeyCredentialCreationOptions, $psr7Request);
+        $this->validator->check($response, $fidoResponse->getOptions(), $psr7Request);
     }
 
     /**
@@ -139,5 +140,10 @@ final class AttestationResponseValidator
             $tokenBindnigHandler,
             $extensionOutputCheckerHandler
         );
+    }
+
+    public function canCheck(FidoResponseInterface $response): bool
+    {
+        return $response instanceof CreationResponse;
     }
 }

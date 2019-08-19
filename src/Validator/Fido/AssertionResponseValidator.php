@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Validator;
+namespace App\Validator\Fido;
 
 use App\Entity\User;
+use App\Fido\Response\FidoResponseInterface;
+use App\Fido\Response\RequestResponse;
 use App\Repository\PublicKeyCredentialSourceRepository;
 use CBOR\Decoder;
 use CBOR\OtherObject\OtherObjectManager;
@@ -25,7 +27,7 @@ use Cose\Algorithm\Signature\ECDSA;
 use Cose\Algorithm\Signature\RSA;
 use Webauthn\TokenBinding\TokenBindingNotSupportedHandler;
 
-final class AssertionResponseValidator
+final class AssertionResponseValidator implements ResponseValidatorInterface
 {
 
     /**
@@ -58,7 +60,10 @@ final class AssertionResponseValidator
         $this->bootstrap();
     }
 
-    public function check($data, $publicKeyCredentialRequestOptions, User $user)
+    /**
+     * @param FidoResponseInterface|RequestResponse $fidoResponse
+     */
+    public function check(FidoResponseInterface $fidoResponse): void
     {
         // We init the PSR7 Request object
         $symfonyRequest = Request::createFromGlobals();
@@ -67,7 +72,7 @@ final class AssertionResponseValidator
         $publicKeyCredentialLoader = new PublicKeyCredentialLoader($this->attestationObjectLoader, $this->decoder);
 
         // Load the data
-        $publicKeyCredential = $publicKeyCredentialLoader->load($data);
+        $publicKeyCredential = $publicKeyCredentialLoader->load($fidoResponse->getData());
         /** @var AuthenticatorAssertionResponse $response */
         $response = $publicKeyCredential->getResponse();
 
@@ -79,9 +84,9 @@ final class AssertionResponseValidator
         $this->validator->check(
             $publicKeyCredential->getRawId(),
             $response,
-            $publicKeyCredentialRequestOptions,
+            $fidoResponse->getOptions(),
             $psr7Request,
-            $user ? $user->getId()->toString() : null
+            $fidoResponse->getUser() ? $fidoResponse->getUser()->getId()->toString() : null
         );
     }
 
@@ -112,5 +117,10 @@ final class AssertionResponseValidator
             $extensionOutputCheckerHandler,
             $coseAlgorithmManager
         );
+    }
+
+    public function canCheck(FidoResponseInterface $response): bool
+    {
+        return $response instanceof RequestResponse;
     }
 }

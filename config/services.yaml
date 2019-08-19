@@ -25,6 +25,10 @@ services:
         resource: '../src/Fido/CredentialOptionsBuilder'
         tags: ['fido.options_builder']
 
+    App\Validator\Fido\:
+        resource: '../src/Validator/Fido'
+        tags: ['fido.response_validator']
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 

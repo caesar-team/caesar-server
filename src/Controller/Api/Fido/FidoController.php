@@ -6,11 +6,13 @@ namespace App\Controller\Api\Fido;
 
 use App\Controller\AbstractController;
 use App\Entity\User;
+use App\Factory\Validator\FidoResponseValidatorFactory;
 use App\Fido\PublicKeyCredentialOptionsContext;
+use App\Fido\Response\CreationResponse;
+use App\Fido\Response\RequestResponse;
 use App\Repository\PublicKeyCredentialSourceRepository;
 use App\Repository\UserRepository;
-use App\Validator\AssertionResponseValidator;
-use App\Validator\AttestationResponseValidator;
+use App\Validator\Fido\AttestationResponseValidator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Webauthn\PublicKeyCredentialCreationOptions;
@@ -35,7 +37,7 @@ final class FidoController extends AbstractController
      * @return string
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function creationOptions(
+    public function create(
         Request $request,
         PublicKeyCredentialOptionsContext $credentialOptionsContext, UserRepository $userRepository
     )
@@ -71,7 +73,7 @@ final class FidoController extends AbstractController
     public function register(
         Request $request,
         PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository,
-        AttestationResponseValidator $responseValidator
+        FidoResponseValidatorFactory $validatorFactory
     )
     {
         $session = $request->getSession();
@@ -83,13 +85,16 @@ final class FidoController extends AbstractController
         $data = base64_decode($request->query->get('data'));
 
         try {
-            $responseValidator->check($data, $publicKeyCredentialCreationOptions);
+            $response = new CreationResponse($data, $publicKeyCredentialCreationOptions);
+            $validator = $validatorFactory->check($response);
+
+            if ($validator instanceof AttestationResponseValidator) {
+                $publicKeyCredentialSource = $validator->getVerifiedPublicKeyCredentialSource($publicKeyCredentialCreationOptions);
+                $publicKeyCredentialSourceRepository->saveCredentialSource($publicKeyCredentialSource);
+            }
         } catch (\Throwable $exception) {
             $this->redirectToRoute('fido_get_creation_options');
         }
-
-        $publicKeyCredentialSource = $responseValidator->getVerifiedPublicKeyCredentialSource($publicKeyCredentialCreationOptions);
-        $publicKeyCredentialSourceRepository->saveCredentialSource($publicKeyCredentialSource);
 
         return $this->redirectToRoute('fido_login_prepare');
     }
@@ -129,7 +134,7 @@ final class FidoController extends AbstractController
     public function loginCheck(
         Request $request,
         UserRepository $userRepository,
-        AssertionResponseValidator $responseValidator
+        FidoResponseValidatorFactory $validatorFactory
     )
     {
         $session = $request->getSession();
@@ -141,11 +146,13 @@ final class FidoController extends AbstractController
         $user = $userRepository->findOneBy(['email' => 'gribanovskiy.mihail@gmail.com']);
 
         try {
-            $responseValidator->check($data, $publicKeyCredentialRequestOptions, $user);
+            $response = new RequestResponse($data, $publicKeyCredentialRequestOptions, $user);
+            $validatorFactory->check($response);
+            ;
 
             return $this->render('fido/fido_done.html.twig');
         } catch (\Throwable $throwable) {
-            $this->redirectToRoute('fido_get_creation_options');
+            return $this->redirectToRoute('fido_get_creation_options');
         }
     }
 }
