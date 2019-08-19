@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Fido;
+namespace App\Webauthn;
 
 use Webauthn\AuthenticationExtensions\AuthenticationExtension;
 use Webauthn\AuthenticationExtensions\AuthenticationExtensionsClientInputs;

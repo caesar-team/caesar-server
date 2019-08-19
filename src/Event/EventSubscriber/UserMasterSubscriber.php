@@ -28,10 +28,10 @@ class UserMasterSubscriber implements EventSubscriberInterface
         'api_security_2fa_backup_codes',
         'api_srp_update_password',
         'api_user_get_info',
-        'fido_create',
-        'fido_register',
-        'fido_login_prepare',
-        'fido_login_check',
+        'webauthn_create',
+        'webauthn_register',
+        'webauthn_login_prepare',
+        'webauthn_login_check',
     ];
 
     /**

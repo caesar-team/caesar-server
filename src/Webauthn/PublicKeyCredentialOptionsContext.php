@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Fido;
+namespace App\Webauthn;
 
 use App\Entity\User;
-use App\Fido\CredentialOptionsBuilder\OptionsBuilderInterface;
+use App\Webauthn\CredentialOptionsBuilder\OptionsBuilderInterface;
 
 final class PublicKeyCredentialOptionsContext
 {

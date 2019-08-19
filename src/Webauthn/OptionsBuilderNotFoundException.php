@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Fido;
+namespace App\Webauthn;
 
 final class OptionsBuilderNotFoundException extends \LogicException
 {

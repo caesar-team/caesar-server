@@ -31,7 +31,7 @@
                 userHandle: data.response.userHandle ? arrayToBase64String(new Uint8Array(data.response.userHandle)) : null
             }
         };
-    window.location = '{{ path('fido_login_check') }}?data='+btoa(JSON.stringify(publicKeyCredential));
+    window.location = '{{ path('webauthn_login_check') }}?data='+btoa(JSON.stringify(publicKeyCredential));
     }, error => {
         console.log(error); // Example: timeout, interaction refused...
     });

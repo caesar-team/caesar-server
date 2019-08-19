@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 
-namespace App\Fido\CredentialOptionsBuilder;
+namespace App\Webauthn\CredentialOptionsBuilder;
 
 
 use App\Entity\User;
-use App\Fido\PublicKeyCredentialBootstrap;
+use App\Webauthn\PublicKeyCredentialBootstrap;
 
 interface OptionsBuilderInterface
 {

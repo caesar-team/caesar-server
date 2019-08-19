@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Fido\Response;
+namespace App\Webauthn\Response;
 
 use App\Entity\User;
 
-final class CreationResponse implements FidoResponseInterface
+final class CreationResponse implements WebauthnResponseInterface
 {
 
     /**

@@ -21,13 +21,13 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
-    App\Fido\CredentialOptionsBuilder\:
-        resource: '../src/Fido/CredentialOptionsBuilder'
-        tags: ['fido.options_builder']
+    App\Webauthn\CredentialOptionsBuilder\:
+        resource: '../src/Webauthn/CredentialOptionsBuilder'
+        tags: ['webauthn.options_builder']
 
-    App\Validator\Fido\:
-        resource: '../src/Validator/Fido'
-        tags: ['fido.response_validator']
+    App\Validator\Webauthn\:
+        resource: '../src/Validator/Webauthn'
+        tags: ['webauthn.response_validator']
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

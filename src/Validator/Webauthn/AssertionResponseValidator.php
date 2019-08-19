@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Validator\Fido;
+namespace App\Validator\Webauthn;
 
-use App\Fido\Response\FidoResponseInterface;
-use App\Fido\Response\RequestResponse;
-use App\Fido\ResponseValidatorBootstrap;
+use App\Webauthn\Response\WebauthnResponseInterface;
+use App\Webauthn\Response\RequestResponse;
+use App\Webauthn\ResponseValidatorBootstrap;
 use App\Repository\PublicKeyCredentialSourceRepository;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
@@ -37,16 +37,16 @@ final class AssertionResponseValidator implements ResponseValidatorInterface
     }
 
     /**
-     * @param FidoResponseInterface|RequestResponse $fidoResponse
+     * @param WebauthnResponseInterface|RequestResponse $webauthnResponse
      */
-    public function check(FidoResponseInterface $fidoResponse): void
+    public function check(WebauthnResponseInterface $webauthnResponse): void
     {
         // We init the PSR7 Request object
         $psr7Request = $this->createPsr7Request();
 
         $publicKeyCredentialLoader = new PublicKeyCredentialLoader($this->bootstrap->getAttestationObjectLoader(), $this->bootstrap->getDecoder());
         // Load the data
-        $publicKeyCredential = $publicKeyCredentialLoader->load($fidoResponse->getData());
+        $publicKeyCredential = $publicKeyCredentialLoader->load($webauthnResponse->getData());
         /** @var AuthenticatorAssertionResponse $response */
         $response = $publicKeyCredential->getResponse();
 
@@ -60,13 +60,13 @@ final class AssertionResponseValidator implements ResponseValidatorInterface
         $validator->check(
             $publicKeyCredential->getRawId(),
             $response,
-            $fidoResponse->getOptions(),
+            $webauthnResponse->getOptions(),
             $psr7Request,
-            $fidoResponse->getUser() ? $fidoResponse->getUser()->getId()->toString() : null
+            $webauthnResponse->getUser() ? $webauthnResponse->getUser()->getId()->toString() : null
         );
     }
 
-    public function canCheck(FidoResponseInterface $response): bool
+    public function canCheck(WebauthnResponseInterface $response): bool
     {
         return $response instanceof RequestResponse;
     }

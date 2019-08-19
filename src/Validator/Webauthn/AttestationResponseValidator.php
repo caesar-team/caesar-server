@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Validator\Fido;
+namespace App\Validator\Webauthn;
 
 use App\Entity\PublicKeyCredentialSource;
-use App\Fido\Response\CreationResponse;
-use App\Fido\Response\FidoResponseInterface;
-use App\Fido\ResponseValidatorBootstrap;
+use App\Webauthn\Response\CreationResponse;
+use App\Webauthn\Response\WebauthnResponseInterface;
+use App\Webauthn\ResponseValidatorBootstrap;
 use App\Repository\PublicKeyCredentialSourceRepository;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
@@ -45,13 +45,13 @@ final class AttestationResponseValidator implements ResponseValidatorInterface
     }
 
     public function check(
-        FidoResponseInterface $fidoResponse
+        WebauthnResponseInterface $webauthnResponse
     ): void
     {
         // Public Key Credential Loader
         $publicKeyCredentialLoader = new PublicKeyCredentialLoader($this->bootstrap->getAttestationObjectLoader(), $this->bootstrap->getDecoder());
         // Load the data
-        $this->publicKeyCredential = $publicKeyCredentialLoader->load($fidoResponse->getData());
+        $this->publicKeyCredential = $publicKeyCredentialLoader->load($webauthnResponse->getData());
         $response = $this->publicKeyCredential->getResponse();
 
         // Check if the response is an Authenticator Attestation Response
@@ -63,7 +63,7 @@ final class AttestationResponseValidator implements ResponseValidatorInterface
 
         $validator = $this->createValidator();
 
-        $validator->check($response, $fidoResponse->getOptions(), $psr7Request);
+        $validator->check($response, $webauthnResponse->getOptions(), $psr7Request);
     }
 
     /**
@@ -91,7 +91,7 @@ final class AttestationResponseValidator implements ResponseValidatorInterface
         );
     }
 
-    public function canCheck(FidoResponseInterface $response): bool
+    public function canCheck(WebauthnResponseInterface $response): bool
     {
         return $response instanceof CreationResponse;
     }

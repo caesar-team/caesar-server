@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Fido;
+namespace App\Webauthn;
 
 use CBOR\Decoder;
 use CBOR\OtherObject\OtherObjectManager;

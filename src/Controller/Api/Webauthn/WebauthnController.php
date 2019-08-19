@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Controller\Api\Fido;
+namespace App\Controller\Api\Webauthn;
 
 use App\Controller\AbstractController;
 use App\Entity\User;
-use App\Factory\Validator\FidoResponseValidatorFactory;
-use App\Fido\PublicKeyCredentialOptionsContext;
-use App\Fido\Response\CreationResponse;
-use App\Fido\Response\RequestResponse;
+use App\Factory\Validator\WebauthnResponseValidatorFactory;
+use App\Webauthn\PublicKeyCredentialOptionsContext;
+use App\Webauthn\Response\CreationResponse;
+use App\Webauthn\Response\RequestResponse;
 use App\Form\Request\WebAuthnDataType;
 use App\Model\Request\WebAuthnDataRequest;
 use App\Repository\PublicKeyCredentialSourceRepository;
 use App\Security\Authentication\TwoFactorAuthenticationHandler;
-use App\Validator\Fido\AttestationResponseValidator;
+use App\Validator\Webauthn\AttestationResponseValidator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,7 +29,7 @@ use Swagger\Annotations as SWG;
 /**
  * @Route(path="/api/webauthn")
  */
-final class FidoController extends AbstractController
+final class WebauthnController extends AbstractController
 {
     private const SESSION_CREDENTIAL_CREATION_OPTIONS = 'publicKeyCredentialCreationOptions';
     private const SESSION_CREDENTIAL_REQUEST_OPTIONS = 'publicKeyCredentialRequestOptions';
@@ -39,11 +39,11 @@ final class FidoController extends AbstractController
      *
      * @SWG\Response(
      *     response=200,
-     *     description="Fido creation response",
+     *     description="Webauthn creation response",
      *     @Model(type="\Webauthn\PublicKeyCredentialCreationOptions")
      * )
      *
-     * @Route(path="/register", name="fido_create", methods={"GET"})
+     * @Route(path="/register", name="webauthn_create", methods={"GET"})
      * @param Request $request
      * @param PublicKeyCredentialOptionsContext $credentialOptionsContext
      * @return string
@@ -81,7 +81,7 @@ final class FidoController extends AbstractController
      *     description="Register success"
      * )
      *
-     * @Route(path="/register_check", name="fido_register", methods={"POST"})
+     * @Route(path="/register_check", name="webauthn_register", methods={"POST"})
      * @param Request $request
      *
      * @return \Symfony\Component\Form\FormInterface|JsonResponse
@@ -90,7 +90,7 @@ final class FidoController extends AbstractController
     public function registerCheck(
         Request $request,
         PublicKeyCredentialSourceRepository $publicKeyCredentialSourceRepository,
-        FidoResponseValidatorFactory $validatorFactory
+        WebauthnResponseValidatorFactory $validatorFactory
     )
     {
         $session = $request->getSession();
@@ -126,11 +126,11 @@ final class FidoController extends AbstractController
      * @SWG\Tag(name="Webauthn")
      * @SWG\Response(
      *     response=200,
-     *     description="Fido request response",
+     *     description="Webauthn request response",
      *     @Model(type="\Webauthn\PublicKeyCredentialRequestOptions")
      * )
      *
-     * @Route(path="/login", name="fido_login_prepare", methods={"GET"})
+     * @Route(path="/login", name="webauthn_login_prepare", methods={"GET"})
      * @param Request $request
      * @param PublicKeyCredentialOptionsContext $credentialOptionsContext
      * @return Response
@@ -168,11 +168,11 @@ final class FidoController extends AbstractController
      *     description="Login success"
      * )
      *
-     * @Route(path="/login_check", name="fido_login_check", methods={"POST"})
+     * @Route(path="/login_check", name="webauthn_login_check", methods={"POST"})
      */
     public function loginCheck(
         Request $request,
-        FidoResponseValidatorFactory $validatorFactory,
+        WebauthnResponseValidatorFactory $validatorFactory,
         TwoFactorAuthenticationHandler $authenticationHandler,
         TokenStorageInterface $tokenStorage
     )

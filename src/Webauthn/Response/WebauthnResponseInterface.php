@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 
-namespace App\Fido\Response;
+namespace App\Webauthn\Response;
 
-interface FidoResponseInterface
+interface WebauthnResponseInterface
 {
     /**
      * @return string

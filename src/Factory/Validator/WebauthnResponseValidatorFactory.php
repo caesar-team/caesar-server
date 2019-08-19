@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Factory\Validator;
 
-use App\Fido\Response\FidoResponseInterface;
-use App\Validator\Fido\ResponseValidatorInterface;
+use App\Webauthn\Response\WebauthnResponseInterface;
+use App\Validator\Webauthn\ResponseValidatorInterface;
 
-final class FidoResponseValidatorFactory
+final class WebauthnResponseValidatorFactory
 {
     /**
      * @var ResponseValidatorInterface[]
@@ -19,7 +19,7 @@ final class FidoResponseValidatorFactory
         $this->responseValidators = $responseValidators;
     }
 
-    public function check(FidoResponseInterface $response): ?ResponseValidatorInterface
+    public function check(WebauthnResponseInterface $response): ?ResponseValidatorInterface
     {
         foreach ($this->responseValidators as $responseValidator) {
             if ($responseValidator->canCheck($response)) {
