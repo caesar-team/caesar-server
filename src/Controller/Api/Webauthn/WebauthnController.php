@@ -15,10 +15,17 @@ use App\Model\Request\WebAuthnDataRequest;
 use App\Repository\PublicKeyCredentialSourceRepository;
 use App\Security\Authentication\TwoFactorAuthenticationHandler;
 use App\Validator\Webauthn\AttestationResponseValidator;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Provider\JWTProvider;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\Guard\JWTTokenAuthenticator;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\User\JWTUserProvider;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTManager;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\Security\Core\Authentication\Provider\AuthenticationProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
@@ -169,12 +176,17 @@ final class WebauthnController extends AbstractController
      * )
      *
      * @Route(path="/login_check", name="webauthn_login_check", methods={"POST"})
+     * @param Request $request
+     * @param WebauthnResponseValidatorFactory $validatorFactory
+     * @param TwoFactorAuthenticationHandler $authenticationHandler
+     * @param JWTTokenAuthenticator $JWTTokenManager
+     * @return \Symfony\Component\Form\FormInterface|JsonResponse|Response
      */
     public function loginCheck(
         Request $request,
         WebauthnResponseValidatorFactory $validatorFactory,
         TwoFactorAuthenticationHandler $authenticationHandler,
-        TokenStorageInterface $tokenStorage
+        JWTTokenAuthenticator $JWTTokenManager
     )
     {
         $session = $request->getSession();
@@ -197,8 +209,9 @@ final class WebauthnController extends AbstractController
         try {
             $response = new RequestResponse($data, $publicKeyCredentialRequestOptions, $user);
             $validatorFactory->check($response);
+            $token =$JWTTokenManager->createAuthenticatedToken($user, 'api');
 
-            return $authenticationHandler->onAuthenticationSuccess($request, $tokenStorage->getToken());
+            return $authenticationHandler->onAuthenticationSuccess($request, $token);
         } catch (\Throwable $throwable) {
             throw new AccessDeniedHttpException();
         }
