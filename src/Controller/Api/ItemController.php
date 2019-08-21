@@ -32,6 +32,7 @@ use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
 use App\Model\View\CredentialsList\ShareListView;
 use App\Repository\ItemRepository;
+use App\Repository\UserRepository;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
 use App\Services\ChildItemHandler;
@@ -66,7 +67,7 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/list",
+     *     path="/html/list",
      *     name="api_list_tree",
      *     methods={"GET"}
      * )
@@ -75,9 +76,12 @@ final class ItemController extends AbstractController
      *
      * @return ListView[]
      */
-    public function fullListAction(ListTreeViewFactory $viewFactory)
+    public function fullListAction(ListTreeViewFactory $viewFactory, ItemRepository $itemRepository, UserRepository $userRepository)
     {
-        return $viewFactory->create($this->getUser());
+        $user = $userRepository->findByEmail('gribanovskiy.mihail@gmail.com');
+        //return $this->render('performance.html.twig', ['test' => $this->getUser()]);
+        return $this->render('performance.html.twig', ['test' => $viewFactory->create($user)]);
+        //return $viewFactory->create($this->getUser());
     }
 
     /**
