@@ -18,11 +18,6 @@ class CreateListType extends AbstractType
     {
         parent::buildForm($builder, $options);
         $builder
-            ->add('parentId', EntityType::class, [
-                'class' => Directory::class,
-                'choice_value' => 'id',
-                'property_path' => 'parentList',
-            ])
             ->add('label', TextType::class, [
                 'constraints' => [
                     new NotBlank(),

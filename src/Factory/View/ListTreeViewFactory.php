@@ -31,7 +31,7 @@ class ListTreeViewFactory
     {
         return [
             $this->createInboxView($user->getInbox()),
-            $this->createListView($user->getLists()),
+            $this->getChildren($user->getLists()),
             $this->createTrashView($user->getTrash()),
         ];
     }
