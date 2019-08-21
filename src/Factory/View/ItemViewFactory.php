@@ -170,7 +170,6 @@ class ItemViewFactory
 
     /**
      * @param Item $item
-     * @return ChildItemView
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function getSharesCollection(Item $item)
@@ -182,6 +181,9 @@ class ItemViewFactory
 
         $sharedItems = $this->extractChildItemByCause($ownerItem->getSharedItems(), Item::CAUSE_SHARE);
 
+        if (0 === count($sharedItems)) {
+            return null;
+        }
         $item = current($sharedItems);
 
         $user = $this->userRepository->getByItem($item);
