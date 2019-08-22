@@ -172,6 +172,12 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $userGroups;
 
     /**
+     * @var Collection|Item[]
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="owner")
+     */
+    private $ownedItems;
+
+    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -187,6 +193,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->trash = Directory::createTrash();
         $this->userGroups = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
+        $this->ownedItems = new ArrayCollection();
         if (null !== $srp) {
             $this->srp = $srp;
         }
@@ -482,5 +489,23 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function isFullUser(): bool
     {
         return !$this->hasRole(self::ROLE_ANONYMOUS_USER) && !$this->hasRole(self::ROLE_READ_ONLY_USER) ;
+    }
+
+    public function getOwnedItems(): Collection
+    {
+        return $this->ownedItems;
+    }
+
+    public function addOwnedItem(Item $item): void
+    {
+        if (!$this->ownedItems->contains($item)) {
+            $this->ownedItems->add($item);
+            $item->setOwner($this);
+        }
+    }
+
+    public function removeOwnedItem(Item $item): void
+    {
+        $this->ownedItems->removeElement($item);
     }
 }

@@ -87,7 +87,7 @@ class ChildItemHandler
     {
         $items = [];
         foreach ($request->getItems() as $childItem) {
-            $item = new Item();
+            $item = new Item($childItem->getUser());
             $item->setParentList($childItem->getUser()->getInbox());
             $item->setOriginalItem($request->getOriginalItem());
             $item->setSecret($childItem->getSecret());

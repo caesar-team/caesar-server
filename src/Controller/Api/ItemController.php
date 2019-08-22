@@ -8,6 +8,7 @@ use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
+use App\Entity\User;
 use App\Factory\View\BatchListItemViewFactory;
 use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
@@ -32,6 +33,7 @@ use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
 use App\Model\View\CredentialsList\ShareListView;
 use App\Repository\ItemRepository;
+use App\Repository\UserRepository;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
 use App\Services\ChildItemHandler;
@@ -73,9 +75,10 @@ final class ItemController extends AbstractController
      *
      * @param ListTreeViewFactory $viewFactory
      *
-     * @return ListView[]
+     * @return ListView[]|array
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function fullListAction(ListTreeViewFactory $viewFactory)
+    public function fullListAction(ListTreeViewFactory $viewFactory, UserRepository $userRepository)
     {
         return $viewFactory->create($this->getUser());
     }
@@ -256,15 +259,15 @@ final class ItemController extends AbstractController
      * )
      *
      * @param Request $request
-     * @param EntityManagerInterface $manager
      * @param CreatedItemViewFactory $viewFactory
+     * @param UserRepository $userRepository
      *
      * @return CreatedItemView|FormInterface
      * @throws \Exception
      */
-    public function createItemAction(Request $request, EntityManagerInterface $manager, CreatedItemViewFactory $viewFactory)
+    public function createItemAction(Request $request, CreatedItemViewFactory $viewFactory, UserRepository $userRepository)
     {
-        $item = new Item();
+        $item = new Item($this->getUser());
         $form = $this->createForm(CreateItemType::class, $item);
 
         $form->submit($request->request->all());
@@ -273,8 +276,7 @@ final class ItemController extends AbstractController
         }
         $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
 
-        $manager->persist($item);
-        $manager->flush();
+        $userRepository->save($item);
 
         return $viewFactory->create($item);
     }
@@ -949,7 +951,7 @@ final class ItemController extends AbstractController
      * @return ItemView[]|array|FormInterface
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function batchCreate(Request $request, EntityManagerInterface $manager, ItemListViewFactory $viewFactory)
+    public function batchCreate(Request $request, EntityManagerInterface $manager, ItemListViewFactory $viewFactory, UserRepository $userRepository)
     {
         $itemsRequest = new ItemsCollectionRequest();
 
@@ -962,11 +964,11 @@ final class ItemController extends AbstractController
 
         foreach ($itemsRequest->getItems() as $item) {
             $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
+            $item->setOwner($this->getUser());
 
-            $manager->persist($item);
+            $userRepository->save($item);
 
         }
-        $manager->flush();
 
         return $viewFactory->create($itemsRequest->getItems());
     }
