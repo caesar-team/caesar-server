@@ -8,6 +8,7 @@ use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
+use App\Entity\User;
 use App\Factory\View\BatchListItemViewFactory;
 use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
@@ -67,21 +68,19 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/html/list",
+     *     path="/api/list",
      *     name="api_list_tree",
      *     methods={"GET"}
      * )
      *
      * @param ListTreeViewFactory $viewFactory
      *
-     * @return ListView[]
+     * @return ListView[]|array
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function fullListAction(ListTreeViewFactory $viewFactory, ItemRepository $itemRepository, UserRepository $userRepository)
+    public function fullListAction(ListTreeViewFactory $viewFactory, UserRepository $userRepository)
     {
-        $user = $userRepository->findByEmail('gribanovskiy.mihail@gmail.com');
-        //return $this->render('performance.html.twig', ['test' => $this->getUser()]);
-        return $this->render('performance.html.twig', ['test' => $viewFactory->create($user)]);
-        //return $viewFactory->create($this->getUser());
+        return $viewFactory->create($this->getUser());
     }
 
     /**
@@ -260,15 +259,15 @@ final class ItemController extends AbstractController
      * )
      *
      * @param Request $request
-     * @param EntityManagerInterface $manager
      * @param CreatedItemViewFactory $viewFactory
+     * @param UserRepository $userRepository
      *
      * @return CreatedItemView|FormInterface
      * @throws \Exception
      */
-    public function createItemAction(Request $request, EntityManagerInterface $manager, CreatedItemViewFactory $viewFactory)
+    public function createItemAction(Request $request, CreatedItemViewFactory $viewFactory, UserRepository $userRepository)
     {
-        $item = new Item();
+        $item = new Item($this->getUser());
         $form = $this->createForm(CreateItemType::class, $item);
 
         $form->submit($request->request->all());
@@ -277,8 +276,7 @@ final class ItemController extends AbstractController
         }
         $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
 
-        $manager->persist($item);
-        $manager->flush();
+        $userRepository->save($item);
 
         return $viewFactory->create($item);
     }
@@ -953,7 +951,7 @@ final class ItemController extends AbstractController
      * @return ItemView[]|array|FormInterface
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function batchCreate(Request $request, EntityManagerInterface $manager, ItemListViewFactory $viewFactory)
+    public function batchCreate(Request $request, EntityManagerInterface $manager, ItemListViewFactory $viewFactory, UserRepository $userRepository)
     {
         $itemsRequest = new ItemsCollectionRequest();
 
@@ -966,11 +964,11 @@ final class ItemController extends AbstractController
 
         foreach ($itemsRequest->getItems() as $item) {
             $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
+            $item->setOwner($this->getUser());
 
-            $manager->persist($item);
+            $userRepository->save($item);
 
         }
-        $manager->flush();
 
         return $viewFactory->create($itemsRequest->getItems());
     }
