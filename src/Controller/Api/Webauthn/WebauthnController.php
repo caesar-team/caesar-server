@@ -34,7 +34,7 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 
 /**
- * @Route(path="/api/webauthn")
+ * @Route(path="/api/auth/webauthn")
  */
 final class WebauthnController extends AbstractController
 {
