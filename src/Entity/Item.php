@@ -36,7 +36,7 @@ class Item implements ChildItemAwareInterface
     /**
      * @var Directory
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childItems", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childItems", cascade={"persist"}, fetch="EAGER")
      * @ORM\JoinColumn(nullable=false)
      */
     protected $parentList;
@@ -80,7 +80,7 @@ class Item implements ChildItemAwareInterface
     /**
      * @var Item[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="originalItem", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="originalItem", orphanRemoval=true, fetch="EAGER")
      */
     protected $sharedItems;
 
@@ -112,7 +112,7 @@ class Item implements ChildItemAwareInterface
     /**
      * @var ItemUpdate|null
      *
-     * @ORM\OneToOne(targetEntity="App\Entity\ItemUpdate", mappedBy="item", orphanRemoval=true, cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="App\Entity\ItemUpdate", mappedBy="item", orphanRemoval=true, cascade={"persist"}, fetch="EXTRA_LAZY")
      */
     protected $update;
 
@@ -140,16 +140,24 @@ class Item implements ChildItemAwareInterface
     protected $status = self::STATUS_DEFAULT;
 
     /**
+     * @var User|null
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="ownedItems", cascade={"persist"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+    protected $owner;
+
+    /**
      * Item constructor.
      * @throws \Exception
      */
-    public function __construct()
+    public function __construct(?User $user = null)
     {
         $this->id = Uuid::uuid4();
         $this->originalItem = null;
         $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
+        $this->owner = $user;
     }
 
     /**
@@ -399,5 +407,15 @@ class Item implements ChildItemAwareInterface
     public function setPreviousList(?Directory $previousList): void
     {
         $this->previousList = $previousList;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->originalItem ? $this->originalItem->getOwner() : $this->owner;
+    }
+
+    public function setOwner(?User $owner): void
+    {
+        $this->owner = $owner;
     }
 }
