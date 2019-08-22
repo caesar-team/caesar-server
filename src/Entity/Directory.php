@@ -138,6 +138,7 @@ class Directory
                 return $status === $item->getStatus();
             });
         }
+
         return $this->childItems->toArray();
     }
 
