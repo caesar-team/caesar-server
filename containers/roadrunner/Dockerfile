@@ -63,6 +63,5 @@ COPY --chown=www-data:www-data --from=dependencies /var/www/html/vendor /var/www
 COPY containers/roadrunner/symfony.ini /usr/local/etc/php/conf.d
 
 RUN php bin/console assets:install public
-# RUN composer install
 
 ENTRYPOINT ["/usr/local/bin/rr", "serve", "-d", "-c", "/etc/roadrunner/.rr.yaml"]
