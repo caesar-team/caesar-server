@@ -29,11 +29,11 @@ class ListTreeViewFactory
      */
     public function create(User $user): array
     {
-        return [
-            $this->createInboxView($user->getInbox()),
-            $this->createListView($user->getLists()),
-            $this->createTrashView($user->getTrash()),
-        ];
+        $lists = $this->getChildren($user->getLists());
+        array_push($lists, $this->createInboxView($user->getInbox()));
+        array_push($lists, $this->createTrashView($user->getTrash()));
+
+        return $lists;
     }
 
     protected function createInboxView(Directory $inbox)
