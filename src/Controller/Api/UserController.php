@@ -78,7 +78,7 @@ final class UserController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        return $viewFactory->create($user);
+        return $user ? $viewFactory->create($user) : null;
     }
 
     /**

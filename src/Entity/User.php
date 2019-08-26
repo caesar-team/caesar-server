@@ -173,6 +173,12 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $userGroups;
 
     /**
+     * @var Collection|Item[]
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="owner")
+     */
+    private $ownedItems;
+
+    /**
      * @var bool
      */
     private $isTryingRegister = false;
@@ -193,6 +199,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->trash = Directory::createTrash();
         $this->userGroups = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
+        $this->ownedItems = new ArrayCollection();
         if (null !== $srp) {
             $this->srp = $srp;
         }
@@ -509,5 +516,23 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setIsTryingRegister(bool $isTryingRegister): void
     {
         $this->isTryingRegister = $isTryingRegister;
+    }
+
+    public function getOwnedItems(): Collection
+    {
+        return $this->ownedItems;
+    }
+
+    public function addOwnedItem(Item $item): void
+    {
+        if (!$this->ownedItems->contains($item)) {
+            $this->ownedItems->add($item);
+            $item->setOwner($this);
+        }
+    }
+
+    public function removeOwnedItem(Item $item): void
+    {
+        $this->ownedItems->removeElement($item);
     }
 }

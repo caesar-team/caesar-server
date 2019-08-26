@@ -39,7 +39,6 @@ class ItemViewFactory
         $view->lastUpdated = $item->getLastUpdated();
         $view->listId = $item->getParentList()->getId()->toString();
         $view->previousListId = $item->getPreviousList() ? $item->getPreviousList()->getId()->toString() : null;
-        $view->tags = array_map('strval', $item->getTags()->toArray());
 
         $view->secret = $item->getSecret();
         $view->invited = $this->getInvitesCollection($item);
@@ -133,11 +132,7 @@ class ItemViewFactory
      */
     private function getOwner(Item $item): UserView
     {
-        $ownerItem = $item;
-        if (null !== $item->getOriginalItem()) {
-            $ownerItem = $item->getOriginalItem();
-        }
-        $user = $this->userRepository->getByItem($ownerItem);
+        $user = $item->getOwner();
 
         return (new UserViewFactory())->create($user);
     }
@@ -163,14 +158,13 @@ class ItemViewFactory
      */
     private function extractChildItemByCause(\Countable $childItems, string $cause = Item::CAUSE_INVITE): array
     {
-        return array_filter($childItems->toArray(), function(ChildItemAwareInterface $childItem) use ($cause) {
+        return $childItems->filter(function(ChildItemAwareInterface $childItem) use ($cause) {
             return $cause === $childItem->getCause();
-        });
+        })->toArray();
     }
 
     /**
      * @param Item $item
-     * @return array
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function getSharesCollection(Item $item)
@@ -180,22 +174,25 @@ class ItemViewFactory
             $ownerItem = $item->getOriginalItem();
         }
 
-        $shares = [];
         $sharedItems = $this->extractChildItemByCause($ownerItem->getSharedItems(), Item::CAUSE_SHARE);
-        foreach ($sharedItems as $item) {
-            $user = $this->userRepository->getByItem($item);
 
-            $childItemView = new ChildItemView();
-            $childItemView->id = $item->getId()->toString();
-            $childItemView->userId = $user->getId()->toString();
-            $childItemView->email = $user->getEmail();
-            $childItemView->lastUpdated = $item->getLastUpdated();
-            $childItemView->access = $item->getAccess();
-            $childItemView->link = $item->getLink();
-            $childItemView->isAccepted = User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
-            $childItemView->publicKey = $user->getPublicKey();
-            $shares[] = $childItemView;
+        if (0 === count($sharedItems)) {
+            return null;
         }
+        $item = current($sharedItems);
+
+        $user = $this->userRepository->getByItem($item);
+
+        $childItemView = new ChildItemView();
+        $childItemView->id = $item->getId()->toString();
+        $childItemView->userId = $user->getId()->toString();
+        $childItemView->email = $user->getEmail();
+        $childItemView->lastUpdated = $item->getLastUpdated();
+        $childItemView->access = $item->getAccess();
+        $childItemView->link = $item->getLink();
+        $childItemView->isAccepted = User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
+        $childItemView->publicKey = $user->getPublicKey();
+        $shares = $childItemView;
 
         return $shares;
     }
