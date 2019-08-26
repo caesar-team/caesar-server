@@ -6,6 +6,7 @@ namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
 use App\Entity\Directory;
+use App\Entity\User;
 use App\Form\Request\CreateListType;
 use App\Form\Request\EditListType;
 use App\Form\Request\SortListType;
@@ -92,6 +93,9 @@ final class ListController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
+        /** @var User $user */
+        $user = $this->getUser();
+        $list->setParentList($user->getLists());
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $list->getParentList());
 
         $manager->persist($list);
