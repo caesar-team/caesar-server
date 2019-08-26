@@ -50,8 +50,8 @@ FROM base AS dependencies
 USER www-data
 
 # Copy project file
-COPY containers/roadrunner/composer.json .
-COPY containers/roadrunner/composer.lock .
+COPY composer.json .
+COPY composer.lock .
 
 RUN APP_ENV=prod composer install --prefer-dist --no-plugins --no-scripts --no-dev --optimize-autoloader
 
