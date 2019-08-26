@@ -1,10 +1,22 @@
 <?php
+ini_set('display_errors', 'stderr');
 
 use App\Kernel;
 use Symfony\Component\Debug\Debug;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\HttpFoundation\Request;
+use Spiral\Goridge\StreamRelay;
+use Spiral\RoadRunner\PSR7Client;
+use Spiral\RoadRunner\Worker;
+use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
+use Zend\Diactoros\ResponseFactory;
+use Zend\Diactoros\ServerRequestFactory;
+use Zend\Diactoros\StreamFactory;
+use Zend\Diactoros\UploadedFileFactory;
 
+define('STDIN',fopen("php://stdin","r"));
+define('STDOUT',fopen("php://stdout","w"));
 require __DIR__.'/../vendor/autoload.php';
 
 // The check is to ensure we don't use .env in production
@@ -33,7 +45,24 @@ if ($trustedHosts = $_SERVER['TRUSTED_HOSTS'] ?? false) {
 }
 
 $kernel = new Kernel($env, $debug);
-$request = Request::createFromGlobals();
-$response = $kernel->handle($request);
-$response->send();
-$kernel->terminate($request, $response);
+$relay = new StreamRelay(STDIN, STDOUT);
+$psr7 = new PSR7Client(new Worker($relay));
+$httpFoundationFactory = new HttpFoundationFactory();
+$psrHttpFactory = new PsrHttpFactory(
+    new ServerRequestFactory,
+    new StreamFactory,
+    new UploadedFileFactory,
+    new ResponseFactory
+);
+
+while ($req = $psr7->acceptRequest()) {
+    try {
+        $request = $httpFoundationFactory->createRequest($req);
+        $response = $kernel->handle($request);
+        $psr7->respond($psrHttpFactory->createResponse($response));
+        $kernel->terminate($request, $response);
+        $kernel->reboot(null);
+    } catch (\Throwable $e) {
+        $psr7->getWorker()->error((string)$e);
+    }
+}

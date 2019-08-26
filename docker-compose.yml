@@ -1,12 +1,16 @@
 version: '3.2'
 
 services:
-    php:
-        build: .
+    rr:
+        container_name: "rr"
+        build:
+          context: .
+          dockerfile: containers/roadrunner/Dockerfile
+        ports:
+          - 8080:8080
         volumes:
             - .:/var/www/html
-        expose:
-            - 9000
+            - ./etc/roadrunner:/etc/roadrunner
         environment:
             - PARENT_USER_ID
             - APP_ENV
@@ -16,17 +20,6 @@ services:
             - db
             - redis
             - rabbitmq
-        entrypoint:
-            - "./entrypoint.sh"
-    nginx:
-        image: 4xxi/nginx:flex
-        depends_on:
-            - php
-        ports:
-            - "${SERVER_HTTP_PORT}:${SERVER_HTTP_PORT}"
-        volumes:
-            - .:/var/www/html
-            - ./var/log:/var/log/nginx
     db:
         image: "postgres:9"
         ports:
