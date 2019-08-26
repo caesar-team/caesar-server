@@ -59,7 +59,4 @@ COPY containers/roadrunner/symfony.ini /usr/local/etc/php/conf.d
 
 RUN composer install
 
-RUN pwd
-RUN ls -lah
-
 ENTRYPOINT ["/usr/local/bin/rr", "serve", "-d", "-c", "/etc/roadrunner/.rr.yaml"]

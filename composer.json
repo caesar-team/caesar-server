@@ -17,6 +17,7 @@
         "lexik/jwt-authentication-bundle": "2.6.3",
         "nelmio/api-doc-bundle": "3.4.0",
         "nelmio/cors-bundle": "1.5.5",
+        "nyholm/psr7": "^1.2",
         "php-amqplib/rabbitmq-bundle": "1.14.4",
         "php-http/guzzle6-adapter": "1.1.1",
         "php-http/httplug-bundle": "1.15.2",
