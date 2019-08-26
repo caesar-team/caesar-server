@@ -1,4 +1,4 @@
-FROM php:7.3-cli
+FROM php:7.3-cli as base
 RUN mkdir -p /var/www/html /var/www/html/public/static /var/www/html/var/cache /var/www/html/var/logs /var/www/html/var/sessions && chown -R www-data /var/www/html
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -21,9 +21,6 @@ RUN docker-php-ext-install zip bcmath \
 
 RUN pecl install gnupg redis && docker-php-ext-enable redis
 
-#RUN pecl install gnupg redis \
-#    && docker-php-ext-enable redis
-
 # Composer part
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_MEMORY_LIMIT -1
@@ -32,9 +29,6 @@ RUN composer global require hirak/prestissimo  --prefer-dist --no-progress --no-
 
 # Run in production mode
 ENV APP_ENV=prod
-# Copy project file
-COPY containers/roadrunner/composer.json .
-COPY containers/roadrunner/composer.lock .
 
 # Download RoadRunner
 ENV RR_VERSION 1.4.7
@@ -51,12 +45,24 @@ COPY containers/roadrunner/config /etc/roadrunner
 # Set working directory
 WORKDIR /var/www/html
 
+# ---- Dependencies ----
+FROM base AS dependencies
 USER www-data
+
+# Copy project file
+COPY containers/roadrunner/composer.json .
+COPY containers/roadrunner/composer.lock .
+
+RUN APP_ENV=prod composer install --prefer-dist --no-plugins --no-scripts --no-dev --optimize-autoloader
+
+# ---- Release ----
+FROM base AS release
 # copy production vendors
 COPY --chown=www-data:www-data . .
-# COPY --chown=www-data:www-data --from=dependencies /var/www/html/vendor /var/www/html/vendor
+COPY --chown=www-data:www-data --from=dependencies /var/www/html/vendor /var/www/html/vendor
 COPY containers/roadrunner/symfony.ini /usr/local/etc/php/conf.d
 
-RUN composer install
+RUN php bin/console assets:install public
+# RUN composer install
 
 ENTRYPOINT ["/usr/local/bin/rr", "serve", "-d", "-c", "/etc/roadrunner/.rr.yaml"]
