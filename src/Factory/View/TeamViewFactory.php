@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Factory\View;
 
-use App\Entity\Group;
-use App\Model\View\Group\GroupView;
+use App\Entity\Team;
+use App\Model\View\Team\TeamView;
 use App\Model\View\User\UserView;
 
-class GroupViewFactory
+class TeamViewFactory
 {
-    public function createOne(Group $group): GroupView
+    public function createOne(Team $group): TeamView
     {
-        $view = new GroupView();
+        $view = new TeamView();
         $view->id = $group->getId()->toString();
         $view->alias = $group->getAlias();
         $view->users = $this->extractUsers($group);
@@ -22,8 +22,8 @@ class GroupViewFactory
     }
 
     /**
-     * @param array|Group[] $groups
-     * @return GroupView[]
+     * @param array|Team[] $groups
+     * @return TeamView[]
      */
     public function createMany(array $groups): array
     {
@@ -35,10 +35,10 @@ class GroupViewFactory
         return $views;
     }
 
-    private function extractUsers(Group $group): array
+    private function extractUsers(Team $group): array
     {
         $users = [];
-        foreach ($group->getUserGroups() as $userGroup) {
+        foreach ($group->getUserTeams() as $userGroup) {
             $user = $userGroup->getUser();
             $userView = new UserView();
             $userView->id = $user->getId();

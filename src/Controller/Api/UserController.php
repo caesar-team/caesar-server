@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
-use App\Entity\Group;
+use App\Entity\Team;
 use App\Entity\Security\Invitation;
 use App\Entity\Srp;
 use App\Entity\User;
-use App\Entity\UserGroup;
+use App\Entity\UserTeam;
 use App\Factory\View\SecurityBootstrapViewFactory;
 use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
@@ -245,8 +245,8 @@ final class UserController extends AbstractController
 
         if ($user->isFullUser()) {
             $this->removeInvitation($user, $entityManager);
-            $userGroup = $groupManager->findUserGroupByAlias($user, Group::DEFAULT_GROUP_ALIAS);
-            $userGroup->setUserRole(UserGroup::USER_ROLE_MEMBER);
+            $userGroup = $groupManager->findUserGroupByAlias($user, Team::DEFAULT_GROUP_ALIAS);
+            $userGroup->setUserRole(UserTeam::USER_ROLE_MEMBER);
         }
 
         $entityManager->flush();
@@ -316,7 +316,7 @@ final class UserController extends AbstractController
         }
 
         if ($user->isFullUser()) {
-            $groupManager->addGroupToUser($user, UserGroup::USER_ROLE_PRETENDER);
+            $groupManager->addGroupToUser($user, UserTeam::USER_ROLE_PRETENDER);
             $this->removeInvitation($user, $entityManager);
             $invitation = new Invitation();
             $invitation->setHash($user->getEmail());
@@ -567,7 +567,7 @@ final class UserController extends AbstractController
             }
 
             if ($user->isFullUser()) {
-                $groupManager->addGroupToUser($user, UserGroup::USER_ROLE_PRETENDER);
+                $groupManager->addGroupToUser($user, UserTeam::USER_ROLE_PRETENDER);
                 $this->removeInvitation($user, $entityManager);
                 $invitation = new Invitation();
                 $invitation->setHash($user->getEmail());

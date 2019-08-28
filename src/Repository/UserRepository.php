@@ -63,7 +63,7 @@ class UserRepository extends ServiceEntityRepository
     {
         $groups = [];
         foreach ($query->getUserGroups() as $userGroup) {
-            $groups[] = $userGroup->getGroup()->getId();
+            $groups[] = $userGroup->getTeam()->getId();
         }
         $qb = $this->createQueryBuilder('user');
         $qb

@@ -165,9 +165,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $backupCodes = [];
 
     /**
-     * @var UserGroup[]|Collection
+     * @var UserTeam[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="UserGroup", mappedBy="user", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="UserTeam", mappedBy="user", cascade={"persist"}, orphanRemoval=true)
      */
     private $userGroups;
 
@@ -461,14 +461,14 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     }
 
     /**
-     * @return UserGroup[]|Collection
+     * @return UserTeam[]|Collection
      */
     public function getUserGroups(): Collection
     {
         return $this->userGroups;
     }
 
-    public function addUserGroup(UserGroup $userGroup): void
+    public function addUserGroup(UserTeam $userGroup): void
     {
         if (!$this->userGroups->contains($userGroup)) {
             $this->userGroups->add($userGroup);
@@ -476,7 +476,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }
     }
 
-    public function removeUserGroup(UserGroup $userGroup): void
+    public function removeUserGroup(UserTeam $userGroup): void
     {
         $this->userGroups->removeElement($userGroup);
     }
