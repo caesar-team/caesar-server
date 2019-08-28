@@ -50,7 +50,7 @@ class GroupManager
 
     public function findUserGroupByAlias(User $user, string $alias): ?UserTeam
     {
-        foreach ($user->getUserGroups() as $userGroup) {
+        foreach ($user->getUserTeams() as $userGroup) {
             if ($alias === $userGroup->getTeam()->getAlias()) {
                 return $userGroup;
             }

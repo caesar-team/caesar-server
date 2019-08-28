@@ -169,7 +169,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      *
      * @ORM\OneToMany(targetEntity="UserTeam", mappedBy="user", cascade={"persist"}, orphanRemoval=true)
      */
-    private $userGroups;
+    private $userTeams;
 
     /**
      * @var Collection|Item[]
@@ -191,7 +191,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->lists = Directory::createRootList();
         $this->lists->addChildList(Directory::createDefaultList());
         $this->trash = Directory::createTrash();
-        $this->userGroups = new ArrayCollection();
+        $this->userTeams = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
         $this->ownedItems = new ArrayCollection();
         if (null !== $srp) {
@@ -463,27 +463,27 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @return UserTeam[]|Collection
      */
-    public function getUserGroups(): Collection
+    public function getUserTeams(): Collection
     {
-        return $this->userGroups;
+        return $this->userTeams;
     }
 
-    public function addUserGroup(UserTeam $userGroup): void
+    public function addUserTeam(UserTeam $userTeam): void
     {
-        if (!$this->userGroups->contains($userGroup)) {
-            $this->userGroups->add($userGroup);
-            $userGroup->setUser($this);
+        if (!$this->userTeams->contains($userTeam)) {
+            $this->userTeams->add($userTeam);
+            $userTeam->setUser($this);
         }
     }
 
-    public function removeUserGroup(UserTeam $userGroup): void
+    public function removeUserTeam(UserTeam $userTeam): void
     {
-        $this->userGroups->removeElement($userGroup);
+        $this->userTeams->removeElement($userTeam);
     }
 
-    public function setUserGroups($userGroups): void
+    public function setUserTeams($userTeams): void
     {
-        $this->userGroups = $userGroups;
+        $this->userTeams = $userTeams;
     }
 
     public function isFullUser(): bool

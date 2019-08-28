@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controller\Api;
+namespace App\Controller\Api\Team;
 
 use App\Entity\Team;
 use App\Factory\View\TeamViewFactory;
@@ -172,9 +172,9 @@ class TeamController extends AbstractController
             $entityManager->persist($team);
             $entityManager->flush();
         }
-        $groupView = $viewFactory->createOne($team);
+        $teamView = $viewFactory->createOne($team);
 
-        return $groupView;
+        return $teamView;
     }
 
     /**

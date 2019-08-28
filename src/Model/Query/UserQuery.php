@@ -18,7 +18,7 @@ class UserQuery extends AbstractQuery
     /**
      * @var UserTeam[]|ArrayCollection
      */
-    public $userGroups;
+    public $userTeams;
 
     /**
      * @var User
@@ -28,7 +28,7 @@ class UserQuery extends AbstractQuery
     public function __construct(User $user)
     {
         $this->user = $user;
-        $this->userGroups = $user->getUserGroups();
+        $this->userTeams = $user->getUserTeams();
     }
 
     /**
@@ -42,8 +42,8 @@ class UserQuery extends AbstractQuery
     /**
      * @return UserTeam[]
      */
-    public function getUserGroups()
+    public function getUserTeams()
     {
-        return $this->userGroups;
+        return $this->userTeams;
     }
 }
