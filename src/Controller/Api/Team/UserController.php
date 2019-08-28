@@ -9,6 +9,8 @@ use App\Controller\AbstractController;
 use App\Entity\User;
 use App\Model\View\Team\UserTeamView;
 use Symfony\Component\Routing\Annotation\Route;
+use Swagger\Annotations as SWG;
+use Nelmio\ApiDocBundle\Annotation\Model;
 
 /**
  * @Route(path="/api/user/teams")
@@ -16,6 +18,20 @@ use Symfony\Component\Routing\Annotation\Route;
 final class UserController extends AbstractController
 {
     /**
+     * @SWG\Tag(name="User Team")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Teams of user",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="App\Model\View\Team\UserTeamView")
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
      * @Route(path="/", methods={"GET"})
      * @param ViewFactoryContext $viewFactoryContext
      * @return array|UserTeamView[]

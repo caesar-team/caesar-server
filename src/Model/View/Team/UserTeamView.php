@@ -9,11 +9,6 @@ final class UserTeamView
     /**
      * @var string
      */
-    public $userId;
-
-    /**
-     * @var string
-     */
     public $teamId;
 
     /**
