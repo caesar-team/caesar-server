@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Directory;
 use App\Entity\Item;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Model\Query\UserQuery;
 use App\Model\Response\PaginatedList;
@@ -124,5 +125,19 @@ class UserRepository extends ServiceEntityRepository
         $this->_em->flush();
 
         return $item;
+    }
+
+    /**
+     * @param Team $team
+     * @return array|User[]
+     */
+    public function findByTeam(Team $team): array
+    {
+        $qb = $this->createQueryBuilder('user');
+        $qb->innerJoin('user.userTeams', 'userTeams');
+        $qb->where('userTeams.team =:team');
+        $qb->setParameter('team', $team);
+
+        return $qb->getQuery()->getResult();
     }
 }

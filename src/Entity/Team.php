@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
 
 /**
  * Class Group
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\TeamRepository")
  * @ORM\Table(name="groups",
  *    uniqueConstraints={
  *        @UniqueConstraint(name="unique_alias",

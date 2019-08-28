@@ -12,7 +12,7 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
 /**
  * Class UserGroup
  * @ORM\Table(name="user_group")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\UserTeamRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class UserTeam

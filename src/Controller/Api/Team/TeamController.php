@@ -9,6 +9,8 @@ use App\Factory\View\TeamViewFactory;
 use App\Form\Request\Team\CreateTeamType;
 use App\Form\Request\Team\EditTeamType;
 use App\Model\View\Team\TeamView;
+use App\Repository\TeamRepository;
+use App\Repository\UserRepository;
 use App\Security\Voter\TeamVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,6 +21,11 @@ use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 
+/**
+ * @Route(
+ *     path="/api/teams"
+ * )
+ */
 class TeamController extends AbstractController
 {
     /**
@@ -39,7 +46,7 @@ class TeamController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/teams",
+     *     path="/",
      *     name="api_team_create",
      *     methods={"POST"}
      * )
@@ -81,7 +88,7 @@ class TeamController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/teams/{team}",
+     *     path="/{team}",
      *     name="api_team_view",
      *     methods={"GET"}
      * )
@@ -112,20 +119,20 @@ class TeamController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/teams",
+     *     path="/",
      *     name="api_team_list",
      *     methods={"GET"}
      * )
      *
      *
      * @param TeamViewFactory $viewFactory
-     * @param EntityManagerInterface $entityManager
+     * @param TeamRepository $teamRepository
      * @return TeamView[]
      */
-    public function teams(TeamViewFactory $viewFactory, EntityManagerInterface $entityManager)
+    public function teams(TeamViewFactory $viewFactory, TeamRepository $teamRepository)
     {
         $this->denyAccessUnlessGranted(TeamVoter::TEAM_VIEW, $this->getUser());
-        $teams = $entityManager->getRepository(Team::class)->findAll();
+        $teams = $teamRepository->findByUser($this->getUser());
         $teamView = $viewFactory->createMany($teams);
 
         return $teamView;
@@ -150,7 +157,7 @@ class TeamController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/teams/{team}",
+     *     path="/{team}",
      *     name="api_team_edit",
      *     methods={"PATCH"}
      * )
@@ -190,7 +197,7 @@ class TeamController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/teams/{team}",
+     *     path="/{team}",
      *     name="api__team_delete",
      *     methods={"DELETE"}
      * )
@@ -206,5 +213,20 @@ class TeamController extends AbstractController
         $entityManager->remove($team);
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * @Route(
+     *     path="/{team}/members",
+     *     methods={"GET"}
+     * )
+     * @param Team $team
+     * @param UserRepository $userRepository
+     */
+    public function members(Team $team, UserRepository $userRepository)
+    {
+        $members = $userRepository->findByTeam($team);
+
+        dump($members); die;
     }
 }

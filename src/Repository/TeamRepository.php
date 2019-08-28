@@ -16,4 +16,18 @@ final class TeamRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Team::class);
     }
+
+    /**
+     * @param User $user
+     * @return array|Team[]
+     */
+    public function findByUser(User $user): array
+    {
+        $qb = $this->createQueryBuilder('team');
+        $qb->join('team.userTeams', 'userTeams');
+        $qb->where('userTeams.user =:user');
+        $qb->setParameter('user', $user);
+
+        return $qb->getQuery()->getResult();
+    }
 }
