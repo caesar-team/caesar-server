@@ -50,7 +50,7 @@ class TeamVoter extends Voter
     {
         if (in_array($attribute, [self::TEAM_CREATE, self::TEAM_EDIT, self::TEAM_VIEW])) {
 
-            return false;
+            return true;
         }
 
         throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');
