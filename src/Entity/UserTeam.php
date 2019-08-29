@@ -11,10 +11,11 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 /**
  * Class UserGroup
+ * @ORM\Table(name="user_group")
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
-class UserGroup
+class UserTeam
 {
     use TimestampableEntity;
 
@@ -32,17 +33,17 @@ class UserGroup
     private $id;
 
     /**
-     * @var Group
+     * @var Team
      *
-     * @ORM\ManyToOne(targetEntity="Group", inversedBy="userGroups", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Team", inversedBy="userTeams", cascade={"persist"})
      * @ORM\JoinColumn(name="group_id", columnDefinition="id", nullable=false, onDelete="CASCADE")
      */
-    private $group;
+    private $team;
 
     /**
      * @var User
      *
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="userGroups")
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="userTeams")
      * @ORM\JoinColumn(name="user_id", nullable=false, onDelete="CASCADE")
      */
     private $user;
@@ -63,19 +64,19 @@ class UserGroup
     }
 
     /**
-     * @return Group
+     * @return Team
      */
-    public function getGroup(): Group
+    public function getTeam(): Team
     {
-        return $this->group;
+        return $this->team;
     }
 
     /**
-     * @param Group $group
+     * @param Team $team
      */
-    public function setGroup(Group $group): void
+    public function setTeam(Team $team): void
     {
-        $this->group = $group;
+        $this->team = $team;
     }
 
     /**

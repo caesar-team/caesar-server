@@ -32,28 +32,10 @@ security:
             anonymous: false
             context: admin
             provider: fos.user.provider
-        srp:
-            pattern: ^/api/auth/srpp
-            stateless: true
-            context: srp
-            anonymous: true
-            provider:  fos.user.provider
-            guard:
-                authenticators:
-                    - lexik_jwt_authentication.jwt_token_authenticator
-        user_bootstrap:
-            pattern: ^/api/user/security/bootstrap
-            stateless: true
-            context: user_bootstrap
-            anonymous: ~
-            provider:  fos.user.provider
-            guard:
-                authenticators:
-                    - lexik_jwt_authentication.jwt_token_authenticator
         api:
             pattern: ^/api
             provider: fos.user.provider
-            stateless: true
+            stateless: false
             anonymous: ~
             two_factor:
                 check_path: /api/auth/2fa

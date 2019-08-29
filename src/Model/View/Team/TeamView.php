@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Model\View\Group;
+namespace App\Model\View\Team;
 
 use App\Model\View\User\UserView;
 
-class GroupView
+class TeamView
 {
     /**
      * @var string

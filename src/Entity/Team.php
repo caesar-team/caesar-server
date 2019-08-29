@@ -23,7 +23,7 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
  *    }
  * )
  */
-class Group
+class Team
 {
     const DEFAULT_GROUP_ALIAS = 'default';
     const DEFAULT_GROUP_TITLE = 'Default';
@@ -36,11 +36,11 @@ class Group
     private $id;
 
     /**
-     * @var UserGroup[]|Collection
+     * @var UserTeam[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="UserGroup", mappedBy="group", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="UserTeam", mappedBy="team", cascade={"persist"}, orphanRemoval=true)
      */
-    private $userGroups;
+    private $userTeams;
 
     /**
      * @var string
@@ -61,33 +61,33 @@ class Group
     public function __construct()
     {
         $this->id = Uuid::uuid4();
-        $this->userGroups = new ArrayCollection();
+        $this->userTeams = new ArrayCollection();
     }
 
     /**
-     * @return UserGroup[]|Collection
+     * @return UserTeam[]|Collection
      */
-    public function getUserGroups(): Collection
+    public function getUserTeams(): Collection
     {
-        return $this->userGroups;
+        return $this->userTeams;
     }
 
-    public function addUserGroup(UserGroup $userGroup): void
+    public function addUserTeam(UserTeam $userTeam): void
     {
-        if (!$this->userGroups->contains($userGroup)) {
-            $this->userGroups->add($userGroup);
-            $userGroup->setGroup($this);
+        if (!$this->userTeams->contains($userTeam)) {
+            $this->userTeams->add($userTeam);
+            $userTeam->setTeam($this);
         }
     }
 
-    public function removeUserGroup(UserGroup $userGroup): void
+    public function removeUserTeam(UserTeam $userTeam): void
     {
-        $this->userGroups->removeElement($userGroup);
+        $this->userTeams->removeElement($userTeam);
     }
 
-    public function setUserGroups($userGroups): void
+    public function setUserTeams($userTeams): void
     {
-        $this->userGroups = $userGroups;
+        $this->userTeams = $userTeams;
     }
 
     /**

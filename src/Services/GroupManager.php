@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Entity\Group;
+use App\Entity\Team;
 use App\Entity\User;
-use App\Entity\UserGroup;
+use App\Entity\UserTeam;
 use Doctrine\ORM\EntityManagerInterface;
 
 class GroupManager
@@ -23,23 +23,23 @@ class GroupManager
 
     /**
      * @param User $user
-     * @param Group|null $group
+     * @param Team|null $group
      * @param string $role
      * @throws \Exception
      */
-    public function addGroupToUser(User $user, string $role = UserGroup::DEFAULT_USER_ROLE, Group $group = null)
+    public function addGroupToUser(User $user, string $role = UserTeam::DEFAULT_USER_ROLE, Team $group = null)
     {
         $group = $group ?: $this->findDefaultGroup();
-        $userGroup = new UserGroup();
-        $userGroup->setGroup($group);
+        $userGroup = new UserTeam();
+        $userGroup->setTeam($group);
         $userGroup->setUser($user);
         $userGroup->setUserRole($role);
         $this->manager->persist($userGroup);
     }
 
-    private function findDefaultGroup(): Group
+    private function findDefaultGroup(): Team
     {
-        $group = $this->manager->getRepository(Group::class)->findOneBy(['alias' => Group::DEFAULT_GROUP_ALIAS]);
+        $group = $this->manager->getRepository(Team::class)->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
 
         if (is_null($group)) {
             throw new \LogicException('At least one group must exists');
@@ -48,10 +48,10 @@ class GroupManager
         return $group;
     }
 
-    public function findUserGroupByAlias(User $user, string $alias): ?UserGroup
+    public function findUserGroupByAlias(User $user, string $alias): ?UserTeam
     {
-        foreach ($user->getUserGroups() as $userGroup) {
-            if ($alias === $userGroup->getGroup()->getAlias()) {
+        foreach ($user->getUserTeams() as $userGroup) {
+            if ($alias === $userGroup->getTeam()->getAlias()) {
                 return $userGroup;
             }
         }

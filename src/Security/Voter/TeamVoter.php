@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Security\Voter;
 
 
-use App\Entity\Group;
+use App\Entity\Team;
 use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-class GroupVoter extends Voter
+class TeamVoter extends Voter
 {
-    const GROUP_CREATE = 'create';
-    const GROUP_EDIT   = 'edit';
-    const GROUP_VIEW   = 'view';
+    const TEAM_CREATE = 'create';
+    const TEAM_EDIT   = 'edit';
+    const TEAM_VIEW   = 'view';
     /**
      * Determines if the attribute and subject are supported by this voter.
      *
@@ -25,7 +25,7 @@ class GroupVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::GROUP_CREATE, self::GROUP_EDIT, self::GROUP_VIEW])) {
+        if (!in_array($attribute, [self::TEAM_CREATE, self::TEAM_EDIT, self::TEAM_VIEW])) {
             return false;
         }
 
@@ -41,14 +41,14 @@ class GroupVoter extends Voter
      * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
      *
      * @param string $attribute
-     * @param Group $subject
+     * @param Team $subject
      * @param TokenInterface $token
      *
      * @return bool
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
-        if (in_array($attribute, [self::GROUP_CREATE, self::GROUP_EDIT, self::GROUP_VIEW])) {
+        if (in_array($attribute, [self::TEAM_CREATE, self::TEAM_EDIT, self::TEAM_VIEW])) {
 
             return false;
         }
