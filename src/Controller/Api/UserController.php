@@ -584,6 +584,27 @@ final class UserController extends AbstractController
     }
 
     /**
+     * @SWG\Tag(name="User")
+     * @SWG\Parameter(
+     *     name="ids",
+     *     in="query",
+     *     description="users ids",
+     *     type="array",
+     *     @Model(type="App\Model\View\User\UserView")
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="List of users",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="App\Model\View\User\UserView")
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
      * @Route(
      *     path="/api/users",
      *     methods={"GET"}
