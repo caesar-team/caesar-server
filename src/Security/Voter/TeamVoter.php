@@ -15,6 +15,9 @@ class TeamVoter extends Voter
     const TEAM_CREATE = 'create';
     const TEAM_EDIT   = 'edit';
     const TEAM_VIEW   = 'view';
+    const TEAM_ADD_MEMBER = 'add_member';
+    const TEAM_REMOVE_MEMBER = 'remove_member';
+
     /**
      * Determines if the attribute and subject are supported by this voter.
      *
@@ -41,14 +44,14 @@ class TeamVoter extends Voter
      * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
      *
      * @param string $attribute
-     * @param Team $subject
+     * @param User $subject
      * @param TokenInterface $token
      *
      * @return bool
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
-        if (in_array($attribute, [self::TEAM_CREATE, self::TEAM_EDIT, self::TEAM_VIEW])) {
+        if (in_array($attribute, [self::TEAM_CREATE, self::TEAM_EDIT, self::TEAM_VIEW, self::TEAM_ADD_MEMBER])) {
 
             return false;
         }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Team;
+use App\Entity\User;
 use App\Entity\UserTeam;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -35,5 +36,31 @@ final class UserTeamRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    public function remove(UserTeam $userTeam): void
+    {
+        $this->_em->remove($userTeam);
+        $this->_em->flush();
+    }
+
+    /**
+     * @param User $user
+     * @param Team $team
+     * @return UserTeam|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function findOneByUserAndTeam(User $user, Team $team): ?UserTeam
+    {
+        $qb = $this->createQueryBuilder('userTeam');
+        $qb->where('userTeam.user =:user');
+        $qb->andWhere('userTeam.team =:team');
+        $qb->andWhere('userTeam.userRole <> :role');
+        $qb->setParameter('user', $user);
+        $qb->setParameter('team', $team);
+        $qb->setParameter('role', UserTeam::USER_ROLE_ADMIN);
+        $qb->setMaxResults(1);
+
+        return $qb->getQuery()->getOneOrNullResult();
     }
 }
