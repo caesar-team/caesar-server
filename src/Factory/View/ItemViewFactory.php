@@ -45,7 +45,7 @@ class ItemViewFactory
         $view->invited = $this->getInvitesCollection($item);
         $view->shared = $this->getSharesCollection($item);
         $view->update = $this->getUpdateView($item->getUpdate());
-        $view->owner = $this->getOwner($item);
+        $view->ownerId = $item->getOwner()->getId()->toString();
         $view->favorite = $item->isFavorite();
         $view->sort = $item->getSort();
         $view->originalItemId = $item->getOriginalItem()?$item->getOriginalItem()->getId()->toString():null;

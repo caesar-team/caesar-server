@@ -67,9 +67,9 @@ class ItemView extends NodeView
      */
     public $favorite = false;
     /**
-     * @var UserView
+     * @var string
      */
-    public $owner;
+    public $ownerId;
 
     /**
      * @var int
