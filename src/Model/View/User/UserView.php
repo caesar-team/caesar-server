@@ -44,7 +44,7 @@ class UserView
     public $publicKey;
 
     /**
-     * @var array
+     * @var string[]
      */
     public $teamsIds = [];
 }
