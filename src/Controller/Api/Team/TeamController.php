@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Team;
 
+use App\Context\ViewFactoryContext;
 use App\Entity\Team;
 use App\Factory\View\TeamViewFactory;
 use App\Form\Request\Team\CreateTeamType;
 use App\Form\Request\Team\EditTeamType;
 use App\Model\View\Team\TeamView;
 use App\Repository\TeamRepository;
-use App\Repository\UserRepository;
+use App\Repository\UserTeamRepository;
 use App\Security\Voter\TeamVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -216,17 +217,34 @@ class TeamController extends AbstractController
     }
 
     /**
+     * @SWG\Tag(name="Team")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Team members",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="App\Model\View\Team\MemberView")
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
      * @Route(
      *     path="/{team}/members",
      *     methods={"GET"}
      * )
      * @param Team $team
-     * @param UserRepository $userRepository
+     * @param UserTeamRepository $userTeamRepository
+     * @param ViewFactoryContext $viewFactoryContext
+     * @return mixed
      */
-    public function members(Team $team, UserRepository $userRepository)
+    public function members(Team $team, UserTeamRepository $userTeamRepository, ViewFactoryContext $viewFactoryContext)
     {
-        $members = $userRepository->findByTeam($team);
+        $usersTeams = $userTeamRepository->findByTeam($team);
 
-        dump($members); die;
+        return $viewFactoryContext->viewList($usersTeams);
     }
 }
