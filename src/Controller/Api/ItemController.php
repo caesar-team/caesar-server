@@ -76,9 +76,8 @@ final class ItemController extends AbstractController
      * @param ListTreeViewFactory $viewFactory
      *
      * @return ListView[]|array
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function fullListAction(ListTreeViewFactory $viewFactory, UserRepository $userRepository)
+    public function fullListAction(ListTreeViewFactory $viewFactory)
     {
         return $viewFactory->create($this->getUser());
     }
