@@ -236,14 +236,16 @@ class TeamController extends AbstractController
      *     path="/{team}/members",
      *     methods={"GET"}
      * )
+     * @param Request $request
      * @param Team $team
      * @param UserTeamRepository $userTeamRepository
      * @param ViewFactoryContext $viewFactoryContext
      * @return mixed
      */
-    public function members(Team $team, UserTeamRepository $userTeamRepository, ViewFactoryContext $viewFactoryContext)
+    public function members(Request $request, Team $team, UserTeamRepository $userTeamRepository, ViewFactoryContext $viewFactoryContext)
     {
-        $usersTeams = $userTeamRepository->findByTeam($team);
+        $ids = $request->query->get('ids');
+        $usersTeams = $userTeamRepository->findByTeam($team, $ids);
 
         return $viewFactoryContext->viewList($usersTeams);
     }
