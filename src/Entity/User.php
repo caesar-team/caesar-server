@@ -508,4 +508,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     {
         $this->ownedItems->removeElement($item);
     }
+
+    public function getTeamsIds(): array
+    {
+        return array_map(function (UserTeam $userTeam){
+            return $userTeam->getId()->toString();
+        }, $this->userTeams->toArray());
+    }
 }

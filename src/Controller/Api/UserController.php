@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
 use App\Entity\Team;
 use App\Entity\Security\Invitation;
@@ -31,7 +32,6 @@ use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
-use App\Security\AuthorizationManager\InvitationEncoder;
 use App\Services\GroupManager;
 use App\Services\InvitationManager;
 use App\Services\Messenger;
@@ -581,6 +581,25 @@ final class UserController extends AbstractController
         $entityManager->flush();
 
         return ["users" => $users];
+    }
+
+    /**
+     * @Route(
+     *     path="/api/users",
+     *     methods={"GET"}
+     * )
+     * @param Request $request
+     * @param UserRepository $userRepository
+     * @param ViewFactoryContext $viewFactoryContext
+     * @return UserView[]
+     */
+    public function users(Request $request, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext): array
+    {
+        $ids = $request->query->get('ids', []);
+
+        $users = $userRepository->findByIds($ids);
+
+        return $viewFactoryContext->viewList($users);
     }
 
     private function setFlowStatus(string $currentFlowStatus): string

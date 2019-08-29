@@ -140,4 +140,17 @@ class UserRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * @param array $ids
+     * @return array|User[]
+     */
+    public function findByIds(array $ids): array
+    {
+        $qb = $this->createQueryBuilder('user');
+        $qb->where('user.id IN(:ids)');
+        $qb->setParameter('ids', $ids);
+
+        return $qb->getQuery()->getResult();
+    }
 }
