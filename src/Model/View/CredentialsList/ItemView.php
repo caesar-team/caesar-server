@@ -25,7 +25,7 @@ class ItemView extends NodeView
     public $secret;
 
     /**
-     * @var ChildItemView[]
+     * @var InviteItemView[]
      */
     public $invited;
 

@@ -8,6 +8,7 @@ use App\Entity\Item;
 use App\Entity\ItemUpdate;
 use App\Entity\User;
 use App\Model\View\CredentialsList\ChildItemView;
+use App\Model\View\CredentialsList\InviteItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
 use App\Model\View\User\UserView;
@@ -113,11 +114,9 @@ class ItemViewFactory
         foreach ($sharedItems as $childItem) {
             $user = $this->userRepository->getByItem($childItem);
 
-            $childItemView = new ChildItemView();
+            $childItemView = new InviteItemView();
             $childItemView->id = $childItem->getId()->toString();
             $childItemView->userId = $user->getId()->toString();
-            $childItemView->email = $user->getEmail();
-            $childItemView->lastUpdated = $childItem->getLastUpdated();
             $childItemView->access = $childItem->getAccess();
             $children[] = $childItemView;
         }
