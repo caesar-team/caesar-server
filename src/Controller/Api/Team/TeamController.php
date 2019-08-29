@@ -9,6 +9,7 @@ use App\Entity\Team;
 use App\Factory\View\TeamViewFactory;
 use App\Form\Request\Team\CreateTeamType;
 use App\Form\Request\Team\EditTeamType;
+use App\Model\View\Team\MemberView;
 use App\Model\View\Team\TeamView;
 use App\Repository\TeamRepository;
 use App\Repository\UserTeamRepository;
@@ -239,14 +240,13 @@ class TeamController extends AbstractController
      * @param Request $request
      * @param Team $team
      * @param UserTeamRepository $userTeamRepository
-     * @param ViewFactoryContext $viewFactoryContext
      * @return mixed
      */
-    public function members(Request $request, Team $team, UserTeamRepository $userTeamRepository, ViewFactoryContext $viewFactoryContext)
+    public function members(Request $request, Team $team, UserTeamRepository $userTeamRepository)
     {
-        $ids = $request->query->get('ids');
-        $usersTeams = $userTeamRepository->findByTeam($team, $ids);
+        $ids = $request->query->get('ids', []);
+        $usersTeams = $userTeamRepository->findMembers($team, $ids);
 
-        return $viewFactoryContext->viewList($usersTeams);
+        return MemberView::createMany($usersTeams);
     }
 }

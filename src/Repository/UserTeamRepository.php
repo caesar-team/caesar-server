@@ -21,11 +21,13 @@ final class UserTeamRepository extends ServiceEntityRepository
      * @param array $ids
      * @return array|UserTeam[]
      */
-    public function findByTeam(Team $team, array $ids = []): array
+    public function findMembers(Team $team, array $ids = []): array
     {
         $qb = $this->createQueryBuilder('userTeam');
         $qb->where('userTeam.team =:team');
+        $qb->andWhere('userTeam.userRole =:member');
         $qb->setParameter('team', $team);
+        $qb->setParameter('member', UserTeam::USER_ROLE_MEMBER);
 
         if (0 < count($ids)) {
             $qb->andWhere('userTeam.user IN(:ids)');

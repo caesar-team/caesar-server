@@ -12,9 +12,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 
-/**
- * @Route(path="/api/user/teams")
- */
 final class UserController extends AbstractController
 {
     /**
@@ -32,7 +29,7 @@ final class UserController extends AbstractController
      *     response=401,
      *     description="Unauthorized"
      * )
-     * @Route(path="/", methods={"GET"})
+     * @Route(path="/api/user/teams", methods={"GET"})
      * @param ViewFactoryContext $viewFactoryContext
      * @return array|UserTeamView[]
      */
