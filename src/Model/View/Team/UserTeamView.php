@@ -9,7 +9,7 @@ final class UserTeamView
     /**
      * @var string
      */
-    public $teamId;
+    public $id;
 
     /**
      * @var string
@@ -35,4 +35,9 @@ final class UserTeamView
      * @var \DateTime
      */
     public $updatedAt;
+
+    /**
+     * @var string
+     */
+    public $icon;
 }
