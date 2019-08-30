@@ -32,7 +32,7 @@ use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
-use App\Services\GroupManager;
+use App\Services\TeamManager;
 use App\Services\InvitationManager;
 use App\Services\Messenger;
 use Doctrine\ORM\EntityManagerInterface;
@@ -219,11 +219,11 @@ final class UserController extends AbstractController
      * @param Request $request
      * @param EntityManagerInterface $entityManager
      *
-     * @param GroupManager $groupManager
+     * @param TeamManager $groupManager
      * @return FormInterface|null
      * @throws \Exception
      */
-    public function saveKeysAction(Request $request, EntityManagerInterface $entityManager, GroupManager $groupManager)
+    public function saveKeysAction(Request $request, EntityManagerInterface $entityManager, TeamManager $groupManager)
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -245,7 +245,7 @@ final class UserController extends AbstractController
 
         if ($user->isFullUser()) {
             $this->removeInvitation($user, $entityManager);
-            $userGroup = $groupManager->findUserGroupByAlias($user, Team::DEFAULT_GROUP_ALIAS);
+            $userGroup = $groupManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
             $userGroup->setUserRole(UserTeam::USER_ROLE_MEMBER);
         }
 
@@ -289,7 +289,7 @@ final class UserController extends AbstractController
      * @param UserRepository $userRepository
      * @param EntityManagerInterface $entityManager
      *
-     * @param GroupManager $groupManager
+     * @param TeamManager $groupManager
      * @return array|FormInterface
      * @throws \Exception
      */
@@ -297,7 +297,7 @@ final class UserController extends AbstractController
         Request $request,
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,
-        GroupManager $groupManager
+        TeamManager $groupManager
     )
     {
         /** @var User $user */
@@ -316,7 +316,7 @@ final class UserController extends AbstractController
         }
 
         if ($user->isFullUser()) {
-            $groupManager->addGroupToUser($user, UserTeam::USER_ROLE_PRETENDER);
+            $groupManager->addTeamToUser($user, UserTeam::USER_ROLE_PRETENDER);
             $this->removeInvitation($user, $entityManager);
             $invitation = new Invitation();
             $invitation->setHash($user->getEmail());
@@ -553,7 +553,7 @@ final class UserController extends AbstractController
     public function batchCreateUser(
         Request $request,
         EntityManagerInterface $entityManager,
-        GroupManager $groupManager
+        TeamManager $groupManager
     )
     {
         $requestUsers = $request->request->get('users');
@@ -567,7 +567,7 @@ final class UserController extends AbstractController
             }
 
             if ($user->isFullUser()) {
-                $groupManager->addGroupToUser($user, UserTeam::USER_ROLE_PRETENDER);
+                $groupManager->addTeamToUser($user, UserTeam::USER_ROLE_PRETENDER);
                 $this->removeInvitation($user, $entityManager);
                 $invitation = new Invitation();
                 $invitation->setHash($user->getEmail());

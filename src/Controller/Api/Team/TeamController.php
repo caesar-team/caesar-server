@@ -19,8 +19,10 @@ use App\Repository\TeamRepository;
 use App\Repository\UserTeamRepository;
 use App\Security\Voter\TeamVoter;
 use App\Security\Voter\UserTeamVoter;
+use App\Services\TeamManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -54,7 +56,6 @@ class TeamController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/",
      *     name="api_team_create",
      *     methods={"POST"}
      * )
@@ -63,20 +64,24 @@ class TeamController extends AbstractController
      * @param Request $request
      * @param TeamViewFactory $viewFactory
      * @param EntityManagerInterface $entityManager
-     * @return TeamView
+     * @param TeamManager $teamManager
+     * @return TeamView|FormInterface
      * @throws \Exception
      */
-    public  function create(Request $request, TeamViewFactory $viewFactory, EntityManagerInterface $entityManager): TeamView
+    public  function create(Request $request, TeamViewFactory $viewFactory, EntityManagerInterface $entityManager, TeamManager $teamManager)
     {
         $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $this->getUser());
 
         $team = new Team();
         $form = $this->createForm(CreateTeamType::class, $team);
         $form->submit($request->request->all());
-        if ($form->isValid()) {
-            $entityManager->persist($team);
-            $entityManager->flush();
+        if (!$form->isValid()) {
+            return $form;
         }
+        $entityManager->persist($team);
+        $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
+        $entityManager->flush();
+
         $teamView = $viewFactory->createOne($team);
 
         return $teamView;
@@ -286,7 +291,7 @@ class TeamController extends AbstractController
      * )
      * @param Request $request
      * @param EntityManagerInterface $entityManager
-     * @return MemberView|\Symfony\Component\Form\FormInterface
+     * @return MemberView|FormInterface
      * @throws \Exception
      */
     public function addMember(Request $request, EntityManagerInterface $entityManager)

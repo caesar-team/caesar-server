@@ -61,11 +61,17 @@ class UserTeam
 
     /**
      * UserGroup constructor.
+     * @param User $user
+     * @param Team $team
+     * @param string $userRole
      * @throws \Exception
      */
-    public function __construct()
+    public function __construct(?User $user = null, ?Team $team = null, string $userRole = self::USER_ROLE_MEMBER)
     {
         $this->id = Uuid::uuid4();
+        $this->user = $user;
+        $this->team = $team;
+        $this->userRole = $userRole;
     }
 
     /**
