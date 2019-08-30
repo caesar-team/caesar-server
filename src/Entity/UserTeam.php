@@ -24,6 +24,11 @@ class UserTeam
     const USER_ROLE_ADMIN = 'admin';
     const USER_ROLE_GUEST = 'guest';
     const USER_ROLE_PRETENDER = 'pretender';
+    const ROLES =  [
+        self::USER_ROLE_MEMBER,
+        self::USER_ROLE_ADMIN,
+        self::USER_ROLE_GUEST,
+    ];
     /**
      * @var UuidInterface
      *
