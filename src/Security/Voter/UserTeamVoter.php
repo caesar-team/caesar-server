@@ -4,17 +4,34 @@ declare(strict_types=1);
 
 namespace App\Security\Voter;
 
-
 use App\Entity\Team;
 use App\Entity\User;
+use App\Repository\UserTeamRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use Symfony\Component\Security\Core\Security;
 
-class TeamVoter extends Voter
+final class UserTeamVoter extends Voter
 {
-    const TEAM_CREATE = 'create';
-    const TEAM_EDIT   = 'edit';
-    const TEAM_VIEW   = 'view';
+
+    const USER_TEAM_LEAVE = 'leave';
+    const USER_TEAM_EDIT   = 'edit';
+    const USER_TEAM_VIEW   = 'view';
+    /**
+     * @var Security
+     */
+    private $security;
+    /**
+     * @var UserTeamRepository
+     */
+    private $userTeamRepository;
+
+    public function __construct(Security $security, UserTeamRepository $userTeamRepository)
+    {
+        $this->security = $security;
+        $this->userTeamRepository = $userTeamRepository;
+    }
+
     /**
      * Determines if the attribute and subject are supported by this voter.
      *
@@ -25,11 +42,11 @@ class TeamVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::TEAM_CREATE, self::TEAM_EDIT, self::TEAM_VIEW])) {
+        if (!in_array($attribute, [self::USER_TEAM_LEAVE, self::USER_TEAM_EDIT, self::USER_TEAM_VIEW])) {
             return false;
         }
 
-        if (!$subject instanceof User) {
+        if (!$subject instanceof Team) {
             return false;
         }
 
@@ -41,20 +58,27 @@ class TeamVoter extends Voter
      * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
      *
      * @param string $attribute
-     * @param User $subject
+     * @param Team $subject
      * @param TokenInterface $token
      *
      * @return bool
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
-        if (!in_array($attribute, [self::TEAM_CREATE, self::TEAM_EDIT, self::TEAM_VIEW])) {
+        $user = $this->security->getUser();
+        if (!$user instanceof User) {
             return false;
         }
 
+        $teamMember = $this->userTeamRepository->findOneByTeamAndUser();
+
         switch ($attribute) {
-            case self::TEAM_CREATE:
-                return $subject->hasRole(User::ROLE_ADMIN) || $subject->hasRole(User::ROLE_SUPER_ADMIN);
+            case self::USER_TEAM_LEAVE:
+                break;
+            case self::USER_TEAM_EDIT:
+                break;
+            case self::USER_TEAM_VIEW:
+                break;
             default:
                 return false;
         }
