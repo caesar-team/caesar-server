@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Utils\DirectoryRelationTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -25,6 +26,8 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
  */
 class Team
 {
+    use DirectoryRelationTrait;
+
     const DEFAULT_GROUP_ALIAS = 'default';
     const DEFAULT_GROUP_TITLE = 'Default';
     /**
@@ -62,6 +65,10 @@ class Team
     {
         $this->id = Uuid::uuid4();
         $this->userTeams = new ArrayCollection();
+        $this->inbox = Directory::createInbox();
+        $this->lists = Directory::createRootList();
+        $this->lists->addChildList(Directory::createDefaultList());
+        $this->trash = Directory::createTrash();
     }
 
     /**

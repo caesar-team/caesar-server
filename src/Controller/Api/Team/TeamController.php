@@ -228,6 +228,7 @@ class TeamController extends AbstractController
     {
         $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $this->getUser());
         $entityManager->remove($team);
+        $entityManager->flush();
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
     }
