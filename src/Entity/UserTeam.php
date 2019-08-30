@@ -19,12 +19,12 @@ class UserTeam
 {
     use TimestampableEntity;
 
-    const DEFAULT_USER_ROLE = self::USER_ROLE_MEMBER;
-    const USER_ROLE_MEMBER = 'member';
-    const USER_ROLE_ADMIN = 'admin';
-    const USER_ROLE_GUEST = 'guest';
-    const USER_ROLE_PRETENDER = 'pretender';
-    const ROLES =  [
+    public const DEFAULT_USER_ROLE = self::USER_ROLE_MEMBER;
+    public const USER_ROLE_MEMBER = 'member';
+    public const USER_ROLE_ADMIN = 'admin';
+    public const USER_ROLE_GUEST = 'guest';
+    public const USER_ROLE_PRETENDER = 'pretender';
+    public const ROLES =  [
         self::USER_ROLE_MEMBER,
         self::USER_ROLE_ADMIN,
         self::USER_ROLE_GUEST,

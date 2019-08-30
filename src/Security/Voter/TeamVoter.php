@@ -12,11 +12,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class TeamVoter extends Voter
 {
-    const TEAM_CREATE = 'create';
-    const TEAM_EDIT   = 'edit';
-    const TEAM_VIEW   = 'view';
-    const TEAM_ADD_MEMBER = 'add_member';
-    const TEAM_REMOVE_MEMBER = 'remove_member';
+    public const TEAM_CREATE = 'create';
 
     /**
      * Determines if the attribute and subject are supported by this voter.
@@ -28,7 +24,7 @@ class TeamVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::TEAM_CREATE, self::TEAM_EDIT, self::TEAM_VIEW])) {
+        if (self::TEAM_CREATE !== $attribute) {
             return false;
         }
 
@@ -51,15 +47,10 @@ class TeamVoter extends Voter
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
-        if (!in_array($attribute, [self::TEAM_CREATE, self::TEAM_EDIT, self::TEAM_VIEW, self::TEAM_ADD_MEMBER])) {
+        if (self::TEAM_CREATE !== $attribute) {
             return false;
         }
 
-        switch ($attribute) {
-            case self::TEAM_CREATE:
-                return $subject->hasRole(User::ROLE_ADMIN) || $subject->hasRole(User::ROLE_SUPER_ADMIN);
-            default:
-                return false;
-        }
+        return $subject->hasRole(User::ROLE_ADMIN) || $subject->hasRole(User::ROLE_SUPER_ADMIN);
     }
 }

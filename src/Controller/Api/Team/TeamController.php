@@ -18,6 +18,7 @@ use App\Model\View\Team\TeamView;
 use App\Repository\TeamRepository;
 use App\Repository\UserTeamRepository;
 use App\Security\Voter\TeamVoter;
+use App\Security\Voter\UserTeamVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -107,7 +108,7 @@ class TeamController extends AbstractController
      */
     public function team(Team $team, TeamViewFactory $viewFactory)
     {
-        $this->denyAccessUnlessGranted(TeamVoter::TEAM_VIEW, $this->getUser());
+        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
         $teamView = $viewFactory->createOne($team);
 
         return $teamView;
@@ -138,8 +139,14 @@ class TeamController extends AbstractController
      */
     public function teams(TeamViewFactory $viewFactory, TeamRepository $teamRepository)
     {
-        $this->denyAccessUnlessGranted(TeamVoter::TEAM_VIEW, $this->getUser());
-        $teams = $teamRepository->findByUser($this->getUser());
+        /** @var User $user */
+        $user = $this->getUser();
+        if ($user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_SUPER_ADMIN)) {
+            $teams = $teamRepository->findAll();
+        } else {
+            $teams = $teamRepository->findByUser($this->getUser());
+        }
+
         $teamView = $viewFactory->createMany($teams);
 
         return $teamView;
@@ -178,7 +185,7 @@ class TeamController extends AbstractController
      */
     public function update(Team $team, Request $request, TeamViewFactory $viewFactory, EntityManagerInterface $entityManager)
     {
-        $this->denyAccessUnlessGranted(TeamVoter::TEAM_EDIT, $this->getUser());
+        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
 
         $form = $this->createForm(EditTeamType::class, $team);
         $form->submit($request->request->all());
@@ -216,7 +223,7 @@ class TeamController extends AbstractController
      */
     public function delete(Team $team, EntityManagerInterface $entityManager)
     {
-        $this->denyAccessUnlessGranted(TeamVoter::TEAM_EDIT, $this->getUser());
+        $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $this->getUser());
         $entityManager->remove($team);
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
@@ -249,6 +256,7 @@ class TeamController extends AbstractController
      */
     public function members(Request $request, Team $team, UserTeamRepository $userTeamRepository)
     {
+        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $this->getUser());
         $ids = $request->query->get('ids', []);
         $usersTeams = $userTeamRepository->findMembers($team, $ids);
 
@@ -283,7 +291,6 @@ class TeamController extends AbstractController
      */
     public function addMember(Request $request, EntityManagerInterface $entityManager)
     {
-        $this->denyAccessUnlessGranted(TeamVoter::TEAM_ADD_MEMBER, $this->getUser());
         $userTeam = new UserTeam();
         $form = $this->createForm(AddMemberType::class, $userTeam);
         $form->submit($request->request->all());
@@ -291,6 +298,7 @@ class TeamController extends AbstractController
         if(!$form->isValid()) {
             return $form;
         } else {
+            $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $userTeam->getTeam());
             $entityManager->persist($userTeam);
             $entityManager->flush();
         }
@@ -317,13 +325,12 @@ class TeamController extends AbstractController
      */
     public function removeMember(Team $team, User $user, UserTeamRepository $userTeamRepository): JsonResponse
     {
-        $this->denyAccessUnlessGranted(TeamVoter::TEAM_REMOVE_MEMBER, $this->getUser());
-
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
         if (!$userTeam instanceof UserTeam) {
             throw new NotFoundHttpException('User Team not found');
         }
 
+        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_REMOVE_MEMBER, $team);
         $userTeamRepository->remove($userTeam);
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);

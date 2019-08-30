@@ -6,6 +6,7 @@ namespace App\Security\Voter;
 
 use App\Entity\Team;
 use App\Entity\User;
+use App\Entity\UserTeam;
 use App\Repository\UserTeamRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -13,10 +14,16 @@ use Symfony\Component\Security\Core\Security;
 
 final class UserTeamVoter extends Voter
 {
+    public const USER_TEAM_LEAVE = 'leave';
+    public const USER_TEAM_EDIT   = 'edit';
+    public const USER_TEAM_VIEW   = 'view';
+    public const USER_TEAM_REMOVE_MEMBER = 'remove_member';
 
-    const USER_TEAM_LEAVE = 'leave';
-    const USER_TEAM_EDIT   = 'edit';
-    const USER_TEAM_VIEW   = 'view';
+    private const ROLES_TO_VIEW = [
+        UserTeam::USER_ROLE_ADMIN,
+        UserTeam::USER_ROLE_MEMBER,
+    ];
+
     /**
      * @var Security
      */
@@ -62,6 +69,7 @@ final class UserTeamVoter extends Voter
      * @param TokenInterface $token
      *
      * @return bool
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
@@ -70,15 +78,21 @@ final class UserTeamVoter extends Voter
             return false;
         }
 
-        $teamMember = $this->userTeamRepository->findOneByTeamAndUser();
+        $userTeam = $this->userTeamRepository->findOneByUserAndTeam($user, $subject);
+
+        if (!$userTeam instanceof UserTeam) {
+            return false;
+        }
 
         switch ($attribute) {
+            case self::USER_TEAM_REMOVE_MEMBER:
+                return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole() || $user->hasRole(User::ROLE_ADMIN);
             case self::USER_TEAM_LEAVE:
-                break;
+                return true;
             case self::USER_TEAM_EDIT:
-                break;
+                return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole() || $user->hasRole(User::ROLE_ADMIN);
             case self::USER_TEAM_VIEW:
-                break;
+                return in_array($userTeam->getUserRole(), self::ROLES_TO_VIEW) || $user->hasRole(User::ROLE_ADMIN);
             default:
                 return false;
         }
