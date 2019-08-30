@@ -132,7 +132,6 @@ class TeamController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/",
      *     name="api_team_list",
      *     methods={"GET"}
      * )
@@ -195,7 +194,6 @@ class TeamController extends AbstractController
         $form = $this->createForm(EditTeamType::class, $team);
         $form->submit($request->request->all());
         if ($form->isValid()) {
-            $entityManager->persist($team);
             $entityManager->flush();
         }
         $teamView = $viewFactory->createOne($team);
@@ -261,7 +259,7 @@ class TeamController extends AbstractController
      */
     public function members(Request $request, Team $team, UserTeamRepository $userTeamRepository)
     {
-        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $this->getUser());
+        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
         $ids = $request->query->get('ids', []);
         $usersTeams = $userTeamRepository->findMembers($team, $ids);
 

@@ -49,7 +49,7 @@ final class UserTeamVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::USER_TEAM_LEAVE, self::USER_TEAM_EDIT, self::USER_TEAM_VIEW])) {
+        if (!in_array($attribute, [self::USER_TEAM_LEAVE, self::USER_TEAM_EDIT, self::USER_TEAM_VIEW, self::USER_TEAM_REMOVE_MEMBER])) {
             return false;
         }
 

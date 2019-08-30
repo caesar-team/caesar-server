@@ -55,10 +55,8 @@ final class UserTeamRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('userTeam');
         $qb->where('userTeam.user =:user');
         $qb->andWhere('userTeam.team =:team');
-        $qb->andWhere('userTeam.userRole <> :role');
         $qb->setParameter('user', $user);
         $qb->setParameter('team', $team);
-        $qb->setParameter('role', UserTeam::USER_ROLE_ADMIN);
         $qb->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();

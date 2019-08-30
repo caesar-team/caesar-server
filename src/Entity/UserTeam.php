@@ -8,10 +8,16 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * Class UserGroup
- * @ORM\Table(name="user_group")
+ * @ORM\Table(name="user_group",
+ *    uniqueConstraints={
+ *        @ORM\UniqueConstraint(name="user_team_uqid",
+ *            columns={"user_id", "group_id"})
+ *    }
+ * )
  * @ORM\Entity(repositoryClass="App\Repository\UserTeamRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -75,9 +81,9 @@ class UserTeam
     }
 
     /**
-     * @return Team
+     * @return Team|null
      */
-    public function getTeam(): Team
+    public function getTeam(): ?Team
     {
         return $this->team;
     }
@@ -91,9 +97,9 @@ class UserTeam
     }
 
     /**
-     * @return User
+     * @return User|null
      */
-    public function getUser(): User
+    public function getUser(): ?User
     {
         return $this->user;
     }
@@ -107,9 +113,9 @@ class UserTeam
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getUserRole(): string
+    public function getUserRole(): ?string
     {
         return $this->userRole;
     }
