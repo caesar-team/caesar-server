@@ -264,7 +264,7 @@ final class ItemController extends AbstractController
      * @return CreatedItemView|FormInterface
      * @throws \Exception
      */
-    public function createItemAction(Request $request, CreatedItemViewFactory $viewFactory, UserRepository $userRepository)
+    public function createItem(Request $request, CreatedItemViewFactory $viewFactory, UserRepository $userRepository)
     {
         $item = new Item($this->getUser());
         $form = $this->createForm(CreateItemType::class, $item);

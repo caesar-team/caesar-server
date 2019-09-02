@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Directory;
 use App\Entity\Team;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -43,5 +44,25 @@ final class TeamRepository extends ServiceEntityRepository
         $qb->setParameter('default', Team::DEFAULT_GROUP_ALIAS);
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param Directory $directory
+     * @return Team|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function findOneByDirectory(Directory $directory): ?Team
+    {
+        $qb = $this->createQueryBuilder('team');
+        $qb->where('team.inbox =:directory');
+        $qb->orWhere('team.trash =:directory');
+        $qb->setParameter('directory', $directory);
+        if ($directory->getParentList() instanceof Directory) {
+            $qb->orWhere('team.lists =:parentList');
+            $qb->setParameter('parentList', $directory->getParentList());
+        }
+        $qb->setMaxResults(1);
+
+        return $qb->getQuery()->getOneOrNullResult();
     }
 }

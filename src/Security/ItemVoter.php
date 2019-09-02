@@ -6,7 +6,10 @@ namespace App\Security;
 
 use App\Entity\Item;
 use App\Entity\User;
+use App\Entity\UserTeam;
+use App\Repository\TeamRepository;
 use App\Repository\UserRepository;
+use App\Repository\UserTeamRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -16,13 +19,27 @@ class ItemVoter extends Voter
     public const CREATE_ITEM = 'create_item';
     public const EDIT_ITEM = 'edit_item';
     public const SHOW_ITEM = 'show_item';
+    private const AVAILABLE_TEAM_ROLES = [
+        UserTeam::USER_ROLE_ADMIN,
+        UserTeam::USER_ROLE_MEMBER,
+    ];
 
     /** @var UserRepository */
     private $userRepository;
+    /**
+     * @var UserTeamRepository
+     */
+    private $userTeamRepository;
+    /**
+     * @var TeamRepository
+     */
+    private $teamRepository;
 
-    public function __construct(UserRepository $userRepository)
+    public function __construct(UserRepository $userRepository, UserTeamRepository $userTeamRepository, TeamRepository $teamRepository)
     {
         $this->userRepository = $userRepository;
+        $this->userTeamRepository = $userTeamRepository;
+        $this->teamRepository = $teamRepository;
     }
 
     /**
@@ -42,11 +59,12 @@ class ItemVoter extends Voter
     }
 
     /**
-     * @param string         $attribute
-     * @param Item           $subject
+     * @param string $attribute
+     * @param Item $subject
      * @param TokenInterface $token
      *
      * @return bool
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
@@ -55,8 +73,22 @@ class ItemVoter extends Voter
 
         if (in_array($attribute, [self::DELETE_ITEM, self::CREATE_ITEM, self::SHOW_ITEM, self::EDIT_ITEM])) {
             $itemOwner = $this->userRepository->getByItem($subject);
-
-            return $itemOwner === $user;
+            $team = $this->teamRepository->findOneByDirectory($subject->getParentList());
+            $userTeam = $this->userTeamRepository->findOneByUserAndTeam($user, $team);
+            switch ($attribute) {
+                case self::EDIT_ITEM:
+                    return $itemOwner === $user;
+                case self::CREATE_ITEM:
+                    return $userTeam instanceof UserTeam && in_array($userTeam->getUserRole(), self::AVAILABLE_TEAM_ROLES);
+                case self::DELETE_ITEM:
+                    $teamUserRole = $userTeam instanceof UserTeam ? $userTeam->getUserRole() : null;
+                    $isAdmin = $user->hasRole(User::ROLE_ADMIN) || UserTeam::USER_ROLE_ADMIN === $teamUserRole;
+                    return $itemOwner === $user || $isAdmin;
+                case self::SHOW_ITEM:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');
