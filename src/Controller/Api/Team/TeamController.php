@@ -340,8 +340,27 @@ class TeamController extends AbstractController
         }
 
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_REMOVE_MEMBER, $team);
+        //todo: удалять расшаренные на него итемы
         $userTeamRepository->remove($userTeam);
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * @Route(
+     *     path="/{team}/lists",
+     *     methods={"GET"}
+     * )
+     * @param Team $team
+     * @param ViewFactoryContext $viewFactoryContext
+     * @return mixed
+     */
+    public function lists(Team $team, ViewFactoryContext $viewFactoryContext)
+    {
+        $lists = $viewFactoryContext->viewList($team->getLists()->getChildLists()->toArray());
+        array_push($lists, $viewFactoryContext->view($team->getInbox()));
+        array_push($lists, $viewFactoryContext->view($team->getTrash()));
+
+        return $lists;
     }
 }
