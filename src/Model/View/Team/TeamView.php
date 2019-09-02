@@ -24,4 +24,8 @@ class TeamView
      * @var UserView[]
      */
     public $users;
+    /**
+     * @var ListView[]
+     */
+    public $lists;
 }

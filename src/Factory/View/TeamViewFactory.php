@@ -7,28 +7,41 @@ namespace App\Factory\View;
 use App\Entity\Team;
 use App\Model\View\Team\TeamView;
 use App\Model\View\User\UserView;
+use App\Strategy\ViewFactory\ListViewFactory;
 
 class TeamViewFactory
 {
-    public function createOne(Team $group): TeamView
+
+    /**
+     * @var ListViewFactory
+     */
+    private $listViewFactory;
+
+    public function __construct(ListViewFactory $listViewFactory)
+    {
+        $this->listViewFactory = $listViewFactory;
+    }
+
+    public function createOne(Team $team): TeamView
     {
         $view = new TeamView();
-        $view->id = $group->getId()->toString();
-        $view->alias = $group->getAlias();
-        $view->users = $this->extractUsers($group);
-        $view->title = $group->getTitle();
+        $view->id = $team->getId()->toString();
+        $view->alias = $team->getAlias();
+        $view->users = $this->extractUsers($team);
+        $view->lists = $this->getLists($team);
+        $view->title = $team->getTitle();
 
         return $view;
     }
 
     /**
-     * @param array|Team[] $groups
+     * @param array|Team[] $teams
      * @return TeamView[]
      */
-    public function createMany(array $groups): array
+    public function createMany(array $teams): array
     {
         $views = [];
-        foreach ($groups as $group) {
+        foreach ($teams as $group) {
             $views[] = $this->createOne($group);
         }
 
@@ -45,9 +58,24 @@ class TeamViewFactory
             $userView->name = $user->getUsername();
             $userView->avatar = null === $user->getAvatar() ? null : $user->getAvatar()->getLink();
             $userView->email = $user->getEmail();
+            $userView->teamsIds = $user->getTeamsIds();
             $users[] = $userView;
         }
 
         return $users;
+    }
+
+    private function getLists(Team $team): array
+    {
+        $lists = [];
+
+        foreach ($team->getLists()->getChildLists() as $directory) {
+            $lists[] = $this->listViewFactory->view($directory);
+        }
+
+        array_push($lists, $this->listViewFactory->view($team->getInbox()));
+        array_push($lists, $this->listViewFactory->view($team->getTrash()));
+
+        return $lists;
     }
 }

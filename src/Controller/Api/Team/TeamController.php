@@ -124,7 +124,11 @@ class TeamController extends AbstractController
      *
      * @SWG\Response(
      *     response=200,
-     *     description="List of teams"
+     *     description="List of teams",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type=\App\Model\View\Team\TeamView::class)
+     *     )
      * )
      * @SWG\Response(
      *     response=401,
@@ -146,9 +150,10 @@ class TeamController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
         if ($user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_SUPER_ADMIN)) {
-            $teams = $teamRepository->findAll();
+            $teams = $teamRepository->findAllExceptDefault();
+
         } else {
-            $teams = $teamRepository->findByUser($this->getUser());
+            $teams = $teamRepository->findByUserExceptDefault($this->getUser());
         }
 
         $teamView = $viewFactory->createMany($teams);
