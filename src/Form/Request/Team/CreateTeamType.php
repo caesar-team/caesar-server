@@ -27,6 +27,7 @@ class CreateTeamType extends AbstractType
                     new NotBlank(),
                 ],
             ])
+            ->add('icon')
         ;
     }
 

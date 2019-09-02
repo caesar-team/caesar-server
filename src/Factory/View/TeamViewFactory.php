@@ -26,10 +26,11 @@ class TeamViewFactory
     {
         $view = new TeamView();
         $view->id = $team->getId()->toString();
-        $view->alias = $team->getAlias();
+        $view->type = $team->getAlias();
         $view->users = $this->extractUsers($team);
         $view->lists = $this->getLists($team);
         $view->title = $team->getTitle();
+        $view->icon = $team->getIcon();
 
         return $view;
     }

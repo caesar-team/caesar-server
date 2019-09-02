@@ -8,5 +8,8 @@ use App\Model\View\CredentialsList\NodeView;
 
 final class ListView extends NodeView
 {
+    /**
+     * @var string
+     */
     public $label;
 }

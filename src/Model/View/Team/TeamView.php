@@ -15,7 +15,7 @@ class TeamView
     /**
      * @var string
      */
-    public $alias;
+    public $type;
     /**
      * @var string
      */
@@ -28,4 +28,9 @@ class TeamView
      * @var ListView[]
      */
     public $lists;
+
+    /**
+     * @var string
+     */
+    public $icon;
 }

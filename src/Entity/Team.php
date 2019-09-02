@@ -58,6 +58,12 @@ class Team
     private $title;
 
     /**
+     * @ORM\Column(type="text", nullable=true)
+     * @var string|null
+     */
+    private $icon;
+
+    /**
      * Group constructor.
      * @throws \Exception
      */
@@ -135,5 +141,15 @@ class Team
     public function getId(): UuidInterface
     {
         return $this->id;
+    }
+
+    public function getIcon(): ?string
+    {
+        return $this->icon;
+    }
+
+    public function setIcon(?string $icon): void
+    {
+        $this->icon = $icon;
     }
 }

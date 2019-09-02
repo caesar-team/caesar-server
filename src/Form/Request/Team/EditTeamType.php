@@ -26,6 +26,7 @@ class EditTeamType extends AbstractType
                     new NotBlank(),
                 ],
             ])
+            ->add('icon')
         ;
     }
 
