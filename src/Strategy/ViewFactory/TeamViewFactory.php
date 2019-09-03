@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Factory\View;
+namespace App\Strategy\ViewFactory;
 
 use App\Entity\Team;
 use App\Model\View\Team\TeamView;
 use App\Model\View\User\UserView;
 use App\Strategy\ViewFactory\ListViewFactory;
 
-class TeamViewFactory
+class TeamViewFactory implements ViewFactoryInterface
 {
 
     /**
@@ -20,32 +20,6 @@ class TeamViewFactory
     public function __construct(ListViewFactory $listViewFactory)
     {
         $this->listViewFactory = $listViewFactory;
-    }
-
-    public function createOne(Team $team): TeamView
-    {
-        $view = new TeamView();
-        $view->id = $team->getId()->toString();
-        $view->users = $this->extractUsers($team);
-        $view->lists = $this->getLists($team);
-        $view->title = $team->getTitle();
-        $view->icon = $team->getIcon();
-
-        return $view;
-    }
-
-    /**
-     * @param array|Team[] $teams
-     * @return TeamView[]
-     */
-    public function createMany(array $teams): array
-    {
-        $views = [];
-        foreach ($teams as $group) {
-            $views[] = $this->createOne($group);
-        }
-
-        return $views;
     }
 
     private function extractUsers(Team $group): array
@@ -65,6 +39,11 @@ class TeamViewFactory
         return $users;
     }
 
+    /**
+     * @param Team $team
+     * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     private function getLists(Team $team): array
     {
         $lists = [];
@@ -77,5 +56,50 @@ class TeamViewFactory
         array_push($lists, $this->listViewFactory->view($team->getTrash()));
 
         return $lists;
+    }
+
+    /**
+     * @param mixed $data
+     *
+     * @return bool
+     */
+    public function canView($data): bool
+    {
+        return $data instanceof Team;
+    }
+
+    /**
+     * @param Team $team
+     *
+     * @return TeamView
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function view($team)
+    {
+        $view = new TeamView();
+        $view->id = $team->getId()->toString();
+        $view->type = $team->getAlias();
+        $view->users = $this->extractUsers($team);
+        $view->lists = $this->getLists($team);
+        $view->title = $team->getTitle();
+        $view->icon = $team->getIcon();
+
+        return $view;
+    }
+
+    /**
+     * @param array|Team[] $teams
+     *
+     * @return TeamView[]
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function viewList(array $teams): array
+    {
+        $views = [];
+        foreach ($teams as $team) {
+            $views[] = $this->view($team);
+        }
+
+        return $views;
     }
 }

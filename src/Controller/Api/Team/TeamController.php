@@ -8,11 +8,9 @@ use App\Context\ViewFactoryContext;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
-use App\Factory\View\TeamViewFactory;
 use App\Form\Request\Team\AddMemberType;
 use App\Form\Request\Team\CreateTeamType;
 use App\Form\Request\Team\EditTeamType;
-use App\Model\Request\AddMemberRequest;
 use App\Model\View\Team\MemberView;
 use App\Model\View\Team\TeamView;
 use App\Repository\TeamRepository;
@@ -62,13 +60,19 @@ class TeamController extends AbstractController
      *
      *
      * @param Request $request
-     * @param TeamViewFactory $viewFactory
+     * @param ViewFactoryContext $viewFactoryContext
      * @param EntityManagerInterface $entityManager
      * @param TeamManager $teamManager
+     *
      * @return TeamView|FormInterface
      * @throws \Exception
      */
-    public  function create(Request $request, TeamViewFactory $viewFactory, EntityManagerInterface $entityManager, TeamManager $teamManager)
+    public  function create(
+        Request $request,
+        ViewFactoryContext $viewFactoryContext,
+        EntityManagerInterface $entityManager,
+        TeamManager $teamManager
+    )
     {
         $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $this->getUser());
 
@@ -82,7 +86,7 @@ class TeamController extends AbstractController
         $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
         $entityManager->flush();
 
-        $teamView = $viewFactory->createOne($team);
+        $teamView = $viewFactoryContext->view($team);
 
         return $teamView;
     }
@@ -108,13 +112,13 @@ class TeamController extends AbstractController
      *
      *
      * @param Team $team
-     * @param TeamViewFactory $viewFactory
+     * @param ViewFactoryContext $viewFactoryContext
      * @return TeamView
      */
-    public function team(Team $team, TeamViewFactory $viewFactory)
+    public function team(Team $team, ViewFactoryContext $viewFactoryContext)
     {
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
-        $teamView = $viewFactory->createOne($team);
+        $teamView = $viewFactoryContext->view($team);
 
         return $teamView;
     }
@@ -141,11 +145,11 @@ class TeamController extends AbstractController
      * )
      *
      *
-     * @param TeamViewFactory $viewFactory
+     * @param ViewFactoryContext $viewFactoryContext
      * @param TeamRepository $teamRepository
      * @return TeamView[]
      */
-    public function teams(TeamViewFactory $viewFactory, TeamRepository $teamRepository)
+    public function teams(ViewFactoryContext $viewFactoryContext, TeamRepository $teamRepository)
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -156,7 +160,7 @@ class TeamController extends AbstractController
             $teams = $teamRepository->findByUserExceptDefault($this->getUser());
         }
 
-        $teamView = $viewFactory->createMany($teams);
+        $teamView = $viewFactoryContext->viewList($teams);
 
         return $teamView;
     }
@@ -188,11 +192,11 @@ class TeamController extends AbstractController
      *
      * @param Team $team
      * @param Request $request
-     * @param TeamViewFactory $viewFactory
+     * @param ViewFactoryContext $viewFactoryContext
      * @param EntityManagerInterface $entityManager
      * @return TeamView
      */
-    public function update(Team $team, Request $request, TeamViewFactory $viewFactory, EntityManagerInterface $entityManager)
+    public function update(Team $team, Request $request, ViewFactoryContext $viewFactoryContext, EntityManagerInterface $entityManager)
     {
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
 
@@ -201,7 +205,7 @@ class TeamController extends AbstractController
         if ($form->isValid()) {
             $entityManager->flush();
         }
-        $teamView = $viewFactory->createOne($team);
+        $teamView = $viewFactoryContext->view($team);
 
         return $teamView;
     }
