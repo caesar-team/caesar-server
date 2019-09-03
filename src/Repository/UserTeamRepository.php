@@ -61,4 +61,10 @@ final class UserTeamRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getOneOrNullResult();
     }
+
+    public function save(UserTeam $userTeam): void
+    {
+        $this->_em->persist($userTeam);
+        $this->_em->flush();
+    }
 }

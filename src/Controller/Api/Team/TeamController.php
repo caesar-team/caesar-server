@@ -11,6 +11,8 @@ use App\Entity\UserTeam;
 use App\Form\Request\Team\AddMemberType;
 use App\Form\Request\Team\CreateTeamType;
 use App\Form\Request\Team\EditTeamType;
+use App\Form\Request\Team\EditUserTeamType;
+use App\Model\Request\Team\EditUserTeamRequest;
 use App\Model\View\Team\MemberView;
 use App\Model\View\Team\TeamView;
 use App\Repository\TeamRepository;
@@ -83,6 +85,7 @@ class TeamController extends AbstractController
             return $form;
         }
         $entityManager->persist($team);
+        //todo: при создании команды все админы домена становятся её админами, каждый новый админ домена становится админом всех существующих групп CAES-567
         $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
         $entityManager->flush();
 
@@ -347,6 +350,58 @@ class TeamController extends AbstractController
         $userTeamRepository->remove($userTeam);
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * @SWG\Tag(name="Team")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Form\Request\Team\EditUserTeamType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Edit team member",
+     *     @Model(type="\App\Model\View\Team\MemberView")
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/{team}/members/{user}",
+     *     methods={"PATCH"}
+     * )
+     * @param Request $request
+     * @param Team $team
+     * @param User $user
+     * @param UserTeamRepository $userTeamRepository
+     *
+     * @return MemberView|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function editMember(Request $request, Team $team, User $user, UserTeamRepository $userTeamRepository)
+    {
+        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
+
+        $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
+        if (!$userTeam instanceof UserTeam) {
+            throw new NotFoundHttpException('User Team not found');
+        }
+
+        $editUserTeamRequest = new EditUserTeamRequest();
+        $form = $this->createForm(EditUserTeamType::class, $editUserTeamRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $userTeam->setUserRole($editUserTeamRequest->getUserRole());
+        $userTeamRepository->save($userTeam);
+
+        return MemberView::create($userTeam);
     }
 
     /**
