@@ -24,25 +24,25 @@ final class Audit
 
     /**
      * @var int
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", options={"default"=0})
      */
     private $usersCount = 0;
 
     /**
      * @var int
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", options={"default"=0})
      */
     private $teamsCount = 0;
 
     /**
      * @var int
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", options={"default"=0})
      */
     private $itemsCount = 0;
 
     /**
      * @var int
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", options={"default"=0})
      */
     private $memoryUsed = 0;
 
