@@ -16,11 +16,6 @@ class EditTeamType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('hashtag', TextType::class, [
-                'constraints' => [
-                    new NotBlank(),
-                ],
-            ])
             ->add('title', TextType::class, [
                 'constraints' => [
                     new NotBlank(),

@@ -20,7 +20,7 @@ class GroupFixtures extends AbstractFixture implements FixtureInterface
         $group = $this->manager->getRepository(Team::class)->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
         if (!$group) {
             $group = new Team();
-            $group->setHashtag(Team::DEFAULT_GROUP_ALIAS);
+            $group->setAlias(Team::DEFAULT_GROUP_ALIAS);
             $group->setTitle(Team::DEFAULT_GROUP_TITLE);
 
             $this->manager->persist($group);

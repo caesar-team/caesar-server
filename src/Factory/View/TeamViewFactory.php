@@ -26,7 +26,6 @@ class TeamViewFactory
     {
         $view = new TeamView();
         $view->id = $team->getId()->toString();
-        $view->hashtag = $team->getHashtag();
         $view->users = $this->extractUsers($team);
         $view->lists = $this->getLists($team);
         $view->title = $team->getTitle();

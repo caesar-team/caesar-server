@@ -15,10 +15,6 @@ class TeamView
     /**
      * @var string
      */
-    public $hashtag;
-    /**
-     * @var string
-     */
     public $title;
     /**
      * @var UserView[]

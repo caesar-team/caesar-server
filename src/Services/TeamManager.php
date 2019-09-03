@@ -48,7 +48,7 @@ class TeamManager
     public function findUserTeamByAlias(User $user, string $alias): ?UserTeam
     {
         foreach ($user->getUserTeams() as $userTeam) {
-            if ($alias === $userTeam->getTeam()->getHashtag()) {
+            if ($alias === $userTeam->getTeam()->getAlias()) {
                 return $userTeam;
             }
         }
