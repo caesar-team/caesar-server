@@ -15,7 +15,7 @@ class TeamView
     /**
      * @var string
      */
-    public $type;
+    public $hashtag;
     /**
      * @var string
      */

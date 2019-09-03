@@ -30,7 +30,7 @@ final class UserTeamViewFactory implements ViewFactoryInterface
         $view = new UserTeamView();
         $view->id = $data->getTeam()->getId()->toString();
         $view->title = $data->getTeam()->getTitle();
-        $view->type = $data->getTeam()->getAlias();
+        $view->type = $data->getTeam()->getHashtag();
         $view->createdAt = $data->getCreatedAt();
         $view->updatedAt = $data->getUpdatedAt();
         $view->userRole = $data->getUserRole();

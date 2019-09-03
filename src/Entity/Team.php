@@ -46,10 +46,10 @@ class Team
     private $userTeams;
 
     /**
-     * @var string
-     * @ORM\Column(type="string", length=50, nullable=false)
+     * @var string|null
+     * @ORM\Column(name="alias", type="string", length=50, nullable=true)
      */
-    private $alias;
+    private $hashtag;
 
     /**
      * @var string
@@ -106,17 +106,17 @@ class Team
     /**
      * @return string|null
      */
-    public function getAlias(): ?string
+    public function getHashtag(): ?string
     {
-        return $this->alias;
+        return $this->hashtag;
     }
 
     /**
-     * @param string $alias
+     * @param string|null $hashtag
      */
-    public function setAlias(string $alias): void
+    public function setHashtag(?string $hashtag): void
     {
-        $this->alias = $alias;
+        $this->hashtag = $hashtag;
     }
 
     /**

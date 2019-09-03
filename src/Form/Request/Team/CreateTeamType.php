@@ -17,7 +17,7 @@ class CreateTeamType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('alias', TextType::class, [
+            ->add('hashtag', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
                 ],
