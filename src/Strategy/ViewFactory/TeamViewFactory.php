@@ -26,14 +26,7 @@ class TeamViewFactory implements ViewFactoryInterface
     {
         $users = [];
         foreach ($group->getUserTeams() as $userGroup) {
-            $user = $userGroup->getUser();
-            $userView = new UserView();
-            $userView->id = $user->getId();
-            $userView->name = $user->getUsername();
-            $userView->avatar = null === $user->getAvatar() ? null : $user->getAvatar()->getLink();
-            $userView->email = $user->getEmail();
-            $userView->teamsIds = $user->getTeamsIds();
-            $users[] = $userView;
+            $users[] = $userGroup->getUser()->getId()->toString();
         }
 
         return $users;
@@ -78,8 +71,7 @@ class TeamViewFactory implements ViewFactoryInterface
     {
         $view = new TeamView();
         $view->id = $team->getId()->toString();
-        $view->type = $team->getAlias();
-        $view->users = $this->extractUsers($team);
+        $view->usersIds = $this->extractUsers($team);
         if (Team::DEFAULT_GROUP_ALIAS !== $team->getAlias()) {
             $view->lists = $this->getLists($team);
         }
