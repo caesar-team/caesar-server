@@ -80,7 +80,10 @@ class TeamViewFactory implements ViewFactoryInterface
         $view->id = $team->getId()->toString();
         $view->type = $team->getAlias();
         $view->users = $this->extractUsers($team);
-        $view->lists = $this->getLists($team);
+        if (Team::DEFAULT_GROUP_ALIAS !== $team->getAlias()) {
+            $view->lists = $this->getLists($team);
+        }
+
         $view->title = $team->getTitle();
         $view->icon = $team->getIcon();
 
