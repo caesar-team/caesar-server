@@ -23,15 +23,15 @@ class TeamManager
 
     /**
      * @param User $user
-     * @param Team|null $team
      * @param string $role
+     * @param Team|null $team
      * @throws \Exception
      */
     public function addTeamToUser(User $user, string $role = UserTeam::DEFAULT_USER_ROLE, Team $team = null)
     {
         $team = $team ?: $this->findDefaultTeam();
-        $userGroup = new UserTeam($user, $team, $role);
-        $this->manager->persist($userGroup);
+        $userTeam = new UserTeam($user, $team, $role);
+        $this->manager->persist($userTeam);
     }
 
     private function findDefaultTeam(): Team

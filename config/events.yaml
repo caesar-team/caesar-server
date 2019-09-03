@@ -32,3 +32,8 @@ services:
         class: App\Event\EventSubscriber\InvitationRemoveSubscriber
         tags:
             - { name: doctrine.event_subscriber, connection: default }
+
+    app.event.team_to_created_admin_subscriber:
+        class: App\Event\EventSubscriber\TeamsToCreatedAdminSubscriber
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }

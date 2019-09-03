@@ -19,6 +19,7 @@ use App\Repository\TeamRepository;
 use App\Repository\UserTeamRepository;
 use App\Security\Voter\TeamVoter;
 use App\Security\Voter\UserTeamVoter;
+use App\Services\AdminPromoter;
 use App\Services\TeamManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -66,6 +67,7 @@ class TeamController extends AbstractController
      * @param EntityManagerInterface $entityManager
      * @param TeamManager $teamManager
      *
+     * @param AdminPromoter $adminPromoter
      * @return TeamView|FormInterface
      * @throws \Exception
      */
@@ -73,7 +75,8 @@ class TeamController extends AbstractController
         Request $request,
         ViewFactoryContext $viewFactoryContext,
         EntityManagerInterface $entityManager,
-        TeamManager $teamManager
+        TeamManager $teamManager,
+        AdminPromoter $adminPromoter
     )
     {
         $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $this->getUser());
@@ -85,8 +88,8 @@ class TeamController extends AbstractController
             return $form;
         }
         $entityManager->persist($team);
-        //todo: при создании команды все админы домена становятся её админами, каждый новый админ домена становится админом всех существующих групп CAES-567
         $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
+        $adminPromoter->addTeamToAdmins($team, $this->getUser());
         $entityManager->flush();
 
         $teamView = $viewFactoryContext->view($team);

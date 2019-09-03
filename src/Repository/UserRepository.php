@@ -153,4 +153,16 @@ class UserRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * @return array|User[]
+     */
+    public function findAdmins(): array
+    {
+        $qb = $this->createQueryBuilder('user');
+        $qb->where('user.roles IN(:role)');
+        $qb->setParameter('role', User::ROLE_ADMIN);
+
+        return $qb->getQuery()->getResult();
+    }
 }
