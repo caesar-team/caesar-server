@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Model\View\Team;
 
-use App\Model\View\User\UserView;
-
 class TeamView
 {
     /**
@@ -19,7 +17,7 @@ class TeamView
     /**
      * @var string[]
      */
-    public $usersIds = [];
+    public $userIds = [];
     /**
      * @var ListView[]
      */

@@ -71,7 +71,7 @@ class TeamViewFactory implements ViewFactoryInterface
     {
         $view = new TeamView();
         $view->id = $team->getId()->toString();
-        $view->usersIds = $this->extractUsers($team);
+        $view->userIds = $this->extractUsers($team);
         if (Team::DEFAULT_GROUP_ALIAS !== $team->getAlias()) {
             $view->lists = $this->getLists($team);
         }

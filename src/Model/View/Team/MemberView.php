@@ -34,6 +34,11 @@ final class MemberView
     public $name;
 
     /**
+     * @var string[]
+     */
+    public $teamIds;
+
+    /**
      * @var string
      */
     public $role;
@@ -48,6 +53,7 @@ final class MemberView
         $view->avatar = null === $user->getAvatar() ? null : $user->getAvatar()->getLink();
         $view->publicKey = $user->getPublicKey();
         $view->role = $userTeam->getUserRole();
+        $view->teamIds = $user->getTeamsIds();
 
         return $view;
     }
