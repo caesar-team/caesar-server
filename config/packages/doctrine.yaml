@@ -11,6 +11,7 @@ doctrine:
             uuid:  Ramsey\Uuid\Doctrine\UuidType
             NodeEnumType: App\DBAL\Types\Enum\NodeEnumType
             AccessEnumType: App\DBAL\Types\Enum\AccessEnumType
+            BillingEnumType: App\DBAL\Types\Enum\BillingEnumType
     orm:
         auto_generate_proxy_classes: '%kernel.debug%'
         naming_strategy: doctrine.orm.naming_strategy.underscore
