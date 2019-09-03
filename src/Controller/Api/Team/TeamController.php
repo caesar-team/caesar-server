@@ -155,7 +155,6 @@ class TeamController extends AbstractController
         $user = $this->getUser();
         if ($user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_SUPER_ADMIN)) {
             $teams = $teamRepository->findAllExceptDefault();
-
         } else {
             $teams = $teamRepository->findByUserExceptDefault($this->getUser());
         }

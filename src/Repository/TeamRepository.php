@@ -41,6 +41,7 @@ final class TeamRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('team');
         $qb->where('team.alias <>:default');
+        $qb->orWhere('team.alias IS NULL');
         $qb->setParameter('default', Team::DEFAULT_GROUP_ALIAS);
 
         return $qb->getQuery()->getResult();
