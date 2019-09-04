@@ -27,7 +27,6 @@ services:
         arguments: [ '%kernel.project_dir%' ]
         tags:
             - { name: doctrine.orm.entity_listener }
-            - { name: doctrine.orm.entity_listener, entity_manager: custom }
 
     app.event.invitation_remove_subscriber:
         class: App\Event\EventSubscriber\InvitationRemoveSubscriber
