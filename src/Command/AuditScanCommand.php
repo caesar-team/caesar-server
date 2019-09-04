@@ -3,11 +3,8 @@
 namespace App\Command;
 
 use App\Entity\Billing\Audit;
-use App\Entity\Group;
-use App\Entity\Item;
-use App\Entity\User;
 use App\Repository\AuditRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Services\ProjectAuditManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,20 +13,22 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class AuditScanCommand extends Command
 {
     protected static $defaultName = 'app:audit:scan';
+
+    /**
+     * @var ProjectAuditManager
+     */
+    private $auditManager;
+
     /**
      * @var AuditRepository
      */
     private $auditRepository;
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(AuditRepository $auditRepository, ProjectAuditManager $auditManager)
     {
         parent::__construct();
-        $this->entityManager = $entityManager;
-        $this->auditRepository = $this->entityManager->getRepository(Audit::class);
+        $this->auditManager = $auditManager;
+        $this->auditRepository = $auditRepository;
     }
 
 
@@ -50,68 +49,16 @@ class AuditScanCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $result = $this->scanApp($io);
+        $result = $this->auditManager->scanApp();
+        if (is_null($result)) {
+            $io->text('Audit record not found');
 
-        $this->entityManager->flush();
+            return null;
+        }
+        $this->auditRepository->save($result);
 
         $io->success('Done!');
         $this->view($result, $io);
-    }
-
-    /**
-     * @param SymfonyStyle $io
-     * @return Audit|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    private function scanApp(SymfonyStyle $io): ?Audit
-    {
-        $items = $this->entityManager->getRepository(Item::class)->findAll();
-
-        $audit = $this->auditRepository->findOneLatest();
-         if (is_null($audit)) {
-             $io->text('Audit record not found');
-
-             return null;
-         }
-        $audit->setMemoryUsed($this->calcSecretsSum($items));
-        $audit->setUsersCount($this->calcUsersCount());
-        $audit->setItemsCount($this->calcItemsCount());
-        //$audit->setTeamsCount($this->calcTeamsCount());
-
-        return $audit;
-    }
-
-    /**
-     * @param array|Item[] $items
-     * @return int
-     */
-    private function calcSecretsSum(array $items): int
-    {
-        $secretsSymbols = array_map(function (Item $item) {
-            return strlen($item->getSecret());
-        }, $items);
-
-        return array_sum($secretsSymbols);
-    }
-
-    /**
-     * @return int
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    private function calcUsersCount(): int
-    {
-        $userRepository = $this->entityManager->getRepository(User::class);
-
-        return $userRepository->getCountCompleted();
-    }
-
-    /**
-     * @return int
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    private function calcItemsCount(): int
-    {
-        return $this->entityManager->getRepository(Item::class)->getCount();
     }
 
     private function view(Audit $audit, SymfonyStyle $io)

@@ -22,4 +22,10 @@ final class AuditRepository extends ServiceEntityRepository
     {
         return $this->findOneBy([],['createdAt' => 'DESC']);
     }
+
+    public function save(Audit $audit)
+    {
+        $this->_em->persist($audit);
+        $this->_em->flush();
+    }
 }
