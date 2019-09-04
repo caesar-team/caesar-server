@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Strategy\ViewFactory;
 
 use App\Entity\Team;
+use App\Model\View\Team\MemberShortView;
 use App\Model\View\Team\TeamView;
 use App\Model\View\User\UserView;
 use App\Strategy\ViewFactory\ListViewFactory;
@@ -22,14 +23,13 @@ class TeamViewFactory implements ViewFactoryInterface
         $this->listViewFactory = $listViewFactory;
     }
 
-    private function extractUsers(Team $group): array
+    /**
+     * @param Team $team
+     * @return array|MemberShortView[]
+     */
+    private function extractUsers(Team $team): array
     {
-        $users = [];
-        foreach ($group->getUserTeams() as $userGroup) {
-            $users[] = $userGroup->getUser()->getId()->toString();
-        }
-
-        return $users;
+        return MemberShortView::createMany($team->getUserTeams()->toArray());
     }
 
     /**
@@ -71,7 +71,7 @@ class TeamViewFactory implements ViewFactoryInterface
     {
         $view = new TeamView();
         $view->id = $team->getId()->toString();
-        $view->userIds = $this->extractUsers($team);
+        $view->users = $this->extractUsers($team);
         if (Team::DEFAULT_GROUP_ALIAS !== $team->getAlias()) {
             $view->lists = $this->getLists($team);
         }

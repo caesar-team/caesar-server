@@ -26,9 +26,9 @@ final class UserTeamRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('userTeam');
         $qb->where('userTeam.team =:team');
-        $qb->andWhere('userTeam.userRole =:member');
+        $qb->andWhere('userTeam.userRole IN(:members)');
         $qb->setParameter('team', $team);
-        $qb->setParameter('member', UserTeam::USER_ROLE_MEMBER);
+        $qb->setParameter('members', UserTeam::ROLES);
 
         if (0 < count($ids)) {
             $qb->andWhere('userTeam.user IN(:ids)');

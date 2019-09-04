@@ -15,9 +15,9 @@ class TeamView
      */
     public $title;
     /**
-     * @var string[]
+     * @var MemberShortView[]
      */
-    public $userIds = [];
+    public $users = [];
     /**
      * @var ListView[]
      */
