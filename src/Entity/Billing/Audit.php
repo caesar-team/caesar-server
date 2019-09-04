@@ -13,9 +13,8 @@ use Ramsey\Uuid\UuidInterface;
  * @ORM\Entity(repositoryClass="App\Repository\AuditRepository")
  * @ORM\HasLifecycleCallbacks
  */
-final class Audit
+class Audit
 {
-    private const DEFAULT_BILLING_TYPE = BillingEnumType::TYPE_BASE;
     /**
      * @var UuidInterface
      *
@@ -44,15 +43,9 @@ final class Audit
 
     /**
      * @var int
-     * @ORM\Column(type="integer", options={"default"=0})
+     * @ORM\Column(type="integer", options={"default"=0}, length=255)
      */
     private $memoryUsed = 0;
-
-    /**
-     * @var string
-     * @ORM\Column(type="BillingEnumType", options={"default"="base"})
-     */
-    private $billingType = self::DEFAULT_BILLING_TYPE;
 
     /**
      * @var \DateTimeImmutable
@@ -65,6 +58,13 @@ final class Audit
      * @ORM\Column(type="datetime_immutable")
      */
     private $updatedAt;
+
+    /**
+     * @var Plan
+     * @ORM\ManyToOne(targetEntity="Plan")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+    private $billingPlan;
 
     /**
      * @param string $label
@@ -124,12 +124,7 @@ final class Audit
 
     public function getBillingType(): string
     {
-        return $this->billingType;
-    }
-
-    public function setBillingType(string $billingType): void
-    {
-        $this->billingType = $billingType;
+        return $this->billingPlan->getName();
     }
 
     public function getCreatedAt(): \DateTimeImmutable
@@ -159,5 +154,15 @@ final class Audit
     public function refreshUpdatedAt(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    public function getBillingPlan(): Plan
+    {
+        return $this->billingPlan;
+    }
+
+    public function setBillingPlan(Plan $billingPlan): void
+    {
+        $this->billingPlan = $billingPlan;
     }
 }
