@@ -7,7 +7,6 @@ namespace App\Services;
 use App\Entity\Billing\Audit;
 use App\Entity\Item;
 use App\Entity\User;
-use App\Repository\AuditRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class ProjectAuditManager
