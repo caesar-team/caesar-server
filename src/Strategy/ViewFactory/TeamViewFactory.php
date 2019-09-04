@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Strategy\ViewFactory;
 
 use App\Entity\Team;
+use App\Entity\UserTeam;
 use App\Model\View\Team\MemberShortView;
 use App\Model\View\Team\TeamView;
-use App\Model\View\User\UserView;
-use App\Strategy\ViewFactory\ListViewFactory;
 
 class TeamViewFactory implements ViewFactoryInterface
 {
@@ -29,7 +28,13 @@ class TeamViewFactory implements ViewFactoryInterface
      */
     private function extractUsers(Team $team): array
     {
-        return MemberShortView::createMany($team->getUserTeams()->toArray());
+        $userTeams = $team->getUserTeams()->toArray();
+        $userTeams = array_filter($userTeams, function (UserTeam $userTeam) {
+
+            return UserTeam::USER_ROLE_PRETENDER !== $userTeam->getUserRole();
+        });
+
+        return MemberShortView::createMany($userTeams);
     }
 
     /**
