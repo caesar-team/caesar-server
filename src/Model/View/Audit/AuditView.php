@@ -12,22 +12,23 @@ final class AuditView
      * @var string
      */
     public $id;
+
+    /**
+     * @var int
+     */
+    public $remainingUsers;
+    /**
+     * @var int
+     */
+    public $remainingItems;
+    /**
+     * @var int
+     */
+    public $remainingMemory;
     /**
      * @var string
      */
     public $billingType;
-    /**
-     * @var int
-     */
-    public $usersCount;
-    /**
-     * @var int
-     */
-    public $itemsCount;
-    /**
-     * @var int
-     */
-    public $memoryUsed;
     /**
      * @var \DateTimeImmutable
      */
@@ -37,16 +38,17 @@ final class AuditView
      */
     public $updatedAt;
 
-    public static function create(Audit $audit): self
+    public static function creatke(Audit $audit): self
     {
         $view = new self();
+        $plan = $audit->getBillingPlan();
         $view->id = $audit->getId()->toString();
-        $view->usersCount = $audit->getUsersCount();
-        $view->itemsCount = $audit->getItemsCount();
         $view->billingType = $audit->getBillingType();
-        $view->memoryUsed = $audit->getMemoryUsed();
         $view->createdAt = $audit->getCreatedAt();
         $view->updatedAt = $audit->getUpdatedAt();
+        $view->remainingUsers = $plan->getUsersLimit() - $audit->getUsersCount();
+        $view->remainingItems = $plan->getItemsLimit() - $audit->getItemsCount();
+        $view->remainingMemory = $plan->getMemoryLimit() - $audit->getMemoryUsed();
 
         return $view;
     }
