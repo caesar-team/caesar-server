@@ -299,16 +299,19 @@ class TeamController extends AbstractController
      *     description="Unauthorized"
      * )
      * @Route(
-     *     path="/members",
+     *     path="/{team}/members/{user}",
      *     methods={"POST"}
      * )
      * @param Request $request
+     * @param Team $team
+     * @param User $user
      * @param EntityManagerInterface $entityManager
      * @return MemberView|FormInterface
      * @throws \Exception
      */
-    public function addMember(Request $request, EntityManagerInterface $entityManager)
+    public function addMember(Request $request, Team $team, User $user, EntityManagerInterface $entityManager)
     {
+        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
         $userTeam = new UserTeam();
         $form = $this->createForm(AddMemberType::class, $userTeam);
         $form->submit($request->request->all());
@@ -316,7 +319,8 @@ class TeamController extends AbstractController
         if(!$form->isValid()) {
             return $form;
         } else {
-            $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $userTeam->getTeam());
+            $userTeam->setUser($user);
+            $userTeam->setTeam($team);
             $entityManager->persist($userTeam);
             $entityManager->flush();
         }
