@@ -38,7 +38,7 @@ final class AuditView
      */
     public $updatedAt;
 
-    public static function creatke(Audit $audit): self
+    public static function create(Audit $audit): self
     {
         $view = new self();
         $plan = $audit->getBillingPlan();
