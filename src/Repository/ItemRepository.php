@@ -49,4 +49,16 @@ class ItemRepository extends ServiceEntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    /**
+     * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getCount(): int
+    {
+        $qb = $this->createQueryBuilder('item');
+        $qb->select($qb->expr()->count('item.id'));
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
 }

@@ -3,7 +3,9 @@
 namespace App\Command;
 
 use App\Entity\Billing\Audit;
+use App\Entity\Group;
 use App\Entity\Item;
+use App\Entity\User;
 use App\Repository\AuditRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -38,18 +40,29 @@ class AuditScanCommand extends Command
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|null|void
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
 
         $result = $this->scanApp($io);
 
-        $this->updateAuditLog($result);
+        $this->entityManager->flush();
 
         $io->success('Done!');
         $this->view($result, $io);
     }
 
+    /**
+     * @param SymfonyStyle $io
+     * @return Audit|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     private function scanApp(SymfonyStyle $io): ?Audit
     {
         $items = $this->entityManager->getRepository(Item::class)->findAll();
@@ -57,9 +70,13 @@ class AuditScanCommand extends Command
         $audit = $this->auditRepository->findOneLatest();
          if (is_null($audit)) {
              $io->text('Audit record not found');
+
              return null;
          }
         $audit->setMemoryUsed($this->calcSecretsSum($items));
+        $audit->setUsersCount($this->calcUsersCount());
+        $audit->setItemsCount($this->calcItemsCount());
+        //$audit->setTeamsCount($this->calcTeamsCount());
 
         return $audit;
     }
@@ -77,8 +94,37 @@ class AuditScanCommand extends Command
         return array_sum($secretsSymbols);
     }
 
-    private function updateAuditLog(Audit $result)
+    /**
+     * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    private function calcUsersCount(): int
     {
+        $userRepository = $this->entityManager->getRepository(User::class);
 
+        return $userRepository->getCountCompleted();
+    }
+
+    /**
+     * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    private function calcItemsCount(): int
+    {
+        return $this->entityManager->getRepository(Item::class)->getCount();
+    }
+
+    private function view(Audit $audit, SymfonyStyle $io)
+    {
+        $headers = ['id', 'type', 'users', 'items', 'memory used'];
+        $row = [
+            $audit->getId()->toString(),
+            $audit->getBillingType(),
+            $audit->getUsersCount(),
+            $audit->getItemsCount(),
+            $audit->getMemoryUsed(),
+        ];
+
+        $io->table($headers, [$row]);
     }
 }

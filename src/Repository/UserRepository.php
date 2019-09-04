@@ -13,6 +13,7 @@ use App\Traits\PaginatorTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\QueryBuilder;
 
 class UserRepository extends ServiceEntityRepository
 {
@@ -124,5 +125,29 @@ class UserRepository extends ServiceEntityRepository
         $this->_em->flush();
 
         return $item;
+    }
+
+    /**
+     * @return QueryBuilder
+     */
+    private function queryAllCompleted()
+    {
+        $qb = $this->createQueryBuilder('user');
+        $qb->where("user.flowStatus =:status");
+        $qb->setParameter('status', User::FLOW_STATUS_FINISHED);
+
+        return $qb;
+    }
+
+    /**
+     * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getCountCompleted(): int
+    {
+        $qb = $this->queryAllCompleted();
+        $qb->select($qb->expr()->count('user.id'));
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 }
