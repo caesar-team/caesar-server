@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Entity\Billing;
 
+use App\DBAL\Types\Enum\BillingEnumType;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\AuditRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 final class Audit
 {
-    private const DEFAULT_BILLING_TYPE = 'base';
+    private const DEFAULT_BILLING_TYPE = BillingEnumType::TYPE_BASE;
     /**
      * @var UuidInterface
      *
@@ -53,12 +55,26 @@ final class Audit
     private $billingType = self::DEFAULT_BILLING_TYPE;
 
     /**
+     * @var \DateTimeImmutable
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private $createdAt;
+
+    /**
+     * @var \DateTimeImmutable
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private $updatedAt;
+
+    /**
      * @param string $label
      * @throws \Exception
      */
     public function __construct(string $label = null)
     {
         $this->id = Uuid::uuid4();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function getId(): UuidInterface
@@ -114,5 +130,34 @@ final class Audit
     public function setBillingType(string $billingType): void
     {
         $this->billingType = $billingType;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): void
+    {
+        $this->createdAt = $createdAt;
+    }
+
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): void
+    {
+        $this->updatedAt = $updatedAt;
+    }
+
+    /**
+     * @ORM\PreUpdate
+     * @ORM\PrePersist
+     */
+    public function refreshUpdatedAt(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 }
