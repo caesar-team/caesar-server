@@ -34,6 +34,7 @@ final class UserTeamViewFactory implements ViewFactoryInterface
         $view->createdAt = $data->getCreatedAt();
         $view->updatedAt = $data->getUpdatedAt();
         $view->userRole = $data->getUserRole();
+        $view->icon = $data->getTeam()->getIcon();
 
         return $view;
     }
