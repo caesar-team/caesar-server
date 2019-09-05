@@ -33,6 +33,22 @@ final class TeamRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param User $user
+     * @return array|Team[]
+     */
+    public function findByUserExceptDefault(User $user): array
+    {
+        $qb = $this->createQueryBuilder('team');
+        $qb->join('team.userTeams', 'userTeams');
+        $qb->where('userTeams.user =:user');
+        $qb->andWhere('team.alias <>:default');
+        $qb->setParameter('default', Team::DEFAULT_GROUP_ALIAS);
+        $qb->setParameter('user', $user);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * @return array|Team[]
      */
     public function findAllExceptDefault(): array
