@@ -6,6 +6,7 @@ namespace App\Controller\Api\Team;
 
 use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Model\View\Team\UserTeamView;
 use Symfony\Component\Routing\Annotation\Route;
@@ -38,7 +39,10 @@ final class UserController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
         $teams = $user->getUserTeams();
+        $teams = array_filter($teams->toArray(), function (Team $team) {
+            return Team::DEFAULT_GROUP_ALIAS !== $team->getAlias();
+        });
 
-        return $viewFactoryContext->viewList($teams->toArray());
+        return $viewFactoryContext->viewList($teams);
     }
 }
