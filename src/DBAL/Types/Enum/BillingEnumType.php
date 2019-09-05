@@ -10,10 +10,12 @@ final class BillingEnumType extends AbstractEnumType
 {
     public const TYPE_BASE = 'base';
     public const TYPE_EXPANDED = 'expanded';
+    public const TYPE_UNLIMITED = 'unlimited';
 
     /** @var array */
     protected static $choices = [
         self::TYPE_BASE => 'enum.billing_type.base',
         self::TYPE_EXPANDED => 'enum.billing_type.expanded',
+        self::TYPE_UNLIMITED => 'enum.billing_type.unlimited',
     ];
 }

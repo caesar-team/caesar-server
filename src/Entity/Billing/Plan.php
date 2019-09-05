@@ -25,27 +25,27 @@ class Plan
 
     /**
      * @var string
-     * @ORM\Column(type="BillingEnumType", options={"default"="base"})
+     * @ORM\Column(type="BillingEnumType", options={"default"="unlimited"})
      */
-    private $name = BillingEnumType::TYPE_BASE;
+    private $name = BillingEnumType::TYPE_UNLIMITED;
 
     /**
-     * @ORM\Column(type="integer", options={"default":0})
+     * @ORM\Column(type="integer", options={"default":-1})
      * @var int
      */
-    private $usersLimit = 0;
+    private $usersLimit = -1;
 
     /**
-     * @ORM\Column(type="integer", options={"default":0})
+     * @ORM\Column(type="integer", options={"default":-1})
      * @var int
      */
-    private $itemsLimit = 0;
+    private $itemsLimit = -1;
 
     /**
-     * @ORM\Column(type="integer", length=255, options={"default":0})
+     * @ORM\Column(type="integer", length=255, options={"default":-1})
      * @var int
      */
-    private $memoryLimit = 0;
+    private $memoryLimit = -1;
 
     /**
      * @param string $label

@@ -69,4 +69,11 @@ final class ProjectAuditManager
     {
         return $this->entityManager->getRepository(Item::class)->getCount();
     }
+
+    public function scanMemory(): void
+    {
+        $items = $this->entityManager->getRepository(Item::class)->findAll();
+        $audit = $this->entityManager->getRepository(Audit::class)->findOneLatest();
+        $audit->setMemoryUsed($this->calcSecretsSum($items));
+    }
 }

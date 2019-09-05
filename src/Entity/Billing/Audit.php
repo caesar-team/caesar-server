@@ -10,6 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
+ * @ORM\Table(name="project_usage")
  * @ORM\Entity(repositoryClass="App\Repository\AuditRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -164,5 +165,35 @@ class Audit
     public function setBillingPlan(Plan $billingPlan): void
     {
         $this->billingPlan = $billingPlan;
+    }
+
+    public function increaseItemsCount()
+    {
+        $this->itemsCount++;
+    }
+
+    public function decreaseItemsCount()
+    {
+        $this->itemsCount--;
+    }
+
+    public function increaseUsersCount()
+    {
+        $this->usersCount++;
+    }
+
+    public function decreaseUsersCount()
+    {
+        $this->usersCount--;
+    }
+
+    public function increaseMemoryUsage(int $bytes)
+    {
+        $this->memoryUsed = $this->memoryUsed + $bytes;
+    }
+
+    public function decreaseMemoryUsage(int $bytes)
+    {
+        $this->memoryUsed = $this->memoryUsed - $bytes;
     }
 }
