@@ -25,7 +25,7 @@ use Symfony\Component\Routing\Annotation\Route;
 final class ListController extends AbstractController
 {
     /**
-     * @SWG\Tag(name="list")
+     * @SWG\Tag(name="List")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -105,7 +105,7 @@ final class ListController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="list", description="Edit list")
+     * @SWG\Tag(name="List", description="Edit list")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -182,7 +182,7 @@ final class ListController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="list")
+     * @SWG\Tag(name="List")
      *
      * @SWG\Response(
      *     response=204,
@@ -248,7 +248,7 @@ final class ListController extends AbstractController
     /**
      * Sort List
      *
-     * @SWG\Tag(name="list", description="Sort list")
+     * @SWG\Tag(name="List", description="Sort list")
      *
      * @SWG\Parameter(
      *     name="body",

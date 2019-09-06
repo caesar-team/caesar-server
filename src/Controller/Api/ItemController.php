@@ -52,7 +52,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class ItemController extends AbstractController
 {
     /**
-     * @SWG\Tag(name="Item")
+     * @SWG\Tag(name="List")
      *
      * @SWG\Response(
      *     response=200,
@@ -76,6 +76,7 @@ final class ItemController extends AbstractController
      * @param ListTreeViewFactory $viewFactory
      *
      * @return ListView[]|array
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function fullListAction(ListTreeViewFactory $viewFactory)
     {
