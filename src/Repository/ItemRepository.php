@@ -49,4 +49,12 @@ class ItemRepository extends ServiceEntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    public function save(Item $item): Item
+    {
+        $this->_em->persist($item);
+        $this->_em->flush();
+
+        return $item;
+    }
 }

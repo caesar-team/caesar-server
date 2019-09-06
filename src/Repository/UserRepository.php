@@ -119,14 +119,6 @@ class UserRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function save(Item $item): Item
-    {
-        $this->_em->persist($item);
-        $this->_em->flush();
-
-        return $item;
-    }
-
     /**
      * @param Team $team
      * @return array|User[]

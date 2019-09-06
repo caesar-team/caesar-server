@@ -259,12 +259,11 @@ final class ItemController extends AbstractController
      *
      * @param Request $request
      * @param CreatedItemViewFactory $viewFactory
-     * @param UserRepository $userRepository
-     *
+     * @param ItemRepository $itemRepository
      * @return CreatedItemView|FormInterface
      * @throws \Exception
      */
-    public function createItem(Request $request, CreatedItemViewFactory $viewFactory, UserRepository $userRepository)
+    public function createItem(Request $request, CreatedItemViewFactory $viewFactory, ItemRepository $itemRepository)
     {
         $item = new Item($this->getUser());
         $form = $this->createForm(CreateItemType::class, $item);
@@ -275,7 +274,7 @@ final class ItemController extends AbstractController
         }
         $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
 
-        $userRepository->save($item);
+        $itemRepository->save($item);
 
         return $viewFactory->create($item);
     }
@@ -945,12 +944,12 @@ final class ItemController extends AbstractController
      * )
      *
      * @param Request $request
-     * @param EntityManagerInterface $manager
      * @param ItemListViewFactory $viewFactory
+     * @param ItemRepository $itemRepository
      * @return ItemView[]|array|FormInterface
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function batchCreate(Request $request, EntityManagerInterface $manager, ItemListViewFactory $viewFactory, UserRepository $userRepository)
+    public function batchCreate(Request $request, ItemListViewFactory $viewFactory, ItemRepository $itemRepository)
     {
         $itemsRequest = new ItemsCollectionRequest();
 
@@ -965,8 +964,7 @@ final class ItemController extends AbstractController
             $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
             $item->setOwner($this->getUser());
 
-            $userRepository->save($item);
-
+            $itemRepository->save($item);
         }
 
         return $viewFactory->create($itemsRequest->getItems());

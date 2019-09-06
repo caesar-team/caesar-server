@@ -73,13 +73,14 @@ class ItemVoter extends Voter
 
         if (in_array($attribute, [self::DELETE_ITEM, self::CREATE_ITEM, self::SHOW_ITEM, self::EDIT_ITEM])) {
             $itemOwner = $this->userRepository->getByItem($subject);
-            $team = $this->teamRepository->findOneByDirectory($subject->getParentList());
-            $userTeam = $this->userTeamRepository->findOneByUserAndTeam($user, $team);
+            $userTeam = $this->findUserTeam($subject, $user);
             switch ($attribute) {
                 case self::EDIT_ITEM:
                     return $itemOwner === $user;
+                case self::CREATE_ITEM && $userTeam instanceof UserTeam:
+                    return  in_array($userTeam->getUserRole(), self::AVAILABLE_TEAM_ROLES);
                 case self::CREATE_ITEM:
-                    return $userTeam instanceof UserTeam && in_array($userTeam->getUserRole(), self::AVAILABLE_TEAM_ROLES);
+                    return User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
                 case self::DELETE_ITEM:
                     $teamUserRole = $userTeam instanceof UserTeam ? $userTeam->getUserRole() : null;
                     $isAdmin = $user->hasRole(User::ROLE_ADMIN) || UserTeam::USER_ROLE_ADMIN === $teamUserRole;
@@ -92,5 +93,21 @@ class ItemVoter extends Voter
         }
 
         throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');
+    }
+
+    /**
+     * @param Item $item
+     * @param User $user
+     * @return UserTeam|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    private function findUserTeam(Item $item, User $user): ?UserTeam
+    {
+        $team = $this->teamRepository->findOneByDirectory($item->getParentList());
+        if (is_null($team)) {
+            return null;
+        }
+
+        return $this->userTeamRepository->findOneByUserAndTeam($user, $team);
     }
 }
