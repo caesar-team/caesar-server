@@ -169,8 +169,8 @@ class UserRepository extends ServiceEntityRepository
     public function findAdmins(): array
     {
         $qb = $this->createQueryBuilder('user');
-        $qb->where('user.roles IN(:role)');
-        $qb->setParameter('role', User::ROLE_ADMIN);
+        $qb->andWhere($qb->expr()->Like($qb->expr()->lower('user.roles'), ':role'));
+        $qb->setParameter('role', '%'.mb_strtolower(User::ROLE_ADMIN).'%');
 
         return $qb->getQuery()->getResult();
     }
@@ -182,10 +182,10 @@ class UserRepository extends ServiceEntityRepository
     public function findByPartOfEmail(string $partOfEmail): array
     {
         $qb = $this->createQueryBuilder('user');
-        $qb->where('user.roles NOT IN(:role)');
-        $qb->andWhere($qb->expr()->like($qb->expr()->lower('user.email'), ':email'));
+        $qb->where($qb->expr()->like($qb->expr()->lower('user.email'), ':email'));
+        $qb->andWhere($qb->expr()->notLike($qb->expr()->lower('user.roles'), ':role'));
         $qb->setParameter('email', '%'.mb_strtolower($partOfEmail).'%');
-        $qb->setParameter('role', User::ROLE_ANONYMOUS_USER);
+        $qb->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%');
 
         return $qb->getQuery()->getResult();
     }
