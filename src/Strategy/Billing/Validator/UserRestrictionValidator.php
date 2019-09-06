@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Strategy\Billing\Validator;
 
+use App\Entity\Billing\Plan;
 use App\Entity\User;
 use App\Model\DTO\BillingViolation;
 use App\Services\Billing\BillingHelper;
@@ -32,6 +33,10 @@ final class UserRestrictionValidator implements BillingRestrictionValidatorInter
      */
     public function validate($value): ?BillingViolation
     {
+        if (!$this->billingHelper->hasRestriction(Plan::FIELD_USERS_LIMIT)) {
+            return null;
+        }
+
         if (0 >= $this->billingHelper->getRemains()->remainingUsers) {
             return new BillingViolation('Users limit reached.');
         }

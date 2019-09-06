@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Strategy\Billing\Validator;
 
+use App\Entity\Billing\Plan;
 use App\Entity\Item;
 use App\Model\DTO\BillingViolation;
 use App\Services\Billing\BillingHelper;
@@ -32,11 +33,11 @@ final class ItemRestrictionValidator implements BillingRestrictionValidatorInter
      */
     public function validate($value): ?BillingViolation
     {
-        if (0 >= $this->billingHelper->getRemains()->remainingItems) {
+        if ($this->billingHelper->hasRestriction(Plan::FIELD_ITEMS_LIMIT) && 0 >= $this->billingHelper->getRemains()->remainingItems) {
             return new BillingViolation('Items limit reached.');
         }
 
-        if (strlen($value->getSecret()) > $this->billingHelper->getRemains()->remainingMemory) {
+        if ($this->billingHelper->hasRestriction(Plan::FIELD_MEMORY_LIMIT) && strlen($value->getSecret()) > $this->billingHelper->getRemains()->remainingMemory) {
             return new BillingViolation('Memory limit reached.');
         }
 
