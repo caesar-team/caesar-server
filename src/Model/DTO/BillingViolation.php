@@ -4,34 +4,20 @@ declare(strict_types=1);
 
 namespace App\Model\DTO;
 
-use App\Entity\Item;
-use App\Entity\User;
-
 final class BillingViolation
 {
     /**
-     * @var object
+     * @var string
      */
-    private $object;
+    private $message;
 
-    public function __construct(object $object)
+    public function __construct(string $message)
     {
-        $this->object = $object;
+        $this->message = $message;
     }
 
-
-    public function getObjectAlias(): string
+    public function getMessage(): string
     {
-        $alias = "Unknown";
-        switch(true) {
-            case $this->object instanceof Item:
-                $alias = "Item";
-                break;
-            case $this->object instanceof User:
-                $alias = "User";
-                break;
-        }
-
-        return $alias;
+        return $this->message;
     }
 }

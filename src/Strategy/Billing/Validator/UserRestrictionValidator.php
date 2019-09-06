@@ -33,7 +33,7 @@ final class UserRestrictionValidator implements BillingRestrictionValidatorInter
     public function validate($value): ?BillingViolation
     {
         if (0 >= $this->billingHelper->getRemains()->remainingUsers) {
-            return new BillingViolation($value);
+            return new BillingViolation('Users limit reached.');
         }
 
         return null;

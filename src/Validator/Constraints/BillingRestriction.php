@@ -11,9 +11,6 @@ use Symfony\Component\Validator\Constraint;
  */
 final class BillingRestriction extends Constraint
 {
-    public $message = '{{ object }} limit reached.';
-
-
     public function getTargets()
     {
         return self::CLASS_CONSTRAINT;

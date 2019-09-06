@@ -37,8 +37,7 @@ final class BillingRestrictionValidator extends ConstraintValidator
 
         if ($violation) {
             $this->context
-                ->buildViolation($constraint->message)
-                ->setParameter('{{ object }}', $violation->getObjectAlias())
+                ->buildViolation($violation->getMessage())
                 ->addViolation()
             ;
         }
