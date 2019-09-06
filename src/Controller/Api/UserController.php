@@ -646,11 +646,30 @@ final class UserController extends AbstractController
      * @return UserView|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function searchByEmail(string $email, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext)
+    public function searchOneByEmail(string $email, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext)
     {
         $user = $userRepository->findOneByEmail($email);
 
         return $user ? $viewFactoryContext->view($user) : null;
+    }
+
+    /**
+     * @Route(
+     *     path="/api/users/search/{partOfEmail}",
+     *     methods={"GET"}
+     * )
+     * @Rest\View(serializerGroups={"search_by_email"})
+     *
+     * @param string $partOfEmail
+     * @param UserRepository $userRepository
+     * @param ViewFactoryContext $viewFactoryContext
+     * @return UserView[]|array
+     */
+    public function autocompleteForEmail(string $partOfEmail, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext): array
+    {
+        $users = $userRepository->findByPartOfEmail($partOfEmail);
+
+        return $viewFactoryContext->viewList($users);
     }
 
     private function setFlowStatus(string $currentFlowStatus): string

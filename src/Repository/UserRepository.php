@@ -174,4 +174,19 @@ class UserRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * @param string $partOfEmail
+     * @return array|User[]
+     */
+    public function findByPartOfEmail(string $partOfEmail): array
+    {
+        $qb = $this->createQueryBuilder('user');
+        $qb->where('user.roles NOT IN(:role)');
+        $qb->andWhere($qb->expr()->like($qb->expr()->lower('user.email'), ':email'));
+        $qb->setParameter('email', '%'.mb_strtolower($partOfEmail).'%');
+        $qb->setParameter('role', User::ROLE_ANONYMOUS_USER);
+
+        return $qb->getQuery()->getResult();
+    }
 }
