@@ -440,6 +440,20 @@ class TeamController extends AbstractController
     }
 
     /**
+     * @SWG\Tag(name="Team")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Team lists",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="App\Model\View\Team\ListView")
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
      * @Route(
      *     path="/{team}/lists",
      *     methods={"GET"}
