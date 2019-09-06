@@ -107,7 +107,7 @@ class UserRepository extends ServiceEntityRepository
      * @return User|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findByEmail(string $email): ?User
+    public function findOneWithPublicKeyByEmail(string $email): ?User
     {
         $qb = $this->createQueryBuilder('user');
 
@@ -115,6 +115,23 @@ class UserRepository extends ServiceEntityRepository
             ->where($qb->expr()->eq('user.email', ':email'))
             ->andWhere($qb->expr()->isNotNull('user.publicKey'))
             ->setParameter('email', $email)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @param string $email
+     * @return User|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function findOneByEmail(string $email): ?User
+    {
+        $qb = $this->createQueryBuilder('user');
+
+        return $qb
+            ->where($qb->expr()->eq('user.email', ':email'))
+            ->setParameter('email', $email)
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }

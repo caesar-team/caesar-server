@@ -371,7 +371,6 @@ final class UserController extends AbstractController
      *     description="User's security bootstrap",
      *     @Model(type="\App\Model\View\User\SecurityBootstrapView")
      * )
-     * )
      *
      * @SWG\Response(
      *     response=401,
@@ -533,7 +532,7 @@ final class UserController extends AbstractController
 
         $view = [];
         foreach ($keysRequest->getEmails() as $email) {
-            if ($user = $userRepository->findByEmail($email)) {
+            if ($user = $userRepository->findOneWithPublicKeyByEmail($email)) {
                 $view[] = $viewFactory->create($user);
             }
         }
@@ -621,6 +620,37 @@ final class UserController extends AbstractController
         $users = $userRepository->findByIds($ids);
 
         return $viewFactoryContext->viewList($users);
+    }
+
+    /**
+     * @SWG\Tag(name="User")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="User by email",
+     *     @Model(type="\App\Model\View\User\UserView", groups={"search_by_email"})
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/users/email/{email}",
+     *     methods={"GET"}
+     * )
+     * @Rest\View(serializerGroups={"search_by_email"})
+     * @param string $email
+     * @param UserRepository $userRepository
+     * @param ViewFactoryContext $viewFactoryContext
+     * @return UserView|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function searchByEmail(string $email, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext)
+    {
+        $user = $userRepository->findOneByEmail($email);
+
+        return $user ? $viewFactoryContext->view($user) : null;
     }
 
     private function setFlowStatus(string $currentFlowStatus): string
