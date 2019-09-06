@@ -19,4 +19,9 @@ class ListView extends NodeView
      * @SWG\Property(example="lists")
      */
     public $label;
+
+    /**
+     * @var string|null
+     */
+    public $teamId;
 }
