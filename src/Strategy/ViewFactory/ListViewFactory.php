@@ -7,6 +7,7 @@ namespace App\Strategy\ViewFactory;
 use App\Entity\Directory;
 use App\Factory\View\ItemListViewFactory;
 use App\Model\View\Team\ListView;
+use App\Repository\TeamRepository;
 
 final class ListViewFactory implements ViewFactoryInterface
 {
@@ -14,10 +15,15 @@ final class ListViewFactory implements ViewFactoryInterface
      * @var ItemListViewFactory
      */
     private $itemListViewFactory;
+    /**
+     * @var TeamRepository
+     */
+    private $teamRepository;
 
-    public function __construct(ItemListViewFactory $itemListViewFactory)
+    public function __construct(ItemListViewFactory $itemListViewFactory, TeamRepository $teamRepository)
     {
         $this->itemListViewFactory = $itemListViewFactory;
+        $this->teamRepository = $teamRepository;
     }
 
     /**
@@ -44,6 +50,8 @@ final class ListViewFactory implements ViewFactoryInterface
         $view->type = $data->getType();
         $view->sort  = $data->getSort();
         $view->children = $this->itemListViewFactory->create($data->getChildItems());
+        $team = $this->teamRepository->findOneByDirectory($data);
+        $view->teamId = $team ? $team->getId()->toString() : null;
 
         return $view;
     }
@@ -52,6 +60,7 @@ final class ListViewFactory implements ViewFactoryInterface
      * @param Directory[] $data
      *
      * @return mixed
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function viewList(array $data)
     {

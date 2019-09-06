@@ -17,4 +17,9 @@ final class ListView extends NodeView
      * @var ItemView[]
      */
     public $children;
+
+    /**
+     * @var string|null
+     */
+    public $teamId;
 }
