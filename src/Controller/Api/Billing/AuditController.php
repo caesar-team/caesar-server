@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\Billing;
 
 use App\Controller\AbstractController;
-use App\Model\View\Audit\AuditView;
-use App\Repository\AuditRepository;
+use App\Services\Billing\BillingHelper;
 use Symfony\Component\Routing\Annotation\Route;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -33,13 +32,14 @@ final class AuditController extends AbstractController
      * )
      *
      * @Route(path="/status", methods={"GET"})
-     * @param AuditRepository $auditRepository
-     * @return AuditView
+     * @param BillingHelper $billingHelper
+     * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function status(AuditRepository $auditRepository)
+    public function status(BillingHelper $billingHelper)
     {
-        $audit = $auditRepository->findOneLatest();
+        $remains = $billingHelper->getRemains();
 
-        return AuditView::create($audit);
+        return $remains;
     }
 }

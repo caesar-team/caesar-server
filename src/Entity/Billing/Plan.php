@@ -11,10 +11,14 @@ use Ramsey\Uuid\UuidInterface;
 
 /**
  * Class Plan
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\PlanRepository")
  */
 class Plan
 {
+    const FIELD_USERS_LIMIT = 'usersLimit';
+    const FIELD_ITEMS_LIMIT = 'itemsLimit';
+    const FIELD_MEMORY_LIMIT = 'memoryLimit';
+
     /**
      * @var UuidInterface
      *
@@ -46,6 +50,12 @@ class Plan
      * @var int
      */
     private $memoryLimit = -1;
+
+    /**
+     * @var bool
+     * @ORM\Column(type="boolean", options={"default":false})
+     */
+    private $active = false;
 
     /**
      * @param string $label
@@ -99,5 +109,15 @@ class Plan
     public function getId(): UuidInterface
     {
         return $this->id;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): void
+    {
+        $this->active = $active;
     }
 }

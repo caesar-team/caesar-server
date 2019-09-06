@@ -61,4 +61,16 @@ class ItemRepository extends ServiceEntityRepository
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getSecretsSum(): int
+    {
+        $qb = $this->createQueryBuilder('item');
+        $qb->select('SUM(LENGTH(item.secret)) as secretSum');
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
 }
