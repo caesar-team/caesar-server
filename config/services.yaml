@@ -24,6 +24,10 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    App\Strategy\Billing\Validator\:
+        resource: '../src/Strategy/Billing/Validator'
+        tags: ['app.billing_validator']
+
     App\Security\FOSUBUserProvider:
         arguments:
             $properties: { google: googleId}

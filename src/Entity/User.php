@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Security\TwoFactor\BackUpCodesManager;
+use App\Validator\Constraints\BillingRestriction;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -20,6 +21,7 @@ use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
+ * @BillingRestriction()
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface, BackupCodeInterface
 {

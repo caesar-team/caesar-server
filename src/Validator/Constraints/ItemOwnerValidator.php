@@ -34,6 +34,7 @@ class ItemOwnerValidator extends ConstraintValidator
     /**
      * @param Collection $value
      * @param Constraint $constraint
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function validate($value, Constraint $constraint)
     {

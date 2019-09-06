@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Utils\ChildItemAwareInterface;
+use App\Validator\Constraints\BillingRestriction;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -16,6 +17,7 @@ use Ramsey\Uuid\UuidInterface;
  * @ORM\Table
  * @ORM\Entity(repositoryClass="App\Repository\ItemRepository")
  * @ORM\HasLifecycleCallbacks
+ * @BillingRestriction()
  */
 class Item implements ChildItemAwareInterface
 {
