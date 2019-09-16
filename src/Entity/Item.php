@@ -414,6 +414,11 @@ class Item implements ChildItemAwareInterface
         return $this->originalItem ? $this->originalItem->getOwner() : $this->owner;
     }
 
+    public function getSignedOwner(): User
+    {
+        return $this->owner;
+    }
+
     public function setOwner(?User $owner): void
     {
         $this->owner = $owner;
