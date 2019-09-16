@@ -1033,7 +1033,9 @@ final class ItemController extends AbstractController
      * @param Request $request
      * @param ChildItemHandler $childItemHandler
      * @param ItemRepository $itemRepository
+     * @param BatchListItemViewFactory $viewFactory
      * @return ShareListView|FormInterface
+     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Exception
      */
     public function batchShare(

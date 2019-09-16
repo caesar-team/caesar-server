@@ -89,7 +89,7 @@ class ItemViewFactory
             $childItem->id = $item->getId()->toString();
             $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
             $user = $this->userRepository->getByItem($item);
-            $childItem->userId = $user->getId()->toString();
+            $childItem->userId = $user ? $user->getId()->toString() : null;
             $childItems[] = $childItem;
         }
         $view->items = $childItems;
@@ -116,7 +116,7 @@ class ItemViewFactory
 
             $childItemView = new InviteItemView();
             $childItemView->id = $childItem->getId()->toString();
-            $childItemView->userId = $user->getId()->toString();
+            $childItemView->userId = $user? $user->getId()->toString() : null;
             $childItemView->access = $childItem->getAccess();
             $children[] = $childItemView;
         }

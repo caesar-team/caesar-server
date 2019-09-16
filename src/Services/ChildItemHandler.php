@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Mailer\MailRegistry;
 use App\Model\DTO\Message;
@@ -86,9 +88,15 @@ class ChildItemHandler
     public function childItemToItem(ItemCollectionRequest $request)
     {
         $items = [];
+
+        $parentList = $request->getOriginalItem()->getParentList();
+        $team = $this->entityManager->getRepository(Team::class)->findOneByDirectory($parentList);
+
         foreach ($request->getItems() as $childItem) {
+
             $item = new Item($childItem->getUser());
-            $item->setParentList($childItem->getUser()->getInbox());
+            $directory = $team ? $parentList : $childItem->getUser()->getInbox();
+            $item->setParentList($directory);
             $item->setOriginalItem($request->getOriginalItem());
             $item->setSecret($childItem->getSecret());
             $item->setAccess($childItem->getAccess());
