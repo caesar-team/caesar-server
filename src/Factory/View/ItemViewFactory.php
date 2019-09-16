@@ -112,11 +112,9 @@ class ItemViewFactory
         $children = [];
         $sharedItems = $this->extractChildItemByCause($ownerItem->getSharedItems());
         foreach ($sharedItems as $childItem) {
-            $user = $this->userRepository->getByItem($childItem);
-
             $childItemView = new InviteItemView();
             $childItemView->id = $childItem->getId()->toString();
-            $childItemView->userId = $user? $user->getId()->toString() : null;
+            $childItemView->userId = $childItem->getOwner()->getId()->toString();
             $childItemView->access = $childItem->getAccess();
             $children[] = $childItemView;
         }
@@ -164,6 +162,7 @@ class ItemViewFactory
 
     /**
      * @param Item $item
+     * @return ChildItemView|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function getSharesCollection(Item $item)
