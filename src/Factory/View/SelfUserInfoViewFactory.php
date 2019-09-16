@@ -25,6 +25,7 @@ class SelfUserInfoViewFactory
         $view->name = $user->getUsername();
         $view->avatar = $this->getImage($user->getAvatar());
         $view->roles = $user->getRoles();
+        $view->teamIds = $user->getTeamsIds();
 
         return $view;
     }
