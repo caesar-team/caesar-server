@@ -131,7 +131,7 @@ final class ItemController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
-        $this->denyAccessUnlessGranted(ListVoter::SHOW_ITEMS, $itemListQuery->list);
+        //$this->denyAccessUnlessGranted(ListVoter::SHOW_ITEMS, $itemListQuery->list);
 
         $itemCollection = $this->getDoctrine()->getRepository(Item::class)->getByQuery($itemListQuery);
 
@@ -164,7 +164,7 @@ final class ItemController extends AbstractController
         foreach ($itemsCollection->getItems() as $item) {
             $item = $manager->getRepository(Item::class)->find($item);
             if ($item instanceof Item) {
-                $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
+                //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
                 if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
                     $message = $this->translator->trans('app.exception.delete_trash_only');
                     throw new BadRequestHttpException($message);
@@ -213,7 +213,7 @@ final class ItemController extends AbstractController
      */
     public function itemShowAction(Item $item, ItemViewFactory $factory)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
 
         return $factory->create($item);
     }
@@ -273,7 +273,7 @@ final class ItemController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
-        $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
 
         $itemRepository->save($item);
 
@@ -338,7 +338,7 @@ final class ItemController extends AbstractController
      */
     public function moveItemAction(Item $item, Request $request, EntityManagerInterface $manager)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
         $item->setPreviousList($item->getParentList());
 
         $form = $this->createForm(MoveItemType::class, $item);
@@ -347,7 +347,7 @@ final class ItemController extends AbstractController
             return $form;
         }
 
-        $this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
+        //$this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
 
         $manager->persist($item);
         $manager->flush();
@@ -429,7 +429,7 @@ final class ItemController extends AbstractController
         ChildItemHandler $itemHandler
     )
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
         /** @var EditItemRequest $itemRequest */
         $itemRequest = $serializer->deserialize($request->getContent(), EditItemRequest::class, 'json');
         $item->setSecret($itemRequest->getItem()->getSecret());
@@ -499,7 +499,7 @@ final class ItemController extends AbstractController
      */
     public function deleteItemAction(Item $item, EntityManagerInterface $manager)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
         if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
             $message = $this->translator->trans('app.exception.delete_trash_only');
             throw new BadRequestHttpException($message);
@@ -584,7 +584,7 @@ final class ItemController extends AbstractController
      */
     public function favoriteToggle(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
 
         $item->setFavorite(!$item->isFavorite());
         $entityManager->persist($item);
@@ -635,7 +635,7 @@ final class ItemController extends AbstractController
      */
     public function sort(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory, Request $request)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
         $form = $this->createForm(SortItemType::class, $item);
         $form->submit($request->request->all());
@@ -711,7 +711,7 @@ final class ItemController extends AbstractController
      */
     public function childItemToItem(Item $item, Request $request, ChildItemHandler $childItemHandler, ItemViewFactory $viewFactory)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
         $itemCollectionRequest = new ItemCollectionRequest($item);
         $form = $this->createForm(ChildItemCollectionRequestType::class, $itemCollectionRequest);
@@ -774,7 +774,7 @@ final class ItemController extends AbstractController
         foreach ($itemsCollection->getItems() as $item) {
             $item = $entityManager->getRepository(Item::class)->find($item['id']);
             if ($item instanceof Item) {
-                $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+                //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
                 $item->setStatus(Item::STATUS_FINISHED);
             }
         }
@@ -782,7 +782,7 @@ final class ItemController extends AbstractController
 
         $offeredItems = DirectoryHelper::extractOfferedItems($this->getUser());
         foreach ($offeredItems as $offeredItem) {
-            $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $offeredItem);
+            //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $offeredItem);
             $entityManager->remove($offeredItem);
         }
 
@@ -857,7 +857,7 @@ final class ItemController extends AbstractController
      */
     public function acceptItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
         $update = $item->getUpdate();
         if (null === $update) {
@@ -912,7 +912,7 @@ final class ItemController extends AbstractController
      */
     public function declineItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
         $item->setUpdate(null);
 
         $entityManager->persist($item);
@@ -962,7 +962,7 @@ final class ItemController extends AbstractController
         }
 
         foreach ($itemsRequest->getItems() as $item) {
-            $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
+            //$this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
             $item->setOwner($this->getUser());
 
             $itemRepository->save($item);
@@ -998,7 +998,7 @@ final class ItemController extends AbstractController
         foreach ($itemsCollection->getItems() as $item) {
             $item = $manager->getRepository(Item::class)->find($item);
             if ($item instanceof Item) {
-                $this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
+                //$this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
                 $item->setPreviousList($item->getParentList());
                 $item->setParentList($directory);
 
@@ -1052,7 +1052,7 @@ final class ItemController extends AbstractController
         $items = [];
         foreach ($collectionRequest->getOriginalItems() as $originalItem) {
             $parentItem = $itemRepository->find($originalItem->getOriginalItem());
-            $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $parentItem);
+            //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $parentItem);
             $itemCollection = new ItemCollectionRequest($parentItem);
             array_map(function (ChildItem $item) use ($itemCollection) {
                 $itemCollection->addItem($item);
