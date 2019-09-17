@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Factory\View;
+namespace App\Strategy\ViewFactory;
 
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
@@ -11,17 +11,37 @@ use App\Model\View\CredentialsList\ChildItemView;
 use App\Model\View\CredentialsList\InviteItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
-use App\Model\View\User\UserView;
 use App\Utils\ChildItemAwareInterface;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Security\Core\Security;
 
-class ItemViewFactory
+final class ItemViewFactory implements ViewFactoryInterface
 {
     /**
+     * @var User
+     */
+    private $currentUser;
+
+    public function __construct(Security $security)
+    {
+        $this->currentUser = $security->getUser();
+    }
+    /**
+     * @param mixed $data
+     *
+     * @return bool
+     */
+    public function canView($data): bool
+    {
+        return $data instanceof Item;
+    }
+
+    /**
      * @param Item $item
+     *
      * @return ItemView
      */
-    public function create(Item $item): ItemView
+    public function view($item)
     {
         $view = new ItemView();
 
@@ -45,45 +65,21 @@ class ItemViewFactory
 
     /**
      * @param array|Item[] $items
-     * @return ItemView
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return array|ItemView[]
      */
-    public function createList(array $items)
+    public function viewList(array $items)
     {
-        $view = new ItemView();
-        $childItems = [];
+        $list = [];
         foreach ($items as $item) {
-            $childItem = new ChildItemView();
-            $childItem->id = $item->getId()->toString();
-            $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
-            $childItem->userId = $this->getOwner($item)->id;
-            $childItems[] = $childItem;
+            if ($this->currentUser !== $item->getSignedOwner()) {
+                continue;
+            }
+
+            $list[] = $this->view($item);
         }
-        $view->items = $childItems;
 
-        return $view;
-    }
-
-    /**
-     * @param string $id
-     * @param array|Item[] $items
-     * @return ItemView
-     */
-    public function createSharedItems(string $id, array $items)
-    {
-        $view = new ItemView();
-        $view->originalItemId = $id;
-        $childItems = [];
-        foreach ($items as $item) {
-            $childItem = new ChildItemView();
-            $childItem->id = $item->getId()->toString();
-            $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
-            $childItem->userId = $item->getSignedOwner()->getId()->toString();
-            $childItems[] = $childItem;
-        }
-        $view->items = $childItems;
-
-        return $view;
+        return $list;
     }
 
     /**
@@ -108,31 +104,6 @@ class ItemViewFactory
         }
 
         return $children;
-    }
-
-    /**
-     * @param Item $item
-     * @return UserView
-     */
-    private function getOwner(Item $item): UserView
-    {
-        $user = $item->getOwner();
-
-        return (new UserViewFactory())->create($user);
-    }
-
-    private function getUpdateView(?ItemUpdate $update): ?UpdateView
-    {
-        if (null === $update) {
-            return null;
-        }
-
-        $view = new UpdateView();
-        $view->userId = $update->getUpdatedBy()->getId()->toString();
-        $view->createdAt = $update->getLastUpdated();
-        $view->secret = $update->getSecret();
-
-        return $view;
     }
 
     /**
@@ -179,5 +150,19 @@ class ItemViewFactory
         $shares = $childItemView;
 
         return $shares;
+    }
+
+    private function getUpdateView(?ItemUpdate $update): ?UpdateView
+    {
+        if (null === $update) {
+            return null;
+        }
+
+        $view = new UpdateView();
+        $view->userId = $update->getUpdatedBy()->getId()->toString();
+        $view->createdAt = $update->getLastUpdated();
+        $view->secret = $update->getSecret();
+
+        return $view;
     }
 }

@@ -11,17 +11,6 @@ use App\Model\View\Team\TeamView;
 
 class TeamViewFactory implements ViewFactoryInterface
 {
-
-    /**
-     * @var ListViewFactory
-     */
-    private $listViewFactory;
-
-    public function __construct(ListViewFactory $listViewFactory)
-    {
-        $this->listViewFactory = $listViewFactory;
-    }
-
     /**
      * @param Team $team
      * @return array|MemberShortView[]
@@ -38,25 +27,6 @@ class TeamViewFactory implements ViewFactoryInterface
     }
 
     /**
-     * @param Team $team
-     * @return array
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    private function getLists(Team $team): array
-    {
-        $lists = [];
-
-        foreach ($team->getLists()->getChildLists() as $directory) {
-            $lists[] = $this->listViewFactory->view($directory);
-        }
-
-        array_push($lists, $this->listViewFactory->view($team->getInbox()));
-        array_push($lists, $this->listViewFactory->view($team->getTrash()));
-
-        return $lists;
-    }
-
-    /**
      * @param mixed $data
      *
      * @return bool
@@ -70,16 +40,12 @@ class TeamViewFactory implements ViewFactoryInterface
      * @param Team $team
      *
      * @return TeamView
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function view($team)
     {
         $view = new TeamView();
         $view->id = $team->getId()->toString();
         $view->users = $this->extractUsers($team);
-        if (Team::DEFAULT_GROUP_ALIAS !== $team->getAlias()) {
-            $view->lists = $this->getLists($team);
-        }
 
         $view->title = $team->getTitle();
         $view->icon = $team->getIcon();
@@ -91,7 +57,6 @@ class TeamViewFactory implements ViewFactoryInterface
      * @param array|Team[] $teams
      *
      * @return TeamView[]
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function viewList(array $teams): array
     {

@@ -31,7 +31,6 @@ class ItemListViewFactory
      * @param Item[] $itemCollection
      *
      * @return ItemView[]
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function create(array $itemCollection): array
     {

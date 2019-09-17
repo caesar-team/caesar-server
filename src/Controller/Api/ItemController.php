@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
@@ -22,6 +23,7 @@ use App\Form\Request\EditItemRequestType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
+use App\Model\DTO\TeamContainer;
 use App\Model\Query\ItemListQuery;
 use App\Model\Request\BatchShareRequest;
 use App\Model\Request\ChildItem;
@@ -32,7 +34,9 @@ use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
 use App\Model\View\CredentialsList\ShareListView;
+use App\Model\View\Item\OfferedItemsView;
 use App\Repository\ItemRepository;
+use App\Repository\TeamRepository;
 use App\Repository\UserRepository;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
@@ -730,22 +734,31 @@ final class ItemController extends AbstractController
      * Items collection
      *
      * @SWG\Tag(name="Item")
+     *
      * @SWG\Response(
      *     response=200,
      *     description="Items collection",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="App\Model\View\Item\OfferedItemsView", groups={"offered_item"})
+     *     )
      * )
-     *
+     * @Rest\View(serializerGroups={"offered_item"})
      * @Route("/api/offered_item", methods={"GET"}, name="api_item_offered_list")
-     * @param ItemListViewFactory $viewFactory
-     * @return ItemView[]|array
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @param TeamRepository $teamRepository
+     * @param ViewFactoryContext $viewFactoryContext
+     * @return OfferedItemsView
      */
-    public function getOfferedItemsList(ItemListViewFactory $viewFactory)
+    public function getOfferedItemsList(TeamRepository $teamRepository, ViewFactoryContext $viewFactoryContext)
     {
         $user = $this->getUser();
         $offeredItems = DirectoryHelper::extractOfferedItems($user);
 
-        return $viewFactory->create($offeredItems);
+        $personalItems = $viewFactoryContext->viewList($offeredItems);
+        $teams = $teamRepository->findByUser($user);
+        $teamsContainers = TeamContainer::createMany($teams);
+
+        return new OfferedItemsView($personalItems, $viewFactoryContext->viewList($teamsContainers));
     }
 
     /**
