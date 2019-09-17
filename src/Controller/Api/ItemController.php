@@ -752,7 +752,7 @@ final class ItemController extends AbstractController
     public function getOfferedItemsList(TeamRepository $teamRepository, ViewFactoryContext $viewFactoryContext)
     {
         $user = $this->getUser();
-        $offeredItems = DirectoryHelper::extractOfferedItems($user);
+        $offeredItems = DirectoryHelper::extractOfferedItemsByUser($user);
 
         $personalItems = $viewFactoryContext->viewList($offeredItems);
         $teams = $teamRepository->findByUser($user);
@@ -794,7 +794,7 @@ final class ItemController extends AbstractController
         }
         $entityManager->flush();
 
-        $offeredItems = DirectoryHelper::extractOfferedItems($this->getUser());
+        $offeredItems = DirectoryHelper::extractOfferedItemsByUser($this->getUser());
         foreach ($offeredItems as $offeredItem) {
             //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $offeredItem);
             $entityManager->remove($offeredItem);
@@ -803,6 +803,13 @@ final class ItemController extends AbstractController
         $entityManager->flush();
 
         return null;
+    }
+
+    public function acceptTeamsItems(TeamRepository $teamRepository)
+    {
+        $teams = $teamRepository->findByUser($this->getUser());
+
+
     }
 
     /**
