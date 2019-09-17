@@ -6,8 +6,9 @@ namespace App\Strategy\ViewFactory;
 
 use App\Entity\Directory;
 use App\Entity\Team;
-use App\Model\DTO\TeamContainer;
+use App\Model\DTO\OfferedTeamContainer;
 use App\Model\View\Team\TeamItemsView;
+use App\Utils\DirectoryHelper;
 
 final class TeamContainerViewFactory implements ViewFactoryInterface
 {
@@ -28,11 +29,11 @@ final class TeamContainerViewFactory implements ViewFactoryInterface
      */
     public function canView($data): bool
     {
-        return $data instanceof TeamContainer;
+        return $data instanceof OfferedTeamContainer;
     }
 
     /**
-     * @param TeamContainer $data
+     * @param OfferedTeamContainer $data
      *
      * @return TeamItemsView
      */
@@ -42,13 +43,14 @@ final class TeamContainerViewFactory implements ViewFactoryInterface
         $view = new TeamItemsView();
         $view->id = $team->getId()->toString();
         $items = $this->getAllItems($team);
+        $items = array_filter($items, [DirectoryHelper::class, 'filterByOffered']);
         $view->items = $this->itemViewFactory->viewList($items);
 
         return $view;
     }
 
     /**
-     * @param array|TeamContainer[] $containers
+     * @param array|OfferedTeamContainer[] $containers
      *
      * @return TeamItemsView[]
      */

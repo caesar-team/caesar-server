@@ -81,7 +81,7 @@ class ItemView extends NodeView
      */
     public $sort;
     /**
-     * @Groups({"child_item"})
+     * @Groups({"child_item","offered_item"})
      * @var null|string
      */
     public $originalItemId;

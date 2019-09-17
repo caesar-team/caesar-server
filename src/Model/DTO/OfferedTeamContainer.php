@@ -6,7 +6,7 @@ namespace App\Model\DTO;
 
 use App\Entity\Team;
 
-class TeamContainer
+class OfferedTeamContainer
 {
     /**
      * @var Team

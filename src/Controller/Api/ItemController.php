@@ -23,7 +23,7 @@ use App\Form\Request\EditItemRequestType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
-use App\Model\DTO\TeamContainer;
+use App\Model\DTO\OfferedTeamContainer;
 use App\Model\Query\ItemListQuery;
 use App\Model\Request\BatchShareRequest;
 use App\Model\Request\ChildItem;
@@ -756,7 +756,7 @@ final class ItemController extends AbstractController
 
         $personalItems = $viewFactoryContext->viewList($offeredItems);
         $teams = $teamRepository->findByUser($user);
-        $teamsContainers = TeamContainer::createMany($teams);
+        $teamsContainers = OfferedTeamContainer::createMany($teams);
 
         return new OfferedItemsView($personalItems, $viewFactoryContext->viewList($teamsContainers));
     }
