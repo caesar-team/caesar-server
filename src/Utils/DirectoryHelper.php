@@ -17,7 +17,7 @@ class DirectoryHelper
     {
         $teamsOfferedItemsCount = count(DirectoryHelper::extractOfferedItemsByUser($user));
         foreach ($teams as $team) {
-            $teamsOfferedItemsCount = $teamsOfferedItemsCount + count(self::extractOfferedItemsByTeam($user, $team));
+            $teamsOfferedItemsCount = $teamsOfferedItemsCount + count(self::extractOfferedTeamsItemsByUser($user, $team));
         }
 
         return 0 < $teamsOfferedItemsCount;
@@ -43,7 +43,7 @@ class DirectoryHelper
      * @param Team $team
      * @return array|Item[]
      */
-    static public function extractOfferedItemsByTeam(User $user, Team $team): array
+    static public function extractOfferedTeamsItemsByUser(User $user, Team $team): array
     {
         if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
             return [];

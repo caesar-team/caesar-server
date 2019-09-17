@@ -824,7 +824,7 @@ final class ItemController extends AbstractController
         $teams = $teamRepository->findByUser($this->getUser());
 
         foreach ($teams as $team) {
-            $items = DirectoryHelper::extractOfferedItemsByTeam($this->getUser(), $team);
+            $items = DirectoryHelper::extractOfferedTeamsItemsByUser($this->getUser(), $team);
 
             array_walk($items, function (Item $item) use ($itemRepository) {
                 $item->setStatus(Item::STATUS_FINISHED);
