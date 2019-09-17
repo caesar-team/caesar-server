@@ -654,6 +654,18 @@ final class UserController extends AbstractController
     }
 
     /**
+     * @SWG\Tag(name="User")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="User by part of email",
+     *     @Model(type="\App\Model\View\User\UserView", groups={"search_by_email"})
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
      * @Route(
      *     path="/api/users/search/{partOfEmail}",
      *     methods={"GET"}
