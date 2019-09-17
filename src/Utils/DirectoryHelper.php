@@ -23,6 +23,10 @@ class DirectoryHelper
         return 0 < $teamsOfferedItemsCount;
     }
 
+    /**
+     * @param User $user
+     * @return array|Item[]
+     */
     static public function extractOfferedItemsByUser(User $user): array
     {
         $inbox = $user->getInbox();
@@ -34,6 +38,11 @@ class DirectoryHelper
         return $items;
     }
 
+    /**
+     * @param User $user
+     * @param Team $team
+     * @return array|Item[]
+     */
     static public function extractOfferedItemsByTeam(User $user, Team $team): array
     {
         $inbox = $team->getInbox();

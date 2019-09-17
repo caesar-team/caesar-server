@@ -48,6 +48,7 @@ use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -769,7 +770,7 @@ final class ItemController extends AbstractController
      *     @Model(type=App\Form\Request\AcceptItemsType::class)
      * )
      * @SWG\Response(
-     *     response=200,
+     *     response=204,
      *     description="Items accepted",
      * )
      *
@@ -805,11 +806,33 @@ final class ItemController extends AbstractController
         return null;
     }
 
-    public function acceptTeamsItems(TeamRepository $teamRepository)
+    /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Response(
+     *     response=204,
+     *     description="Items accepted",
+     * )
+     * @Route("/api/accept_teams_items", methods={"PATCH"})
+     * @param TeamRepository $teamRepository
+     * @param ItemRepository $itemRepository
+     *
+     * @return JsonResponse
+     */
+    public function acceptTeamsItems(TeamRepository $teamRepository, ItemRepository $itemRepository)
     {
         $teams = $teamRepository->findByUser($this->getUser());
 
+        foreach ($teams as $team) {
+            $items = DirectoryHelper::extractOfferedItemsByTeam($this->getUser(), $team);
 
+            array_walk($items, function (Item $item) use ($itemRepository) {
+                $item->setStatus(Item::STATUS_FINISHED);
+                $itemRepository->save($item);
+            });
+        }
+
+        return new JsonResponse(['success' => true], Response::HTTP_NO_CONTENT);
     }
 
     /**
