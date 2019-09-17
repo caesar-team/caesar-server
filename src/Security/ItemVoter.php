@@ -8,7 +8,6 @@ use App\Entity\Item;
 use App\Entity\User;
 use App\Entity\UserTeam;
 use App\Repository\TeamRepository;
-use App\Repository\UserRepository;
 use App\Repository\UserTeamRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -24,8 +23,6 @@ class ItemVoter extends Voter
         UserTeam::USER_ROLE_MEMBER,
     ];
 
-    /** @var UserRepository */
-    private $userRepository;
     /**
      * @var UserTeamRepository
      */
@@ -35,9 +32,8 @@ class ItemVoter extends Voter
      */
     private $teamRepository;
 
-    public function __construct(UserRepository $userRepository, UserTeamRepository $userTeamRepository, TeamRepository $teamRepository)
+    public function __construct(UserTeamRepository $userTeamRepository, TeamRepository $teamRepository)
     {
-        $this->userRepository = $userRepository;
         $this->userTeamRepository = $userTeamRepository;
         $this->teamRepository = $teamRepository;
     }
@@ -72,7 +68,7 @@ class ItemVoter extends Voter
         $user = $token->getUser();
 
         if (in_array($attribute, [self::DELETE_ITEM, self::CREATE_ITEM, self::SHOW_ITEM, self::EDIT_ITEM])) {
-            $itemOwner = $this->userRepository->getByItem($subject);
+            $itemOwner = $subject->getSignedOwner();
             $userTeam = $this->findUserTeam($subject, $user);
             switch ($attribute) {
                 case self::EDIT_ITEM:

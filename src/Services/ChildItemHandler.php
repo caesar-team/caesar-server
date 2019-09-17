@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
 use App\Entity\Team;
@@ -13,12 +12,9 @@ use App\Mailer\MailRegistry;
 use App\Model\DTO\Message;
 use App\Model\Request\ChildItem;
 use App\Model\Request\ItemCollectionRequest;
-use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use OldSound\RabbitMqBundle\RabbitMq\Producer;
 use Psr\Log\LoggerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
 class ChildItemHandler
@@ -29,10 +25,6 @@ class ChildItemHandler
     /** @var EntityManagerInterface */
     private $entityManager;
 
-    /**
-     * @var UserRepository
-     */
-    private $userRepository;
     /**
      * @var SenderInterface
      */
@@ -71,7 +63,6 @@ class ChildItemHandler
     )
     {
         $this->entityManager = $entityManager;
-        $this->userRepository = $entityManager->getRepository(User::class);
         $this->sender = $sender;
         $this->router = $router;
         $this->messenger = $messenger;
@@ -179,17 +170,16 @@ class ChildItemHandler
      * @param User $user
      * @param Item $originalItem
      * @return array
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function getItem(User $user, Item $originalItem): array
     {
-        $owner = $this->userRepository->getByItem($originalItem);
+        $owner = $originalItem->getSignedOwner();
         if ($user === $owner) {
             return [$originalItem, $user];
         }
 
         foreach ($originalItem->getSharedItems() as $sharedItem) {
-            $owner = $this->userRepository->getByItem($sharedItem);
+            $owner = $sharedItem->getSignedOwner();
             if ($user === $owner) {
                 return [$sharedItem, $user];
             }

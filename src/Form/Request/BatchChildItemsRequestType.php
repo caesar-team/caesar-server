@@ -9,8 +9,6 @@ use App\Form\Request\Invite\CreateChildItemType;
 use App\Model\Request\BatchItemCollectionRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Repository\ItemRepository;
-use App\Repository\UserRepository;
-use Nelmio\ApiDocBundle\Tests\Functional\Form\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -24,17 +22,12 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 class BatchChildItemsRequestType extends AbstractType
 {
     /**
-     * @var UserRepository
-     */
-    protected $userRepository;
-    /**
      * @var ItemRepository
      */
     private $itemRepository;
 
-    public function __construct(UserRepository $userRepository, ItemRepository $itemRepository)
+    public function __construct(ItemRepository $itemRepository)
     {
-        $this->userRepository = $userRepository;
         $this->itemRepository = $itemRepository;
     }
 
@@ -63,7 +56,6 @@ class BatchChildItemsRequestType extends AbstractType
 
     /**
      * @param FormEvent $event
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function validateChildItems(FormEvent $event)
     {
@@ -77,7 +69,7 @@ class BatchChildItemsRequestType extends AbstractType
         }
         foreach ($request->getItems() as $invite) {
             foreach ($parentItem->getSharedItems() as $sharedItem) {
-                $owner = $this->userRepository->getByItem($sharedItem);
+                $owner = $sharedItem->getSignedOwner();
 
                 if ($invite->getUser() === $owner) {
                     $form->addError(new FormError('item.invite.user.already_invited'));
