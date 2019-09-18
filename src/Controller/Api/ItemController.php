@@ -35,6 +35,7 @@ use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
 use App\Model\View\CredentialsList\ShareListView;
 use App\Model\View\Item\OfferedItemsView;
+use App\Model\View\Team\TeamItemsView;
 use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
 use App\Repository\UserRepository;
@@ -758,8 +759,13 @@ final class ItemController extends AbstractController
         $personalItems = $viewFactoryContext->viewList($offeredItems);
         $teams = $teamRepository->findByUser($user);
         $teamsContainers = OfferedTeamContainer::createMany($teams);
+        $teamsItems = $viewFactoryContext->viewList($teamsContainers);
 
-        return new OfferedItemsView($personalItems, $viewFactoryContext->viewList($teamsContainers));
+        $teamsItems = array_filter($teamsItems, function (TeamItemsView $teamItemsView) {
+            return 0 < count($teamItemsView->items);
+        });
+
+        return new OfferedItemsView($personalItems, $teamsItems);
     }
 
     /**

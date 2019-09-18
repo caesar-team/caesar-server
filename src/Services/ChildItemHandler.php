@@ -8,6 +8,7 @@ use App\Entity\Item;
 use App\Entity\ItemUpdate;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Entity\UserTeam;
 use App\Mailer\MailRegistry;
 use App\Model\DTO\Message;
 use App\Model\Request\ChildItem;
@@ -82,11 +83,12 @@ class ChildItemHandler
 
         $parentList = $request->getOriginalItem()->getParentList();
         $team = $this->entityManager->getRepository(Team::class)->findOneByDirectory($parentList);
+        $userTeamRepository = $this->entityManager->getRepository(UserTeam::class);
 
         foreach ($request->getItems() as $childItem) {
-
+            $userTeam = $userTeamRepository->findOneByUserAndTeam($childItem->getUser(), $team);
             $item = new Item($childItem->getUser());
-            $directory = $team ? $parentList : $childItem->getUser()->getInbox();
+            $directory = $userTeam ? $parentList : $childItem->getUser()->getInbox();
             $item->setParentList($directory);
             $item->setOriginalItem($request->getOriginalItem());
             $item->setSecret($childItem->getSecret());
