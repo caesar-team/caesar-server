@@ -86,7 +86,7 @@ class ChildItemHandler
         $userTeamRepository = $this->entityManager->getRepository(UserTeam::class);
 
         foreach ($request->getItems() as $childItem) {
-            $userTeam = $userTeamRepository->findOneByUserAndTeam($childItem->getUser(), $team);
+            $userTeam = $team ? $userTeamRepository->findOneByUserAndTeam($childItem->getUser(), $team) : null;
             $item = new Item($childItem->getUser());
             $directory = $userTeam ? $parentList : $childItem->getUser()->getInbox();
             $item->setParentList($directory);
