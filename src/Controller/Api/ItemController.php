@@ -42,6 +42,7 @@ use App\Repository\UserRepository;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
 use App\Services\ChildItemHandler;
+use App\Services\ShareManager;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -1069,8 +1070,9 @@ final class ItemController extends AbstractController
      *     @Model(type=App\Form\Request\BatchShareRequestType::class)
      * )
      * @SWG\Response(
-     *     response=204,
-     *     description="Success items updated"
+     *     response=200,
+     *     description="Success items shared",
+     *     @Model(type="\App\Model\View\CredentialsList\ShareListView")
      * )
      *
      * @Route(
@@ -1080,18 +1082,15 @@ final class ItemController extends AbstractController
      * @Rest\View(serializerGroups={"child_item"})
      *
      * @param Request $request
-     * @param ChildItemHandler $childItemHandler
-     * @param ItemRepository $itemRepository
-     * @param BatchListItemViewFactory $viewFactory
+     * @param ShareManager $shareManager
+     * @param BatchListItemViewFactory $listItemViewFactory
      * @return ShareListView|FormInterface
-     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Exception
      */
     public function batchShare(
         Request $request,
-        ChildItemHandler $childItemHandler,
-        ItemRepository $itemRepository,
-        BatchListItemViewFactory $viewFactory
+        ShareManager $shareManager,
+        BatchListItemViewFactory $listItemViewFactory
     )
     {
         $collectionRequest = new BatchShareRequest();
@@ -1101,18 +1100,8 @@ final class ItemController extends AbstractController
             return $form;
         }
 
-        $items = [];
-        foreach ($collectionRequest->getOriginalItems() as $originalItem) {
-            $parentItem = $itemRepository->find($originalItem->getOriginalItem());
-            //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $parentItem);
-            $itemCollection = new ItemCollectionRequest($parentItem);
-            array_map(function (ChildItem $item) use ($itemCollection) {
-                $itemCollection->addItem($item);
-            }, $originalItem->getItems()->toArray());
+        $result = $shareManager->share($collectionRequest);
 
-            $items[$originalItem->getOriginalItem()] = $childItemHandler->childItemToItem($itemCollection);
-        }
-
-        return $viewFactory->createList($items);
+        return $listItemViewFactory->createList($result);
     }
 }

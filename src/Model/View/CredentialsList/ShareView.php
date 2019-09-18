@@ -18,7 +18,7 @@ class ShareView
     public $originalItemId;
 
     /**
-     * @var array|ChildItemView[]
+     * @var ChildItemView[]
      * @Groups({"child_item"})
      */
     public $items = [];

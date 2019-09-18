@@ -9,6 +9,7 @@ use App\Form\Request\Invite\CreateChildItemType;
 use App\Model\Request\BatchItemCollectionRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Repository\ItemRepository;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -34,7 +35,10 @@ class BatchChildItemsRequestType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('originalItem', TextType::class)
+            ->add('originalItem', EntityType::class, [
+                'class' => Item::class,
+                'property_path' => 'id',
+            ])
             ->add('items', CollectionType::class, [
                 'constraints' => [
                     new NotBlank(),

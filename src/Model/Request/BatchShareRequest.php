@@ -4,28 +4,53 @@ declare(strict_types=1);
 
 namespace App\Model\Request;
 
+use App\Model\Request\Team\BatchTeamsItemsCollectionRequest;
+
 final class BatchShareRequest
 {
     /**
      * @var BatchItemCollectionRequest[]
      */
-    private $originalItems = [];
+    private $personals = [];
 
     /**
-     * @return BatchItemCollectionRequest[]
+     * @var BatchTeamsItemsCollectionRequest[]
      */
-    public function getOriginalItems(): array
+    private $teams = [];
+
+    /**
+     * @return array|BatchItemCollectionRequest[]
+     */
+    public function getPersonals(): array
     {
-        return $this->originalItems;
+        return $this->personals;
     }
 
-    public function setOriginalItems(array $originalItems): void
+    public function setPersonals(array $personals): void
     {
-        $this->originalItems = $originalItems;
+        $this->personals = $personals;
     }
 
-    public function addOriginalItem(BatchItemCollectionRequest $item)
+    public function addPersonal(BatchItemCollectionRequest $request): void
     {
-        $this->originalItems[] = $item;
+        $this->personals[] = $request;
+    }
+
+    /**
+     * @return array|BatchTeamsItemsCollectionRequest[]
+     */
+    public function getTeams(): array
+    {
+        return $this->teams;
+    }
+
+    public function setTeams(array $teams): void
+    {
+        $this->teams = $teams;
+    }
+
+    public function addTeam(BatchTeamsItemsCollectionRequest $request): void
+    {
+        $this->teams[] = $request;
     }
 }
