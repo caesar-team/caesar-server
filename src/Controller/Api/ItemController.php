@@ -43,7 +43,7 @@ use App\Repository\TeamRepository;
 use App\Repository\UserRepository;
 use App\Security\ItemVoter;
 use App\Security\ListVoter;
-use App\Services\ChildItemHandler;
+use App\Services\ChildItemActualizer;
 use App\Services\ShareManager;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
@@ -428,7 +428,7 @@ final class ItemController extends AbstractController
      * @param EntityManagerInterface $entityManager
      *
      * @param SerializerInterface $serializer
-     * @param ChildItemHandler $itemHandler
+     * @param ChildItemActualizer $itemHandler
      * @return array|FormInterface
      */
     public function editItem(
@@ -436,7 +436,7 @@ final class ItemController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-        ChildItemHandler $itemHandler
+        ChildItemActualizer $itemHandler
     )
     {
         //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
@@ -713,7 +713,7 @@ final class ItemController extends AbstractController
      *
      * @param Item $item
      * @param Request $request
-     * @param ChildItemHandler $childItemHandler
+     * @param ChildItemActualizer $childItemHandler
      *
      * @param ItemViewFactory $viewFactory
      * @param ShareFactoryContext $shareFactoryContext

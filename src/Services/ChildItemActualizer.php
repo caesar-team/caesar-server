@@ -18,7 +18,7 @@ use Psr\Log\LoggerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Component\Routing\RouterInterface;
 
-class ChildItemHandler
+class ChildItemActualizer
 {
     const URL_ROOT = 'root';
     const EVENT_NEW_ITEM = 'new';
@@ -73,45 +73,7 @@ class ChildItemHandler
 
     /**
      * @param ItemCollectionRequest $request
-     *
-     * @return array
-     * @throws \Exception
-     */
-    public function childItemToItem(ItemCollectionRequest $request)
-    {
-        $items = [];
-
-        $parentList = $request->getOriginalItem()->getParentList();
-        $team = $this->entityManager->getRepository(Team::class)->findOneByDirectory($parentList);
-        $userTeamRepository = $this->entityManager->getRepository(UserTeam::class);
-
-        foreach ($request->getItems() as $childItem) {
-            $userTeam = $team ? $userTeamRepository->findOneByUserAndTeam($childItem->getUser(), $team) : null;
-            $item = new Item($childItem->getUser());
-            $directory = $userTeam ? $parentList : $childItem->getUser()->getInbox();
-            $item->setParentList($directory);
-            $item->setOriginalItem($request->getOriginalItem());
-            $item->setSecret($childItem->getSecret());
-            $item->setAccess($childItem->getAccess());
-            $item->setType($request->getOriginalItem()->getType());
-            $item->setCause($childItem->getCause());
-            $item->setStatus($this->getStatusByCause($childItem->getCause()));
-
-            $this->entityManager->persist($item);
-            $this->sendItemMessage($childItem);
-            $items[] = $item;
-        }
-
-        $this->entityManager->flush();
-        $this->entityManager->refresh($request->getOriginalItem());
-
-        return $items;
-    }
-
-    /**
-     * @param ItemCollectionRequest $request
      * @param User $currentOwner
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function updateChildItems(ItemCollectionRequest $request, User $currentOwner): void
     {
@@ -197,18 +159,5 @@ class ChildItemHandler
         }
 
         return new ItemUpdate($item, $user);
-    }
-
-    private function getStatusByCause(string $cause): string
-    {
-        switch ($cause) {
-            case Item::CAUSE_INVITE:
-                $status = Item::STATUS_OFFERED;
-                break;
-            default:
-                $status = Item::STATUS_FINISHED;
-        }
-
-        return $status;
     }
 }
