@@ -6,20 +6,9 @@ namespace App\Strategy\ShareFactory;
 
 use App\Entity\Item;
 use App\Model\Request\BatchItemCollectionRequest;
-use Doctrine\ORM\EntityManagerInterface;
 
 final class PersonalShareFactory extends AbstractShareFactory
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
-    }
-
     /**
      * @param BatchItemCollectionRequest $personal
      * @return array|Item[]
@@ -41,7 +30,7 @@ final class PersonalShareFactory extends AbstractShareFactory
 
             $this->entityManager->persist($item);
             $this->sendItemMessage($childItem);
-            $items[$personal->getOriginalItem()->getOriginalItem()->getId()->toString()] = $item;
+            $items[$personal->getOriginalItem()->getId()->toString()][] = $item;
         }
 
         return $items;

@@ -38,7 +38,7 @@ class BatchTeamsItemsCollectionRequest
         $this->shares[] = $request;
     }
 
-    public function getTeam(): Team
+    public function getTeam(): ?Team
     {
         return $this->team;
     }

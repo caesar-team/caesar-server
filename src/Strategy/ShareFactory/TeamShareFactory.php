@@ -6,20 +6,9 @@ namespace App\Strategy\ShareFactory;
 
 use App\Entity\Item;
 use App\Model\Request\Team\BatchTeamsItemsCollectionRequest;
-use Doctrine\ORM\EntityManagerInterface;
 
 final class TeamShareFactory extends AbstractShareFactory
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
-    }
-
     /**
      * @param BatchTeamsItemsCollectionRequest $data
      *
@@ -42,7 +31,7 @@ final class TeamShareFactory extends AbstractShareFactory
 
                 $this->entityManager->persist($item);
                 $this->sendItemMessage($childItem);
-                $items[$share->getOriginalItem()->getId()->toString()] = $item;
+                $items[$share->getOriginalItem()->getId()->toString()][] = $item;
             }
         }
 

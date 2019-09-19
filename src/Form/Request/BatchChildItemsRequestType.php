@@ -37,7 +37,6 @@ class BatchChildItemsRequestType extends AbstractType
         $builder
             ->add('originalItem', EntityType::class, [
                 'class' => Item::class,
-                'property_path' => 'id',
             ])
             ->add('items', CollectionType::class, [
                 'constraints' => [

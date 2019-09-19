@@ -20,7 +20,7 @@ class BatchTeamsItemsCollectionRequestType extends AbstractType
         $builder
             ->add('team', EntityType::class, [
                 'class' => Team::class,
-                'property_path' => 'id',
+                'by_reference' => false,
             ])
             ->add('shares', CollectionType::class, [
                 'entry_type' => BatchChildItemsRequestType::class,
