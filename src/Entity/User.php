@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Security\TwoFactor\BackUpCodesManager;
+use App\Utils\DirectoryRelationTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -23,6 +24,8 @@ use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface, BackupCodeInterface
 {
+    use DirectoryRelationTrait;
+
     const FLOW_STATUS_FINISHED = 'finished';
     const FLOW_STATUS_INCOMPLETE = 'incomplete';
     const FLOW_STATUS_CHANGE_PASSWORD = 'password_change';
@@ -63,36 +66,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * )
      */
     protected $avatar;
-
-    /**
-     * @var Directory
-     *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist", "remove"}
-     * )
-     */
-    protected $inbox;
-
-    /**
-     * @var Directory
-     *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist", "remove"}
-     * )
-     */
-    protected $lists;
-
-    /**
-     * @var Directory
-     *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist", "remove"}
-     * )
-     */
-    protected $trash;
 
     /**
      * @var string|null
@@ -240,30 +213,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     {
         $this->avatar = $avatar;
         $avatar->setUser($this);
-    }
-
-    /**
-     * @return Directory
-     */
-    public function getInbox(): Directory
-    {
-        return $this->inbox;
-    }
-
-    /**
-     * @return Directory
-     */
-    public function getLists(): Directory
-    {
-        return $this->lists;
-    }
-
-    /**
-     * @return Directory
-     */
-    public function getTrash(): Directory
-    {
-        return $this->trash;
     }
 
     public function getDomain(): ?string
@@ -507,5 +456,12 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function removeOwnedItem(Item $item): void
     {
         $this->ownedItems->removeElement($item);
+    }
+
+    public function getTeamsIds(): array
+    {
+        return array_map(function (UserTeam $userTeam){
+            return $userTeam->getTeam()->getId()->toString();
+        }, $this->userTeams->toArray());
     }
 }

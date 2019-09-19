@@ -10,7 +10,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 final class ShareListView
 {
     /**
-     * @var array|ShareView[]
+     * @var ShareView[]
      * @Groups({"child_item"})
      */
     public $shares;

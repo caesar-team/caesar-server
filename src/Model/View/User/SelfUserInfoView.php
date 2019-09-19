@@ -47,4 +47,9 @@ class SelfUserInfoView
      * @Groups({"public"})
      */
     public $roles = [];
+
+    /**
+     * @var string[]
+     */
+    public $teamIds = [];
 }

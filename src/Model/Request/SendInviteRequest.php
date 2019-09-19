@@ -23,6 +23,11 @@ final class SendInviteRequest
      */
     private $url;
 
+    /**
+     * @var array
+     */
+    private $teamIds = [];
+
     public function getUser(): ?User
     {
         return $this->user;
@@ -51,5 +56,15 @@ final class SendInviteRequest
     public function setUrl(string $url): void
     {
         $this->url = $url;
+    }
+
+    public function getTeamIds(): array
+    {
+        return $this->teamIds;
+    }
+
+    public function setTeamIds(array $teamIds): void
+    {
+        $this->teamIds = $teamIds;
     }
 }

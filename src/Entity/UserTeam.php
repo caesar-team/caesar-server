@@ -8,22 +8,33 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * Class UserGroup
- * @ORM\Table(name="user_group")
- * @ORM\Entity
+ * @ORM\Table(name="user_group",
+ *    uniqueConstraints={
+ *        @ORM\UniqueConstraint(name="user_team_uqid",
+ *            columns={"user_id", "group_id"})
+ *    }
+ * )
+ * @ORM\Entity(repositoryClass="App\Repository\UserTeamRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class UserTeam
 {
     use TimestampableEntity;
 
-    const DEFAULT_USER_ROLE = self::USER_ROLE_MEMBER;
-    const USER_ROLE_MEMBER = 'member';
-    const USER_ROLE_ADMIN = 'admin';
-    const USER_ROLE_GUEST = 'guest';
-    const USER_ROLE_PRETENDER = 'pretender';
+    public const DEFAULT_USER_ROLE = self::USER_ROLE_MEMBER;
+    public const USER_ROLE_MEMBER = 'member';
+    public const USER_ROLE_ADMIN = 'admin';
+    public const USER_ROLE_GUEST = 'guest';
+    public const USER_ROLE_PRETENDER = 'pretender';
+    public const ROLES =  [
+        self::USER_ROLE_MEMBER,
+        self::USER_ROLE_ADMIN,
+        self::USER_ROLE_GUEST,
+    ];
     /**
      * @var UuidInterface
      *
@@ -56,17 +67,23 @@ class UserTeam
 
     /**
      * UserGroup constructor.
+     * @param User $user
+     * @param Team $team
+     * @param string $userRole
      * @throws \Exception
      */
-    public function __construct()
+    public function __construct(?User $user = null, ?Team $team = null, string $userRole = self::USER_ROLE_MEMBER)
     {
         $this->id = Uuid::uuid4();
+        $this->user = $user;
+        $this->team = $team;
+        $this->userRole = $userRole;
     }
 
     /**
-     * @return Team
+     * @return Team|null
      */
-    public function getTeam(): Team
+    public function getTeam(): ?Team
     {
         return $this->team;
     }
@@ -80,9 +97,9 @@ class UserTeam
     }
 
     /**
-     * @return User
+     * @return User|null
      */
-    public function getUser(): User
+    public function getUser(): ?User
     {
         return $this->user;
     }
@@ -96,9 +113,9 @@ class UserTeam
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getUserRole(): string
+    public function getUserRole(): ?string
     {
         return $this->userRole;
     }

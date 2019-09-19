@@ -15,7 +15,7 @@ class BatchItemCollectionRequest
     protected $items;
 
     /**
-     * @var string|null
+     * @var Item|null
      */
     protected $originalItem;
 
@@ -46,15 +46,15 @@ class BatchItemCollectionRequest
 
     public function setItems(array $items): void
     {
-        $this->items = $items;
+        $this->items = new ArrayCollection($items);
     }
 
-    public function getOriginalItem(): ?string
+    public function getOriginalItem(): ?Item
     {
         return $this->originalItem;
     }
 
-    public function setOriginalItem(?string $originalItem): void
+    public function setOriginalItem(?Item $originalItem): void
     {
         $this->originalItem = $originalItem;
     }

@@ -8,27 +8,18 @@ use App\Entity\Item;
 use App\Entity\ItemUpdate;
 use App\Entity\User;
 use App\Model\View\CredentialsList\ChildItemView;
+use App\Model\View\CredentialsList\InviteItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
 use App\Model\View\User\UserView;
-use App\Repository\UserRepository;
 use App\Utils\ChildItemAwareInterface;
 use Doctrine\Common\Collections\Collection;
 
 class ItemViewFactory
 {
-    /** @var UserRepository */
-    private $userRepository;
-
-    public function __construct(UserRepository $userRepository)
-    {
-        $this->userRepository = $userRepository;
-    }
-
     /**
      * @param Item $item
      * @return ItemView
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function create(Item $item): ItemView
     {
@@ -44,7 +35,7 @@ class ItemViewFactory
         $view->invited = $this->getInvitesCollection($item);
         $view->shared = $this->getSharesCollection($item);
         $view->update = $this->getUpdateView($item->getUpdate());
-        $view->owner = $this->getOwner($item);
+        $view->ownerId = $item->getOwner()->getId()->toString();
         $view->favorite = $item->isFavorite();
         $view->sort = $item->getSort();
         $view->originalItemId = $item->getOriginalItem()?$item->getOriginalItem()->getId()->toString():null;
@@ -55,7 +46,6 @@ class ItemViewFactory
     /**
      * @param array|Item[] $items
      * @return ItemView
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function createList(array $items)
     {
@@ -74,9 +64,9 @@ class ItemViewFactory
     }
 
     /**
+     * @param string $id
      * @param array|Item[] $items
      * @return ItemView
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function createSharedItems(string $id, array $items)
     {
@@ -87,8 +77,8 @@ class ItemViewFactory
             $childItem = new ChildItemView();
             $childItem->id = $item->getId()->toString();
             $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
-            $user = $this->userRepository->getByItem($item);
-            $childItem->userId = $user->getId()->toString();
+            $childItem->userId = $item->getSignedOwner()->getId()->toString();
+            $childItem->teamId = $item->getTeam() ? $item->getTeam()->getId()->toString() : null;
             $childItems[] = $childItem;
         }
         $view->items = $childItems;
@@ -99,9 +89,8 @@ class ItemViewFactory
     /**
      * @param Item $item
      * @return array
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    protected function getInvitesCollection(Item $item)
+    private function getInvitesCollection(Item $item)
     {
         $ownerItem = $item;
         if (null !== $item->getOriginalItem()) {
@@ -111,13 +100,9 @@ class ItemViewFactory
         $children = [];
         $sharedItems = $this->extractChildItemByCause($ownerItem->getSharedItems());
         foreach ($sharedItems as $childItem) {
-            $user = $this->userRepository->getByItem($childItem);
-
-            $childItemView = new ChildItemView();
+            $childItemView = new InviteItemView();
             $childItemView->id = $childItem->getId()->toString();
-            $childItemView->userId = $user->getId()->toString();
-            $childItemView->email = $user->getEmail();
-            $childItemView->lastUpdated = $childItem->getLastUpdated();
+            $childItemView->userId = $childItem->getSignedOwner()->getId()->toString();
             $childItemView->access = $childItem->getAccess();
             $children[] = $childItemView;
         }
@@ -128,7 +113,6 @@ class ItemViewFactory
     /**
      * @param Item $item
      * @return UserView
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function getOwner(Item $item): UserView
     {
@@ -154,7 +138,7 @@ class ItemViewFactory
     /**
      * @param \Countable|ChildItemAwareInterface[]|Collection $childItems
      * @param string $cause
-     * @return array
+     * @return array|Item[]
      */
     private function extractChildItemByCause(\Countable $childItems, string $cause = Item::CAUSE_INVITE): array
     {
@@ -165,7 +149,7 @@ class ItemViewFactory
 
     /**
      * @param Item $item
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @return ChildItemView|null
      */
     private function getSharesCollection(Item $item)
     {
@@ -181,7 +165,7 @@ class ItemViewFactory
         }
         $item = current($sharedItems);
 
-        $user = $this->userRepository->getByItem($item);
+        $user = $item->getSignedOwner();
 
         $childItemView = new ChildItemView();
         $childItemView->id = $item->getId()->toString();

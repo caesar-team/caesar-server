@@ -6,20 +6,19 @@ namespace App\Services;
 
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
+use App\Entity\Team;
 use App\Entity\User;
+use App\Entity\UserTeam;
 use App\Mailer\MailRegistry;
 use App\Model\DTO\Message;
 use App\Model\Request\ChildItem;
 use App\Model\Request\ItemCollectionRequest;
-use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use OldSound\RabbitMqBundle\RabbitMq\Producer;
 use Psr\Log\LoggerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
-class ChildItemHandler
+class ChildItemActualizer
 {
     const URL_ROOT = 'root';
     const EVENT_NEW_ITEM = 'new';
@@ -27,10 +26,6 @@ class ChildItemHandler
     /** @var EntityManagerInterface */
     private $entityManager;
 
-    /**
-     * @var UserRepository
-     */
-    private $userRepository;
     /**
      * @var SenderInterface
      */
@@ -69,7 +64,6 @@ class ChildItemHandler
     )
     {
         $this->entityManager = $entityManager;
-        $this->userRepository = $entityManager->getRepository(User::class);
         $this->sender = $sender;
         $this->router = $router;
         $this->messenger = $messenger;
@@ -79,38 +73,7 @@ class ChildItemHandler
 
     /**
      * @param ItemCollectionRequest $request
-     *
-     * @return array
-     * @throws \Exception
-     */
-    public function childItemToItem(ItemCollectionRequest $request)
-    {
-        $items = [];
-        foreach ($request->getItems() as $childItem) {
-            $item = new Item($childItem->getUser());
-            $item->setParentList($childItem->getUser()->getInbox());
-            $item->setOriginalItem($request->getOriginalItem());
-            $item->setSecret($childItem->getSecret());
-            $item->setAccess($childItem->getAccess());
-            $item->setType($request->getOriginalItem()->getType());
-            $item->setCause($childItem->getCause());
-            $item->setStatus($this->getStatusByCause($childItem->getCause()));
-
-            $this->entityManager->persist($item);
-            $this->sendItemMessage($childItem);
-            $items[] = $item;
-        }
-
-        $this->entityManager->flush();
-        $this->entityManager->refresh($request->getOriginalItem());
-
-        return $items;
-    }
-
-    /**
-     * @param ItemCollectionRequest $request
      * @param User $currentOwner
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function updateChildItems(ItemCollectionRequest $request, User $currentOwner): void
     {
@@ -171,17 +134,16 @@ class ChildItemHandler
      * @param User $user
      * @param Item $originalItem
      * @return array
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function getItem(User $user, Item $originalItem): array
     {
-        $owner = $this->userRepository->getByItem($originalItem);
+        $owner = $originalItem->getSignedOwner();
         if ($user === $owner) {
             return [$originalItem, $user];
         }
 
         foreach ($originalItem->getSharedItems() as $sharedItem) {
-            $owner = $this->userRepository->getByItem($sharedItem);
+            $owner = $sharedItem->getSignedOwner();
             if ($user === $owner) {
                 return [$sharedItem, $user];
             }
@@ -197,18 +159,5 @@ class ChildItemHandler
         }
 
         return new ItemUpdate($item, $user);
-    }
-
-    private function getStatusByCause(string $cause): string
-    {
-        switch ($cause) {
-            case Item::CAUSE_INVITE:
-                $status = Item::STATUS_OFFERED;
-                break;
-            default:
-                $status = Item::STATUS_FINISHED;
-        }
-
-        return $status;
     }
 }

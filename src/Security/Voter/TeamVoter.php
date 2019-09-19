@@ -12,9 +12,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class TeamVoter extends Voter
 {
-    const TEAM_CREATE = 'create';
-    const TEAM_EDIT   = 'edit';
-    const TEAM_VIEW   = 'view';
+    public const TEAM_CREATE = 'create';
+
     /**
      * Determines if the attribute and subject are supported by this voter.
      *
@@ -25,7 +24,7 @@ class TeamVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::TEAM_CREATE, self::TEAM_EDIT, self::TEAM_VIEW])) {
+        if (self::TEAM_CREATE !== $attribute) {
             return false;
         }
 
@@ -41,18 +40,17 @@ class TeamVoter extends Voter
      * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
      *
      * @param string $attribute
-     * @param Team $subject
+     * @param User $subject
      * @param TokenInterface $token
      *
      * @return bool
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
-        if (in_array($attribute, [self::TEAM_CREATE, self::TEAM_EDIT, self::TEAM_VIEW])) {
-
+        if (self::TEAM_CREATE !== $attribute) {
             return false;
         }
 
-        throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');
+        return $subject->hasRole(User::ROLE_ADMIN) || $subject->hasRole(User::ROLE_SUPER_ADMIN);
     }
 }

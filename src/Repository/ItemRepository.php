@@ -49,4 +49,22 @@ class ItemRepository extends ServiceEntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    public function save(Item $item): Item
+    {
+        $this->_em->persist($item);
+        $this->_em->flush();
+
+        return $item;
+    }
+
+    public function remove(Item $item): void
+    {
+        $this->_em->remove($item);
+    }
+
+    public function flush(): void
+    {
+        $this->_em->flush();
+    }
 }

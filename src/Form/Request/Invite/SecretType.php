@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Form\Request\Invite;
 
 use App\Entity\Item;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Model\Request\ChildItem;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -28,6 +29,10 @@ class SecretType extends AbstractType
                 'constraints' => [
                     new NotBlank(),
                 ],
+            ])
+            ->add('teamId', EntityType::class, [
+                'property_path' => 'team',
+                'class' => Team::class,
             ])
             ->add('secret', TextType::class, [
                 'constraints' => [

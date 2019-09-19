@@ -24,6 +24,10 @@ services:
     App\Strategy\ViewFactory\:
         resource: '../src/Strategy/ViewFactory'
         tags: ['app.view_factory']
+
+    App\Strategy\ShareFactory\:
+        resource: '../src/Strategy/ShareFactory'
+        tags: ['app.share_factory']
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 

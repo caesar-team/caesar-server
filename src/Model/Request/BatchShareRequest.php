@@ -12,7 +12,7 @@ final class BatchShareRequest
     private $originalItems = [];
 
     /**
-     * @return BatchItemCollectionRequest[]
+     * @return array|BatchItemCollectionRequest[]
      */
     public function getOriginalItems(): array
     {
@@ -24,8 +24,8 @@ final class BatchShareRequest
         $this->originalItems = $originalItems;
     }
 
-    public function addOriginalItem(BatchItemCollectionRequest $item)
+    public function addOriginalItem(BatchItemCollectionRequest $request): void
     {
-        $this->originalItems[] = $item;
+        $this->originalItems[] = $request;
     }
 }
