@@ -57,4 +57,14 @@ class ItemRepository extends ServiceEntityRepository
 
         return $item;
     }
+
+    public function remove(Item $item): void
+    {
+        $this->_em->remove($item);
+    }
+
+    public function flush(): void
+    {
+        $this->_em->flush();
+    }
 }

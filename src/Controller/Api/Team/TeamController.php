@@ -15,12 +15,14 @@ use App\Form\Request\Team\EditUserTeamType;
 use App\Model\Request\Team\EditUserTeamRequest;
 use App\Model\View\Team\MemberView;
 use App\Model\View\Team\TeamView;
+use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
 use App\Repository\UserTeamRepository;
 use App\Security\Voter\TeamVoter;
 use App\Security\Voter\UserTeamVoter;
 use App\Services\AdminPromoter;
 use App\Services\TeamManager;
+use App\Utils\ItemExtractor;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -362,10 +364,16 @@ class TeamController extends AbstractController
      * @param Team $team
      * @param User $user
      * @param UserTeamRepository $userTeamRepository
+     * @param ItemRepository $itemRepository
      * @return JsonResponse
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function removeMember(Team $team, User $user, UserTeamRepository $userTeamRepository): JsonResponse
+    public function removeMember(
+        Team $team,
+        User $user,
+        UserTeamRepository $userTeamRepository,
+        ItemRepository $itemRepository
+    ): JsonResponse
     {
         if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
             throw new \LogicException('Illegal team');
@@ -377,7 +385,11 @@ class TeamController extends AbstractController
         }
 
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_REMOVE_MEMBER, $team);
-        //todo: удалять расшаренные на него итемы
+        $items = ItemExtractor::getTeamItemsForUser($team, $user);
+        foreach ($items as $item) {
+            $itemRepository->remove($item);
+        }
+        $itemRepository->flush();
         $userTeamRepository->remove($userTeam);
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
