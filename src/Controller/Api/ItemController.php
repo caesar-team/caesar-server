@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Context\ShareFactoryContext;
 use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
@@ -25,6 +26,7 @@ use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
 use App\Model\DTO\OfferedTeamContainer;
 use App\Model\Query\ItemListQuery;
+use App\Model\Request\BatchItemCollectionRequest;
 use App\Model\Request\BatchShareRequest;
 use App\Model\Request\ChildItem;
 use App\Model\Request\EditItemRequest;
@@ -714,10 +716,15 @@ final class ItemController extends AbstractController
      * @param ChildItemHandler $childItemHandler
      *
      * @param ItemViewFactory $viewFactory
+     * @param ShareFactoryContext $shareFactoryContext
      * @return ItemView|FormInterface
-     * @throws \Exception
      */
-    public function childItemToItem(Item $item, Request $request, ChildItemHandler $childItemHandler, ItemViewFactory $viewFactory)
+    public function childItemToItem(
+        Item $item,
+        Request $request,
+        ItemViewFactory $viewFactory,
+        ShareFactoryContext $shareFactoryContext
+    )
     {
         //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
@@ -728,9 +735,12 @@ final class ItemController extends AbstractController
             return $form;
         }
 
-        $items = $childItemHandler->childItemToItem($itemCollectionRequest);
+        $batchCollectionRequest = new BatchItemCollectionRequest();
+        $batchCollectionRequest->setOriginalItem($item);
+        $batchCollectionRequest->setItems($itemCollectionRequest->getItems()->toArray());
+        $items = $shareFactoryContext->share($batchCollectionRequest);
 
-        return $viewFactory->createList($items);
+        return $viewFactory->createList(current($items));
     }
 
     /**

@@ -46,7 +46,7 @@ class BatchItemCollectionRequest
 
     public function setItems(array $items): void
     {
-        $this->items = $items;
+        $this->items = new ArrayCollection($items);
     }
 
     public function getOriginalItem(): ?Item
