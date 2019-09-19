@@ -152,4 +152,17 @@ class Team
     {
         $this->icon = $icon;
     }
+
+    public function getDefaultDirectory(): Directory
+    {
+        return array_reduce($this->getLists()->getChildLists()->toArray(),
+            function (?Directory $prevDir, Directory $currDir) {
+                if (is_null($prevDir)) {
+                    return $currDir;
+                }
+
+                return Directory::LIST_DEFAULT === $prevDir->getLabel() ? $prevDir : $currDir;
+            }
+        );
+    }
 }

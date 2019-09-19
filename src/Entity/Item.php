@@ -147,6 +147,11 @@ class Item implements ChildItemAwareInterface
     protected $owner;
 
     /**
+     * @var Team|null
+     */
+    protected $team;
+
+    /**
      * Item constructor.
      * @throws \Exception
      */
@@ -422,5 +427,15 @@ class Item implements ChildItemAwareInterface
     public function setOwner(?User $owner): void
     {
         $this->owner = $owner;
+    }
+
+    public function getTeam(): ?Team
+    {
+        return $this->team;
+    }
+
+    public function setTeam(?Team $team): void
+    {
+        $this->team = $team;
     }
 }

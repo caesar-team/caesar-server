@@ -31,12 +31,8 @@ final class ShareManager
     public function share(BatchShareRequest $collectionRequest): array
     {
         $items = [];
-        foreach ($collectionRequest->getPersonals() as $personal) {
-            $items = array_merge($items, $this->shareFactoryContext->share($personal));
-        }
-
-        foreach ($collectionRequest->getTeams() as $team) {
-            $items = array_merge($items, $this->shareFactoryContext->share($team));
+        foreach ($collectionRequest->getOriginalItems() as $originalItem) {
+            $items = array_merge($items, $this->shareFactoryContext->share($originalItem));
         }
 
         return $items;

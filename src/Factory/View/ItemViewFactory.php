@@ -46,7 +46,6 @@ class ItemViewFactory
     /**
      * @param array|Item[] $items
      * @return ItemView
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function createList(array $items)
     {
@@ -79,6 +78,7 @@ class ItemViewFactory
             $childItem->id = $item->getId()->toString();
             $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
             $childItem->userId = $item->getSignedOwner()->getId()->toString();
+            $childItem->teamId = $item->getTeam() ? $item->getTeam()->getId()->toString() : null;
             $childItems[] = $childItem;
         }
         $view->items = $childItems;
