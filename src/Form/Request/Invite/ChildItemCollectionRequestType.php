@@ -46,7 +46,7 @@ class ChildItemCollectionRequestType extends AbstractType
             foreach ($parentItem->getSharedItems() as $sharedItem) {
                 $owner = $sharedItem->getSignedOwner();
 
-                if ($invite->getUser() === $owner) {
+                if ($invite->getUser() === $owner && !$sharedItem->getTeam()) {
                     $form->addError(new FormError('item.invite.user.already_invited'));
 
                     return;
