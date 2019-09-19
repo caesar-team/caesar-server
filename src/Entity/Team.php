@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Utils\DirectoryRelationTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -14,7 +13,7 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
 
 /**
  * Class Group
- * @ORM\Entity(repositoryClass="App\Repository\TeamRepository")
+ * @ORM\Entity
  * @ORM\Table(name="groups",
  *    uniqueConstraints={
  *        @UniqueConstraint(name="unique_alias",
@@ -26,8 +25,6 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
  */
 class Team
 {
-    use DirectoryRelationTrait;
-
     const DEFAULT_GROUP_ALIAS = 'default';
     const DEFAULT_GROUP_TITLE = 'Default';
     /**
@@ -46,8 +43,8 @@ class Team
     private $userTeams;
 
     /**
-     * @var string|null
-     * @ORM\Column(type="string", length=50, nullable=true)
+     * @var string
+     * @ORM\Column(type="string", length=50, nullable=false)
      */
     private $alias;
 
@@ -58,12 +55,6 @@ class Team
     private $title;
 
     /**
-     * @ORM\Column(type="text", nullable=true)
-     * @var string|null
-     */
-    private $icon;
-
-    /**
      * Group constructor.
      * @throws \Exception
      */
@@ -71,10 +62,6 @@ class Team
     {
         $this->id = Uuid::uuid4();
         $this->userTeams = new ArrayCollection();
-        $this->inbox = Directory::createInbox();
-        $this->lists = Directory::createRootList();
-        $this->lists->addChildList(Directory::createDefaultList());
-        $this->trash = Directory::createTrash();
     }
 
     /**
@@ -104,25 +91,25 @@ class Team
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getAlias(): ?string
+    public function getAlias(): string
     {
         return $this->alias;
     }
 
     /**
-     * @param string|null $alias
+     * @param string $alias
      */
-    public function setAlias(?string $alias): void
+    public function setAlias(string $alias): void
     {
         $this->alias = $alias;
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -141,28 +128,5 @@ class Team
     public function getId(): UuidInterface
     {
         return $this->id;
-    }
-
-    public function getIcon(): ?string
-    {
-        return $this->icon;
-    }
-
-    public function setIcon(?string $icon): void
-    {
-        $this->icon = $icon;
-    }
-
-    public function getDefaultDirectory(): Directory
-    {
-        return array_reduce($this->getLists()->getChildLists()->toArray(),
-            function (?Directory $prevDir, Directory $currDir) {
-                if (is_null($prevDir)) {
-                    return $currDir;
-                }
-
-                return Directory::LIST_DEFAULT === $prevDir->getLabel() ? $prevDir : $currDir;
-            }
-        );
     }
 }
