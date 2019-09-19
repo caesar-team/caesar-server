@@ -30,6 +30,7 @@ class TeamManager
     public function addTeamToUser(User $user, string $role = UserTeam::DEFAULT_USER_ROLE, Team $team = null)
     {
         $team = $team ?: $this->findDefaultTeam();
+
         $userTeam = new UserTeam($user, $team, $role);
         $this->manager->persist($userTeam);
     }
