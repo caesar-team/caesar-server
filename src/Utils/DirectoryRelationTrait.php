@@ -14,7 +14,7 @@ trait DirectoryRelationTrait
      *
      * @ORM\OneToOne(
      *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist", "remove"}, orphanRemoval=true
+     *     cascade={"persist"}
      * )
      */
     protected $inbox;
@@ -24,7 +24,7 @@ trait DirectoryRelationTrait
      *
      * @ORM\OneToOne(
      *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist", "remove"}, orphanRemoval=true
+     *     cascade={"persist"}
      * )
      */
     protected $lists;
@@ -34,7 +34,7 @@ trait DirectoryRelationTrait
      *
      * @ORM\OneToOne(
      *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist", "remove"}, orphanRemoval=true
+     *     cascade={"persist"}
      * )
      */
     protected $trash;
