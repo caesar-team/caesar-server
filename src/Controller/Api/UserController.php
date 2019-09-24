@@ -219,11 +219,11 @@ final class UserController extends AbstractController
      * @param Request $request
      * @param EntityManagerInterface $entityManager
      *
-     * @param TeamManager $groupManager
+     * @param TeamManager $teamManager
      * @return FormInterface|null
      * @throws \Exception
      */
-    public function saveKeysAction(Request $request, EntityManagerInterface $entityManager, TeamManager $groupManager)
+    public function saveKeysAction(Request $request, EntityManagerInterface $entityManager, TeamManager $teamManager)
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -245,8 +245,8 @@ final class UserController extends AbstractController
 
         if ($user->isFullUser()) {
             $this->removeInvitation($user, $entityManager);
-            $userGroup = $groupManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
-            $userGroup->setUserRole(UserTeam::USER_ROLE_MEMBER);
+            $userTeam = $teamManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
+            $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
         }
 
         $entityManager->flush();

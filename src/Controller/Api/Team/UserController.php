@@ -39,11 +39,8 @@ final class UserController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $teams = $user->getUserTeams();
-        $teams = array_filter($teams->toArray(), function (UserTeam $userTeam) {
-            return Team::DEFAULT_GROUP_ALIAS !== $userTeam->getTeam()->getAlias();
-        });
+        $userTeams = $user->getUserTeams();
 
-        return $viewFactoryContext->viewList($teams);
+        return $viewFactoryContext->viewList($userTeams->toArray());
     }
 }
