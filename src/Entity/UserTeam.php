@@ -34,6 +34,7 @@ class UserTeam
         self::USER_ROLE_MEMBER,
         self::USER_ROLE_ADMIN,
         self::USER_ROLE_GUEST,
+        self::USER_ROLE_PRETENDER,
     ];
     /**
      * @var UuidInterface
