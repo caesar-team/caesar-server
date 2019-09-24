@@ -517,7 +517,6 @@ class TeamController extends AbstractController
         }
 
         $lists = $viewFactoryContext->viewList($team->getLists()->getChildLists()->toArray());
-        array_push($lists, $viewFactoryContext->view($team->getInbox()));
         array_push($lists, $viewFactoryContext->view($team->getTrash()));
 
         return $lists;

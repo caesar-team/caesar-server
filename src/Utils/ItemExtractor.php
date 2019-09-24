@@ -17,8 +17,7 @@ final class ItemExtractor
      */
     public static function getTeamItemsForUser(Team $team, User $user): array
     {
-        $items = $team->getInbox()->getChildItems();
-        $items = array_merge($items, $team->getTrash()->getChildItems());
+        $items = $team->getTrash()->getChildItems();
         foreach ($team->getLists()->getChildLists() as $directory) {
             $items = array_merge($items, $directory->getChildItems());
         }
