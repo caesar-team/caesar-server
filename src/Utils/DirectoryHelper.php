@@ -48,11 +48,8 @@ class DirectoryHelper
         if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
             return [];
         }
-        $inbox = $team->getInbox();
-        $inboxItems = array_filter($inbox->getChildItems(), [DirectoryHelper::class, 'filterByOffered']);
         $lists = $team->getLists();
-        $listsItems = DirectoryHelper::getListsItems([$lists], $lists->getChildItems());
-        $items = $inboxItems + $listsItems;
+        $items = DirectoryHelper::getListsItems([$lists], $lists->getChildItems());
         $items = array_filter($items, function (Item $item) use ($user) {
             return $user === $item->getSignedOwner();
         });

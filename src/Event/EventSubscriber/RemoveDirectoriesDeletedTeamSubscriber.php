@@ -35,6 +35,5 @@ final class RemoveDirectoriesDeletedTeamSubscriber implements EventSubscriber
 
         $args->getObjectManager()->remove($team->getLists());
         $args->getObjectManager()->remove($team->getTrash());
-        $args->getObjectManager()->remove($team->getInbox());
     }
 }
