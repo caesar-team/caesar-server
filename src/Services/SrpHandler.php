@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use Math_BigInteger;
+
 class SrpHandler
 {
     private const RAND_LENGTH = 128;
@@ -78,7 +80,7 @@ class SrpHandler
         return $this->hash($publicClientEphemeral.$publicServerEphemeral);
     }
 
-    protected function hash(string $value): string
+    public function hash(string $value): string
     {
         return hash(static::HASH_ALGORITHM, hash(static::HASH_ALGORITHM, $value));
     }
@@ -141,5 +143,22 @@ class SrpHandler
         $digits = substr($digits, 0, $base);
 
         return (string) $digits;
+    }
+
+    public function generateX($seed, $username, $password)
+    {
+        $seed = new Math_BigInteger($seed, 16);
+        $seed = $seed->toString();
+
+        return $this->hash($seed.$this->hash($username.':'.$password));
+    }
+
+    public function generateVerifier($x)
+    {
+        $g = new Math_BigInteger(self::G, 10);
+        $n = new Math_BigInteger(self::N_BASE64, 16);
+        $x = new Math_BigInteger($x, 16);
+
+        return $g->powMod($x, $n)->toHex();
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Utils\DirectoryRelationTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -26,8 +25,6 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
  */
 class Team
 {
-    use DirectoryRelationTrait;
-
     const DEFAULT_GROUP_ALIAS = 'default';
     const DEFAULT_GROUP_TITLE = 'Default';
     /**
@@ -62,6 +59,26 @@ class Team
      * @var string|null
      */
     private $icon;
+
+    /**
+     * @var Directory
+     *
+     * @ORM\OneToOne(
+     *     targetEntity="App\Entity\Directory",
+     *     cascade={"persist"}
+     * )
+     */
+    protected $lists;
+
+    /**
+     * @var Directory
+     *
+     * @ORM\OneToOne(
+     *     targetEntity="App\Entity\Directory",
+     *     cascade={"persist"}
+     * )
+     */
+    protected $trash;
 
     /**
      * Group constructor.
@@ -164,5 +181,21 @@ class Team
                 return Directory::LIST_DEFAULT === $prevDir->getLabel() ? $prevDir : $currDir;
             }
         );
+    }
+
+    /**
+     * @return Directory
+     */
+    public function getLists(): Directory
+    {
+        return $this->lists;
+    }
+
+    /**
+     * @return Directory
+     */
+    public function getTrash(): Directory
+    {
+        return $this->trash;
     }
 }
