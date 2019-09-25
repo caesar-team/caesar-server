@@ -85,3 +85,5 @@ services:
     App\Services\Messenger:
         arguments:
             $producer: '@old_sound_rabbit_mq.send_message_producer'
+
+    FOS\UserBundle\Util\UserManipulator: ~

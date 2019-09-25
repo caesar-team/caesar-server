@@ -231,6 +231,9 @@
     "paragonie/random_compat": {
         "version": "v2.0.17"
     },
+    "pear/math_biginteger": {
+        "version": "v1.0.3"
+    },
     "phar-io/manifest": {
         "version": "1.0.3"
     },
