@@ -72,7 +72,6 @@ final class TeamContainerViewFactory implements ViewFactoryInterface
     {
         /** @var Directory[] $directories */
         $directories = $team->getLists()->getChildLists()->toArray();
-        array_push($directories, $team->getInbox());
         array_push($directories, $team->getTrash());
 
         $items = [];

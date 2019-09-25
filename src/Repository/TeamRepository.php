@@ -69,8 +69,7 @@ final class TeamRepository extends ServiceEntityRepository
     public function findOneByDirectory(Directory $directory): ?Team
     {
         $qb = $this->createQueryBuilder('team');
-        $qb->where('team.inbox =:directory');
-        $qb->orWhere('team.trash =:directory');
+        $qb->where('team.trash =:directory');
         $qb->setParameter('directory', $directory);
         if ($directory->getParentList() instanceof Directory) {
             $qb->orWhere('team.lists =:parentList');
