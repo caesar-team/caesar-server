@@ -84,7 +84,7 @@ final class SrpController extends AbstractController
      * @param Request $request
      * @param UserManagerInterface $userManager
      *
-     * @param TeamManager $groupManager
+     * @param TeamManager $teamManager
      * @param TranslatorInterface $translator
      * @param AuthorizationManager $authorizationManager
      * @return null
@@ -94,7 +94,7 @@ final class SrpController extends AbstractController
     public function registerAction(
         Request $request,
         UserManagerInterface $userManager,
-        TeamManager $groupManager,
+        TeamManager $teamManager,
         TranslatorInterface $translator,
         AuthorizationManager $authorizationManager
     )
@@ -119,7 +119,7 @@ final class SrpController extends AbstractController
         }
 
         if ($user->isFullUser()) {
-            $groupManager->addTeamToUser($user);
+            $teamManager->addTeamToUser($user);
         }
 
         $userManager->updateUser($user);

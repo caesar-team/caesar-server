@@ -10,7 +10,6 @@ use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
-use App\Entity\User;
 use App\Factory\View\BatchListItemViewFactory;
 use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
@@ -28,7 +27,6 @@ use App\Model\DTO\OfferedTeamContainer;
 use App\Model\Query\ItemListQuery;
 use App\Model\Request\BatchItemCollectionRequest;
 use App\Model\Request\BatchShareRequest;
-use App\Model\Request\ChildItem;
 use App\Model\Request\EditItemRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Model\Request\ItemsCollectionRequest;
@@ -40,10 +38,8 @@ use App\Model\View\Item\OfferedItemsView;
 use App\Model\View\Team\TeamItemsView;
 use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
-use App\Repository\UserRepository;
-use App\Security\ItemVoter;
-use App\Security\ListVoter;
 use App\Services\ChildItemActualizer;
+use App\Services\File\ItemMoveResolver;
 use App\Services\ShareManager;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
@@ -340,27 +336,34 @@ final class ItemController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @param Item                   $item
-     * @param Request                $request
-     * @param EntityManagerInterface $manager
-     *
+     * @param Item $item
+     * @param Request $request
+     * @param ItemMoveResolver $itemMoveResolver
+     * @param ItemRepository $itemRepository
      * @return FormInterface|JsonResponse
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Exception
      */
-    public function moveItemAction(Item $item, Request $request, EntityManagerInterface $manager)
+    public function moveItemAction(
+        Item $item,
+        Request $request,
+        ItemMoveResolver $itemMoveResolver,
+        ItemRepository $itemRepository
+    )
     {
         //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-        $item->setPreviousList($item->getParentList());
+        $replacedItem = new Item();
 
-        $form = $this->createForm(MoveItemType::class, $item);
+        $form = $this->createForm(MoveItemType::class, $replacedItem);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        //$this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
+        $itemMoveResolver->move($item, $replacedItem->getParentList());
+        $itemRepository->flush();
 
-        $manager->persist($item);
-        $manager->flush();
+        //$this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
 
         return null;
     }
@@ -1044,14 +1047,21 @@ final class ItemController extends AbstractController
      *     name="api_batch_move_items",
      *     methods={"PATCH"}
      * )
-     *
      * @param Request $request
      * @param Directory $directory
      * @param EntityManagerInterface $manager
      * @param SerializerInterface $serializer
-     * @return null|FormInterface
+     * @param ItemMoveResolver $itemMoveResolver
+     * @return null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function batchMove(Request $request, Directory $directory, EntityManagerInterface $manager, SerializerInterface $serializer)
+    public function batchMove(
+        Request $request,
+        Directory $directory,
+        EntityManagerInterface $manager,
+        SerializerInterface $serializer,
+        ItemMoveResolver $itemMoveResolver
+    )
     {
         /** @var ItemsCollectionRequest $itemsCollection */
         $itemsCollection = $serializer->deserialize(json_encode($request->request->all()), ItemsCollectionRequest::class, 'json');
@@ -1060,10 +1070,7 @@ final class ItemController extends AbstractController
             $item = $manager->getRepository(Item::class)->find($item);
             if ($item instanceof Item) {
                 //$this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
-                $item->setPreviousList($item->getParentList());
-                $item->setParentList($directory);
-
-                $manager->persist($item);
+                $itemMoveResolver->move($item, $directory);
             }
         }
         $manager->flush();

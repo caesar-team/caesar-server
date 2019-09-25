@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\Team;
 
 use App\Context\ViewFactoryContext;
+use App\Controller\AbstractController;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
@@ -13,6 +14,7 @@ use App\Form\Request\Team\CreateTeamType;
 use App\Form\Request\Team\EditTeamType;
 use App\Form\Request\Team\EditUserTeamType;
 use App\Model\Request\Team\EditUserTeamRequest;
+use App\Model\View\Team\ListView;
 use App\Model\View\Team\MemberView;
 use App\Model\View\Team\TeamView;
 use App\Repository\ItemRepository;
@@ -24,7 +26,6 @@ use App\Services\AdminPromoter;
 use App\Services\TeamManager;
 use App\Utils\ItemExtractor;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -249,6 +250,41 @@ class TeamController extends AbstractController
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
     }
 
+
+    /**
+     * @SWG\Tag(name="Team")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Default team members",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="App\Model\View\Team\MemberView")
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/default/members",
+     *     methods={"GET"}
+     * )
+     *
+     * @param UserTeamRepository $userTeamRepository
+     * @return ListView[]
+     */
+    public function defaultTeamMembers(UserTeamRepository $userTeamRepository)
+    {
+        $team = $this->getDefaultTeam();
+
+        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
+        $usersTeams = $userTeamRepository->findMembers($team);
+
+        return MemberView::createMany($usersTeams);
+    }
+
     /**
      * @SWG\Tag(name="Team")
      *
@@ -272,7 +308,7 @@ class TeamController extends AbstractController
      * @param Request $request
      * @param Team $team
      * @param UserTeamRepository $userTeamRepository
-     * @return mixed
+     * @return MemberView[]
      */
     public function members(Request $request, Team $team, UserTeamRepository $userTeamRepository)
     {
@@ -456,7 +492,7 @@ class TeamController extends AbstractController
      * )
      * @param Team $team
      * @param ViewFactoryContext $viewFactoryContext
-     * @return mixed
+     * @return ListView[]
      */
     public function lists(Team $team, ViewFactoryContext $viewFactoryContext)
     {
