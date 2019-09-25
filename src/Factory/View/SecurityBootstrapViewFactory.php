@@ -84,6 +84,9 @@ class SecurityBootstrapViewFactory
     {
         $isCompleteJwt = $this->isCompleteJwt($user);
         switch (true) {
+            case $user->hasRole(User::ROLE_ANONYMOUS_USER):
+                $state = SecurityBootstrapView::STATE_SKIP;
+                break;
             case !$user->isGoogleAuthenticatorEnabled():
                 $state = SecurityBootstrapView::STATE_CREATE;
                 break;
