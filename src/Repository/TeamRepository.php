@@ -33,35 +33,6 @@ final class TeamRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param User $user
-     * @return array|Team[]
-     */
-    public function findByUserExceptDefault(User $user): array
-    {
-        $qb = $this->createQueryBuilder('team');
-        $qb->join('team.userTeams', 'userTeams');
-        $qb->where('userTeams.user =:user');
-        $qb->andWhere('team.alias <>:default OR team.alias IS NULL');
-        $qb->setParameter('default', Team::DEFAULT_GROUP_ALIAS);
-        $qb->setParameter('user', $user);
-
-        return $qb->getQuery()->getResult();
-    }
-
-    /**
-     * @return array|Team[]
-     */
-    public function findAllExceptDefault(): array
-    {
-        $qb = $this->createQueryBuilder('team');
-        $qb->where('team.alias <>:default');
-        $qb->orWhere('team.alias IS NULL');
-        $qb->setParameter('default', Team::DEFAULT_GROUP_ALIAS);
-
-        return $qb->getQuery()->getResult();
-    }
-
-    /**
      * @param Directory $directory
      * @return Team|null
      * @throws \Doctrine\ORM\NonUniqueResultException

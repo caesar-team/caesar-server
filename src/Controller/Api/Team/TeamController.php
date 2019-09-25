@@ -126,10 +126,6 @@ class TeamController extends AbstractController
      */
     public function team(Team $team, ViewFactoryContext $viewFactoryContext)
     {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
-        }
-
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
         $teamView = $viewFactoryContext->view($team);
 
@@ -167,9 +163,9 @@ class TeamController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
         if ($user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_SUPER_ADMIN)) {
-            $teams = $teamRepository->findAllExceptDefault();
+            $teams = $teamRepository->findAll();
         } else {
-            $teams = $teamRepository->findByUserExceptDefault($this->getUser());
+            $teams = $teamRepository->findByUser($this->getUser());
         }
 
         $teamView = $viewFactoryContext->viewList($teams);
@@ -210,10 +206,6 @@ class TeamController extends AbstractController
      */
     public function update(Team $team, Request $request, ViewFactoryContext $viewFactoryContext, EntityManagerInterface $entityManager)
     {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
-        }
-
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
 
         $form = $this->createForm(EditTeamType::class, $team);
@@ -251,10 +243,6 @@ class TeamController extends AbstractController
      */
     public function delete(Team $team, EntityManagerInterface $entityManager)
     {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
-        }
-
         $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $this->getUser());
         $entityManager->remove($team);
         $entityManager->flush();
@@ -324,10 +312,6 @@ class TeamController extends AbstractController
      */
     public function members(Request $request, Team $team, UserTeamRepository $userTeamRepository)
     {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
-        }
-
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
         $ids = $request->query->get('ids', []);
         $usersTeams = $userTeamRepository->findMembers($team, $ids);
@@ -512,10 +496,6 @@ class TeamController extends AbstractController
      */
     public function lists(Team $team, ViewFactoryContext $viewFactoryContext)
     {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
-        }
-
         $lists = $viewFactoryContext->viewList($team->getLists()->getChildLists()->toArray());
         array_push($lists, $viewFactoryContext->view($team->getTrash()));
 

@@ -45,9 +45,6 @@ class DirectoryHelper
      */
     static public function extractOfferedTeamsItemsByUser(User $user, Team $team): array
     {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            return [];
-        }
         $lists = $team->getLists();
         $items = DirectoryHelper::getListsItems([$lists], $lists->getChildItems());
         $items = array_filter($items, function (Item $item) use ($user) {
