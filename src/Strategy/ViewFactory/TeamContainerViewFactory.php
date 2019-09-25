@@ -58,10 +58,6 @@ final class TeamContainerViewFactory implements ViewFactoryInterface
     {
         $list = [];
         foreach ($containers as $teamContainer) {
-            if (Team::DEFAULT_GROUP_ALIAS === $teamContainer->getTeam()->getAlias()) {
-                continue;
-            }
-
             $list[] = $this->view($teamContainer);
         }
 

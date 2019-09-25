@@ -47,7 +47,7 @@ final class TeamsToCreatedAdminSubscriber implements EventSubscriber
         }
 
         if ($user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_SUPER_ADMIN)) {
-            $teams = $this->teamRepository->findAllExceptDefault();
+            $teams = $this->teamRepository->findAll();
 
             foreach ($teams as $team) {
                 $userTeam = new UserTeam($user, $team, UserTeam::USER_ROLE_ADMIN);
