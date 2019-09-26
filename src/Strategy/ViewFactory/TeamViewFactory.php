@@ -49,6 +49,7 @@ class TeamViewFactory implements ViewFactoryInterface
 
         $view->title = $team->getTitle();
         $view->icon = $team->getIcon();
+        $view->type = $team->getAlias() ?: 'other';
 
         return $view;
     }
