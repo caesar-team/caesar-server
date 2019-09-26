@@ -27,4 +27,9 @@ class TeamView
      * @var string
      */
     public $icon;
+
+    /**
+     * @var string
+     */
+    public $type;
 }
