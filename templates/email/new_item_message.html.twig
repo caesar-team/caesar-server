@@ -1,10 +1,10 @@
-{% block subject %}{{ constant('App\\Services\\ChildItemHandler::EVENT_NEW_ITEM') == event ? 'You got new secure data' : 'You got updated secure data' }}{% endblock %}
+{% block subject %}{{ constant('App\\Services\\ChildItemActualizer::EVENT_NEW_ITEM') == event ? 'You got new secure data' : 'You got updated secure data' }}{% endblock %}
 {% block body %}
     {% if isNotFinishedStatusFlow|default(false) %}
         {{ 'mail.share.incomplete_authorization.message' | trans() }}
         <br>
     {% endif %}
-    {% if constant('App\\Services\\ChildItemHandler::EVENT_NEW_ITEM') == event %}
+    {% if constant('App\\Services\\ChildItemActualizer::EVENT_NEW_ITEM') == event %}
         {{ 'mail.share.new_item.message' | trans({'%url%': url}) }}
     {% else %}
         {{ 'mail.share.updated_item.message' | trans({'%url%': url}) }}
