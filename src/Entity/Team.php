@@ -88,7 +88,6 @@ class Team
     {
         $this->id = Uuid::uuid4();
         $this->userTeams = new ArrayCollection();
-        $this->inbox = Directory::createInbox();
         $this->lists = Directory::createRootList();
         $this->lists->addChildList(Directory::createDefaultList());
         $this->trash = Directory::createTrash();
