@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class TeamVoter extends Voter
 {
-    public const TEAM_CREATE = 'create';
+    public const TEAM_CREATE = 'team_create';
 
     /**
      * Determines if the attribute and subject are supported by this voter.

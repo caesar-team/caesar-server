@@ -14,10 +14,10 @@ use Symfony\Component\Security\Core\Security;
 
 final class UserTeamVoter extends Voter
 {
-    public const USER_TEAM_LEAVE = 'leave';
-    public const USER_TEAM_EDIT   = 'edit';
-    public const USER_TEAM_VIEW   = 'view';
-    public const USER_TEAM_REMOVE_MEMBER = 'remove_member';
+    public const USER_TEAM_LEAVE = 'user_team_leave';
+    public const USER_TEAM_EDIT   = 'user_team_edit';
+    public const USER_TEAM_VIEW   = 'user_team_view';
+    public const USER_TEAM_REMOVE_MEMBER = 'user_team_remove_member';
 
     private const ROLES_TO_VIEW = [
         UserTeam::USER_ROLE_ADMIN,
