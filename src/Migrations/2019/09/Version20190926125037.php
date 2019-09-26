@@ -25,6 +25,7 @@ final class Version20190926125037 extends AbstractMigration
 
     public function down(Schema $schema) : void
     {
-
+        $itShouldntChanges = true;
+        $this->skipIf($itShouldntChanges, 'It shouldn\'t changes');
     }
 }
