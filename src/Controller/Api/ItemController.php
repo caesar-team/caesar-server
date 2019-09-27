@@ -588,6 +588,8 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
+     * @Rest\View(serializerGroups={"favorite_item"})
+     *
      * @param Item $item
      * @param EntityManagerInterface $entityManager
      * @param ItemViewFactory $factory
