@@ -13,7 +13,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class ListVoter extends Voter
 {
-    public const SHOW_ITEMS = 'show_items';
+    public const SHOW_ITEMS = 'list_show_items';
     public const EDIT = 'edit_list';
     public const DELETE_LIST = 'delete_list';
 

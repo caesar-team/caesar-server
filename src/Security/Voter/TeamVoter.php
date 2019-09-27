@@ -9,10 +9,21 @@ use App\Entity\Team;
 use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use Symfony\Component\Security\Core\Security;
 
 class TeamVoter extends Voter
 {
     public const TEAM_CREATE = 'team_create';
+    /**
+     * @var User
+     */
+    private $user;
+
+    public function __construct(Security $security)
+    {
+        $this->user = $security->getUser();
+    }
+
 
     /**
      * Determines if the attribute and subject are supported by this voter.
@@ -28,7 +39,7 @@ class TeamVoter extends Voter
             return false;
         }
 
-        if (!$subject instanceof User) {
+        if (!$subject instanceof Team || is_null($this->user)) {
             return false;
         }
 
@@ -40,17 +51,21 @@ class TeamVoter extends Voter
      * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
      *
      * @param string $attribute
-     * @param User $subject
+     * @param Team $team
      * @param TokenInterface $token
      *
      * @return bool
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
+    protected function voteOnAttribute($attribute, $team, TokenInterface $token)
     {
         if (self::TEAM_CREATE !== $attribute) {
             return false;
         }
 
-        return $subject->hasRole(User::ROLE_ADMIN) || $subject->hasRole(User::ROLE_SUPER_ADMIN);
+        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
+            return false;
+        }
+
+        return $this->user->hasRole(User::ROLE_ADMIN) || $this->user->hasRole(User::ROLE_SUPER_ADMIN);
     }
 }
