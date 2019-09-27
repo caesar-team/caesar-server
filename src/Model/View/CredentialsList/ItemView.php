@@ -13,7 +13,7 @@ class ItemView extends NodeView
      * @var string
      *
      * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
-     * @Groups({"offered_item"})
+     * @Groups({"offered_item", "favorite_item"})
      */
     public $listId;
 
@@ -66,6 +66,7 @@ class ItemView extends NodeView
     public $tags;
 
     /**
+     * @Groups({"favorite_item"})
      * @var bool
      */
     public $favorite = false;
