@@ -779,7 +779,7 @@ final class ItemController extends AbstractController
             return 0 < count($teamItemsView->items);
         });
 
-        return new OfferedItemsView($personalItems, $teamsItems);
+        return new OfferedItemsView($personalItems, array_values($teamsItems));
     }
 
     /**
