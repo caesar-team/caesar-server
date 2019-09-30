@@ -10,10 +10,10 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class UserPermissionsVoter extends Voter
 {
-    const CREATE = 'create';
-    const READ = 'read';
-    const UPDATE = 'update';
-    const DELETE = 'delete';
+    const CREATE = 'user_permission_create';
+    const READ = 'user_permission_read';
+    const UPDATE = 'user_permission_update';
+    const DELETE = 'user_permission_delete';
     const AVAILABLE_ATTRIBUTES = [
         self::CREATE,
         self::READ,

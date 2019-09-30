@@ -349,10 +349,6 @@ class TeamController extends AbstractController
      */
     public function addMember(Request $request, Team $team, User $user, EntityManagerInterface $entityManager)
     {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
-        }
-
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
         $userTeam = new UserTeam();
         $form = $this->createForm(AddMemberType::class, $userTeam);

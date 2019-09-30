@@ -14,10 +14,10 @@ use Symfony\Component\Security\Core\Security;
 
 final class UserTeamVoter extends Voter
 {
-    public const USER_TEAM_LEAVE = 'leave';
-    public const USER_TEAM_EDIT   = 'edit';
-    public const USER_TEAM_VIEW   = 'view';
-    public const USER_TEAM_REMOVE_MEMBER = 'remove_member';
+    public const USER_TEAM_LEAVE = 'user_team_leave';
+    public const USER_TEAM_EDIT   = 'user_team_edit';
+    public const USER_TEAM_VIEW   = 'user_team_view';
+    public const USER_TEAM_REMOVE_MEMBER = 'user_team_remove_member';
 
     private const ROLES_TO_VIEW = [
         UserTeam::USER_ROLE_ADMIN,
@@ -86,15 +86,29 @@ final class UserTeamVoter extends Voter
 
         switch ($attribute) {
             case self::USER_TEAM_REMOVE_MEMBER:
+                if ($this->isDefault($subject)) {
+                    return false;
+                }
+
                 return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole() || $user->hasRole(User::ROLE_ADMIN);
             case self::USER_TEAM_LEAVE:
-                return true;
+
+                return !$this->isDefault($subject);
             case self::USER_TEAM_EDIT:
+                if ($this->isDefault($subject)) {
+                    return false;
+                }
+
                 return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole() || $user->hasRole(User::ROLE_ADMIN);
             case self::USER_TEAM_VIEW:
                 return in_array($userTeam->getUserRole(), self::ROLES_TO_VIEW) || $user->hasRole(User::ROLE_ADMIN);
             default:
                 return false;
         }
+    }
+
+    private function isDefault(Team $team): bool
+    {
+        return Team::DEFAULT_GROUP_ALIAS === $team->getAlias();
     }
 }

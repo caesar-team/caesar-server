@@ -588,6 +588,8 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
+     * @Rest\View(serializerGroups={"favorite_item"})
+     *
      * @param Item $item
      * @param EntityManagerInterface $entityManager
      * @param ItemViewFactory $factory
@@ -779,7 +781,7 @@ final class ItemController extends AbstractController
             return 0 < count($teamItemsView->items);
         });
 
-        return new OfferedItemsView($personalItems, $teamsItems);
+        return new OfferedItemsView($personalItems, array_values($teamsItems));
     }
 
     /**
