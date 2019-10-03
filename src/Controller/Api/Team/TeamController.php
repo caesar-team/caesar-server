@@ -82,14 +82,15 @@ class TeamController extends AbstractController
         AdminPromoter $adminPromoter
     )
     {
-        $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $this->getUser());
-
         $team = new Team();
         $form = $this->createForm(CreateTeamType::class, $team);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
+
+        $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $team);
+
         $entityManager->persist($team);
         $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
         $adminPromoter->addTeamToAdmins($team, $this->getUser());
