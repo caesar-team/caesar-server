@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Model\Query;
 
 use App\Entity\User;
-use App\Entity\UserGroup;
+use App\Entity\UserTeam;
 use Doctrine\Common\Collections\ArrayCollection;
 
 class UserQuery extends AbstractQuery
@@ -16,9 +16,9 @@ class UserQuery extends AbstractQuery
     public $name;
 
     /**
-     * @var UserGroup[]|ArrayCollection
+     * @var UserTeam[]|ArrayCollection
      */
-    public $userGroups;
+    public $userTeams;
 
     /**
      * @var User
@@ -28,7 +28,7 @@ class UserQuery extends AbstractQuery
     public function __construct(User $user)
     {
         $this->user = $user;
-        $this->userGroups = $user->getUserGroups();
+        $this->userTeams = $user->getUserTeams();
     }
 
     /**
@@ -40,10 +40,10 @@ class UserQuery extends AbstractQuery
     }
 
     /**
-     * @return UserGroup[]
+     * @return UserTeam[]
      */
-    public function getUserGroups()
+    public function getUserTeams()
     {
-        return $this->userGroups;
+        return $this->userTeams;
     }
 }

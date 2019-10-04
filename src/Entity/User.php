@@ -65,36 +65,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $avatar;
 
     /**
-     * @var Directory
-     *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist", "remove"}
-     * )
-     */
-    protected $inbox;
-
-    /**
-     * @var Directory
-     *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist", "remove"}
-     * )
-     */
-    protected $lists;
-
-    /**
-     * @var Directory
-     *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist", "remove"}
-     * )
-     */
-    protected $trash;
-
-    /**
      * @var string|null
      *
      * @ORM\Column(length=65525, nullable=true)
@@ -165,11 +135,47 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $backupCodes = [];
 
     /**
-     * @var UserGroup[]|Collection
+     * @var UserTeam[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="UserGroup", mappedBy="user", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="UserTeam", mappedBy="user", cascade={"persist"}, orphanRemoval=true)
      */
-    private $userGroups;
+    private $userTeams;
+
+    /**
+     * @var Collection|Item[]
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="owner")
+     */
+    private $ownedItems;
+
+    /**
+     * @var Directory
+     *
+     * @ORM\OneToOne(
+     *     targetEntity="App\Entity\Directory",
+     *     cascade={"persist"}
+     * )
+     */
+    protected $inbox;
+
+    /**
+     * @var Directory
+     *
+     * @ORM\OneToOne(
+     *     targetEntity="App\Entity\Directory",
+     *     cascade={"persist"}
+     * )
+     */
+    protected $lists;
+
+    /**
+     * @var Directory
+     *
+     * @ORM\OneToOne(
+     *     targetEntity="App\Entity\Directory",
+     *     cascade={"persist"}
+     * )
+     */
+    protected $trash;
 
     /**
      * User constructor.
@@ -185,8 +191,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->lists = Directory::createRootList();
         $this->lists->addChildList(Directory::createDefaultList());
         $this->trash = Directory::createTrash();
-        $this->userGroups = new ArrayCollection();
+        $this->userTeams = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
+        $this->ownedItems = new ArrayCollection();
         if (null !== $srp) {
             $this->srp = $srp;
         }
@@ -233,30 +240,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     {
         $this->avatar = $avatar;
         $avatar->setUser($this);
-    }
-
-    /**
-     * @return Directory
-     */
-    public function getInbox(): Directory
-    {
-        return $this->inbox;
-    }
-
-    /**
-     * @return Directory
-     */
-    public function getLists(): Directory
-    {
-        return $this->lists;
-    }
-
-    /**
-     * @return Directory
-     */
-    public function getTrash(): Directory
-    {
-        return $this->trash;
     }
 
     public function getDomain(): ?string
@@ -454,33 +437,82 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     }
 
     /**
-     * @return UserGroup[]|Collection
+     * @return UserTeam[]|Collection
      */
-    public function getUserGroups(): Collection
+    public function getUserTeams(): Collection
     {
-        return $this->userGroups;
+        return $this->userTeams;
     }
 
-    public function addUserGroup(UserGroup $userGroup): void
+    public function addUserTeam(UserTeam $userTeam): void
     {
-        if (!$this->userGroups->contains($userGroup)) {
-            $this->userGroups->add($userGroup);
-            $userGroup->setUser($this);
+        if (!$this->userTeams->contains($userTeam)) {
+            $this->userTeams->add($userTeam);
+            $userTeam->setUser($this);
         }
     }
 
-    public function removeUserGroup(UserGroup $userGroup): void
+    public function removeUserTeam(UserTeam $userTeam): void
     {
-        $this->userGroups->removeElement($userGroup);
+        $this->userTeams->removeElement($userTeam);
     }
 
-    public function setUserGroups($userGroups): void
+    public function setUserTeams($userTeams): void
     {
-        $this->userGroups = $userGroups;
+        $this->userTeams = $userTeams;
     }
 
     public function isFullUser(): bool
     {
         return !$this->hasRole(self::ROLE_ANONYMOUS_USER) && !$this->hasRole(self::ROLE_READ_ONLY_USER) ;
+    }
+
+    public function getOwnedItems(): Collection
+    {
+        return $this->ownedItems;
+    }
+
+    public function addOwnedItem(Item $item): void
+    {
+        if (!$this->ownedItems->contains($item)) {
+            $this->ownedItems->add($item);
+            $item->setOwner($this);
+        }
+    }
+
+    public function removeOwnedItem(Item $item): void
+    {
+        $this->ownedItems->removeElement($item);
+    }
+
+    public function getTeamsIds(): array
+    {
+        return array_map(function (UserTeam $userTeam){
+            return $userTeam->getTeam()->getId()->toString();
+        }, $this->userTeams->toArray());
+    }
+
+    /**
+     * @return Directory
+     */
+    public function getInbox(): Directory
+    {
+        return $this->inbox;
+    }
+
+    /**
+     * @return Directory
+     */
+    public function getLists(): Directory
+    {
+        return $this->lists;
+    }
+
+    /**
+     * @return Directory
+     */
+    public function getTrash(): Directory
+    {
+        return $this->trash;
     }
 }

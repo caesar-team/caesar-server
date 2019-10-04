@@ -6,6 +6,7 @@ namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
 use App\Entity\Directory;
+use App\Entity\User;
 use App\Form\Request\CreateListType;
 use App\Form\Request\EditListType;
 use App\Form\Request\SortListType;
@@ -24,7 +25,7 @@ use Symfony\Component\Routing\Annotation\Route;
 final class ListController extends AbstractController
 {
     /**
-     * @SWG\Tag(name="list")
+     * @SWG\Tag(name="List")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -92,6 +93,9 @@ final class ListController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
+        /** @var User $user */
+        $user = $this->getUser();
+        $list->setParentList($user->getLists());
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $list->getParentList());
 
         $manager->persist($list);
@@ -101,7 +105,7 @@ final class ListController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="list", description="Edit list")
+     * @SWG\Tag(name="List", description="Edit list")
      *
      * @SWG\Parameter(
      *     name="body",
@@ -178,7 +182,7 @@ final class ListController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="list")
+     * @SWG\Tag(name="List")
      *
      * @SWG\Response(
      *     response=204,
@@ -244,7 +248,7 @@ final class ListController extends AbstractController
     /**
      * Sort List
      *
-     * @SWG\Tag(name="list", description="Sort list")
+     * @SWG\Tag(name="List", description="Sort list")
      *
      * @SWG\Parameter(
      *     name="body",

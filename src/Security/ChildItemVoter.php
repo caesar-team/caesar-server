@@ -7,7 +7,6 @@ namespace App\Security;
 use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Entity\User;
-use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -16,14 +15,6 @@ class ChildItemVoter extends Voter
     public const REVOKE_CHILD_ITEM = 'revoke_child_item';
     public const CHANGE_ACCESS = 'change_access_child_item';
     public const UPDATE_CHILD_ITEM = 'update_child_item';
-
-    /** @var UserRepository */
-    private $userRepository;
-
-    public function __construct(UserRepository $userRepository)
-    {
-        $this->userRepository = $userRepository;
-    }
 
     /**
      * {@inheritdoc}
@@ -47,7 +38,6 @@ class ChildItemVoter extends Voter
      * @param TokenInterface $token
      *
      * @return bool
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
@@ -63,7 +53,7 @@ class ChildItemVoter extends Voter
                 return false;
             }
 
-            $parentOwner = $this->userRepository->getByItem($parentItem);
+            $parentOwner = $parentItem->getSignedOwner();
 
             return $parentOwner === $user;
         }
@@ -73,7 +63,7 @@ class ChildItemVoter extends Voter
                 return true;
             }
 
-            $owner = $this->userRepository->getByItem($subject);
+            $owner = $subject->getSignedOwner();
             if ($owner === $user) {
                 return AccessEnumType::TYPE_READ !== $subject->getAccess();
             }

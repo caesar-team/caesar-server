@@ -8,22 +8,48 @@ namespace App\Utils;
 
 use App\Entity\Directory;
 use App\Entity\Item;
+use App\Entity\Team;
 use App\Entity\User;
 
 class DirectoryHelper
 {
-    static public function hasOfferedItems(User $user): bool
+    static public function hasOfferedItems(User $user, array $teams = []): bool
     {
-        return 0 < count(DirectoryHelper::extractOfferedItems($user));
+        $teamsOfferedItemsCount = count(DirectoryHelper::extractOfferedItemsByUser($user));
+        foreach ($teams as $team) {
+            $teamsOfferedItemsCount = $teamsOfferedItemsCount + count(self::extractOfferedTeamsItemsByUser($user, $team));
+        }
+
+        return 0 < $teamsOfferedItemsCount;
     }
 
-    static public function extractOfferedItems(User $user): array
+    /**
+     * @param User $user
+     * @return array|Item[]
+     */
+    static public function extractOfferedItemsByUser(User $user): array
     {
         $inbox = $user->getInbox();
         $inboxItems = array_filter($inbox->getChildItems(), [DirectoryHelper::class, 'filterByOffered']);
         $lists = $user->getLists();
         $listsItems = DirectoryHelper::getListsItems([$lists], $lists->getChildItems());
         $items = $inboxItems + $listsItems;
+
+        return $items;
+    }
+
+    /**
+     * @param User $user
+     * @param Team $team
+     * @return array|Item[]
+     */
+    static public function extractOfferedTeamsItemsByUser(User $user, Team $team): array
+    {
+        $lists = $team->getLists();
+        $items = DirectoryHelper::getListsItems([$lists], $lists->getChildItems());
+        $items = array_filter($items, function (Item $item) use ($user) {
+            return $user === $item->getSignedOwner();
+        });
 
         return $items;
     }

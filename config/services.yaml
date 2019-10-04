@@ -21,6 +21,13 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
+    App\Strategy\ViewFactory\:
+        resource: '../src/Strategy/ViewFactory'
+        tags: ['app.view_factory']
+
+    App\Strategy\ShareFactory\:
+        resource: '../src/Strategy/ShareFactory'
+        tags: ['app.share_factory']
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
@@ -78,3 +85,5 @@ services:
     App\Services\Messenger:
         arguments:
             $producer: '@old_sound_rabbit_mq.send_message_producer'
+
+    FOS\UserBundle\Util\UserManipulator: ~

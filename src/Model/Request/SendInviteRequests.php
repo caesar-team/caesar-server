@@ -11,6 +11,12 @@ class SendInviteRequests
      */
     private $messages;
 
+    public function __construct()
+    {
+        $this->messages = [];
+    }
+
+
     /**
      * @return SendInviteRequest[]
      */
@@ -25,5 +31,10 @@ class SendInviteRequests
     public function setMessages(array $messages): void
     {
         $this->messages = $messages;
+    }
+
+    public function addMessage(SendInviteRequest $inviteRequest)
+    {
+        $this->messages[] = $inviteRequest;
     }
 }

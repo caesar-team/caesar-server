@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Model\Request;
 
 use App\Entity\Item;
+use App\Entity\Team;
 use App\Entity\User;
 
 class ChildItem
@@ -23,14 +24,21 @@ class ChildItem
      * @var string
      */
     private $access;
+
     /**
      * @var string
      */
     private $cause = Item::CAUSE_INVITE;
+
     /**
      * @var string|null
      */
     private $link;
+
+    /**
+     * @var Team|null
+     */
+    private $team;
 
     /**
      * @return User
@@ -95,5 +103,15 @@ class ChildItem
     public function setLink(?string $link): void
     {
         $this->link = $link;
+    }
+
+    public function getTeam(): ?Team
+    {
+        return $this->team;
+    }
+
+    public function setTeam(?Team $team): void
+    {
+        $this->team = $team;
     }
 }

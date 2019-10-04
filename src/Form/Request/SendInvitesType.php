@@ -19,6 +19,7 @@ class SendInvitesType extends AbstractType
         $builder
             ->add('messages', CollectionType::class, [
                 'entry_type' => SendInviteType::class,
+                'allow_add' => true,
             ])
         ;
     }

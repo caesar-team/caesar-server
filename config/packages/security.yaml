@@ -53,7 +53,7 @@ security:
         api:
             pattern: ^/api
             provider: fos.user.provider
-            stateless: true
+            stateless: false
             anonymous: ~
             two_factor:
                 check_path: /api/auth/2fa
@@ -87,6 +87,7 @@ security:
         - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/anonymous, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/auth, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api/user/self, roles: [IS_AUTHENTICATED_ANONYMOUSLY], methods: [GET] }
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/api/doc, roles: [ROLE_SUPER_ADMIN]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}

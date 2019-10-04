@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Request;
 
-use App\Entity\UserGroup;
+use App\Entity\UserTeam;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -21,7 +21,7 @@ class UserGroupType extends AbstractType
         parent::configureOptions($resolver);
 
         $resolver->setDefaults([
-            'data_class' => UserGroup::class,
+            'data_class' => UserTeam::class,
         ]);
     }
 }
