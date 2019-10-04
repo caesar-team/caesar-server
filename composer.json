@@ -12,7 +12,7 @@
         "friendsofsymfony/rest-bundle": "2.5.0",
         "friendsofsymfony/user-bundle": "2.1.2",
         "guzzlehttp/guzzle": "6.3.3",
-        "hashids/hashids": "3.0.0",
+        "hashids/hashids": "4.0.0",
         "hwi/oauth-bundle": "0.6.3",
         "lexik/jwt-authentication-bundle": "2.6.3",
         "nelmio/api-doc-bundle": "3.4.0",
