@@ -80,7 +80,7 @@ class Item implements ChildItemAwareInterface
     /**
      * @var Item[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="originalItem", orphanRemoval=true, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="originalItem", cascade={"remove"}, orphanRemoval=true, fetch="EAGER")
      */
     protected $sharedItems;
 
