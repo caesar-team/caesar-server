@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace App\Model\Request;
 
-
-use App\Entity\Item;
-
 class ItemsCollectionRequest
 {
     /**
-     * @var array|Item[]
+     * @var string[]
      */
     private $items = [];
 
     /**
-     * @return Item[]|array
+     * @return string[]
      */
     public function getItems()
     {
@@ -23,7 +20,7 @@ class ItemsCollectionRequest
     }
 
     /**
-     * @param Item[]|array $items
+     * @param string[] $items
      */
     public function setItems($items): void
     {

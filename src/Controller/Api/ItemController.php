@@ -186,6 +186,54 @@ final class ItemController extends AbstractController
 
     /**
      * @SWG\Tag(name="Item")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=\App\Model\Request\ItemsCollectionRequest::class)
+     * )
+     * @SWG\Response(
+     *     response=204,
+     *     description="Batch items delete"
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/item/batch/delete",
+     *     name="api_batch_delete_items_post",
+     *     methods={"POST"}
+     * )
+     * @param Request $request
+     * @param EntityManagerInterface $manager
+     * @param SerializerInterface $serializer
+     * @return null
+     */
+    public function postBatchDelete(Request $request, EntityManagerInterface $manager, SerializerInterface $serializer)
+    {
+        /** @var ItemsCollectionRequest $itemsCollection */
+        $itemsCollection = $serializer->deserialize(json_encode($request->getContent()), ItemsCollectionRequest::class, 'json');
+
+        foreach ($itemsCollection->getItems() as $item) {
+            $item = $manager->getRepository(Item::class)->find($item);
+            if ($item instanceof Item) {
+                //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
+                if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
+                    $message = $this->translator->trans('app.exception.delete_trash_only');
+                    throw new BadRequestHttpException($message);
+                }
+
+                $manager->remove($item);
+            }
+        }
+        $manager->flush();
+
+        return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
      *
      * @SWG\Response(
      *     response=200,
