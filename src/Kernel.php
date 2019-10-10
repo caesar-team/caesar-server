@@ -4,7 +4,6 @@ namespace App;
 
 use App\DependencyInjection\Compiler\ShareFactoryContextCompilerPass;
 use App\DependencyInjection\Compiler\ViewFactoryContextCompilerPass;
-use App\DependencyIjection\Compiler\ProjectUsageRegisterContextCompilerPass;
 use App\DependencyInjection\Compiler\BillingRestrictionValidatorContextCompilerPass;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
