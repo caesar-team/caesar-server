@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -61,6 +62,10 @@ class UserMasterSubscriber implements EventSubscriberInterface
 
         $user = $this->security->getUser();
         if (!$user instanceof User) {
+            return;
+        }
+
+        if ($this->security->getToken() instanceof UsernamePasswordToken) {
             return;
         }
 
