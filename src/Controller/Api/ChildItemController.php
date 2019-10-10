@@ -11,7 +11,7 @@ use App\Form\Request\Invite\UpdateChildItemsRequestType;
 use App\Model\Request\BatchChildItemsCollectionRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Security\ChildItemVoter;
-use App\Services\ChildItemHandler;
+use App\Services\ChildItemActualizer;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -158,11 +158,11 @@ final class ChildItemController extends AbstractController
      *     methods={"PATCH"}
      * )
      * @param Request $request
-     * @param ChildItemHandler $childItemHandler
+     * @param ChildItemActualizer $childItemHandler
      * @return null|FormInterface
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function batchUpdateChildItems(Request $request, ChildItemHandler $childItemHandler)
+    public function batchUpdateChildItems(Request $request, ChildItemActualizer $childItemHandler)
     {
         $batchChildItemsCollectionRequest = new BatchChildItemsCollectionRequest();
         $form = $this->createForm(BatchUpdateChildItemsRequestType::class, $batchChildItemsCollectionRequest);
@@ -231,12 +231,12 @@ final class ChildItemController extends AbstractController
      *
      * @param Item $item
      * @param Request $request
-     * @param ChildItemHandler $childItemHandler
+     * @param ChildItemActualizer $childItemHandler
      *
      * @return FormInterface|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function updateChildItems(Item $item, Request $request, ChildItemHandler $childItemHandler)
+    public function updateChildItems(Item $item, Request $request, ChildItemActualizer $childItemHandler)
     {
         $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $item);
 

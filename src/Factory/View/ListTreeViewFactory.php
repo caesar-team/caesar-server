@@ -9,6 +9,7 @@ use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Model\View\CredentialsList\ListView;
+use App\Repository\TeamRepository;
 
 class ListTreeViewFactory
 {
@@ -16,16 +17,22 @@ class ListTreeViewFactory
      * @var ItemViewFactory
      */
     private $itemViewFactory;
+    /**
+     * @var TeamRepository
+     */
+    private $teamRepository;
 
-    public function __construct(ItemViewFactory $itemViewFactory)
+    public function __construct(ItemViewFactory $itemViewFactory, TeamRepository $teamRepository)
     {
         $this->itemViewFactory = $itemViewFactory;
+        $this->teamRepository = $teamRepository;
     }
 
     /**
      * @param User $user
      *
      * @return ListView[]
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function create(User $user): array
     {
@@ -36,6 +43,11 @@ class ListTreeViewFactory
         return $lists;
     }
 
+    /**
+     * @param Directory $inbox
+     * @return ListView
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     protected function createInboxView(Directory $inbox)
     {
         $view = $this->createListView($inbox);
@@ -44,6 +56,11 @@ class ListTreeViewFactory
         return $view;
     }
 
+    /**
+     * @param Directory $inbox
+     * @return ListView
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     protected function createTrashView(Directory $inbox)
     {
         $view = $this->createListView($inbox);
@@ -52,6 +69,11 @@ class ListTreeViewFactory
         return $view;
     }
 
+    /**
+     * @param Directory $directory
+     * @return ListView
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
     protected function createListView(Directory $directory)
     {
         $view = new ListView();
@@ -60,6 +82,8 @@ class ListTreeViewFactory
         $view->type = NodeEnumType::TYPE_LIST;
         $view->children = $this->getChildren($directory);
         $view->sort = $directory->getSort();
+        $team = $this->teamRepository->findOneByDirectory($directory);
+        $view->teamId = $team ? $team->getId()->toString() : null;
 
         return $view;
     }

@@ -82,7 +82,7 @@ class Item implements ChildItemAwareInterface
     /**
      * @var Item[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="originalItem", orphanRemoval=true, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="originalItem", cascade={"remove"}, orphanRemoval=true, fetch="EAGER")
      */
     protected $sharedItems;
 
@@ -147,6 +147,11 @@ class Item implements ChildItemAwareInterface
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $owner;
+
+    /**
+     * @var Team|null
+     */
+    protected $team;
 
     /**
      * Item constructor.
@@ -416,8 +421,23 @@ class Item implements ChildItemAwareInterface
         return $this->originalItem ? $this->originalItem->getOwner() : $this->owner;
     }
 
+    public function getSignedOwner(): User
+    {
+        return $this->owner;
+    }
+
     public function setOwner(?User $owner): void
     {
         $this->owner = $owner;
+    }
+
+    public function getTeam(): ?Team
+    {
+        return $this->team;
+    }
+
+    public function setTeam(?Team $team): void
+    {
+        $this->team = $team;
     }
 }

@@ -73,4 +73,33 @@ class ItemRepository extends ServiceEntityRepository
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
+
+    public function save(Item $item): Item
+    {
+        $this->_em->persist($item);
+        $this->_em->flush();
+
+        return $item;
+    }
+
+    public function remove(Item $item): void
+    {
+        $this->_em->remove($item);
+    }
+
+    public function flush(): void
+    {
+        $this->_em->flush();
+    }
+
+    public function findByParentDirectoryAndParent(Item $item): array
+    {
+        $qb = $this->createQueryBuilder('item');
+        $qb->where('item.parentList =:parent_list');
+        $qb->andWhere('item.originalItem =:item');
+        $qb->setParameter('parent_list', $item->getParentList());
+        $qb->setParameter('item', $item);
+
+        return $qb->getQuery()->getResult();
+    }
 }

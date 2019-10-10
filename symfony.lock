@@ -231,6 +231,9 @@
     "paragonie/random_compat": {
         "version": "v2.0.17"
     },
+    "pear/math_biginteger": {
+        "version": "v1.0.3"
+    },
     "phar-io/manifest": {
         "version": "1.0.3"
     },
@@ -465,6 +468,9 @@
     "symfony/cache": {
         "version": "v4.1.1"
     },
+    "symfony/cache-contracts": {
+        "version": "v1.1.5"
+    },
     "symfony/config": {
         "version": "v4.1.1"
     },
@@ -476,9 +482,6 @@
             "version": "3.3",
             "ref": "e3868d2f4a5104f19f844fe551099a00c6562527"
         }
-    },
-    "symfony/contracts": {
-        "version": "v1.0.2"
     },
     "symfony/debug": {
         "version": "v4.1.1"
@@ -509,6 +512,9 @@
     },
     "symfony/event-dispatcher": {
         "version": "v4.1.1"
+    },
+    "symfony/event-dispatcher-contracts": {
+        "version": "v1.1.5"
     },
     "symfony/expression-language": {
         "version": "v4.2.2"
@@ -673,6 +679,9 @@
     "symfony/serializer-pack": {
         "version": "v1.0.1"
     },
+    "symfony/service-contracts": {
+        "version": "v1.1.6"
+    },
     "symfony/stopwatch": {
         "version": "v4.1.1"
     },
@@ -696,6 +705,9 @@
             "version": "3.3",
             "ref": "6bcd6c570c017ea6ae5a7a6a027c929fd3542cd8"
         }
+    },
+    "symfony/translation-contracts": {
+        "version": "v1.1.6"
     },
     "symfony/twig-bridge": {
         "version": "v4.1.1"

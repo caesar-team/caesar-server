@@ -7,7 +7,6 @@ namespace App\Validator\Constraints;
 use App\Entity\Item;
 use App\Entity\User;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -20,15 +19,9 @@ class ItemOwnerValidator extends ConstraintValidator
      */
     private $security;
 
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    public function __construct(Security $security, EntityManagerInterface $entityManager)
+    public function __construct(Security $security)
     {
         $this->security = $security;
-        $this->entityManager = $entityManager;
     }
 
     /**
@@ -48,10 +41,9 @@ class ItemOwnerValidator extends ConstraintValidator
 
         /** @var User $user */
         $user = $this->security->getUser();
-        $userRepository = $this->entityManager->getRepository(User::class);
         foreach ($value as $item) {
             if ($item instanceof Item) {
-                $itemUser = $userRepository->getByItem($item);
+                $itemUser = $item->getSignedOwner();
                 if (null === $user || $user !== $itemUser) {
                     $this->context
                         ->buildViolation($constraint->message)

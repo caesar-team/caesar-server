@@ -9,11 +9,11 @@ use App\Model\View\CredentialsList\ShareListView;
 final class BatchListItemViewFactory
 {
     /**
-     * @var BatchItemViewFactory
+     * @var ItemViewFactory
      */
     private $itemViewFactory;
 
-    public function __construct(BatchItemViewFactory $itemViewFactory)
+    public function __construct(ItemViewFactory $itemViewFactory)
     {
         $this->itemViewFactory = $itemViewFactory;
     }
@@ -21,14 +21,13 @@ final class BatchListItemViewFactory
     /**
      * @param array $items
      * @return ShareListView
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function createList(array $items): ShareListView
     {
         $view = new ShareListView();
         foreach ($items as $id => $item)
         {
-            $view->shares[] = $this->itemViewFactory->create($id, $item);
+            $view->shares[] = $this->itemViewFactory->createSharedItems($id, $item);
         }
 
         return $view;

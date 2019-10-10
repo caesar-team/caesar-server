@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Model\View\CredentialsList;
 
-use App\Model\View\User\UserView;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -14,6 +13,7 @@ class ItemView extends NodeView
      * @var string
      *
      * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
+     * @Groups({"offered_item", "favorite_item"})
      */
     public $listId;
 
@@ -21,11 +21,12 @@ class ItemView extends NodeView
      * @var string
      *
      * @SWG\Property(example="-----BEGIN PGP MESSAGE----- Version: OpenPGP.js v4.2.2 ....")
+     * @Groups({"offered_item"})
      */
     public $secret;
 
     /**
-     * @var ChildItemView[]
+     * @var InviteItemView[]
      */
     public $invited;
 
@@ -47,6 +48,7 @@ class ItemView extends NodeView
 
     /**
      * @var \DateTime
+     * @Groups({"offered_item"})
      */
     public $lastUpdated;
 
@@ -54,6 +56,7 @@ class ItemView extends NodeView
      * @var string
      *
      * @SWG\Property(example="credentials")
+     * @Groups({"offered_item"})
      */
     public $type;
 
@@ -63,20 +66,23 @@ class ItemView extends NodeView
     public $tags;
 
     /**
+     * @Groups({"favorite_item"})
      * @var bool
      */
     public $favorite = false;
     /**
-     * @var UserView
+     * @var string
+     * @Groups({"offered_item"})
      */
-    public $owner;
+    public $ownerId;
 
     /**
      * @var int
+     * @Groups({"offered_item"})
      */
     public $sort;
     /**
-     * @Groups({"child_item"})
+     * @Groups({"child_item","offered_item"})
      * @var null|string
      */
     public $originalItemId;

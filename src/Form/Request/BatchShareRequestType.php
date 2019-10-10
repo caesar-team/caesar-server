@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Request;
 
+use App\Form\Request\Team\BatchTeamsItemsCollectionRequestType;
 use App\Model\Request\BatchShareRequest;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -14,10 +15,12 @@ class BatchShareRequestType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('originalItems', CollectionType::class, [
-            'entry_type' => BatchChildItemsRequestType::class,
-            'allow_add' => true,
-        ]);
+        $builder
+            ->add('originalItems', CollectionType::class, [
+                'entry_type' => BatchChildItemsRequestType::class,
+                'allow_add' => true,
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver)

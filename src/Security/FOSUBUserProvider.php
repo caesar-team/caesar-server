@@ -9,7 +9,7 @@ use App\Model\Event\AppEvents;
 use App\Repository\UserRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\File\FileDownloader;
-use App\Services\GroupManager;
+use App\Services\TeamManager;
 use FOS\UserBundle\Model\UserManagerInterface;
 use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
 use HWI\Bundle\OAuthBundle\Security\Core\Exception\AccountNotLinkedException;
@@ -39,7 +39,7 @@ class FOSUBUserProvider extends BaseUserProvider
      */
     private $translator;
     /**
-     * @var GroupManager
+     * @var TeamManager
      */
     private $groupManager;
     /**
@@ -54,7 +54,7 @@ class FOSUBUserProvider extends BaseUserProvider
         UserRepository $userRepository,
         TranslatorInterface $translator,
         array $properties,
-        GroupManager $groupManager,
+        TeamManager $groupManager,
         AuthorizationManager $authorizationManager
     ) {
         parent::__construct($userManager, $properties);
@@ -86,9 +86,9 @@ class FOSUBUserProvider extends BaseUserProvider
                 $user = $this->userManager->createUser();
                 $user->setEmail($response->getEmail());
                 $user->setPlainPassword(md5(uniqid('', true)));
-                $user->setUsername($response->getNickname());
+                $user->setUsername($response->getEmail());
                 $user->setEnabled(true);
-                $this->groupManager->addGroupToUser($user);
+                $this->groupManager->addTeamToUser($user);
 
                 $avatar = $this->downloader->createAvatarFromLink($response->getProfilePicture());
                 $user->setAvatar($avatar);

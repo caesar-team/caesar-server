@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Directory;
 use App\Entity\Item;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Model\Query\UserQuery;
 use App\Model\Response\PaginatedList;
@@ -62,17 +63,17 @@ class UserRepository extends ServiceEntityRepository
 
     public function getByQuery(UserQuery $query): PaginatedList
     {
-        $groups = [];
-        foreach ($query->getUserGroups() as $userGroup) {
-            $groups[] = $userGroup->getGroup()->getId();
+        $teams = [];
+        foreach ($query->getUserTeams() as $userTeam) {
+            $teams[] = $userTeam->getTeam()->getId();
         }
         $qb = $this->createQueryBuilder('user');
         $qb
-            ->join('user.userGroups','userGroups')
+            ->join('user.userTeams','userTeams')
             ->where($qb->expr()->neq('user', ':userId'))
-            ->andWhere('userGroups.group IN(:groups)')
+            ->andWhere('userTeams.team IN(:teams)')
             ->andWhere($qb->expr()->isNotNull('user.publicKey'))
-            ->setParameter('groups', $groups)
+            ->setParameter('teams', $teams)
             ->setParameter('userId', $query->getUser())
             ->setMaxResults($query->getPerPage())
             ->setFirstResult($query->getFirstResult());
@@ -107,7 +108,7 @@ class UserRepository extends ServiceEntityRepository
      * @return User|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findByEmail(string $email): ?User
+    public function findOneWithPublicKeyByEmail(string $email): ?User
     {
         $qb = $this->createQueryBuilder('user');
 
@@ -119,12 +120,75 @@ class UserRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function save(Item $item): Item
+    /**
+     * @param string $email
+     * @return User|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function findOneByEmail(string $email): ?User
     {
-        $this->_em->persist($item);
-        $this->_em->flush();
+        $qb = $this->createQueryBuilder('user');
 
-        return $item;
+        return $qb
+            ->where($qb->expr()->eq('user.email', ':email'))
+            ->setParameter('email', $email)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @param Team $team
+     * @return array|User[]
+     */
+    public function findByTeam(Team $team): array
+    {
+        $qb = $this->createQueryBuilder('user');
+        $qb->innerJoin('user.userTeams', 'userTeams');
+        $qb->where('userTeams.team =:team');
+        $qb->setParameter('team', $team);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param array $ids
+     * @return array|User[]
+     */
+    public function findByIds(array $ids): array
+    {
+        $qb = $this->createQueryBuilder('user');
+        $qb->where('user.id IN(:ids)');
+        $qb->setParameter('ids', $ids);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @return array|User[]
+     */
+    public function findAdmins(): array
+    {
+        $qb = $this->createQueryBuilder('user');
+        $qb->andWhere($qb->expr()->Like($qb->expr()->lower('user.roles'), ':role'));
+        $qb->setParameter('role', '%'.mb_strtolower(User::ROLE_ADMIN).'%');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param string $partOfEmail
+     * @return array|User[]
+     */
+    public function findByPartOfEmail(string $partOfEmail): array
+    {
+        $qb = $this->createQueryBuilder('user');
+        $qb->where($qb->expr()->like($qb->expr()->lower('user.email'), ':email'));
+        $qb->andWhere($qb->expr()->notLike($qb->expr()->lower('user.roles'), ':role'));
+        $qb->setParameter('email', '%'.mb_strtolower($partOfEmail).'%');
+        $qb->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%');
+
+        return $qb->getQuery()->getResult();
     }
 
     /**

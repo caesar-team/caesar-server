@@ -11,6 +11,7 @@ use App\Entity\Item;
 use App\Entity\User;
 use App\Model\View\User\SecurityBootstrapView;
 use App\Repository\ItemRepository;
+use App\Repository\TeamRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Security\Fingerprint\FingerprintManager;
 use App\Security\Voter\TwoFactorInProgressVoter;
@@ -37,18 +38,24 @@ class SecurityBootstrapViewFactory
      * @var AuthorizationManager
      */
     private $authorizationManager;
+    /**
+     * @var TeamRepository
+     */
+    private $teamRepository;
 
     public function __construct(
         FingerprintManager $fingerprintManager,
         Security $security,
         JWTEncoderInterface $encoder,
-        AuthorizationManager $authorizationManager
+        AuthorizationManager $authorizationManager,
+        TeamRepository $teamRepository
     )
     {
         $this->fingerprintManager = $fingerprintManager;
         $this->security = $security;
         $this->encoder = $encoder;
         $this->authorizationManager = $authorizationManager;
+        $this->teamRepository = $teamRepository;
     }
 
     /**
@@ -77,6 +84,9 @@ class SecurityBootstrapViewFactory
     {
         $isCompleteJwt = $this->isCompleteJwt($user);
         switch (true) {
+            case $user->hasRole(User::ROLE_ANONYMOUS_USER):
+                $state = SecurityBootstrapView::STATE_SKIP;
+                break;
             case !$user->isGoogleAuthenticatorEnabled():
                 $state = SecurityBootstrapView::STATE_CREATE;
                 break;
@@ -182,7 +192,8 @@ class SecurityBootstrapViewFactory
                 $state = SecurityBootstrapView::STATE_CHECK;
                 break;
             case $user->isFullUser():
-                $state = DirectoryHelper::hasOfferedItems($user) ? SecurityBootstrapView::STATE_CHECK : SecurityBootstrapView::STATE_SKIP;
+                $teams = $this->teamRepository->findByUser($user);
+                $state = DirectoryHelper::hasOfferedItems($user, $teams) ? SecurityBootstrapView::STATE_CHECK : SecurityBootstrapView::STATE_SKIP;
                 break;
             default:
                 $state = SecurityBootstrapView::STATE_SKIP;

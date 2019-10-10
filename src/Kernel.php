@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\DependencyInjection\Compiler\ShareFactoryContextCompilerPass;
+use App\DependencyInjection\Compiler\ViewFactoryContextCompilerPass;
 use App\DependencyIjection\Compiler\ProjectUsageRegisterContextCompilerPass;
 use App\DependencyInjection\Compiler\BillingRestrictionValidatorContextCompilerPass;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -44,6 +46,9 @@ class Kernel extends BaseKernel
         // if you are using symfony/dependency-injection 4.0+ as it's the default behavior
         $container->setParameter('container.autowiring.strict_mode', true);
         $container->setParameter('container.dumper.inline_class_loader', true);
+
+        $container->addCompilerPass(new ViewFactoryContextCompilerPass());
+        $container->addCompilerPass(new ShareFactoryContextCompilerPass());
         $confDir = $this->getProjectDir().'/config';
 
         $loader->load($confDir.'/{packages}/*'.self::CONFIG_EXTS, 'glob');

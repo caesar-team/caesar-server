@@ -23,7 +23,7 @@ class UserQueryType extends AbstractQueryType
                     new Length(['min' => 3]),
                 ],
             ])
-            ->add('userGroups', CollectionType::class, [
+            ->add('userTeams', CollectionType::class, [
                 'entry_type' => UserGroupType::class,
                 'by_reference' => false,
             ])

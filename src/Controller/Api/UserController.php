@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
-use App\Entity\Group;
+use App\Entity\Team;
 use App\Entity\Security\Invitation;
 use App\Entity\Srp;
 use App\Entity\User;
-use App\Entity\UserGroup;
+use App\Entity\UserTeam;
 use App\Factory\View\SecurityBootstrapViewFactory;
 use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
@@ -31,8 +32,7 @@ use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
-use App\Security\AuthorizationManager\InvitationEncoder;
-use App\Services\GroupManager;
+use App\Services\TeamManager;
 use App\Services\InvitationManager;
 use App\Services\Messenger;
 use Doctrine\ORM\EntityManagerInterface;
@@ -219,11 +219,11 @@ final class UserController extends AbstractController
      * @param Request $request
      * @param EntityManagerInterface $entityManager
      *
-     * @param GroupManager $groupManager
+     * @param TeamManager $teamManager
      * @return FormInterface|null
      * @throws \Exception
      */
-    public function saveKeysAction(Request $request, EntityManagerInterface $entityManager, GroupManager $groupManager)
+    public function saveKeysAction(Request $request, EntityManagerInterface $entityManager, TeamManager $teamManager)
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -245,8 +245,8 @@ final class UserController extends AbstractController
 
         if ($user->isFullUser()) {
             $this->removeInvitation($user, $entityManager);
-            $userGroup = $groupManager->findUserGroupByAlias($user, Group::DEFAULT_GROUP_ALIAS);
-            $userGroup->setUserRole(UserGroup::USER_ROLE_MEMBER);
+            $userTeam = $teamManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
+            $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
         }
 
         $entityManager->flush();
@@ -289,7 +289,7 @@ final class UserController extends AbstractController
      * @param UserRepository $userRepository
      * @param EntityManagerInterface $entityManager
      *
-     * @param GroupManager $groupManager
+     * @param TeamManager $groupManager
      * @return array|FormInterface
      * @throws \Exception
      */
@@ -297,7 +297,7 @@ final class UserController extends AbstractController
         Request $request,
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,
-        GroupManager $groupManager
+        TeamManager $groupManager
     )
     {
         /** @var User $user */
@@ -316,7 +316,7 @@ final class UserController extends AbstractController
         }
 
         if ($user->isFullUser()) {
-            $groupManager->addGroupToUser($user, UserGroup::USER_ROLE_PRETENDER);
+            $groupManager->addTeamToUser($user, UserTeam::USER_ROLE_PRETENDER);
             $this->removeInvitation($user, $entityManager);
             $invitation = new Invitation();
             $invitation->setHash($user->getEmail());
@@ -370,7 +370,6 @@ final class UserController extends AbstractController
      *     response=200,
      *     description="User's security bootstrap",
      *     @Model(type="\App\Model\View\User\SecurityBootstrapView")
-     * )
      * )
      *
      * @SWG\Response(
@@ -533,7 +532,7 @@ final class UserController extends AbstractController
 
         $view = [];
         foreach ($keysRequest->getEmails() as $email) {
-            if ($user = $userRepository->findByEmail($email)) {
+            if ($user = $userRepository->findOneWithPublicKeyByEmail($email)) {
                 $view[] = $viewFactory->create($user);
             }
         }
@@ -553,7 +552,7 @@ final class UserController extends AbstractController
     public function batchCreateUser(
         Request $request,
         EntityManagerInterface $entityManager,
-        GroupManager $groupManager
+        TeamManager $groupManager
     )
     {
         $requestUsers = $request->request->get('users');
@@ -567,7 +566,7 @@ final class UserController extends AbstractController
             }
 
             if ($user->isFullUser()) {
-                $groupManager->addGroupToUser($user, UserGroup::USER_ROLE_PRETENDER);
+                $groupManager->addTeamToUser($user, UserTeam::USER_ROLE_PRETENDER);
                 $this->removeInvitation($user, $entityManager);
                 $invitation = new Invitation();
                 $invitation->setHash($user->getEmail());
@@ -581,6 +580,108 @@ final class UserController extends AbstractController
         $entityManager->flush();
 
         return ["users" => $users];
+    }
+
+    /**
+     * @SWG\Tag(name="User")
+     * @SWG\Parameter(
+     *     name="ids",
+     *     in="query",
+     *     description="users ids",
+     *     type="array",
+     *     @Model(type="App\Model\View\User\UserView")
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="List of users",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="App\Model\View\User\UserView")
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/users",
+     *     methods={"GET"}
+     * )
+     * @param Request $request
+     * @param UserRepository $userRepository
+     * @param ViewFactoryContext $viewFactoryContext
+     * @return UserView[]
+     */
+    public function users(Request $request, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext): array
+    {
+        $ids = $request->query->get('ids', []);
+
+        $users = $userRepository->findByIds($ids);
+
+        return $viewFactoryContext->viewList($users);
+    }
+
+    /**
+     * @SWG\Tag(name="User")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="User by email",
+     *     @Model(type="\App\Model\View\User\UserView", groups={"search_by_email"})
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/users/email/{email}",
+     *     methods={"GET"}
+     * )
+     * @Rest\View(serializerGroups={"search_by_email"})
+     * @param string $email
+     * @param UserRepository $userRepository
+     * @param ViewFactoryContext $viewFactoryContext
+     * @return UserView|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function searchOneByEmail(string $email, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext)
+    {
+        $user = $userRepository->findOneByEmail($email);
+
+        return $user ? $viewFactoryContext->view($user) : null;
+    }
+
+    /**
+     * @SWG\Tag(name="User")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="User by part of email",
+     *     @Model(type="\App\Model\View\User\UserView", groups={"search_by_email"})
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/users/search/{partOfEmail}",
+     *     methods={"GET"}
+     * )
+     * @Rest\View(serializerGroups={"search_by_email"})
+     *
+     * @param string $partOfEmail
+     * @param UserRepository $userRepository
+     * @param ViewFactoryContext $viewFactoryContext
+     * @return UserView[]|array
+     */
+    public function autocompleteForEmail(string $partOfEmail, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext): array
+    {
+        $users = $userRepository->findByPartOfEmail($partOfEmail);
+
+        return $viewFactoryContext->viewList($users);
     }
 
     private function setFlowStatus(string $currentFlowStatus): string

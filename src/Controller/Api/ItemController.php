@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Context\ShareFactoryContext;
+use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
-use App\Entity\User;
 use App\Factory\View\BatchListItemViewFactory;
 use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
@@ -22,9 +23,10 @@ use App\Form\Request\EditItemRequestType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
+use App\Model\DTO\OfferedTeamContainer;
 use App\Model\Query\ItemListQuery;
+use App\Model\Request\BatchItemCollectionRequest;
 use App\Model\Request\BatchShareRequest;
-use App\Model\Request\ChildItem;
 use App\Model\Request\EditItemRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Model\Request\ItemsCollectionRequest;
@@ -32,11 +34,13 @@ use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
 use App\Model\View\CredentialsList\ShareListView;
+use App\Model\View\Item\OfferedItemsView;
+use App\Model\View\Team\TeamItemsView;
 use App\Repository\ItemRepository;
-use App\Repository\UserRepository;
-use App\Security\ItemVoter;
-use App\Security\ListVoter;
-use App\Services\ChildItemHandler;
+use App\Repository\TeamRepository;
+use App\Services\ChildItemActualizer;
+use App\Services\File\ItemMoveResolver;
+use App\Services\ShareManager;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -44,6 +48,7 @@ use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -52,7 +57,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class ItemController extends AbstractController
 {
     /**
-     * @SWG\Tag(name="Item")
+     * @SWG\Tag(name="List")
      *
      * @SWG\Response(
      *     response=200,
@@ -78,7 +83,7 @@ final class ItemController extends AbstractController
      * @return ListView[]|array
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function fullListAction(ListTreeViewFactory $viewFactory, UserRepository $userRepository)
+    public function fullListAction(ListTreeViewFactory $viewFactory)
     {
         return $viewFactory->create($this->getUser());
     }
@@ -131,7 +136,8 @@ final class ItemController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
-        $this->denyAccessUnlessGranted(ListVoter::SHOW_ITEMS, $itemListQuery->list);
+        //todo: CAES-572 permissions refactoring
+        //$this->denyAccessUnlessGranted(ListVoter::SHOW_ITEMS, $itemListQuery->list);
 
         $itemCollection = $this->getDoctrine()->getRepository(Item::class)->getByQuery($itemListQuery);
 
@@ -164,7 +170,7 @@ final class ItemController extends AbstractController
         foreach ($itemsCollection->getItems() as $item) {
             $item = $manager->getRepository(Item::class)->find($item);
             if ($item instanceof Item) {
-                $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
+                //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
                 if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
                     $message = $this->translator->trans('app.exception.delete_trash_only');
                     throw new BadRequestHttpException($message);
@@ -213,7 +219,7 @@ final class ItemController extends AbstractController
      */
     public function itemShowAction(Item $item, ItemViewFactory $factory)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
 
         return $factory->create($item);
     }
@@ -260,12 +266,11 @@ final class ItemController extends AbstractController
      *
      * @param Request $request
      * @param CreatedItemViewFactory $viewFactory
-     * @param UserRepository $userRepository
-     *
+     * @param ItemRepository $itemRepository
      * @return CreatedItemView|FormInterface
      * @throws \Exception
      */
-    public function createItemAction(Request $request, CreatedItemViewFactory $viewFactory, UserRepository $userRepository)
+    public function createItem(Request $request, CreatedItemViewFactory $viewFactory, ItemRepository $itemRepository)
     {
         $item = new Item($this->getUser());
         $form = $this->createForm(CreateItemType::class, $item);
@@ -274,9 +279,9 @@ final class ItemController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
-        $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
 
-        $userRepository->save($item);
+        $itemRepository->save($item);
 
         return $viewFactory->create($item);
     }
@@ -331,27 +336,34 @@ final class ItemController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @param Item                   $item
-     * @param Request                $request
-     * @param EntityManagerInterface $manager
-     *
+     * @param Item $item
+     * @param Request $request
+     * @param ItemMoveResolver $itemMoveResolver
+     * @param ItemRepository $itemRepository
      * @return FormInterface|JsonResponse
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Exception
      */
-    public function moveItemAction(Item $item, Request $request, EntityManagerInterface $manager)
+    public function moveItemAction(
+        Item $item,
+        Request $request,
+        ItemMoveResolver $itemMoveResolver,
+        ItemRepository $itemRepository
+    )
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-        $item->setPreviousList($item->getParentList());
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        $replacedItem = new Item();
 
-        $form = $this->createForm(MoveItemType::class, $item);
+        $form = $this->createForm(MoveItemType::class, $replacedItem);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        $this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
+        $itemMoveResolver->move($item, $replacedItem->getParentList());
+        $itemRepository->flush();
 
-        $manager->persist($item);
-        $manager->flush();
+        //$this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
 
         return null;
     }
@@ -419,7 +431,7 @@ final class ItemController extends AbstractController
      * @param EntityManagerInterface $entityManager
      *
      * @param SerializerInterface $serializer
-     * @param ChildItemHandler $itemHandler
+     * @param ChildItemActualizer $itemHandler
      * @return array|FormInterface
      */
     public function editItem(
@@ -427,10 +439,10 @@ final class ItemController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-        ChildItemHandler $itemHandler
+        ChildItemActualizer $itemHandler
     )
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
         /** @var EditItemRequest $itemRequest */
         $itemRequest = $serializer->deserialize($request->getContent(), EditItemRequest::class, 'json');
         $item->setSecret($itemRequest->getItem()->getSecret());
@@ -500,7 +512,7 @@ final class ItemController extends AbstractController
      */
     public function deleteItemAction(Item $item, EntityManagerInterface $manager)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
         if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
             $message = $this->translator->trans('app.exception.delete_trash_only');
             throw new BadRequestHttpException($message);
@@ -576,6 +588,8 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
+     * @Rest\View(serializerGroups={"favorite_item"})
+     *
      * @param Item $item
      * @param EntityManagerInterface $entityManager
      * @param ItemViewFactory $factory
@@ -585,7 +599,7 @@ final class ItemController extends AbstractController
      */
     public function favoriteToggle(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
 
         $item->setFavorite(!$item->isFavorite());
         $entityManager->persist($item);
@@ -636,7 +650,7 @@ final class ItemController extends AbstractController
      */
     public function sort(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory, Request $request)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
         $form = $this->createForm(SortItemType::class, $item);
         $form->submit($request->request->all());
@@ -704,15 +718,20 @@ final class ItemController extends AbstractController
      *
      * @param Item $item
      * @param Request $request
-     * @param ChildItemHandler $childItemHandler
+     * @param ChildItemActualizer $childItemHandler
      *
      * @param ItemViewFactory $viewFactory
+     * @param ShareFactoryContext $shareFactoryContext
      * @return ItemView|FormInterface
-     * @throws \Exception
      */
-    public function childItemToItem(Item $item, Request $request, ChildItemHandler $childItemHandler, ItemViewFactory $viewFactory)
+    public function childItemToItem(
+        Item $item,
+        Request $request,
+        ItemViewFactory $viewFactory,
+        ShareFactoryContext $shareFactoryContext
+    )
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
         $itemCollectionRequest = new ItemCollectionRequest($item);
         $form = $this->createForm(ChildItemCollectionRequestType::class, $itemCollectionRequest);
@@ -721,31 +740,48 @@ final class ItemController extends AbstractController
             return $form;
         }
 
-        $items = $childItemHandler->childItemToItem($itemCollectionRequest);
+        $batchCollectionRequest = new BatchItemCollectionRequest();
+        $batchCollectionRequest->setOriginalItem($item);
+        $batchCollectionRequest->setItems($itemCollectionRequest->getItems()->toArray());
+        $items = $shareFactoryContext->share($batchCollectionRequest);
 
-        return $viewFactory->createList($items);
+        return $viewFactory->createList(current($items));
     }
 
     /**
      * Items collection
      *
      * @SWG\Tag(name="Item")
+     *
      * @SWG\Response(
      *     response=200,
      *     description="Items collection",
+     *     @SWG\Schema(
+     *         type="array",
+     *         @Model(type="App\Model\View\Item\OfferedItemsView", groups={"offered_item"})
+     *     )
      * )
-     *
+     * @Rest\View(serializerGroups={"offered_item"})
      * @Route("/api/offered_item", methods={"GET"}, name="api_item_offered_list")
-     * @param ItemListViewFactory $viewFactory
-     * @return ItemView[]|array
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @param TeamRepository $teamRepository
+     * @param ViewFactoryContext $viewFactoryContext
+     * @return OfferedItemsView
      */
-    public function getOfferedItemsList(ItemListViewFactory $viewFactory)
+    public function getOfferedItemsList(TeamRepository $teamRepository, ViewFactoryContext $viewFactoryContext)
     {
         $user = $this->getUser();
-        $offeredItems = DirectoryHelper::extractOfferedItems($user);
+        $offeredItems = DirectoryHelper::extractOfferedItemsByUser($user);
 
-        return $viewFactory->create($offeredItems);
+        $personalItems = $viewFactoryContext->viewList($offeredItems);
+        $teams = $teamRepository->findByUser($user);
+        $teamsContainers = OfferedTeamContainer::createMany($teams);
+        $teamsItems = $viewFactoryContext->viewList($teamsContainers);
+
+        $teamsItems = array_filter($teamsItems, function (TeamItemsView $teamItemsView) {
+            return 0 < count($teamItemsView->items);
+        });
+
+        return new OfferedItemsView($personalItems, array_values($teamsItems));
     }
 
     /**
@@ -756,7 +792,7 @@ final class ItemController extends AbstractController
      *     @Model(type=App\Form\Request\AcceptItemsType::class)
      * )
      * @SWG\Response(
-     *     response=200,
+     *     response=204,
      *     description="Items accepted",
      * )
      *
@@ -775,21 +811,50 @@ final class ItemController extends AbstractController
         foreach ($itemsCollection->getItems() as $item) {
             $item = $entityManager->getRepository(Item::class)->find($item['id']);
             if ($item instanceof Item) {
-                $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+                //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
                 $item->setStatus(Item::STATUS_FINISHED);
             }
         }
         $entityManager->flush();
 
-        $offeredItems = DirectoryHelper::extractOfferedItems($this->getUser());
+        $offeredItems = DirectoryHelper::extractOfferedItemsByUser($this->getUser());
         foreach ($offeredItems as $offeredItem) {
-            $this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $offeredItem);
+            //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $offeredItem);
             $entityManager->remove($offeredItem);
         }
 
         $entityManager->flush();
 
         return null;
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Response(
+     *     response=204,
+     *     description="Items accepted",
+     * )
+     * @Route("/api/accept_teams_items", methods={"PATCH"})
+     * @param TeamRepository $teamRepository
+     * @param ItemRepository $itemRepository
+     *
+     * @return JsonResponse
+     */
+    public function acceptTeamsItems(TeamRepository $teamRepository, ItemRepository $itemRepository)
+    {
+        $teams = $teamRepository->findByUser($this->getUser());
+
+        foreach ($teams as $team) {
+            $items = DirectoryHelper::extractOfferedTeamsItemsByUser($this->getUser(), $team);
+
+            array_walk($items, function (Item $item) use ($itemRepository) {
+                $item->setStatus(Item::STATUS_FINISHED);
+                $itemRepository->save($item);
+            });
+        }
+
+        return new JsonResponse(['success' => true], Response::HTTP_NO_CONTENT);
     }
 
     /**
@@ -858,7 +923,7 @@ final class ItemController extends AbstractController
      */
     public function acceptItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
         $update = $item->getUpdate();
         if (null === $update) {
@@ -913,7 +978,7 @@ final class ItemController extends AbstractController
      */
     public function declineItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
         $item->setUpdate(null);
 
         $entityManager->persist($item);
@@ -946,12 +1011,12 @@ final class ItemController extends AbstractController
      * )
      *
      * @param Request $request
-     * @param EntityManagerInterface $manager
      * @param ItemListViewFactory $viewFactory
+     * @param ItemRepository $itemRepository
      * @return ItemView[]|array|FormInterface
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function batchCreate(Request $request, EntityManagerInterface $manager, ItemListViewFactory $viewFactory, UserRepository $userRepository)
+    public function batchCreate(Request $request, ItemListViewFactory $viewFactory, ItemRepository $itemRepository)
     {
         $itemsRequest = new ItemsCollectionRequest();
 
@@ -963,11 +1028,10 @@ final class ItemController extends AbstractController
         }
 
         foreach ($itemsRequest->getItems() as $item) {
-            $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
+            //$this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
             $item->setOwner($this->getUser());
 
-            $userRepository->save($item);
-
+            $itemRepository->save($item);
         }
 
         return $viewFactory->create($itemsRequest->getItems());
@@ -985,14 +1049,21 @@ final class ItemController extends AbstractController
      *     name="api_batch_move_items",
      *     methods={"PATCH"}
      * )
-     *
      * @param Request $request
      * @param Directory $directory
      * @param EntityManagerInterface $manager
      * @param SerializerInterface $serializer
-     * @return null|FormInterface
+     * @param ItemMoveResolver $itemMoveResolver
+     * @return null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function batchMove(Request $request, Directory $directory, EntityManagerInterface $manager, SerializerInterface $serializer)
+    public function batchMove(
+        Request $request,
+        Directory $directory,
+        EntityManagerInterface $manager,
+        SerializerInterface $serializer,
+        ItemMoveResolver $itemMoveResolver
+    )
     {
         /** @var ItemsCollectionRequest $itemsCollection */
         $itemsCollection = $serializer->deserialize(json_encode($request->request->all()), ItemsCollectionRequest::class, 'json');
@@ -1000,11 +1071,8 @@ final class ItemController extends AbstractController
         foreach ($itemsCollection->getItems() as $item) {
             $item = $manager->getRepository(Item::class)->find($item);
             if ($item instanceof Item) {
-                $this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
-                $item->setPreviousList($item->getParentList());
-                $item->setParentList($directory);
-
-                $manager->persist($item);
+                //$this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
+                $itemMoveResolver->move($item, $directory);
             }
         }
         $manager->flush();
@@ -1021,8 +1089,9 @@ final class ItemController extends AbstractController
      *     @Model(type=App\Form\Request\BatchShareRequestType::class)
      * )
      * @SWG\Response(
-     *     response=204,
-     *     description="Success items updated"
+     *     response=200,
+     *     description="Success items shared",
+     *     @Model(type="\App\Model\View\CredentialsList\ShareListView")
      * )
      *
      * @Route(
@@ -1032,16 +1101,15 @@ final class ItemController extends AbstractController
      * @Rest\View(serializerGroups={"child_item"})
      *
      * @param Request $request
-     * @param ChildItemHandler $childItemHandler
-     * @param ItemRepository $itemRepository
+     * @param ShareManager $shareManager
+     * @param BatchListItemViewFactory $listItemViewFactory
      * @return ShareListView|FormInterface
      * @throws \Exception
      */
     public function batchShare(
         Request $request,
-        ChildItemHandler $childItemHandler,
-        ItemRepository $itemRepository,
-        BatchListItemViewFactory $viewFactory
+        ShareManager $shareManager,
+        BatchListItemViewFactory $listItemViewFactory
     )
     {
         $collectionRequest = new BatchShareRequest();
@@ -1051,18 +1119,8 @@ final class ItemController extends AbstractController
             return $form;
         }
 
-        $items = [];
-        foreach ($collectionRequest->getOriginalItems() as $originalItem) {
-            $parentItem = $itemRepository->find($originalItem->getOriginalItem());
-            $this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $parentItem);
-            $itemCollection = new ItemCollectionRequest($parentItem);
-            array_map(function (ChildItem $item) use ($itemCollection) {
-                $itemCollection->addItem($item);
-            }, $originalItem->getItems()->toArray());
+        $result = $shareManager->share($collectionRequest);
 
-            $items[$originalItem->getOriginalItem()] = $childItemHandler->childItemToItem($itemCollection);
-        }
-
-        return $viewFactory->createList($items);
+        return $listItemViewFactory->createList($result);
     }
 }

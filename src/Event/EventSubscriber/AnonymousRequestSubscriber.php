@@ -22,6 +22,7 @@ class AnonymousRequestSubscriber implements EventSubscriberInterface
         'api_srp_login',
         'api_keys_list',
         'api_list_tree',
+        'api_user_get_info',
     ];
     /**
      * @var Security

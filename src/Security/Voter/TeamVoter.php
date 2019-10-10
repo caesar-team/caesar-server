@@ -5,16 +5,26 @@ declare(strict_types=1);
 namespace App\Security\Voter;
 
 
-use App\Entity\Group;
+use App\Entity\Team;
 use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use Symfony\Component\Security\Core\Security;
 
-class GroupVoter extends Voter
+class TeamVoter extends Voter
 {
-    const GROUP_CREATE = 'create';
-    const GROUP_EDIT   = 'edit';
-    const GROUP_VIEW   = 'view';
+    public const TEAM_CREATE = 'team_create';
+    /**
+     * @var User
+     */
+    private $user;
+
+    public function __construct(Security $security)
+    {
+        $this->user = $security->getUser();
+    }
+
+
     /**
      * Determines if the attribute and subject are supported by this voter.
      *
@@ -25,11 +35,11 @@ class GroupVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::GROUP_CREATE, self::GROUP_EDIT, self::GROUP_VIEW])) {
+        if (self::TEAM_CREATE !== $attribute) {
             return false;
         }
 
-        if (!$subject instanceof User) {
+        if (!$subject instanceof Team || is_null($this->user)) {
             return false;
         }
 
@@ -41,18 +51,21 @@ class GroupVoter extends Voter
      * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
      *
      * @param string $attribute
-     * @param Group $subject
+     * @param Team $team
      * @param TokenInterface $token
      *
      * @return bool
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
+    protected function voteOnAttribute($attribute, $team, TokenInterface $token)
     {
-        if (in_array($attribute, [self::GROUP_CREATE, self::GROUP_EDIT, self::GROUP_VIEW])) {
-
+        if (self::TEAM_CREATE !== $attribute) {
             return false;
         }
 
-        throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');
+        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
+            return false;
+        }
+
+        return $this->user->hasRole(User::ROLE_ADMIN) || $this->user->hasRole(User::ROLE_SUPER_ADMIN);
     }
 }

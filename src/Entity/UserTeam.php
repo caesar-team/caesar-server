@@ -8,21 +8,34 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * Class UserGroup
- * @ORM\Entity
+ * @ORM\Table(name="user_group",
+ *    uniqueConstraints={
+ *        @ORM\UniqueConstraint(name="user_team_uqid",
+ *            columns={"user_id", "group_id"})
+ *    }
+ * )
+ * @ORM\Entity(repositoryClass="App\Repository\UserTeamRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class UserGroup
+class UserTeam
 {
     use TimestampableEntity;
 
-    const DEFAULT_USER_ROLE = self::USER_ROLE_MEMBER;
-    const USER_ROLE_MEMBER = 'member';
-    const USER_ROLE_ADMIN = 'admin';
-    const USER_ROLE_GUEST = 'guest';
-    const USER_ROLE_PRETENDER = 'pretender';
+    public const DEFAULT_USER_ROLE = self::USER_ROLE_MEMBER;
+    public const USER_ROLE_MEMBER = 'member';
+    public const USER_ROLE_ADMIN = 'admin';
+    public const USER_ROLE_GUEST = 'guest';
+    public const USER_ROLE_PRETENDER = 'pretender';
+    public const ROLES =  [
+        self::USER_ROLE_MEMBER,
+        self::USER_ROLE_ADMIN,
+        self::USER_ROLE_GUEST,
+        self::USER_ROLE_PRETENDER,
+    ];
     /**
      * @var UuidInterface
      *
@@ -32,17 +45,17 @@ class UserGroup
     private $id;
 
     /**
-     * @var Group
+     * @var Team
      *
-     * @ORM\ManyToOne(targetEntity="Group", inversedBy="userGroups", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Team", inversedBy="userTeams", cascade={"persist"})
      * @ORM\JoinColumn(name="group_id", columnDefinition="id", nullable=false, onDelete="CASCADE")
      */
-    private $group;
+    private $team;
 
     /**
      * @var User
      *
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="userGroups")
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="userTeams")
      * @ORM\JoinColumn(name="user_id", nullable=false, onDelete="CASCADE")
      */
     private $user;
@@ -55,33 +68,39 @@ class UserGroup
 
     /**
      * UserGroup constructor.
+     * @param User $user
+     * @param Team $team
+     * @param string $userRole
      * @throws \Exception
      */
-    public function __construct()
+    public function __construct(?User $user = null, ?Team $team = null, string $userRole = self::USER_ROLE_MEMBER)
     {
         $this->id = Uuid::uuid4();
+        $this->user = $user;
+        $this->team = $team;
+        $this->userRole = $userRole;
     }
 
     /**
-     * @return Group
+     * @return Team|null
      */
-    public function getGroup(): Group
+    public function getTeam(): ?Team
     {
-        return $this->group;
+        return $this->team;
     }
 
     /**
-     * @param Group $group
+     * @param Team $team
      */
-    public function setGroup(Group $group): void
+    public function setTeam(Team $team): void
     {
-        $this->group = $group;
+        $this->team = $team;
     }
 
     /**
-     * @return User
+     * @return User|null
      */
-    public function getUser(): User
+    public function getUser(): ?User
     {
         return $this->user;
     }
@@ -95,9 +114,9 @@ class UserGroup
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getUserRole(): string
+    public function getUserRole(): ?string
     {
         return $this->userRole;
     }

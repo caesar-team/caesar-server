@@ -16,7 +16,7 @@ use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
 use App\Security\AuthorizationManager\AuthorizationManager;
-use App\Services\GroupManager;
+use App\Services\TeamManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
 use App\Utils\ErrorMessageFormatter;
@@ -84,7 +84,7 @@ final class SrpController extends AbstractController
      * @param Request $request
      * @param UserManagerInterface $userManager
      *
-     * @param GroupManager $groupManager
+     * @param TeamManager $teamManager
      * @param TranslatorInterface $translator
      * @param AuthorizationManager $authorizationManager
      * @return null
@@ -94,7 +94,7 @@ final class SrpController extends AbstractController
     public function registerAction(
         Request $request,
         UserManagerInterface $userManager,
-        GroupManager $groupManager,
+        TeamManager $teamManager,
         TranslatorInterface $translator,
         AuthorizationManager $authorizationManager
     )
@@ -119,7 +119,7 @@ final class SrpController extends AbstractController
         }
 
         if ($user->isFullUser()) {
-            $groupManager->addGroupToUser($user);
+            $teamManager->addTeamToUser($user);
         }
 
         $userManager->updateUser($user);
