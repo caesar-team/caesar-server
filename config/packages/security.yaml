@@ -82,6 +82,7 @@ security:
                 failure_handler: App\Security\Authentication\OAuthFailureHandler
                 success_handler: App\Security\JwtRedirectHandler
     access_control:
+        - { path: ^/api/billing/grant, roles: [IS_AUTHENTICATED_ANONYMOUSLY] }
         - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/message, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}

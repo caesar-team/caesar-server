@@ -21,10 +21,7 @@ final class AuditController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="Full list tree with items",
-     *     @SWG\Schema(
-     *         type="array",
-     *         @Model(type="\App\Model\View\Audit\AuditView")
-     *     )
+     *     @Model(type=\App\Model\DTO\BillingRemains::class)
      * )
      * @SWG\Response(
      *     response=401,
