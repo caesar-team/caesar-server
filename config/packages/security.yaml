@@ -20,18 +20,6 @@ security:
         anonymous_area:
             pattern: ^/api/anonymous
             anonymous: true
-        doc:
-            pattern: ^/api/doc
-            http_basic: ~
-            anonymous: ~
-            context: admin
-            provider: fos.user.provider
-        admin:
-            pattern: ^/admin
-            http_basic: ~
-            anonymous: false
-            context: admin
-            provider: fos.user.provider
         srp:
             pattern: ^/api/auth/srpp
             stateless: true
