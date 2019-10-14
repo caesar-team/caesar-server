@@ -8,4 +8,135 @@
         <a href="{{ hwi_oauth_login_url(owner) }}">{{ owner | trans({}, 'HWIOAuthBundle') }}</a> <br />
     {% endfor %}
 
+    <div>
+    <span>
+        Login
+    </span>
+        <form method="POST" action="{{ path('regular_login') }}" id="login">
+            <div>
+                <label>
+                    Email:
+                    <input type="text" name="email">
+                </label>
+            </div>
+            <div>
+                <label>
+                    Password:
+                    <input type="text" name="password">
+                </label>
+            </div>
+            <div>
+                <input type="submit" value="Login">
+            </div>
+        </form>
+    </div>
 {% endblock hwi_oauth_content %}
+
+{% block js %}
+    <script type="text/javascript" src="{{ asset('static/js/axios.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('static/js/bigint.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('static/js/sha256.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('static/js/srp.js') }}"></script>
+    <script type="text/javascript">
+        var srp = new srp();
+
+        function generateSession(data) {
+            console.log(data);
+            let matcher2 = srp.generateM2(data.A, data.matcher, data.S);
+            if (matcher2 !== data.matcher2) {
+                alert('error, server is compromised');
+                return;
+            }
+
+            let sessionKey = srp.generateK(data.S);
+
+            console.log(sessionKey);
+            // console.log(matcher2);
+        }
+
+        function generateMatcher(data) {
+            let x = srp.generateX(data.seed, data.email, data.password);
+            let S = srp.generateS_Client(data.A, data.B, data.a, x);
+            let M1 = srp.generateM1(data.A, data.B, S);
+
+            data.S = S;
+            data.matcher = M1;
+            axios.post(
+                '/api/srp/login2', {
+                    'matcher': M1,
+                    'email': data.email
+                })
+                .then(function (response) {
+                    console.log(response);
+                    data.matcher2 = response.data.matcher2;
+
+                    generateSession(data);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        }
+
+        document.getElementById('register').onsubmit = function () {
+            let email = this.elements.item(0).value;
+            let password = this.elements.item(1).value;
+
+            let seed = srp.getRandomSeed();
+            let x = srp.generateX(seed, email, password);
+            let verifier = srp.generateV(x);
+
+            axios.post(
+                this.action, {
+                    'email': email,
+                    'seed': seed,
+                    'verifier': verifier
+                })
+                .then(function (response) {
+                    console.log('response');
+                    console.log(response);
+                })
+                .catch(function (error) {
+                    console.log('err');
+                    console.log(error);
+                });
+
+            return false;
+        };
+
+        document.getElementById('login').onsubmit = function () {
+            console.log(this);
+            console.log(this.action);
+            let email = this.elements.item(0).value;
+            let password = this.elements.item(1).value;
+
+            let a = srp.getRandomSeed();
+            let A = srp.generateA(a);
+
+            axios.post(
+                this.action, {
+                    'email': this.elements.item(0).value,
+                    'publicEphemeralValue': A,
+                })
+                .then(function (response) {
+                    console.log('response');
+                    console.log(response);
+
+                    generateMatcher({
+                        'email': email,
+                        'password': password,
+                        'A': A,
+                        'a': a,
+                        'B': response.data.publicEphemeralValue,
+                        'seed': response.data.seed,
+                    });
+                })
+                .catch(function (error) {
+                    console.log('err');
+                    console.log(error);
+                });
+
+            return false;
+        }
+
+    </script>
+{% endblock %}
