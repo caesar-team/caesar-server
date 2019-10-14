@@ -26,6 +26,7 @@ use FOS\UserBundle\Event\FormEvent;
 use FOS\UserBundle\Event\GetResponseUserEvent;
 use FOS\UserBundle\FOSUserEvents;
 use FOS\UserBundle\Model\UserManagerInterface;
+use HWI\Bundle\OAuthBundle\Security\Core\Authentication\Provider\OAuthProvider;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -38,6 +39,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class SrpController extends AbstractController
@@ -423,8 +425,8 @@ final class SrpController extends AbstractController
 
     /**
      * @Route(
-     *     path="/regular_login",
-     *     name="regular_login",
+     *     path="/srp_regular_login",
+     *     name="srp_regular_login",
      *     methods={"POST"}
      * )
      *
@@ -436,31 +438,32 @@ final class SrpController extends AbstractController
      */
     public function regularLoginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler)
     {
-        $email = $request->request->get('email');
+        $parsedRequest = json_decode($request->getContent(), true);
         /** @var User $user */
-        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $parsedRequest['email']]);
+
         $srp = $user->getSrp();
 
         $b = $srpHandler->getRandomSeed();
         $publicEphemeralValue = $srpHandler->generatePublicServerEphemeral($b, $srp->getVerifier());
 
-        $srp->setPublicClientEphemeralValue($request->request->get('publicEphemeralValue'));
+        $srp->setPublicClientEphemeralValue($parsedRequest['publicEphemeralValue']);
         $srp->setPublicServerEphemeralValue($publicEphemeralValue);
         $srp->setPrivateServerEphemeralValue($b);
 
         $entityManager->persist($srp);
         $entityManager->flush();
 
-        return [
+        return new JsonResponse([
             'seed' => $srp->getSeed(),
             'publicEphemeralValue' => $publicEphemeralValue,
-        ];
+        ]);
     }
 
     /**
      * @Route(
-     *     path="/api/srp/login2",
-     *     name="api_srp_login2",
+     *     path="/srp_login2",
+     *     name="srp_login2",
      *     methods={"POST"}
      * )
      *
@@ -472,9 +475,9 @@ final class SrpController extends AbstractController
      */
     public function login2Action(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler)
     {
-        $email = $request->request->get('email');
+        $parsedRequest = json_decode($request->getContent(), true);
         /** @var User $user */
-        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $parsedRequest['email']]);
         $srp = $user->getSrp();
 
         $S = $srpHandler->generateSessionServer(
@@ -490,12 +493,13 @@ final class SrpController extends AbstractController
             $S
         );
 
-        if ($matcher !== $request->request->get('matcher')) {
+        if ($matcher !== $parsedRequest['matcher']) {
             throw new BadRequestHttpException('Matchers are not equals');
         }
 
-        $k = $srpHandler->generateSessionKey($S); //This is session key
-        dump($k);
+        $k = $srpHandler->generateSessionKey($S);
+        $session = $request->getSession();
+        $session->set('serverSessionKey', $k);
 
         $m2 = $srpHandler->generateSecondMatcher(
             $srp->getPublicClientEphemeralValue(),
@@ -503,8 +507,17 @@ final class SrpController extends AbstractController
             $S
         );
 
-        return [
+        return new JsonResponse([
             'matcher2' => $m2,
-        ];
+        ]);
+    }
+
+    /**
+     * @Route(path="/srp_login_confirm", name="srp_login_confirm", methods={"POST"})
+     * @param Request $request
+     */
+    public function compareSessionKeysAndAuthorize(Request $request)
+    {
+        throw new \RuntimeException('You should register an authenticator to pass this route');
     }
 }

@@ -33,7 +33,8 @@ class JwtRedirectHandler implements AuthenticationSuccessHandlerInterface
      */
     public function __construct(
         JWTTokenManagerInterface $jwtTokenManager,
-        FrontendUriHandler $frontendUriHandler, RouterInterface $router
+        FrontendUriHandler $frontendUriHandler,
+        RouterInterface $router
     )
     {
         $this->jwtTokenManager = $jwtTokenManager;

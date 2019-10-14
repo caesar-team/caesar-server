@@ -60,6 +60,10 @@ security:
             logout: true
             stateless: false
             anonymous: true
+            guard:
+                provider: fos.user.provider
+                authenticators:
+                    - App\Security\Authentication\SrppAuthenticator
             oauth:
                 resource_owners:
                     google: google_login

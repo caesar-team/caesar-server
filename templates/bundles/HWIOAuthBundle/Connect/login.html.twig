@@ -1,38 +1,82 @@
-{% extends '@HWIOAuth/layout.html.twig' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+</head>
+<body>
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
 
-{% block hwi_oauth_content %}
-    {% if error is defined and error %}
-        <span>{{ error }}</span>
-    {% endif %}
-    {% for owner in hwi_oauth_resource_owners() %}
-        <a href="{{ hwi_oauth_login_url(owner) }}">{{ owner | trans({}, 'HWIOAuthBundle') }}</a> <br />
-    {% endfor %}
+        body {
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-align: center;
+            align-items: center;
+            padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #f5f5f5;
+        }
 
-    <div>
-    <span>
-        Login
-    </span>
-        <form method="POST" action="{{ path('regular_login') }}" id="login">
-            <div>
+        form {
+            width: 100%;
+            max-width: 330px;
+            padding: 15px;
+            margin: auto;
+        }
+        form .form-control {
+            position: relative;
+            box-sizing: border-box;
+            height: auto;
+            padding: 10px;
+            font-size: 16px;
+        }
+        form .form-control:focus {
+            z-index: 2;
+        }
+        form input[type="email"] {
+            margin-bottom: -1px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        form input[type="password"] {
+            margin-bottom: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+    </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <div class="text-center" style="width: 100%">
+        <h2>Login by form</h2>
+        <form method="POST" action="{{ path('srp_regular_login') }}" id="login">
+            <div class="form-group">
                 <label>
                     Email:
-                    <input type="text" name="email">
+                    <input type="text" class="form-control" name="email">
                 </label>
             </div>
-            <div>
+            <div class="form-group">
                 <label>
                     Password:
-                    <input type="text" name="password">
+                    <input type="password" class="form-control" name="password">
                 </label>
             </div>
             <div>
                 <input type="submit" value="Login">
             </div>
         </form>
-    </div>
-{% endblock hwi_oauth_content %}
 
-{% block js %}
+        {% if error is defined and error %}
+            <span>{{ error }}</span>
+        {% endif %}
+        {% for owner in hwi_oauth_resource_owners() %}
+            <p>or login by
+                <a href="{{ hwi_oauth_login_url(owner) }}">{{ owner | trans({}, 'HWIOAuthBundle') }}</a>
+            </p>
+        {% endfor %}
+    </div>
     <script type="text/javascript" src="{{ asset('static/js/axios.min.js') }}"></script>
     <script type="text/javascript" src="{{ asset('static/js/bigint.js') }}"></script>
     <script type="text/javascript" src="{{ asset('static/js/sha256.js') }}"></script>
@@ -41,7 +85,6 @@
         var srp = new srp();
 
         function generateSession(data) {
-            console.log(data);
             let matcher2 = srp.generateM2(data.A, data.matcher, data.S);
             if (matcher2 !== data.matcher2) {
                 alert('error, server is compromised');
@@ -50,8 +93,17 @@
 
             let sessionKey = srp.generateK(data.S);
 
-            console.log(sessionKey);
-            // console.log(matcher2);
+            axios.post(
+                '/srp_login_confirm', {
+                    'clientSessionKey': sessionKey,
+                    'email': data.email
+                })
+                .then(function (response) {
+                    document.location.href = response.data.redirect;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
         }
 
         function generateMatcher(data) {
@@ -62,12 +114,11 @@
             data.S = S;
             data.matcher = M1;
             axios.post(
-                '/api/srp/login2', {
+                '/srp_login2', {
                     'matcher': M1,
                     'email': data.email
                 })
                 .then(function (response) {
-                    console.log(response);
                     data.matcher2 = response.data.matcher2;
 
                     generateSession(data);
@@ -76,32 +127,6 @@
                     console.log(error);
                 });
         }
-
-        document.getElementById('register').onsubmit = function () {
-            let email = this.elements.item(0).value;
-            let password = this.elements.item(1).value;
-
-            let seed = srp.getRandomSeed();
-            let x = srp.generateX(seed, email, password);
-            let verifier = srp.generateV(x);
-
-            axios.post(
-                this.action, {
-                    'email': email,
-                    'seed': seed,
-                    'verifier': verifier
-                })
-                .then(function (response) {
-                    console.log('response');
-                    console.log(response);
-                })
-                .catch(function (error) {
-                    console.log('err');
-                    console.log(error);
-                });
-
-            return false;
-        };
 
         document.getElementById('login').onsubmit = function () {
             console.log(this);
@@ -118,8 +143,6 @@
                     'publicEphemeralValue': A,
                 })
                 .then(function (response) {
-                    console.log('response');
-                    console.log(response);
 
                     generateMatcher({
                         'email': email,
@@ -131,12 +154,11 @@
                     });
                 })
                 .catch(function (error) {
-                    console.log('err');
                     console.log(error);
                 });
 
             return false;
         }
-
     </script>
-{% endblock %}
+</body>
+</html>
