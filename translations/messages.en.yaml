@@ -18,3 +18,6 @@ app.exception.authentication_required: 'You must configure the check path to be 
 app.exception.user_already_exists: 'User already exists.'
 app.exception.unavailable_request: 'Unavailable request: %route%.'
 mail.share.incomplete_authorization.message: "You may not have authorized by link yet"
+admin:
+  help:
+    available_roles: 'Available roles: ROLE_USER, ROLE_ADMIN, ROLE_READ_ONLY_USER, ROLE_SUPER_ADMIN'
