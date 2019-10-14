@@ -86,7 +86,7 @@ class FOSUBUserProvider extends BaseUserProvider
                 $user = $this->userManager->createUser();
                 $user->setEmail($response->getEmail());
                 $user->setPlainPassword(md5(uniqid('', true)));
-                $user->setUsername($response->getNickname());
+                $user->setUsername($response->getEmail());
                 $user->setEnabled(true);
                 $this->groupManager->addTeamToUser($user);
 

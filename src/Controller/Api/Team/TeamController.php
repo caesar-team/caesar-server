@@ -244,7 +244,7 @@ class TeamController extends AbstractController
      */
     public function delete(Team $team, EntityManagerInterface $entityManager)
     {
-        $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $this->getUser());
+        $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $team);
         $entityManager->remove($team);
         $entityManager->flush();
 

@@ -74,6 +74,7 @@ class Item implements ChildItemAwareInterface
      * @var Item|null
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Item", inversedBy="sharedItems", cascade={"persist"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $originalItem;
 

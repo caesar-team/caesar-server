@@ -23,7 +23,7 @@ security:
         doc:
             pattern: ^/api/doc
             http_basic: ~
-            anonymous: ~
+            anonymous: false
             context: admin
             provider: fos.user.provider
         admin:
@@ -88,6 +88,6 @@ security:
         - { path: ^/api/anonymous, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/auth, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/user/self, roles: [IS_AUTHENTICATED_ANONYMOUSLY], methods: [GET] }
-        - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/api/doc, roles: [ROLE_SUPER_ADMIN]}
+        - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}
