@@ -1,4 +1,6 @@
-var srp = new srp();
+import { createSrp } from './srp';
+const srp = createSrp();
+import axios from 'axios';
 
 function generateSession(data) {
     let secondMatcher = srp.generateM2(data.A, data.matcher, data.S);
@@ -24,7 +26,7 @@ function generateSession(data) {
 
 function generateMatcher(data) {
     let x = srp.generateX(data.seed, data.email, data.password);
-    let S = srp.generateS_Client(data.A, data.B, data.a, x);
+    let S = srp.generateClientS(data.A, data.B, data.a, x);
     let M1 = srp.generateM1(data.A, data.B, S);
 
     data.S = S;

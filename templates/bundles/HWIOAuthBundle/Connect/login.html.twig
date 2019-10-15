@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8" />
 </head>
-<link rel="stylesheet" href="{{asset('static/css/bootstrap.min.css')}}">
-<link rel="stylesheet" href="{{asset('static/css/form_login.css')}}">
+{{ encore_entry_link_tags('app') }}
 <body>
     <div class="text-center" style="width: 100%">
         <h2>Login by form</h2>
@@ -35,10 +34,6 @@
             </p>
         {% endfor %}
     </div>
-    <script type="text/javascript" src="{{ asset('static/js/axios.min.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('static/js/bigint.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('static/js/sha256.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('static/js/srp.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('static/js/form_login.js') }}"></script>
+    {{ encore_entry_script_tags('app') }}
 </body>
 </html>
