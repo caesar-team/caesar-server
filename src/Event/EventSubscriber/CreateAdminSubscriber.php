@@ -33,7 +33,7 @@ class CreateAdminSubscriber implements EventSubscriber
             return;
         }
 
-        if (getenv('CHOOSEN_ADMIN_EMAIL') === $object->getEmail()) {
+        if (getenv('DOMAIN_ADMIN_EMAIL') === $object->getEmail()) {
             $object->addRole(User::ROLE_SUPER_ADMIN);
         }
     }
