@@ -15,6 +15,7 @@ use App\Form\Request\Srp\RegistrationType;
 use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
+use App\Security\Authentication\SrppAuthenticator;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\TeamManager;
 use App\Services\SrpHandler;
@@ -425,55 +426,17 @@ final class SrpController extends AbstractController
 
     /**
      * @Route(
-     *     path="/srp_regular_login",
-     *     name="srp_regular_login",
-     *     methods={"POST"}
-     * )
-     *
-     * @param Request                $request
-     * @param EntityManagerInterface $entityManager
-     * @param SrpHandler             $srpHandler
-     *
-     * @return null
-     */
-    public function regularLoginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler)
-    {
-        $parsedRequest = json_decode($request->getContent(), true);
-        /** @var User $user */
-        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $parsedRequest['email']]);
-
-        $srp = $user->getSrp();
-
-        $b = $srpHandler->getRandomSeed();
-        $publicEphemeralValue = $srpHandler->generatePublicServerEphemeral($b, $srp->getVerifier());
-
-        $srp->setPublicClientEphemeralValue($parsedRequest['publicEphemeralValue']);
-        $srp->setPublicServerEphemeralValue($publicEphemeralValue);
-        $srp->setPrivateServerEphemeralValue($b);
-
-        $entityManager->persist($srp);
-        $entityManager->flush();
-
-        return new JsonResponse([
-            'seed' => $srp->getSeed(),
-            'publicEphemeralValue' => $publicEphemeralValue,
-        ]);
-    }
-
-    /**
-     * @Route(
-     *     path="/srp_login2",
+     *     path="/api/auth/srpp/login2",
      *     name="srp_login2",
      *     methods={"POST"}
      * )
      *
      * @param Request                $request
-     * @param EntityManagerInterface $entityManager
      * @param SrpHandler             $srpHandler
      *
      * @return null
      */
-    public function login2Action(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler)
+    public function login2Action(Request $request, SrpHandler $srpHandler)
     {
         $parsedRequest = json_decode($request->getContent(), true);
         /** @var User $user */
@@ -499,7 +462,7 @@ final class SrpController extends AbstractController
 
         $k = $srpHandler->generateSessionKey($S);
         $session = $request->getSession();
-        $session->set('serverSessionKey', $k);
+        $session->set(SrppAuthenticator::SERVER_SESSION_KEY_FIELD, $k);
 
         $m2 = $srpHandler->generateSecondMatcher(
             $srp->getPublicClientEphemeralValue(),
@@ -508,7 +471,7 @@ final class SrpController extends AbstractController
         );
 
         return new JsonResponse([
-            'matcher2' => $m2,
+            'secondMatcher' => $m2,
         ]);
     }
 

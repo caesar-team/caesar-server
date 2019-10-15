@@ -50,7 +50,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <div class="text-center" style="width: 100%">
         <h2>Login by form</h2>
-        <form method="POST" action="{{ path('srp_regular_login') }}" id="login">
+        <form method="POST" action="{{ path('api_srp_login_prepare') }}" id="login">
             <div class="form-group">
                 <label>
                     Email:
@@ -85,8 +85,8 @@
         var srp = new srp();
 
         function generateSession(data) {
-            let matcher2 = srp.generateM2(data.A, data.matcher, data.S);
-            if (matcher2 !== data.matcher2) {
+            let secondMatcher = srp.generateM2(data.A, data.matcher, data.S);
+            if (secondMatcher !== data.secondMatcher) {
                 alert('error, server is compromised');
                 return;
             }
@@ -114,12 +114,12 @@
             data.S = S;
             data.matcher = M1;
             axios.post(
-                '/srp_login2', {
+                '/api/auth/srpp/login2', {
                     'matcher': M1,
                     'email': data.email
                 })
                 .then(function (response) {
-                    data.matcher2 = response.data.matcher2;
+                    data.secondMatcher = response.data.secondMatcher;
 
                     generateSession(data);
                 })

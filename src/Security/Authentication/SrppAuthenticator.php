@@ -20,7 +20,7 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 class SrppAuthenticator extends AbstractGuardAuthenticator
 {
-    private const SERVER_SESSION_KEY_FIELD = 'serverSessionKey';
+    public const SERVER_SESSION_KEY_FIELD = 'serverSessionKey';
     private const CLIENT_SESSION_KEY_FIELD = 'clientSessionKey';
     private const EMAIL_FIELD = 'email';
     /**
