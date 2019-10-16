@@ -5,13 +5,14 @@ easy_admin:
       controller: App\Controller\Admin\UserController
       class: App\Entity\User
       label: 'User'
+      disabled_actions: ['new']
       list:
         actions: ['resetPassword', 'reset_2fa']
         title: 'Users'
         fields:
           - id
-          - avatar
           - username
+          - roles
           - email
           - lastLogin
           - domain
@@ -23,3 +24,4 @@ easy_admin:
           - username
           - email
           - domain
+          - { property: 'roles' , type_options: {help: 'admin.help.available_roles' } }

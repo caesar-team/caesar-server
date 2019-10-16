@@ -15,6 +15,7 @@ use App\Form\Request\Srp\RegistrationType;
 use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
+use App\Security\Authentication\SrppAuthenticator;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\TeamManager;
 use App\Services\SrpHandler;
@@ -26,6 +27,7 @@ use FOS\UserBundle\Event\FormEvent;
 use FOS\UserBundle\Event\GetResponseUserEvent;
 use FOS\UserBundle\FOSUserEvents;
 use FOS\UserBundle\Model\UserManagerInterface;
+use HWI\Bundle\OAuthBundle\Security\Core\Authentication\Provider\OAuthProvider;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -38,6 +40,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class SrpController extends AbstractController
@@ -419,5 +422,65 @@ final class SrpController extends AbstractController
 
         return null;
 
+    }
+
+    /**
+     * @Route(
+     *     path="/api/auth/srpp/login2",
+     *     name="srp_login2",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Request                $request
+     * @param SrpHandler             $srpHandler
+     *
+     * @return null
+     */
+    public function login2Action(Request $request, SrpHandler $srpHandler)
+    {
+        $parsedRequest = json_decode($request->getContent(), true);
+        /** @var User $user */
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $parsedRequest['email']]);
+        $srp = $user->getSrp();
+
+        $S = $srpHandler->generateSessionServer(
+            $srp->getPublicClientEphemeralValue(),
+            $srp->getPublicServerEphemeralValue(),
+            $srp->getPrivateServerEphemeralValue(),
+            $srp->getVerifier()
+        );
+
+        $matcher = $srpHandler->generateFirstMatcher(
+            $srp->getPublicClientEphemeralValue(),
+            $srp->getPublicServerEphemeralValue(),
+            $S
+        );
+
+        if ($matcher !== $parsedRequest['matcher']) {
+            throw new BadRequestHttpException('Matchers are not equals');
+        }
+
+        $k = $srpHandler->generateSessionKey($S);
+        $session = $request->getSession();
+        $session->set(SrppAuthenticator::SERVER_SESSION_KEY_FIELD, $k);
+
+        $m2 = $srpHandler->generateSecondMatcher(
+            $srp->getPublicClientEphemeralValue(),
+            $matcher,
+            $S
+        );
+
+        return new JsonResponse([
+            'secondMatcher' => $m2,
+        ]);
+    }
+
+    /**
+     * @Route(path="/srp_login_confirm", name="srp_login_confirm", methods={"POST"})
+     * @param Request $request
+     */
+    public function compareSessionKeysAndAuthorize(Request $request)
+    {
+        throw new \RuntimeException('You should register an authenticator to pass this route');
     }
 }

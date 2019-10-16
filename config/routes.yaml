@@ -1,3 +1,5 @@
+_login:
+    path: /login
 google_login:
     path: /login/google
 google_connect:
