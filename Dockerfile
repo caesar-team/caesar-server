@@ -54,7 +54,7 @@ USER www-data
 # copy production vendors
 COPY --chown=www-data:www-data . .
 COPY --chown=www-data:www-data --from=dependencies /var/www/html/vendor /var/www/html/vendor
-COPY --from=yarn-enc ./public /var/www/html/public
+COPY --from=yarn-enc ./public/build /var/www/html/public/build
 COPY ./config/docker/php/symfony.ini /usr/local/etc/php/conf.d
 # COPY ./config/docker/php/symfony.pool.conf /usr/local/etc/php-fpm.d/
 COPY --chown=www-data:www-data entrypoint.sh /usr/local/bin/
