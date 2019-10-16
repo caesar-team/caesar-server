@@ -20,7 +20,7 @@ function generateSession(data) {
             document.location.href = response.data.redirect;
         })
         .catch(function (error) {
-            console.log(error);
+
         });
 }
 
@@ -42,13 +42,11 @@ function generateMatcher(data) {
             generateSession(data);
         })
         .catch(function (error) {
-            console.log(error);
+
         });
 }
 
 document.getElementById('login').onsubmit = function () {
-    console.log(this);
-    console.log(this.action);
     let email = this.elements.item(0).value;
     let password = this.elements.item(1).value;
 
@@ -72,7 +70,7 @@ document.getElementById('login').onsubmit = function () {
             });
         })
         .catch(function (error) {
-            console.log(error);
+
         });
 
     return false;
