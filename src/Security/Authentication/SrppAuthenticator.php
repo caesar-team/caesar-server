@@ -8,6 +8,7 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -39,7 +40,7 @@ class SrppAuthenticator extends AbstractGuardAuthenticator
     }
     public function start(Request $request, AuthenticationException $authException = null)
     {
-        throw new AccessDeniedException('Authentication Required');
+        return new RedirectResponse($this->router->generate('_login'));
     }
 
     public function supports(Request $request)

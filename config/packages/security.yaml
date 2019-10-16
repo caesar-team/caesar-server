@@ -20,6 +20,16 @@ security:
         anonymous_area:
             pattern: ^/api/anonymous
             anonymous: true
+        doc:
+            pattern: ^/(api/doc|admin)
+            logout: true
+            stateless: false
+            anonymous: false
+            context: main
+            guard:
+                provider: fos.user.provider
+                authenticators:
+                    - App\Security\Authentication\SrppAuthenticator
         srp:
             pattern: ^/api/auth/srpp
             stateless: true
