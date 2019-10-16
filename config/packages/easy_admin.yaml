@@ -24,4 +24,21 @@ easy_admin:
           - username
           - email
           - domain
-          - { property: 'roles' , type_options: {help: 'admin.help.available_roles' } }
+          - { property: 'roles', type: 'choice', type_options: { expanded: true, multiple: true, choices: { 'user': 'ROLE_USER',  'admin': 'ROLE_ADMIN', 'read-only user': 'ROLE_READ_ONLY_USER' } } }
+    UserTeam:
+      class: App\Entity\UserTeam
+      label: 'Users Teams'
+      disabled_actions: ['new']
+      list:
+        title: 'Users Teams'
+        fields:
+          - user
+          - createdAt
+          - team
+          - userRole
+      form:
+        title: 'Users Teams'
+        fields:
+          - { property: 'team', type: 'entity', type_options: { disabled: true } }
+          - { property: 'user', type: 'entity', type_options: { disabled: true } }
+          - { property: 'userRole', type: 'choice', type_options: { choices: { 'member': 'member',  'admin': 'admin' } } }
