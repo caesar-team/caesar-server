@@ -21,17 +21,15 @@ security:
             pattern: ^/api/anonymous
             anonymous: true
         doc:
-            pattern: ^/api/doc
-            http_basic: ~
+            pattern: ^/(api/doc|admin)
+            logout: true
+            stateless: false
             anonymous: false
-            context: admin
-            provider: fos.user.provider
-        admin:
-            pattern: ^/admin
-            http_basic: ~
-            anonymous: false
-            context: admin
-            provider: fos.user.provider
+            context: main
+            guard:
+                provider: fos.user.provider
+                authenticators:
+                    - App\Security\Authentication\SrppAuthenticator
         srp:
             pattern: ^/api/auth/srpp
             stateless: true
@@ -72,6 +70,10 @@ security:
             logout: true
             stateless: false
             anonymous: true
+            guard:
+                provider: fos.user.provider
+                authenticators:
+                    - App\Security\Authentication\SrppAuthenticator
             oauth:
                 resource_owners:
                     google: google_login
