@@ -24,4 +24,4 @@ easy_admin:
           - username
           - email
           - domain
-          - { property: 'roles', type: 'choice', type_options: { expanded: true, multiple: true, choices: { 'user': 'ROLE_USER',  'admin': 'ROLE_ADMIN' } } }
+          - { property: 'roles', type: 'choice', type_options: { expanded: true, multiple: true, choices: { 'user': 'ROLE_USER',  'admin': 'ROLE_ADMIN', 'read-only user': 'ROLE_READ_ONLY_USER' } } }
