@@ -17,6 +17,7 @@ use App\Security\Fingerprint\FingerprintManager;
 use App\Security\Voter\TwoFactorInProgressVoter;
 use App\Utils\DirectoryHelper;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use Symfony\Component\Security\Core\Security;
 
@@ -62,7 +63,7 @@ class SecurityBootstrapViewFactory
      * @param User $user
      * @return SecurityBootstrapView
      * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     * @throws JWTDecodeFailureException
      */
     public function create(User $user):SecurityBootstrapView
     {
@@ -78,7 +79,7 @@ class SecurityBootstrapViewFactory
     /**
      * @param User $user
      * @return string
-     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     * @throws JWTDecodeFailureException
      */
     private function getTwoFactorAuthState(User $user): string
     {
@@ -165,7 +166,7 @@ class SecurityBootstrapViewFactory
     /**
      * @param User $user
      * @return bool
-     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     * @throws JWTDecodeFailureException
      */
     private function isCompleteJwt(User $user): bool
     {
@@ -173,6 +174,7 @@ class SecurityBootstrapViewFactory
             $decodedToken = $this->encoder->decode($this->security->getToken()->getCredentials());
 
             $isCompleteFlow = User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
+
             return $isCompleteFlow && !isset($decodedToken[TwoFactorInProgressVoter::CHECK_KEY_NAME]);
         }
 
