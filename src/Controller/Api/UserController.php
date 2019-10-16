@@ -6,11 +6,9 @@ namespace App\Controller\Api;
 
 use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
-use App\Entity\Team;
 use App\Entity\Security\Invitation;
 use App\Entity\Srp;
 use App\Entity\User;
-use App\Entity\UserTeam;
 use App\Factory\View\SecurityBootstrapViewFactory;
 use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
@@ -32,7 +30,6 @@ use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
-use App\Services\TeamManager;
 use App\Services\InvitationManager;
 use App\Services\Messenger;
 use Doctrine\ORM\EntityManagerInterface;
@@ -73,7 +70,7 @@ final class UserController extends AbstractController
      *
      * @return SelfUserInfoView
      */
-    public function userInfoAction(SelfUserInfoViewFactory $viewFactory)
+    public function userInfo(SelfUserInfoViewFactory $viewFactory)
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -110,7 +107,7 @@ final class UserController extends AbstractController
      *
      * @return UserKeysView
      */
-    public function publicKeyAction(User $user, UserKeysViewFactory $viewFactory)
+    public function publicKey(User $user, UserKeysViewFactory $viewFactory)
     {
         return $viewFactory->create($user);
     }
@@ -142,7 +139,7 @@ final class UserController extends AbstractController
      *
      * @return UserView[]|array|FormInterface
      */
-    public function userListAction(Request $request, UserListViewFactory $factory)
+    public function userList(Request $request, UserListViewFactory $factory)
     {
         $userQuery = new UserQuery($this->getUser());
 
@@ -185,7 +182,7 @@ final class UserController extends AbstractController
      *
      * @return UserKeysView|null
      */
-    public function keyListAction(UserKeysViewFactory $viewFactory)
+    public function keyList(UserKeysViewFactory $viewFactory)
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -219,11 +216,10 @@ final class UserController extends AbstractController
      * @param Request $request
      * @param EntityManagerInterface $entityManager
      *
-     * @param TeamManager $teamManager
      * @return FormInterface|null
      * @throws \Exception
      */
-    public function saveKeysAction(Request $request, EntityManagerInterface $entityManager, TeamManager $teamManager)
+    public function saveKeys(Request $request, EntityManagerInterface $entityManager)
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -245,8 +241,6 @@ final class UserController extends AbstractController
 
         if ($user->isFullUser()) {
             $this->removeInvitation($user, $entityManager);
-            $userTeam = $teamManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
-            $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
         }
 
         $entityManager->flush();
@@ -289,15 +283,13 @@ final class UserController extends AbstractController
      * @param UserRepository $userRepository
      * @param EntityManagerInterface $entityManager
      *
-     * @param TeamManager $groupManager
      * @return array|FormInterface
      * @throws \Exception
      */
     public function createUser(
         Request $request,
         UserRepository $userRepository,
-        EntityManagerInterface $entityManager,
-        TeamManager $groupManager
+        EntityManagerInterface $entityManager
     )
     {
         /** @var User $user */
@@ -316,7 +308,6 @@ final class UserController extends AbstractController
         }
 
         if ($user->isFullUser()) {
-            $groupManager->addTeamToUser($user, UserTeam::USER_ROLE_PRETENDER);
             $this->removeInvitation($user, $entityManager);
             $invitation = new Invitation();
             $invitation->setHash($user->getEmail());
@@ -546,13 +537,13 @@ final class UserController extends AbstractController
      *     methods={"POST"}
      * )
      * @param Request $request
+     * @param EntityManagerInterface $entityManager
      * @return array|FormInterface
      * @throws \Exception
      */
     public function batchCreateUser(
         Request $request,
-        EntityManagerInterface $entityManager,
-        TeamManager $groupManager
+        EntityManagerInterface $entityManager
     )
     {
         $requestUsers = $request->request->get('users');
@@ -566,7 +557,6 @@ final class UserController extends AbstractController
             }
 
             if ($user->isFullUser()) {
-                $groupManager->addTeamToUser($user, UserTeam::USER_ROLE_PRETENDER);
                 $this->removeInvitation($user, $entityManager);
                 $invitation = new Invitation();
                 $invitation->setHash($user->getEmail());
