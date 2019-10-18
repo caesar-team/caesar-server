@@ -70,7 +70,6 @@ class CreateUserCommand extends BaseCreateUserCommand
         $x = $this->srpHandler->generateX($seed, $username, $password);
         $verifier = $this->srpHandler->generateVerifier($x);
         $user->getSrp()->setVerifier($verifier);
-        $this->teamManager->addTeamToUser($user);
         $this->userManager->updateUser($user);
 
         $output->writeln(sprintf('Created user <comment>%s</comment>', $username));
