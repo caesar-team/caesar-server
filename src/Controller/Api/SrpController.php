@@ -17,11 +17,12 @@ use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
 use App\Security\Authentication\SrppAuthenticator;
 use App\Security\AuthorizationManager\AuthorizationManager;
-use App\Services\TeamManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
 use App\Utils\ErrorMessageFormatter;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 use FOS\UserBundle\Event\FilterUserResponseEvent;
 use FOS\UserBundle\Event\FormEvent;
 use FOS\UserBundle\Event\GetResponseUserEvent;
@@ -87,17 +88,15 @@ final class SrpController extends AbstractController
      * @param Request $request
      * @param UserManagerInterface $userManager
      *
-     * @param TeamManager $teamManager
      * @param TranslatorInterface $translator
      * @param AuthorizationManager $authorizationManager
      * @return null
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Exception
+     * @throws NonUniqueResultException
+     * @throws Exception
      */
     public function registerAction(
         Request $request,
         UserManagerInterface $userManager,
-        TeamManager $teamManager,
         TranslatorInterface $translator,
         AuthorizationManager $authorizationManager
     )
@@ -119,10 +118,6 @@ final class SrpController extends AbstractController
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
-        }
-
-        if ($user->isFullUser()) {
-            $teamManager->addTeamToUser($user);
         }
 
         $userManager->updateUser($user);
@@ -176,7 +171,7 @@ final class SrpController extends AbstractController
      * @param SrpPrepareViewFactory $viewFactory
      *
      * @return PreparedSrpView|FormInterface|JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function prepareLoginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler, SrpPrepareViewFactory $viewFactory)
     {
@@ -321,7 +316,7 @@ final class SrpController extends AbstractController
      * @param UserManagerInterface $manager
      *
      * @return null
-     * @throws \Exception
+     * @throws Exception
      */
     public function updatePassword(Request $request, UserManagerInterface $manager)
     {
