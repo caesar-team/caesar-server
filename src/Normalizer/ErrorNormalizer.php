@@ -33,7 +33,11 @@ class ErrorNormalizer implements NormalizerInterface
     public function normalize($object, $format = null, array $context = [])
     {
         return [
-            'errors' => $object instanceof FormInterface ? $this->getFormErrors($object) : [],
+            'error' => [
+                'message' => $object instanceof FormInterface ? implode("; ", $this->getFormErrors($object)) : [],
+                'type' => FormError::class,
+                'code' => 0,
+            ]
         ];
     }
 
