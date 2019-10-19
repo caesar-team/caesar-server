@@ -15,17 +15,20 @@ use App\Form\Request\Srp\RegistrationType;
 use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
+use App\Security\Authentication\SrppAuthenticator;
 use App\Security\AuthorizationManager\AuthorizationManager;
-use App\Services\TeamManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
 use App\Utils\ErrorMessageFormatter;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 use FOS\UserBundle\Event\FilterUserResponseEvent;
 use FOS\UserBundle\Event\FormEvent;
 use FOS\UserBundle\Event\GetResponseUserEvent;
 use FOS\UserBundle\FOSUserEvents;
 use FOS\UserBundle\Model\UserManagerInterface;
+use HWI\Bundle\OAuthBundle\Security\Core\Authentication\Provider\OAuthProvider;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -38,6 +41,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class SrpController extends AbstractController
@@ -84,17 +88,15 @@ final class SrpController extends AbstractController
      * @param Request $request
      * @param UserManagerInterface $userManager
      *
-     * @param TeamManager $teamManager
      * @param TranslatorInterface $translator
      * @param AuthorizationManager $authorizationManager
      * @return null
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Exception
+     * @throws NonUniqueResultException
+     * @throws Exception
      */
     public function registerAction(
         Request $request,
         UserManagerInterface $userManager,
-        TeamManager $teamManager,
         TranslatorInterface $translator,
         AuthorizationManager $authorizationManager
     )
@@ -116,10 +118,6 @@ final class SrpController extends AbstractController
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
-        }
-
-        if ($user->isFullUser()) {
-            $teamManager->addTeamToUser($user);
         }
 
         $userManager->updateUser($user);
@@ -173,7 +171,7 @@ final class SrpController extends AbstractController
      * @param SrpPrepareViewFactory $viewFactory
      *
      * @return PreparedSrpView|FormInterface|JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function prepareLoginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler, SrpPrepareViewFactory $viewFactory)
     {
@@ -318,7 +316,7 @@ final class SrpController extends AbstractController
      * @param UserManagerInterface $manager
      *
      * @return null
-     * @throws \Exception
+     * @throws Exception
      */
     public function updatePassword(Request $request, UserManagerInterface $manager)
     {
@@ -419,5 +417,65 @@ final class SrpController extends AbstractController
 
         return null;
 
+    }
+
+    /**
+     * @Route(
+     *     path="/api/auth/srpp/login2",
+     *     name="srp_login2",
+     *     methods={"POST"}
+     * )
+     *
+     * @param Request                $request
+     * @param SrpHandler             $srpHandler
+     *
+     * @return null
+     */
+    public function login2Action(Request $request, SrpHandler $srpHandler)
+    {
+        $parsedRequest = json_decode($request->getContent(), true);
+        /** @var User $user */
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $parsedRequest['email']]);
+        $srp = $user->getSrp();
+
+        $S = $srpHandler->generateSessionServer(
+            $srp->getPublicClientEphemeralValue(),
+            $srp->getPublicServerEphemeralValue(),
+            $srp->getPrivateServerEphemeralValue(),
+            $srp->getVerifier()
+        );
+
+        $matcher = $srpHandler->generateFirstMatcher(
+            $srp->getPublicClientEphemeralValue(),
+            $srp->getPublicServerEphemeralValue(),
+            $S
+        );
+
+        if ($matcher !== $parsedRequest['matcher']) {
+            throw new BadRequestHttpException('Matchers are not equals');
+        }
+
+        $k = $srpHandler->generateSessionKey($S);
+        $session = $request->getSession();
+        $session->set(SrppAuthenticator::SERVER_SESSION_KEY_FIELD, $k);
+
+        $m2 = $srpHandler->generateSecondMatcher(
+            $srp->getPublicClientEphemeralValue(),
+            $matcher,
+            $S
+        );
+
+        return new JsonResponse([
+            'secondMatcher' => $m2,
+        ]);
+    }
+
+    /**
+     * @Route(path="/srp_login_confirm", name="srp_login_confirm", methods={"POST"})
+     * @param Request $request
+     */
+    public function compareSessionKeysAndAuthorize(Request $request)
+    {
+        throw new \RuntimeException('You should register an authenticator to pass this route');
     }
 }

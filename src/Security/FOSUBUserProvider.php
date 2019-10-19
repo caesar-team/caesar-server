@@ -88,7 +88,6 @@ class FOSUBUserProvider extends BaseUserProvider
                 $user->setPlainPassword(md5(uniqid('', true)));
                 $user->setUsername($response->getEmail());
                 $user->setEnabled(true);
-                $this->groupManager->addTeamToUser($user);
 
                 $avatar = $this->downloader->createAvatarFromLink($response->getProfilePicture());
                 $user->setAvatar($avatar);

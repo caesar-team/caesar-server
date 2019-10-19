@@ -23,6 +23,7 @@ class AnonymousRequestSubscriber implements EventSubscriberInterface
         'api_keys_list',
         'api_list_tree',
         'api_user_get_info',
+        'api_show_item',
     ];
     /**
      * @var Security

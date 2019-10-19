@@ -517,4 +517,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     {
         return $this->trash;
     }
+
+    public function hasOneOfRoles(array $roles): bool
+    {
+        return (bool) array_filter($roles, function ($role) {
+            return $this->hasRole($role);
+        });
+    }
 }

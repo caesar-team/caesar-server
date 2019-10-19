@@ -34,7 +34,7 @@ class FrontendUriHandler
     public function validateUri($uri): bool
     {
         if (empty($uri)) {
-            throw new NotFoundHttpException('Empty frontend uri');
+            return  true;
         }
 
         $redirectUri = parse_url($uri);
@@ -58,7 +58,7 @@ class FrontendUriHandler
         $response->headers->setCookie(new Cookie(self::COOKIE_NAME, $uri, time() + self::COOKIE_LIFETIME));
     }
 
-    public function extractUri(Request $request): string
+    public function extractUri(Request $request): ?string
     {
         $uri = $request->cookies->get(self::COOKIE_NAME);
         $this->validateUri($uri);

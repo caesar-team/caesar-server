@@ -199,4 +199,9 @@ class Team
     {
         return $this->trash;
     }
+
+    public function __toString()
+    {
+        return $this->title;
+    }
 }
