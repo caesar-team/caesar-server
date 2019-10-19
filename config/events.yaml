@@ -43,7 +43,7 @@ services:
         tags:
             - { name: doctrine.event_subscriber, connection: default }
 
-    app.event.create_admin_subscriber:
-        class: App\Event\EventSubscriber\CreateAdminSubscriber
+    app.event.promote_admin_subscriber:
+        class: App\Event\EventSubscriber\PromoteAdminSubscriber
         tags:
             - { name: doctrine.event_subscriber, connection: default }
