@@ -164,13 +164,14 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string $role
      * @return array|User[]
      */
-    public function findAdmins(): array
+    public function findAdmins($role = User::ROLE_ADMIN): array
     {
         $qb = $this->createQueryBuilder('user');
         $qb->andWhere($qb->expr()->Like($qb->expr()->lower('user.roles'), ':role'));
-        $qb->setParameter('role', '%'.mb_strtolower(User::ROLE_ADMIN).'%');
+        $qb->setParameter('role', '%'.mb_strtolower($role).'%');
 
         return $qb->getQuery()->getResult();
     }

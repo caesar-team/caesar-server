@@ -4,14 +4,15 @@ namespace App\Controller\Admin;
 
 use App\Entity\User;
 use App\Mailer\FosUserMailer;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AdminController as BaseController;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\EasyAdminController as BaseController;
+use EasyCorp\Bundle\EasyAdminBundle\Event\EasyAdminEvents;
 use FOS\UserBundle\Doctrine\UserManager;
 use FOS\UserBundle\Event\GetResponseNullableUserEvent;
 use FOS\UserBundle\Event\GetResponseUserEvent;
 use FOS\UserBundle\FOSUserEvents;
-use FOS\UserBundle\Model\UserInterface;
 use FOS\UserBundle\Util\TokenGeneratorInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class AdminController.

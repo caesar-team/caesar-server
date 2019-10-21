@@ -522,4 +522,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
             return $this->hasRole($role);
         });
     }
+
+    public function getTeams(): array
+    {
+        return array_map(function (UserTeam $userTeam) {
+            return $userTeam->getTeam();
+        }, $this->userTeams->toArray());
+    }
 }

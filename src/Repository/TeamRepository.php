@@ -12,7 +12,6 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 
 final class TeamRepository extends ServiceEntityRepository
 {
-
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Team::class);
@@ -49,5 +48,19 @@ final class TeamRepository extends ServiceEntityRepository
         $qb->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    public function findAllExcept(array $memberships): array
+    {
+        $qb = $this->createQueryBuilder('team');
+
+        if (0 < count($memberships)) {
+            $qb
+                ->where('team.id NOT IN (:teams)')
+                ->setParameter('teams', $memberships)
+            ;
+        }
+
+        return $qb->getQuery()->getResult();
     }
 }
