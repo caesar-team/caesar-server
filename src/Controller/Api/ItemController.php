@@ -146,7 +146,6 @@ final class ItemController extends AbstractController
         return $viewFactory->create($itemCollection);
     }
 
-
     /**
      * @SWG\Tag(name="Item")
      * @SWG\Response(
@@ -281,8 +280,6 @@ final class ItemController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
-
-        $this->denyAccessUnlessGranted(QuotesVoter::ADD_LIMITED, $item);
         $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
 
         $itemRepository->save($item);

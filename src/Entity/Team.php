@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Doctrine\ORM\Mapping\UniqueConstraint;
+use App\Validator\Constraints\BillingRestriction;
 
 /**
  * Class Group
@@ -23,6 +24,7 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
  *            columns={"title"}),
  *    }
  * )
+ * @BillingRestriction()
  */
 class Team
 {

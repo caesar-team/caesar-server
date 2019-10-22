@@ -8,6 +8,7 @@ use App\Entity\Billing\Plan;
 use App\Entity\User;
 use App\Model\DTO\BillingViolation;
 use App\Services\Billing\BillingHelper;
+use Doctrine\ORM\NonUniqueResultException;
 
 final class UserRestrictionValidator implements BillingRestrictionValidatorInterface
 {
@@ -29,7 +30,7 @@ final class UserRestrictionValidator implements BillingRestrictionValidatorInter
     /**
      * @param User $value
      * @return BillingViolation|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function validate($value): ?BillingViolation
     {

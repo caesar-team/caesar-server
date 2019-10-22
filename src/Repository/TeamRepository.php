@@ -9,6 +9,7 @@ use App\Entity\Team;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 
 final class TeamRepository extends ServiceEntityRepository
 {
@@ -35,7 +36,7 @@ final class TeamRepository extends ServiceEntityRepository
     /**
      * @param Directory $directory
      * @return Team|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function findOneByDirectory(Directory $directory): ?Team
     {
@@ -49,5 +50,17 @@ final class TeamRepository extends ServiceEntityRepository
         $qb->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @return int
+     * @throws NonUniqueResultException
+     */
+    public function getCount()
+    {
+        $qb = $this->createQueryBuilder('team');
+        $qb->select($qb->expr()->count('team.id'));
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 }

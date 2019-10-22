@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Strategy\Billing\Validator;
 
 use App\Entity\Billing\Plan;
-use App\Entity\Item;
+use App\Entity\Team;
 use App\Model\DTO\BillingViolation;
 use App\Services\Billing\BillingHelper;
 use Doctrine\ORM\NonUniqueResultException;
 
-final class ItemRestrictionValidator implements BillingRestrictionValidatorInterface
+final class TeamRestrictionValidator implements BillingRestrictionValidatorInterface
 {
     /**
      * @var BillingHelper
@@ -24,22 +24,22 @@ final class ItemRestrictionValidator implements BillingRestrictionValidatorInter
 
     public function canValidate($value): bool
     {
-        return $value instanceof Item;
+        return $value instanceof Team;
     }
 
     /**
-     * @param Item $value
+     * @param Team $value
      * @return BillingViolation|null
      * @throws NonUniqueResultException
      */
     public function validate($value): ?BillingViolation
     {
-        if ($this->billingHelper->hasRestriction(Plan::FIELD_ITEMS_LIMIT) && 0 >= $this->billingHelper->getRemains()->remainingItems) {
-            return new BillingViolation('Items limit reached.');
+        if (!$this->billingHelper->hasRestriction(Plan::FIELD_TEAMS_LIMIT)) {
+            return null;
         }
 
-        if ($this->billingHelper->hasRestriction(Plan::FIELD_MEMORY_LIMIT) && strlen($value->getSecret()) > $this->billingHelper->getRemains()->remainingMemory) {
-            return new BillingViolation('Memory limit reached.');
+        if (0 >= $this->billingHelper->getRemains()->remainingTeams) {
+            return new BillingViolation('Teams limit reached.');
         }
 
         return null;

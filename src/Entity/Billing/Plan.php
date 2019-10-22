@@ -14,9 +14,10 @@ use Ramsey\Uuid\UuidInterface;
  */
 class Plan
 {
-    const FIELD_USERS_LIMIT = 'usersLimit';
-    const FIELD_ITEMS_LIMIT = 'itemsLimit';
-    const FIELD_MEMORY_LIMIT = 'memoryLimit';
+    public const FIELD_USERS_LIMIT = 'usersLimit';
+    public const FIELD_ITEMS_LIMIT = 'itemsLimit';
+    public const FIELD_MEMORY_LIMIT = 'memoryLimit';
+    public const FIELD_TEAMS_LIMIT = 'teamsLimit';
 
     /**
      * @var UuidInterface
