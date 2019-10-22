@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity\Billing;
 
-use App\DBAL\Types\Enum\BillingEnumType;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -29,9 +28,9 @@ class Plan
 
     /**
      * @var string
-     * @ORM\Column(type="BillingEnumType", options={"default"="unlimited"})
+     * @ORM\Column(type="string", options={"default"="unlimited"})
      */
-    private $name = BillingEnumType::TYPE_UNLIMITED;
+    private $name = 'unlimited';
 
     /**
      * @ORM\Column(type="integer", options={"default":-1})
@@ -46,6 +45,12 @@ class Plan
     private $itemsLimit = -1;
 
     /**
+     * @ORM\Column(type="integer", options={"default":-1})
+     * @var int
+     */
+    private $teamsLimit = -1;
+
+    /**
      * @ORM\Column(type="integer", length=255, options={"default":-1})
      * @var int
      */
@@ -56,6 +61,18 @@ class Plan
      * @ORM\Column(type="boolean", options={"default":false})
      */
     private $active = false;
+
+    /**
+     * @var int
+     * @ORM\Column(type="integer", length=255, nullable=true)
+     */
+    private $subscriptionId;
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $userSubscriptionId;
 
     /**
      * @param string $label
@@ -120,4 +137,35 @@ class Plan
     {
         $this->active = $active;
     }
+
+    public function getTeamsLimit(): int
+    {
+        return $this->teamsLimit;
+    }
+
+    public function setTeamsLimit(int $teamsLimit): void
+    {
+        $this->teamsLimit = $teamsLimit;
+    }
+
+    public function getSubscriptionId(): int
+    {
+        return $this->subscriptionId;
+    }
+
+    public function setSubscriptionId(int $subscriptionId): void
+    {
+        $this->subscriptionId = $subscriptionId;
+    }
+
+    public function getUserSubscriptionId(): string
+    {
+        return $this->userSubscriptionId;
+    }
+
+    public function setUserSubscriptionId(string $userSubscriptionId): void
+    {
+        $this->userSubscriptionId = $userSubscriptionId;
+    }
+
 }

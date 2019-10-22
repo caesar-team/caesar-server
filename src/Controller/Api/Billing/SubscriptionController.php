@@ -5,15 +5,10 @@ declare(strict_types=1);
 namespace App\Controller\Api\Billing;
 
 use App\Controller\AbstractController;
-use App\DBAL\Types\Enum\BillingEnumType;
 use App\Entity\Billing\Plan;
-use App\Form\Request\Billing\SubscriptionGrantType;
 use App\Model\DTO\UserSubscription;
 use App\Repository\PlanRepository;
 use App\Repository\UserRepository;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -43,25 +38,19 @@ class SubscriptionController extends AbstractController
      * @param Request $request
      * @param UserRepository $userRepository
      * @param PlanRepository $planRepository
+     * @param SerializerInterface $serializer
      * @return Plan|FormInterface|null
-     * @throws NonUniqueResultException
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @throws \Exception
      */
     public function grant(
         Request $request,
         UserRepository $userRepository,
-        PlanRepository $planRepository
+        PlanRepository $planRepository,
+        SerializerInterface $serializer
     )
     {
-        $userSubscription = new UserSubscription();
-        $form = $this->createForm(SubscriptionGrantType::class, $userSubscription);
-
-        $form->submit($request->request->all());
-
-        if (!$form->isValid()) {
-            return $form;
-        }
+        /** @var UserSubscription $userSubscription */
+        $userSubscription = $serializer->deserialize($request->getContent(), UserSubscription::class, 'json');
 
         //find an user by a request
         $user = $userRepository->findOneByEmail($userSubscription->getUser()->getEmail());
@@ -77,10 +66,15 @@ class SubscriptionController extends AbstractController
 
         $newPlan = new Plan();
         $newPlan->setActive(true);
-        $newPlan->setName(BillingEnumType::TYPE_EXPANDED);
-        $newPlan->setItemsLimit(100);
-        $newPlan->setMemoryLimit(-1);
-        $newPlan->setUsersLimit(50);
+        $newPlan->setName($userSubscription->getSubscriptionName());
+        $itemsLimit = 0 < (int)$userSubscription->getItemsLimit() ? (int)$userSubscription->getItemsLimit() : -1;
+        $newPlan->setItemsLimit($itemsLimit);
+        $memoryLimit = 0 < (int)$userSubscription->getMemoryLimit() ? (int)$userSubscription->getMemoryLimit() : -1;
+        $newPlan->setMemoryLimit($memoryLimit);
+        $teamsLimit = 0 < (int)$userSubscription->getTeamsLimit() ? (int)$userSubscription->getTeamsLimit() : -1;
+        $newPlan->setTeamsLimit($teamsLimit);
+        $newPlan->setUserSubscriptionId($userSubscription->getExternalSubscriptionId());
+        $newPlan->setSubscriptionId($userSubscription->getId());
 
         $planRepository->persist($newPlan);
         $planRepository->flush();

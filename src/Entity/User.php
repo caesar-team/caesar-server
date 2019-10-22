@@ -180,6 +180,12 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $trash;
 
     /**
+     * @var int|null
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $servicebotUser;
+
+    /**
      * User constructor.
      *
      * @param Srp|null $srp
@@ -523,5 +529,15 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return (bool) array_filter($roles, function ($role) {
             return $this->hasRole($role);
         });
+    }
+
+    public function getServicebotUser(): ?int
+    {
+        return $this->servicebotUser;
+    }
+
+    public function setServicebotUser(?int $servicebotUser): void
+    {
+        $this->servicebotUser = $servicebotUser;
     }
 }

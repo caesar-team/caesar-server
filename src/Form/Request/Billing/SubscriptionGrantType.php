@@ -21,13 +21,24 @@ class SubscriptionGrantType extends AbstractType
             ->add('externalSubscriptionId')
             ->add('user', UserType::class)
             ->add('id')
+            ->add('user')
+            ->add('subscription')
+            ->add('externalSubscriptionId')
+            ->add('itemsLimit')
+            ->add('created')
+            ->add('status')
+            ->add('subscribedAt')
+            ->add('metaData')
+            ->add('teamsLimit')
+            ->add('memoryLimit')
+            ->add('subscriptionName')
         ;
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => UserSubscription::class
+            'data_class' => UserSubscription::class,
         ]);
     }
 }
