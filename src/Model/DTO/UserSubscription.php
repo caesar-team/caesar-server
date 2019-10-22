@@ -49,6 +49,11 @@ class UserSubscription implements UserSubscriptionInterface
      */
     private $usersLimit;
 
+    /**
+     * @var string|null
+     */
+    private $subscribedAt;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -147,5 +152,15 @@ class UserSubscription implements UserSubscriptionInterface
     public function setUsersLimit(?string $usersLimit): void
     {
         $this->usersLimit = $usersLimit;
+    }
+
+    public function getSubscribedAt(): ?string
+    {
+        return $this->subscribedAt;
+    }
+
+    public function setSubscribedAt(?string $subscribedAt): void
+    {
+        $this->subscribedAt = $subscribedAt;
     }
 }

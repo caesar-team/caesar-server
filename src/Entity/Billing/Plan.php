@@ -76,6 +76,12 @@ class Plan
     private $userSubscriptionId;
 
     /**
+     * @var \DateTimeImmutable|null
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $subscribedAt;
+
+    /**
      * @param string $label
      * @throws \Exception
      */
@@ -169,4 +175,13 @@ class Plan
         $this->userSubscriptionId = $userSubscriptionId;
     }
 
+    public function getSubscribedAt(): ?\DateTimeImmutable
+    {
+        return $this->subscribedAt;
+    }
+
+    public function setSubscribedAt(?\DateTimeImmutable $subscribedAt): void
+    {
+        $this->subscribedAt = $subscribedAt;
+    }
 }

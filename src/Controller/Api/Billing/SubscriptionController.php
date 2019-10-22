@@ -71,6 +71,7 @@ class SubscriptionController extends AbstractController
         $newPlan->setUsersLimit($usersLimit);
         $newPlan->setUserSubscriptionId($userSubscription->getExternalSubscriptionId());
         $newPlan->setSubscriptionId($userSubscription->getId());
+        $newPlan->setSubscribedAt(new \DateTimeImmutable($userSubscription->getSubscribedAt()));
 
         $planRepository->persist($newPlan);
         $planRepository->flush();
