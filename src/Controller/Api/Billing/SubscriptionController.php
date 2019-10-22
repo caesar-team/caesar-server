@@ -59,7 +59,7 @@ class SubscriptionController extends AbstractController
         }
 
         $newPlan = new Plan();
-        $newPlan->setActive(true);
+        $newPlan->setActive('running' === $userSubscription->getStatus());
         $newPlan->setName($userSubscription->getSubscriptionName());
         $itemsLimit = 0 < (int)$userSubscription->getItemsLimit() ? (int)$userSubscription->getItemsLimit() : -1;
         $newPlan->setItemsLimit($itemsLimit);

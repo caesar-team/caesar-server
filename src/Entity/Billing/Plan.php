@@ -18,7 +18,7 @@ class Plan
     public const FIELD_ITEMS_LIMIT = 'itemsLimit';
     public const FIELD_MEMORY_LIMIT = 'memoryLimit';
     public const FIELD_TEAMS_LIMIT = 'teamsLimit';
-    public const SUBSCRIPTION_INTERVAL_MONTH = '1';
+    private const SUBSCRIPTION_INTERVAL_MONTH = '1';
 
     /**
      * @var UuidInterface
@@ -184,5 +184,15 @@ class Plan
     public function setSubscribedAt(?\DateTimeImmutable $subscribedAt): void
     {
         $this->subscribedAt = $subscribedAt;
+    }
+
+    public function isExpired(): bool
+    {
+        if (is_null($this->subscribedAt)) {
+            return true;
+        }
+        $today = new \DateTimeImmutable('today midnight');
+
+        return $today->getTimestamp() >= $this->subscribedAt->modify('+'.self::SUBSCRIPTION_INTERVAL_MONTH.' month')->getTimestamp();
     }
 }
