@@ -49,8 +49,11 @@ class SubscriptionController extends AbstractController
         SerializerInterface $serializer
     )
     {
-        /** @var UserSubscription $userSubscription */
         $userSubscription = $serializer->deserialize($request->getContent(), UserSubscription::class, 'json');
+
+        if (!$userSubscription instanceof UserSubscription) {
+            return null;
+        }
 
         //find an user by a request
         $user = $userRepository->findOneByEmail($userSubscription->getUser()->getEmail());

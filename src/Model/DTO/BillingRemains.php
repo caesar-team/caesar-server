@@ -22,12 +22,23 @@ final class BillingRemains
      * @var int|null
      */
     public $remainingMemory;
+    /**
+     * @var int|null
+     */
+    public $remainingTeams;
 
-    public function __construct(string $billingName, ?int $remainingUsers, ?int $remainingItems, ?int $remainingMemory)
+    public function __construct(
+        string $billingName,
+        ?int $remainingUsers,
+        ?int $remainingItems,
+        ?int $remainingMemory,
+        ?int $remainingTeams
+    )
     {
         $this->billingName = $billingName;
         $this->remainingUsers = $remainingUsers;
         $this->remainingItems = $remainingItems;
         $this->remainingMemory = $remainingMemory;
+        $this->remainingTeams = $remainingTeams;
     }
 }

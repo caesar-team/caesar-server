@@ -39,6 +39,7 @@ use App\Model\View\Team\TeamItemsView;
 use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
 use App\Security\ItemVoter;
+use App\Security\Voter\QuotesVoter;
 use App\Services\ChildItemActualizer;
 use App\Services\File\ItemMoveResolver;
 use App\Services\ShareManager;
@@ -281,6 +282,7 @@ final class ItemController extends AbstractController
             return $form;
         }
 
+        $this->denyAccessUnlessGranted(QuotesVoter::ADD_LIMITED, $item);
         $this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
 
         $itemRepository->save($item);
@@ -346,7 +348,7 @@ final class ItemController extends AbstractController
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Exception
      */
-    public function moveItemAction(
+    public function moveItem(
         Item $item,
         Request $request,
         ItemMoveResolver $itemMoveResolver,
