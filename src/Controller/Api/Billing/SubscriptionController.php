@@ -8,7 +8,6 @@ use App\Controller\AbstractController;
 use App\Entity\Billing\Plan;
 use App\Model\DTO\UserSubscription;
 use App\Repository\PlanRepository;
-use App\Repository\UserRepository;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -36,7 +35,6 @@ class SubscriptionController extends AbstractController
      *
      * @Route(path="/api/billing/grant", methods={"POST"})
      * @param Request $request
-     * @param UserRepository $userRepository
      * @param PlanRepository $planRepository
      * @param SerializerInterface $serializer
      * @return Plan|FormInterface|null
@@ -44,7 +42,6 @@ class SubscriptionController extends AbstractController
      */
     public function grant(
         Request $request,
-        UserRepository $userRepository,
         PlanRepository $planRepository,
         SerializerInterface $serializer
     )
@@ -52,12 +49,6 @@ class SubscriptionController extends AbstractController
         $userSubscription = $serializer->deserialize($request->getContent(), UserSubscription::class, 'json');
 
         if (!$userSubscription instanceof UserSubscription) {
-            return null;
-        }
-
-        //find an user by a request
-        $user = $userRepository->findOneByEmail($userSubscription->getUser()->getEmail());
-        if (!$user) {
             return null;
         }
 
@@ -76,6 +67,8 @@ class SubscriptionController extends AbstractController
         $newPlan->setMemoryLimit($memoryLimit);
         $teamsLimit = 0 < (int)$userSubscription->getTeamsLimit() ? (int)$userSubscription->getTeamsLimit() : -1;
         $newPlan->setTeamsLimit($teamsLimit);
+        $usersLimit = 0 < (int)$userSubscription->getUsersLimit() ? (int)$userSubscription->getUsersLimit() : -1;
+        $newPlan->setUsersLimit($usersLimit);
         $newPlan->setUserSubscriptionId($userSubscription->getExternalSubscriptionId());
         $newPlan->setSubscriptionId($userSubscription->getId());
 

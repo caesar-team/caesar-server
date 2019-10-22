@@ -29,21 +29,25 @@ class UserSubscription implements UserSubscriptionInterface
      */
     private $id;
     /**
-     * @var string
+     * @var string|null
      */
     private $subscriptionName;
     /**
-     * @var string
+     * @var string|null
      */
     private $itemsLimit;
     /**
-     * @var string
+     * @var string|null
      */
     private $teamsLimit;
     /**
-     * @var string
+     * @var string|null
      */
     private $memoryLimit;
+    /**
+     * @var string|null
+     */
+    private $usersLimit;
 
     public function getId(): ?int
     {
@@ -133,5 +137,15 @@ class UserSubscription implements UserSubscriptionInterface
     public function getSubscriptionName(): ?string
     {
         return $this->subscriptionName;
+    }
+
+    public function getUsersLimit(): ?string
+    {
+        return $this->usersLimit;
+    }
+
+    public function setUsersLimit(?string $usersLimit): void
+    {
+        $this->usersLimit = $usersLimit;
     }
 }
