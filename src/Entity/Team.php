@@ -24,7 +24,7 @@ use App\Validator\Constraints\BillingRestriction;
  *            columns={"title"}),
  *    }
  * )
- * @BillingRestriction()
+ * @BillingRestriction(groups={"billing"})
  */
 class Team
 {

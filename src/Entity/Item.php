@@ -17,16 +17,15 @@ use Ramsey\Uuid\UuidInterface;
  * @ORM\Table
  * @ORM\Entity(repositoryClass="App\Repository\ItemRepository")
  * @ORM\HasLifecycleCallbacks
- * @BillingRestriction()
+ * @BillingRestriction(groups={"billing"})
  */
 class Item implements ChildItemAwareInterface
 {
-    const CAUSE_INVITE = 'invite';
-    const CAUSE_SHARE = 'share';
-    const STATUS_FINISHED = 'finished';
-    const STATUS_OFFERED = 'offered';
-    const STATUS_DEFAULT = self::STATUS_FINISHED;
-    const EXPIRATION_INTERVAL = '+ 1 day';
+    public const CAUSE_INVITE = 'invite';
+    public const CAUSE_SHARE = 'share';
+    public const STATUS_FINISHED = 'finished';
+    public const STATUS_OFFERED = 'offered';
+    private const STATUS_DEFAULT = self::STATUS_FINISHED;
     /**
      * @var UuidInterface
      *

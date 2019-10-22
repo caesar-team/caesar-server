@@ -18,6 +18,7 @@ class Plan
     public const FIELD_ITEMS_LIMIT = 'itemsLimit';
     public const FIELD_MEMORY_LIMIT = 'memoryLimit';
     public const FIELD_TEAMS_LIMIT = 'teamsLimit';
+    public const SUBSCRIPTION_INTERVAL_MONTH = '1';
 
     /**
      * @var UuidInterface

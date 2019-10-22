@@ -71,16 +71,16 @@ final class BillingHelper
     {
         switch($attribute) {
             case Plan::FIELD_USERS_LIMIT:
-                return 0 < $this->plan->getUsersLimit();
+                return 0 <= $this->plan->getUsersLimit();
                 break;
             case Plan::FIELD_ITEMS_LIMIT:
-                return 0 < $this->plan->getItemsLimit();
+                return 0 <= $this->plan->getItemsLimit();
                 break;
             case Plan::FIELD_TEAMS_LIMIT:
-                return 0 < $this->plan->getTeamsLimit();
+                return 0 <= $this->plan->getTeamsLimit();
                 break;
             case Plan::FIELD_MEMORY_LIMIT:
-                return 0 < $this->plan->getMemoryLimit();
+                return 0 <= $this->plan->getMemoryLimit();
             break;
         }
 

@@ -21,7 +21,7 @@ use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @BillingRestriction()
+ * @BillingRestriction(groups={"billing"})
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface, BackupCodeInterface
 {

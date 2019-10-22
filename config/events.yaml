@@ -47,3 +47,8 @@ services:
         class: App\Event\EventSubscriber\CreateAdminSubscriber
         tags:
             - { name: doctrine.event_subscriber, connection: default }
+
+    app.event.limits_reached_subscriber:
+        class: App\Event\EventSubscriber\LimitsReachedSubscriber
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
