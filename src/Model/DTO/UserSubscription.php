@@ -8,6 +8,7 @@ use Caesar\Entity\UserSubscriptionInterface;
 
 class UserSubscription implements UserSubscriptionInterface
 {
+    public const STATUS_ACTIVE = 'running';
     /**
      * @var string|null
      */
@@ -20,10 +21,7 @@ class UserSubscription implements UserSubscriptionInterface
      * @var string|null
      */
     private $subscriptionId;
-    /**
-     * @var User
-     */
-    private $user;
+
     /**
      * @var int
      */
@@ -57,16 +55,6 @@ class UserSubscription implements UserSubscriptionInterface
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getUser()
-    {
-        return $this->user;
-    }
-
-    public function setUser($user): void
-    {
-        $this->user = $user;
     }
 
     public function getExternalSubscriptionId(): ?string
@@ -162,5 +150,15 @@ class UserSubscription implements UserSubscriptionInterface
     public function setSubscribedAt(?string $subscribedAt): void
     {
         $this->subscribedAt = $subscribedAt;
+    }
+
+    public function getSubscriptionId(): ?string
+    {
+        return $this->subscriptionId;
+    }
+
+    public function setSubscriptionId(?string $subscriptionId): void
+    {
+        $this->subscriptionId = $subscriptionId;
     }
 }
