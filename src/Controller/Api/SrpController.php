@@ -212,7 +212,7 @@ final class SrpController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\Srp\LoginPrepareType::class)
+     *     @Model(type=\App\Form\Request\Srp\LoginType::class)
      * )
      * @SWG\Response(
      *     response=200,
