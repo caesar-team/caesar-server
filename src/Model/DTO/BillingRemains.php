@@ -21,7 +21,7 @@ final class BillingRemains
     /**
      * @var int|null
      */
-    public $remainingMemory;
+    public $remainingStorage;
     /**
      * @var int|null
      */
@@ -31,14 +31,14 @@ final class BillingRemains
         string $billingName,
         ?int $remainingUsers,
         ?int $remainingItems,
-        ?int $remainingMemory,
+        ?int $remainingStorage,
         ?int $remainingTeams
     )
     {
         $this->billingName = $billingName;
         $this->remainingUsers = $remainingUsers;
         $this->remainingItems = $remainingItems;
-        $this->remainingMemory = $remainingMemory;
+        $this->remainingStorage = $remainingStorage;
         $this->remainingTeams = $remainingTeams;
     }
 }

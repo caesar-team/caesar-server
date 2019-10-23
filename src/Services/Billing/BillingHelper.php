@@ -56,15 +56,15 @@ final class BillingHelper
     {
         $usersCount = $this->userRepository->getCountCompleted();
         $itemsCount = $this->itemRepository->getCount();
-        $memoryUsed = $this->itemRepository->getSecretsSum();
+        $storageUsed = $this->itemRepository->getSecretsSum();
         $teamsCount = $this->teamRepository->getCount();
 
         $remainingUsers = $this->hasRestriction(Plan::FIELD_USERS_LIMIT) ? $this->plan->getUsersLimit() - $usersCount : null;
         $remainingItems = $this->hasRestriction(Plan::FIELD_ITEMS_LIMIT) ? $this->plan->getItemsLimit() - $itemsCount : null;
-        $remainingMemory = $this->hasRestriction(Plan::FIELD_MEMORY_LIMIT) ? $this->plan->getMemoryLimit() - $memoryUsed : null;
+        $remainingStorage = $this->hasRestriction(Plan::FIELD_STORAGE_LIMIT) ? $this->plan->getStorageLimit() - $storageUsed : null;
         $remainingTeams = $this->hasRestriction(Plan::FIELD_TEAMS_LIMIT) ? $this->plan->getTeamsLimit() - $teamsCount : null;
 
-        return new BillingRemains($this->plan->getName(), $remainingUsers, $remainingItems, $remainingMemory, $remainingTeams);
+        return new BillingRemains($this->plan->getName(), $remainingUsers, $remainingItems, $remainingStorage, $remainingTeams);
     }
 
     public function hasRestriction(string $attribute): bool
@@ -79,8 +79,8 @@ final class BillingHelper
             case Plan::FIELD_TEAMS_LIMIT:
                 return 0 <= $this->plan->getTeamsLimit();
                 break;
-            case Plan::FIELD_MEMORY_LIMIT:
-                return 0 <= $this->plan->getMemoryLimit();
+            case Plan::FIELD_STORAGE_LIMIT:
+                return 0 <= $this->plan->getStorageLimit();
             break;
         }
 

@@ -38,8 +38,8 @@ final class ItemRestrictionValidator implements BillingRestrictionValidatorInter
             return new BillingViolation('Items limit reached.');
         }
 
-        if ($this->billingHelper->hasRestriction(Plan::FIELD_MEMORY_LIMIT) && strlen($value->getSecret()) > $this->billingHelper->getRemains()->remainingMemory) {
-            return new BillingViolation('Memory limit reached.');
+        if ($this->billingHelper->hasRestriction(Plan::FIELD_STORAGE_LIMIT) && strlen($value->getSecret()) > $this->billingHelper->getRemains()->remainingStorage) {
+            return new BillingViolation('Storage limit reached.');
         }
 
         return null;

@@ -47,8 +47,8 @@ final class SubscriptionManager
         $newPlan->setName($userSubscription->getSubscriptionName());
         $itemsLimit = 0 < (int)$userSubscription->getItemsLimit() ? (int)$userSubscription->getItemsLimit() : -1;
         $newPlan->setItemsLimit($itemsLimit);
-        $memoryLimit = 0 < (int)$userSubscription->getMemoryLimit() ? (int)$userSubscription->getMemoryLimit() : -1;
-        $newPlan->setMemoryLimit($memoryLimit);
+        $storageLimit = 0 < (int)$userSubscription->getStorageLimit() ? (int)$userSubscription->getStorageLimit() : -1;
+        $newPlan->setStorageLimit($storageLimit);
         $teamsLimit = 0 < (int)$userSubscription->getTeamsLimit() ? (int)$userSubscription->getTeamsLimit() : -1;
         $newPlan->setTeamsLimit($teamsLimit);
         $usersLimit = 0 < (int)$userSubscription->getUsersLimit() ? (int)$userSubscription->getUsersLimit() : -1;

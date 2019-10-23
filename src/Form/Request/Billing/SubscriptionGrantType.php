@@ -30,8 +30,8 @@ class SubscriptionGrantType extends AbstractType
             ->add('teams_limit', TextType::class, [
                 'property_path' => 'teamsLimit',
             ])
-            ->add('memory_limit', TextType::class, [
-                'property_path' => 'memoryLimit',
+            ->add('storage_limit', TextType::class, [
+                'property_path' => 'storageLimit',
             ])
             ->add('users_limit', TextType::class, [
                 'property_path' => 'usersLimit',

@@ -41,7 +41,7 @@ class UserSubscription implements UserSubscriptionInterface
     /**
      * @var string|null
      */
-    private $memoryLimit;
+    private $storageLimit;
     /**
      * @var string|null
      */
@@ -112,14 +112,14 @@ class UserSubscription implements UserSubscriptionInterface
         $this->teamsLimit = $teamsLimit;
     }
 
-    public function getMemoryLimit(): ?string
+    public function getStorageLimit(): ?string
     {
-        return $this->memoryLimit;
+        return $this->storageLimit;
     }
 
-    public function setMemoryLimit(?string $memoryLimit): void
+    public function setStorageLimit(?string $storageLimit): void
     {
-        $this->memoryLimit = $memoryLimit;
+        $this->storageLimit = $storageLimit;
     }
 
     public function setSubscriptionName(?string $subscriptionName): void

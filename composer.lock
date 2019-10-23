@@ -56,12 +56,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/mg-4xxi/billing-subscription.git",
-                "reference": "3e6582e44925a0c7bd5824e77156daf81a8b7794"
+                "reference": "3be9c473baab50d611c3cc66d6a04f7b2dfcb18f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mg-4xxi/billing-subscription/zipball/3e6582e44925a0c7bd5824e77156daf81a8b7794",
-                "reference": "3e6582e44925a0c7bd5824e77156daf81a8b7794",
+                "url": "https://api.github.com/repos/mg-4xxi/billing-subscription/zipball/3be9c473baab50d611c3cc66d6a04f7b2dfcb18f",
+                "reference": "3be9c473baab50d611c3cc66d6a04f7b2dfcb18f",
                 "shasum": ""
             },
             "type": "library",
@@ -80,7 +80,7 @@
                     "email": "mg@4xxi.com"
                 }
             ],
-            "time": "2019-10-23T12:25:12+00:00"
+            "time": "2019-10-23T15:39:24+00:00"
         },
         {
             "name": "clue/stream-filter",

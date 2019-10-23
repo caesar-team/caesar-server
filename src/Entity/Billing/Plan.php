@@ -16,7 +16,7 @@ class Plan
 {
     public const FIELD_USERS_LIMIT = 'usersLimit';
     public const FIELD_ITEMS_LIMIT = 'itemsLimit';
-    public const FIELD_MEMORY_LIMIT = 'memoryLimit';
+    public const FIELD_STORAGE_LIMIT = 'storageLimit';
     public const FIELD_TEAMS_LIMIT = 'teamsLimit';
     private const SUBSCRIPTION_INTERVAL_MONTH = '1';
 
@@ -53,10 +53,10 @@ class Plan
     private $teamsLimit = -1;
 
     /**
-     * @ORM\Column(type="integer", length=255, options={"default":-1})
+     * @ORM\Column(name="memory_limit", type="integer", length=255, options={"default":-1})
      * @var int
      */
-    private $memoryLimit = -1;
+    private $storageLimit = -1;
 
     /**
      * @var bool
@@ -121,14 +121,14 @@ class Plan
         $this->itemsLimit = $itemsLimit;
     }
 
-    public function getMemoryLimit(): int
+    public function getStorageLimit(): int
     {
-        return $this->memoryLimit;
+        return $this->storageLimit;
     }
 
-    public function setMemoryLimit(int $memoryLimit): void
+    public function setStorageLimit(int $storageLimit): void
     {
-        $this->memoryLimit = $memoryLimit;
+        $this->storageLimit = $storageLimit;
     }
 
     public function getId(): UuidInterface
