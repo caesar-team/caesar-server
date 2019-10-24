@@ -392,10 +392,6 @@ class TeamController extends AbstractController
         ItemRepository $itemRepository
     ): JsonResponse
     {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
-        }
-
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
         if (!$userTeam instanceof UserTeam) {
             throw new NotFoundHttpException('User Team not found');
@@ -444,10 +440,6 @@ class TeamController extends AbstractController
      */
     public function editMember(Request $request, Team $team, User $user, UserTeamRepository $userTeamRepository)
     {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
-        }
-
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
 
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
