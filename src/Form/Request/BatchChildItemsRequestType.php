@@ -8,14 +8,13 @@ use App\Entity\Item;
 use App\Form\Request\Invite\CreateChildItemType;
 use App\Model\Request\BatchItemCollectionRequest;
 use App\Repository\ItemRepository;
-use App\Validator\Constraints\Collection;
-use App\Validator\Constraints\UniqueSharedItem;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Valid;
 
 class BatchChildItemsRequestType extends AbstractType
 {
@@ -38,7 +37,7 @@ class BatchChildItemsRequestType extends AbstractType
             ->add('items', CollectionType::class, [
                 'constraints' => [
                     new NotBlank(),
-                    new Collection(['constraint' => new UniqueSharedItem()]),
+                    new Valid(),
                 ],
                 'allow_add' => true,
                 'entry_type' => CreateChildItemType::class,
@@ -49,7 +48,8 @@ class BatchChildItemsRequestType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => BatchItemCollectionRequest::class
+            'data_class' => BatchItemCollectionRequest::class,
+            'er'
         ]);
     }
 }
