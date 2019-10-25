@@ -107,7 +107,15 @@ class ItemViewFactory
             $children[] = $childItemView;
         }
 
-        return $children;
+        $collection = [];
+        return array_filter($children, function (InviteItemView $inviteItemView) use (&$collection) {
+            if (!in_array($inviteItemView->userId, $collection)) {
+                $collection[] = $inviteItemView->userId;
+                return true;
+            }
+
+            return false;
+        });
     }
 
     /**

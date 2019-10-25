@@ -90,15 +90,17 @@ final class SrpController extends AbstractController
      *
      * @param TranslatorInterface $translator
      * @param AuthorizationManager $authorizationManager
+     * @param ErrorMessageFormatter $errorMessageFormatter
      * @return null
+     * @throws ApiException
      * @throws NonUniqueResultException
-     * @throws Exception
      */
     public function registerAction(
         Request $request,
         UserManagerInterface $userManager,
         TranslatorInterface $translator,
-        AuthorizationManager $authorizationManager
+        AuthorizationManager $authorizationManager,
+        ErrorMessageFormatter $errorMessageFormatter
     )
     {
         $email = $request->request->get('email');
@@ -107,7 +109,7 @@ final class SrpController extends AbstractController
         if ($user instanceof User && $authorizationManager->hasInvitation($user)) {
             $errorMessage = $translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]);
             $exception = new AccessDeniedHttpException($errorMessage);
-            $errorData = ErrorMessageFormatter::errorFormat($exception, AuthorizationManager::ERROR_UNFINISHED_FLOW_USER);
+            $errorData = $errorMessageFormatter->errorFormat($exception, AuthorizationManager::ERROR_UNFINISHED_FLOW_USER);
 
             throw new ApiException($errorData, Response::HTTP_BAD_REQUEST);
         }
