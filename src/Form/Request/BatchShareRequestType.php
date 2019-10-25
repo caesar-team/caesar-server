@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Form\Request;
 
-use App\Form\Request\Team\BatchTeamsItemsCollectionRequestType;
 use App\Model\Request\BatchShareRequest;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;

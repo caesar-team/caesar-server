@@ -7,7 +7,11 @@ namespace App\Model\Request;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Validator\Constraints\UniqueSharedItem;
 
+/**
+ * @UniqueSharedItem()
+ */
 class ChildItem
 {
     /**
