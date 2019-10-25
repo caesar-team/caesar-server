@@ -19,9 +19,6 @@ class BatchShareRequestType extends AbstractType
             ->add('originalItems', CollectionType::class, [
                 'entry_type' => BatchChildItemsRequestType::class,
                 'allow_add' => true,
-                'constraints' => [
-                    new Valid(),
-                ]
             ])
         ;
     }

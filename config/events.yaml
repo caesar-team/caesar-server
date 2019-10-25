@@ -47,3 +47,8 @@ services:
         class: App\Event\EventSubscriber\PromoteAdminSubscriber
         tags:
             - { name: doctrine.event_subscriber, connection: default }
+
+    app.event.share_item_subscriber:
+        class: App\Event\EventSubscriber\ShareItemSubscriber
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }

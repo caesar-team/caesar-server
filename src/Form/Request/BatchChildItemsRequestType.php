@@ -37,7 +37,6 @@ class BatchChildItemsRequestType extends AbstractType
             ->add('items', CollectionType::class, [
                 'constraints' => [
                     new NotBlank(),
-                    new Valid(),
                 ],
                 'allow_add' => true,
                 'entry_type' => CreateChildItemType::class,
