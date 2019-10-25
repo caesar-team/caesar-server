@@ -86,29 +86,12 @@ final class UserTeamVoter extends Voter
 
         switch ($attribute) {
             case self::USER_TEAM_REMOVE_MEMBER:
-                if ($this->isDefault($subject)) {
-                    return false;
-                }
-
-                return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole() || $user->hasRole(User::ROLE_ADMIN);
-            case self::USER_TEAM_LEAVE:
-
-                return !$this->isDefault($subject);
             case self::USER_TEAM_EDIT:
-                if ($this->isDefault($subject)) {
-                    return false;
-                }
-
                 return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole() || $user->hasRole(User::ROLE_ADMIN);
             case self::USER_TEAM_VIEW:
                 return in_array($userTeam->getUserRole(), self::ROLES_TO_VIEW) || $user->hasRole(User::ROLE_ADMIN);
             default:
-                return false;
+                return true;
         }
-    }
-
-    private function isDefault(Team $team): bool
-    {
-        return Team::DEFAULT_GROUP_ALIAS === $team->getAlias();
     }
 }
