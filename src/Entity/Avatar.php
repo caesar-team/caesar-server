@@ -21,6 +21,7 @@ class Avatar extends AbstractImage
      *     targetEntity="App\Entity\User",
      *     inversedBy="avatar",
      * )
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $user;
 

@@ -149,11 +149,14 @@ class Item implements ChildItemAwareInterface
 
     /**
      * @var Team|null
+     * @ORM\ManyToOne(targetEntity="App\Entity\Team", inversedBy="ownedItems", cascade={"persist"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $team;
 
     /**
      * Item constructor.
+     * @param User|null $user
      * @throws \Exception
      */
     public function __construct(?User $user = null)
