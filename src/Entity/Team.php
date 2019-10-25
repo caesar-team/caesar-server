@@ -82,6 +82,12 @@ class Team
     protected $trash;
 
     /**
+     * @var Collection|Item[]
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="owner")
+     */
+    private $ownedItems;
+
+    /**
      * Group constructor.
      * @throws \Exception
      */
@@ -93,6 +99,7 @@ class Team
         $this->lists->addChildList(Directory::createDefaultList());
         $this->trash = Directory::createTrash();
         $this->icon = DefaultIcon::getDefaultIcon();
+        $this->ownedItems = new ArrayCollection();
     }
 
     /**
@@ -203,5 +210,23 @@ class Team
     public function __toString()
     {
         return $this->title;
+    }
+
+    public function getOwnedItems(): Collection
+    {
+        return $this->ownedItems;
+    }
+
+    public function addOwnedItem(Item $item): void
+    {
+        if (!$this->ownedItems->contains($item)) {
+            $this->ownedItems->add($item);
+            $item->setTeam($this);
+        }
+    }
+
+    public function removeOwnedItem(Item $item): void
+    {
+        $this->ownedItems->removeElement($item);
     }
 }

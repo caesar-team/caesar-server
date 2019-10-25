@@ -51,6 +51,8 @@ final class ItemMoveResolver
         $this->preMove($item);
         $item->setPreviousList($item->getParentList());
         $item->setParentList($toDirectory);
+        $team = $this->teamRepository->findOneByDirectory($toDirectory);
+        $item->setTeam($team);
     }
 
     private function removeChildren(Item $item)

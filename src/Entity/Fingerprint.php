@@ -40,6 +40,7 @@ class Fingerprint
      * @var User
      *
      * @ORM\ManyToOne(targetEntity="User", inversedBy="fingerprints")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     private $user;
 

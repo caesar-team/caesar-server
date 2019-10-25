@@ -17,10 +17,15 @@ class ErrorResponseListener
      * @var LoggerInterface
      */
     private $logger;
+    /**
+     * @var ErrorMessageFormatter
+     */
+    private $errorMessageFormatter;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, ErrorMessageFormatter $errorMessageFormatter)
     {
         $this->logger = $logger;
+        $this->errorMessageFormatter = $errorMessageFormatter;
     }
 
     public function onKernelException(GetResponseForExceptionEvent $event)
@@ -55,7 +60,7 @@ class ErrorResponseListener
             return $exception;
         }
 
-        $data = ErrorMessageFormatter::errorFormat($exception);
+        $data = $this->errorMessageFormatter->errorFormat($exception);
 
         return new ApiException($data, Response::HTTP_BAD_REQUEST);
     }
