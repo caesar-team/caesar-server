@@ -2,11 +2,13 @@
 <html>
 <head>
     <meta charset="UTF-8" />
+    <title>Caesar Admin Panel</title>
 </head>
 {{ encore_entry_link_tags('app') }}
 <body>
     <div class="text-center" style="width: 100%">
-        <h2>Login by form</h2>
+        <img id="admin-panel-logo" src="{{ asset('build/caesar.png') }}" alt="caesar logo admin">
+        <h2>Welcome to Caesar. Team. admin panel!</h2>
         <form method="POST" action="{{ path('api_srp_login_prepare') }}" id="login">
             <div class="form-group">
                 <label>
@@ -29,8 +31,8 @@
             <span>{{ error }}</span>
         {% endif %}
         {% for owner in hwi_oauth_resource_owners() %}
-            <p>or login by
-                <a href="{{ hwi_oauth_login_url(owner) }}">{{ owner | trans({}, 'HWIOAuthBundle') }}</a>
+            <p>Log in with
+                <a href="{{ hwi_oauth_login_url(owner) }}">{{ owner | trans({}, 'HWIOAuthBundle') | capitalize }}</a>
             </p>
         {% endfor %}
     </div>
