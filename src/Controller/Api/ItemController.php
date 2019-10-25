@@ -43,6 +43,7 @@ use App\Services\File\ItemMoveResolver;
 use App\Services\ShareManager;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
@@ -81,7 +82,7 @@ final class ItemController extends AbstractController
      * @param ListTreeViewFactory $viewFactory
      *
      * @return ListView[]|array
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function fullListAction(ListTreeViewFactory $viewFactory)
     {
@@ -124,7 +125,7 @@ final class ItemController extends AbstractController
      * @param ItemListViewFactory $viewFactory
      *
      * @return ItemView[]|FormInterface
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function itemListAction(Request $request, ItemListViewFactory $viewFactory)
     {
@@ -263,7 +264,7 @@ final class ItemController extends AbstractController
      * @param ItemViewFactory $factory
      *
      * @return ItemView
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function itemShowAction(Item $item, ItemViewFactory $factory)
     {
@@ -315,10 +316,16 @@ final class ItemController extends AbstractController
      * @param Request $request
      * @param CreatedItemViewFactory $viewFactory
      * @param ItemRepository $itemRepository
+     * @param TeamRepository $teamRepository
      * @return CreatedItemView|FormInterface
      * @throws \Exception
      */
-    public function createItem(Request $request, CreatedItemViewFactory $viewFactory, ItemRepository $itemRepository)
+    public function createItem(
+        Request $request,
+        CreatedItemViewFactory $viewFactory,
+        ItemRepository $itemRepository,
+        TeamRepository $teamRepository
+    )
     {
         $item = new Item($this->getUser());
         $form = $this->createForm(CreateItemType::class, $item);
@@ -328,6 +335,8 @@ final class ItemController extends AbstractController
             return $form;
         }
         //$this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
+        $team = $teamRepository->findOneByDirectory($item->getParentList());
+        $item->setTeam($team);
 
         $itemRepository->save($item);
 
@@ -389,10 +398,10 @@ final class ItemController extends AbstractController
      * @param ItemMoveResolver $itemMoveResolver
      * @param ItemRepository $itemRepository
      * @return FormInterface|JsonResponse
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      * @throws \Exception
      */
-    public function moveItemAction(
+    public function moveItem(
         Item $item,
         Request $request,
         ItemMoveResolver $itemMoveResolver,
@@ -558,7 +567,7 @@ final class ItemController extends AbstractController
      *
      * @return null
      */
-    public function deleteItemAction(Item $item, EntityManagerInterface $manager)
+    public function deleteItem(Item $item, EntityManagerInterface $manager)
     {
         //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
         if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
@@ -599,7 +608,7 @@ final class ItemController extends AbstractController
      * @param ItemListViewFactory $viewFactory
      *
      * @return ItemView[]|FormInterface
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function favorite(ItemListViewFactory $viewFactory)
     {
@@ -643,7 +652,7 @@ final class ItemController extends AbstractController
      * @param ItemViewFactory $factory
      *
      * @return ItemView
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function favoriteToggle(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
@@ -694,7 +703,7 @@ final class ItemController extends AbstractController
      * @param ItemViewFactory $factory
      * @param Request $request
      * @return ItemView|FormInterface
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function sort(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory, Request $request)
     {
@@ -967,7 +976,7 @@ final class ItemController extends AbstractController
      * @param ItemViewFactory $factory
      *
      * @return null
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function acceptItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
@@ -1022,7 +1031,7 @@ final class ItemController extends AbstractController
      * @param EntityManagerInterface $entityManager
      * @param ItemViewFactory $factory
      * @return ItemView
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function declineItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
@@ -1061,10 +1070,16 @@ final class ItemController extends AbstractController
      * @param Request $request
      * @param ItemListViewFactory $viewFactory
      * @param ItemRepository $itemRepository
+     * @param TeamRepository $teamRepository
      * @return ItemView[]|array|FormInterface
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
-    public function batchCreate(Request $request, ItemListViewFactory $viewFactory, ItemRepository $itemRepository)
+    public function batchCreate(
+        Request $request,
+        ItemListViewFactory $viewFactory,
+        ItemRepository $itemRepository,
+        TeamRepository $teamRepository
+    )
     {
         $itemsRequest = new ItemsCollectionRequest();
 
@@ -1075,9 +1090,12 @@ final class ItemController extends AbstractController
             return $form;
         }
 
+        /** @var Item $item */
         foreach ($itemsRequest->getItems() as $item) {
             //$this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
             $item->setOwner($this->getUser());
+            $team = $teamRepository->findOneByDirectory($item->getParentList());
+            $item->setTeam($team);
 
             $itemRepository->save($item);
         }
@@ -1103,7 +1121,7 @@ final class ItemController extends AbstractController
      * @param SerializerInterface $serializer
      * @param ItemMoveResolver $itemMoveResolver
      * @return null
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function batchMove(
         Request $request,
