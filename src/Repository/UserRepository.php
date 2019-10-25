@@ -190,4 +190,13 @@ class UserRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    public function findAllExceptAnonymous(): array
+    {
+        $qb = $this->createQueryBuilder('user');
+        $qb->andWhere($qb->expr()->notLike($qb->expr()->lower('user.roles'), ':role'));
+        $qb->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%');
+
+        return $qb->getQuery()->getResult();
+    }
 }

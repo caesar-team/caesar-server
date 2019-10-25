@@ -607,7 +607,7 @@ final class UserController extends AbstractController
     {
         $ids = $request->query->get('ids', []);
 
-        $users = $userRepository->findByIds($ids);
+        $users = 0 < count($ids) ? $userRepository->findByIds($ids) : $userRepository->findAllExceptAnonymous();
 
         return $viewFactoryContext->viewList($users);
     }
