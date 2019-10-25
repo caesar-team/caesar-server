@@ -31,7 +31,7 @@ final class UserViewFactory implements ViewFactoryInterface
         $view->email = $data->getEmail();
         $view->avatar = null === $data->getAvatar() ? null : $data->getAvatar()->getLink();
         $view->publicKey = $data->getPublicKey();
-        $view->teamsIds = $data->getTeamsIds();
+        $view->teamIds = $data->getTeamsIds();
         $view->name = $data->getUsername();
 
         return $view;
