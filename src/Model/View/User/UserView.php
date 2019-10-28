@@ -52,5 +52,5 @@ class UserView
      * @var string[]
      * @Groups({"search_by_email"})
      */
-    public $teamsIds = [];
+    public $teamIds = [];
 }
