@@ -6,6 +6,8 @@ use App\Entity\User;
 use App\Security\Fingerprint\FingerprintManager;
 use App\Security\Voter\TwoFactorInProgressVoter;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
+use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTEncodeFailureException;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use Scheb\TwoFactorBundle\Security\Http\Authentication\AuthenticationRequiredHandlerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -39,8 +41,8 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
      * @param Request $request
      * @param TokenInterface $token
      * @return JsonResponse|Response
-     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
-     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTEncodeFailureException
+     * @throws JWTDecodeFailureException
+     * @throws JWTEncodeFailureException
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token)
     {
@@ -78,6 +80,7 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
      */
     public function onAuthenticationRequired(Request $request, TokenInterface $token): Response
     {
+        dump($token); die;
         return new JsonResponse([TwoFactorInProgressVoter::CHECK_KEY_NAME => TwoFactorInProgressVoter::FLAG_NOT_PASSED], Response::HTTP_UNAUTHORIZED);
     }
 }

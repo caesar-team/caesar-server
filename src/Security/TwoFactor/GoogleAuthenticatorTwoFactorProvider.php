@@ -36,10 +36,8 @@ class GoogleAuthenticatorTwoFactorProvider extends BaseGoogleAuthenticatorTwoFac
         $token = $context->getToken();
 
         if ($token instanceof JWTUserToken) {
-            $data = $this->jwtEncoder->decode($token->getCredentials());
 
-            return isset($data[TwoFactorInProgressVoter::CHECK_KEY_NAME])
-                && $user instanceof TwoFactorInterface
+            return $user instanceof TwoFactorInterface
                 && $user->isGoogleAuthenticatorEnabled()
                 && $user->getGoogleAuthenticatorSecret()
             ;

@@ -13,9 +13,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 class TwoFactorInProgressVoter implements VoterInterface
 {
     public const CHECK_KEY_NAME = '2fa';
-    public const FLAG_DISABLED = 'not_active';
     public const FLAG_NOT_PASSED = 'not_passed';
-    public const TRUSTED_DEVICE = 'trusted';
 
     /**
      * @var JWTEncoderInterface
@@ -36,7 +34,7 @@ class TwoFactorInProgressVoter implements VoterInterface
         if ($token->getAuthenticatedToken() instanceof JWTUserToken) {
             $data = $this->jwtEncoder->decode($token->getAuthenticatedToken()->getCredentials());
             if (isset($data[self::CHECK_KEY_NAME])) {
-                return VoterInterface::ACCESS_DENIED;
+                   return VoterInterface::ACCESS_DENIED;
             }
         }
 

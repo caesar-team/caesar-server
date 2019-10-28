@@ -46,13 +46,5 @@ final class TwoFactorJWTSubscriber implements EventSubscriberInterface
         if (!$user instanceof User) {
             return;
         }
-
-        if ($user->isGoogleAuthenticatorEnabled()) {
-            $fingerprint = $this->fingerprintStasher->unstash();
-
-            if (empty($fingerprint) || !$this->fingerprintManager->isHasFingerprint($user, $fingerprint)) {
-                $event->setData(array_merge($event->getData(), [TwoFactorInProgressVoter::CHECK_KEY_NAME => true]));
-            }
-        }
     }
 }
