@@ -8,11 +8,10 @@ use Swagger\Annotations as SWG;
 
 class SecurityBootstrapView
 {
-    const STATE_SKIP = 'SKIP';
-    const STATE_CREATE = 'CREATE';
-    const STATE_CHECK = 'CHECK';
-    const STATE_CHANGE = 'CHANGE';
-    const STATE_CHECK_SHARED = 'CHECK_SHARED';
+    public const STATE_SKIP = 'SKIP';
+    public const STATE_CREATE = 'CREATE';
+    public const STATE_CHECK = 'CHECK';
+    public const STATE_CHANGE = 'CHANGE';
 
     /**
      * @var string

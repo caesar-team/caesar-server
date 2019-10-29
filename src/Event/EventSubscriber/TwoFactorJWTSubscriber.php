@@ -42,9 +42,8 @@ final class TwoFactorJWTSubscriber implements EventSubscriberInterface
         }
 
         if ($user->isGoogleAuthenticatorEnabled()) {
-            $fingerPrint = $this->fingerprintManager->findFingerPrintByUser($user);
 
-            if ($fingerPrint && $this->fingerprintManager->isValidDate($fingerPrint->getCreatedAt())) {
+            if ($this->fingerprintManager->hasValidFingerPrint($user)) {
                 return;
             }
 

@@ -4,37 +4,17 @@ declare(strict_types=1);
 
 namespace App\Factory\View;
 
-
-use App\Entity\Directory;
-use App\Entity\Fingerprint;
-use App\Entity\Item;
 use App\Entity\User;
 use App\Model\View\User\SecurityBootstrapView;
-use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
-use App\Security\Fingerprint\FingerprintManager;
-use App\Security\Voter\TwoFactorInProgressVoter;
+use App\Security\Voter\TwoFactorAuthStateVoter;
 use App\Utils\DirectoryHelper;
-use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
-use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class SecurityBootstrapViewFactory
 {
-    /**
-     * @var FingerprintManager
-     */
-    private $fingerprintManager;
-    /**
-     * @var Security
-     */
-    private $security;
-    /**
-     * @var JWTEncoderInterface
-     */
-    private $encoder;
     /**
      * @var AuthorizationManager
      */
@@ -43,20 +23,20 @@ class SecurityBootstrapViewFactory
      * @var TeamRepository
      */
     private $teamRepository;
+    /**
+     * @var AuthorizationCheckerInterface
+     */
+    private $authorizationChecker;
 
     public function __construct(
-        FingerprintManager $fingerprintManager,
-        Security $security,
-        JWTEncoderInterface $encoder,
         AuthorizationManager $authorizationManager,
-        TeamRepository $teamRepository
+        TeamRepository $teamRepository,
+        AuthorizationCheckerInterface $authorizationChecker
     )
     {
-        $this->fingerprintManager = $fingerprintManager;
-        $this->security = $security;
-        $this->encoder = $encoder;
         $this->authorizationManager = $authorizationManager;
         $this->teamRepository = $teamRepository;
+        $this->authorizationChecker = $authorizationChecker;
     }
 
     /**
@@ -83,38 +63,19 @@ class SecurityBootstrapViewFactory
      */
     private function getTwoFactorAuthState(User $user): string
     {
-        $isCompleteJwt = $this->isCompleteJwt($user);
-        switch (true) {
-            case $user->hasRole(User::ROLE_ANONYMOUS_USER):
-                $state = SecurityBootstrapView::STATE_SKIP;
-                break;
-            case !$user->isGoogleAuthenticatorEnabled():
-                $state = SecurityBootstrapView::STATE_CREATE;
-                break;
-            case $this->isExpiredFingerprint($user):
-                $state = SecurityBootstrapView::STATE_CHECK;
-                break;
-            case $isCompleteJwt:
-            case !$user->isFullUser():
-                $state = SecurityBootstrapView::STATE_SKIP;
-                break;
-            default:
-                $state = SecurityBootstrapView::STATE_SKIP;
+        if ($this->authorizationChecker->isGranted(TwoFactorAuthStateVoter::SKIP)) {
+            return SecurityBootstrapView::STATE_SKIP;
         }
 
-        return $state;
-    }
-
-    private function isExpiredFingerprint(User $user): bool
-    {
-        /** @var Fingerprint $fingerPrint */
-        $fingerPrint = $this->fingerprintManager->findFingerPrintByUser($user);
-
-        if ($fingerPrint instanceof Fingerprint) {
-            return !$this->fingerprintManager->isValidDate($fingerPrint->getCreatedAt());
+        if ($this->authorizationChecker->isGranted(TwoFactorAuthStateVoter::CREATE)) {
+            return SecurityBootstrapView::STATE_CREATE;
         }
 
-        return true;
+        if ($this->authorizationChecker->isGranted(TwoFactorAuthStateVoter::CHECK)) {
+            return SecurityBootstrapView::STATE_CHECK;
+        }
+
+        return SecurityBootstrapView::STATE_SKIP;
     }
 
     /**
@@ -159,24 +120,6 @@ class SecurityBootstrapViewFactory
         }
 
         return $state;
-    }
-
-    /**
-     * @param User $user
-     * @return bool
-     * @throws JWTDecodeFailureException
-     */
-    private function isCompleteJwt(User $user): bool
-    {
-        if ($this->security->getToken() instanceof JWTUserToken) {
-            $decodedToken = $this->encoder->decode($this->security->getToken()->getCredentials());
-
-            $isCompleteFlow = User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
-
-            return $isCompleteFlow && !isset($decodedToken[TwoFactorInProgressVoter::CHECK_KEY_NAME]);
-        }
-
-        return false;
     }
 
     /**
