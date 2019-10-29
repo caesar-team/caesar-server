@@ -19,15 +19,9 @@ final class TwoFactorJWTSubscriber implements EventSubscriberInterface
      */
     private $fingerprintManager;
 
-    /**
-     * @var FingerprintStasher
-     */
-    private $fingerprintStasher;
-
-    public function __construct(FingerprintManager $fingerprintManager, FingerprintStasher $fingerprintStasher)
+    public function __construct(FingerprintManager $fingerprintManager)
     {
         $this->fingerprintManager = $fingerprintManager;
-        $this->fingerprintStasher = $fingerprintStasher;
     }
 
     /**
@@ -48,11 +42,13 @@ final class TwoFactorJWTSubscriber implements EventSubscriberInterface
         }
 
         if ($user->isGoogleAuthenticatorEnabled()) {
-            $fingerprint = $this->fingerprintStasher->unstash();
+            $fingerPrint = $this->fingerprintManager->findFingerPrintByUser($user);
 
-            if (empty($fingerprint) || !$this->fingerprintManager->isHasFingerprint($user, $fingerprint)) {
-                $event->setData(array_merge($event->getData(), [TwoFactorInProgressVoter::CHECK_KEY_NAME => true]));
+            if ($fingerPrint && $this->fingerprintManager->isValidDate($fingerPrint->getCreatedAt())) {
+                return;
             }
+
+            $event->setData(array_merge($event->getData(), [TwoFactorInProgressVoter::CHECK_KEY_NAME => true]));
         }
     }
 }
