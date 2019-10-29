@@ -26,16 +26,22 @@ class FingerprintManager
      * @var \DateTime
      */
     private $now;
+    /**
+     * @var FingerprintStasher
+     */
+    private $fingerprintStasher;
 
-    public function __construct(EntityManagerInterface $entityManager, int $fingerprintLifeTime = self::DEFAULT_LIFE_TIME)
+    public function __construct(FingerprintStasher $fingerprintStasher, EntityManagerInterface $entityManager, int $fingerprintLifeTime = self::DEFAULT_LIFE_TIME)
     {
         $this->fingerprintLifeTime = $fingerprintLifeTime;
         $this->entityManager = $entityManager;
         $this->now = new \DateTime();
+        $this->fingerprintStasher = $fingerprintStasher;
     }
 
-    public function isHasFingerprint(User $user, string $fingerPrintString): bool
+    public function hasFingerprint(User $user): bool
     {
+        $fingerPrintString = $this->fingerprintStasher->unstash();
         $repo = $this->entityManager->getRepository(Fingerprint::class);
 
         $fingerprint = $repo->findOneBy(['user' => $user, 'string' => $fingerPrintString]);
@@ -66,7 +72,22 @@ class FingerprintManager
         return false;
     }
 
-    private function invalidateOutdated(User $user)
+    public function findFingerPrintByUser($user): ?Fingerprint
+    {
+        $this->invalidateOutdated($user);
+        $repo = $this->entityManager->getRepository(Fingerprint::class);
+
+        return $repo->findOneBy(['user' => $user]);
+    }
+
+    public function isFingerPrintValid(User $user): bool
+    {
+        $fingerPrint = $this->findFingerPrintByUser($user);
+
+        return $fingerPrint && $this->isValidDate($fingerPrint->getCreatedAt());
+    }
+
+    private function invalidateOutdated(User $user): void
     {
         /** @var Fingerprint $fingerprint */
         foreach ($user->getFingerprints() as $fingerprint) {
@@ -78,11 +99,8 @@ class FingerprintManager
         $this->entityManager->persist($user);
     }
 
-    public function findFingerPrintByUser($user): ?Fingerprint
+    public function hasValidFingerPrint(User $user): bool
     {
-        $this->invalidateOutdated($user);
-        $repo = $this->entityManager->getRepository(Fingerprint::class);
-
-        return $repo->findOneBy(['user' => $user]);
+        return $this->hasFingerprint($user) && $this->isFingerPrintValid($user);
     }
 }

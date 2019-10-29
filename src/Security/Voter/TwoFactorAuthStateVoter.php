@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Security\Voter;
 
-use App\Entity\Fingerprint;
 use App\Entity\User;
 use App\Security\Fingerprint\FingerprintManager;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
@@ -83,7 +82,7 @@ class TwoFactorAuthStateVoter extends Voter
                 if (
                     $user->hasRole(User::ROLE_ANONYMOUS_USER)
                     || !$user->isFullUser()
-                    || !$this->isExpiredFingerprint($user)
+                    || $this->fingerprintManager->hasValidFingerPrint($user)
                 ) {
                     return false;
                 }
@@ -92,18 +91,6 @@ class TwoFactorAuthStateVoter extends Voter
             default:
                 return false;
         }
-    }
-
-    private function isExpiredFingerprint(User $user): bool
-    {
-        /** @var Fingerprint $fingerPrint */
-        $fingerPrint = $this->fingerprintManager->findFingerPrintByUser($user);
-
-        if ($fingerPrint instanceof Fingerprint) {
-            return !$this->fingerprintManager->isValidDate($fingerPrint->getCreatedAt());
-        }
-
-        return true;
     }
 
     /**
