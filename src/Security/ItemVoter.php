@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Security;
 
+use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Entity\UserTeam;
@@ -18,6 +19,14 @@ class ItemVoter extends Voter
     public const CREATE_ITEM = 'create_item';
     public const EDIT_ITEM = 'edit_item';
     public const SHOW_ITEM = 'show_item';
+    public const MOVE_ITEM = 'move_item';
+    private const ATTRIBUTES = [
+        self::DELETE_ITEM,
+        self::CREATE_ITEM,
+        self::EDIT_ITEM,
+        self::SHOW_ITEM,
+        self::MOVE_ITEM,
+    ];
     private const AVAILABLE_TEAM_ROLES = [
         UserTeam::USER_ROLE_ADMIN,
         UserTeam::USER_ROLE_MEMBER,
@@ -43,7 +52,7 @@ class ItemVoter extends Voter
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::DELETE_ITEM, self::CREATE_ITEM, self::SHOW_ITEM, self::EDIT_ITEM])) {
+        if (!in_array($attribute, self::ATTRIBUTES)) {
             return false;
         }
 
@@ -67,12 +76,14 @@ class ItemVoter extends Voter
         /** @var User $user */
         $user = $token->getUser();
 
-        if (in_array($attribute, [self::DELETE_ITEM, self::CREATE_ITEM, self::SHOW_ITEM, self::EDIT_ITEM])) {
+        if (in_array($attribute, self::ATTRIBUTES)) {
             $itemOwner = $subject->getSignedOwner();
             $userTeam = $this->findUserTeam($subject, $user);
             switch ($attribute) {
+                case self::MOVE_ITEM:
+                    return $this->canMove($subject, $user);
                 case self::EDIT_ITEM:
-                    return $itemOwner === $user;
+                    return $this->canEdit($subject, $user);
                 case self::CREATE_ITEM && $userTeam instanceof UserTeam:
                     return  in_array($userTeam->getUserRole(), self::AVAILABLE_TEAM_ROLES);
                 case self::CREATE_ITEM:
@@ -105,5 +116,35 @@ class ItemVoter extends Voter
         }
 
         return $this->userTeamRepository->findOneByUserAndTeam($user, $team);
+    }
+
+    private function canEdit(Item $item, User $currentUser): bool
+    {
+        $userTeam = $this->findUserTeam($item, $currentUser);
+        $hasAccess = AccessEnumType::TYPE_READ !== $item->getAccess();
+        if (is_null($userTeam)) {
+            return
+                ($item->getOwner() === $currentUser)
+                || $hasAccess;
+        }
+
+        return (UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole()) || $hasAccess;
+    }
+
+    private function canMove(Item $item, User $currentUser): bool
+    {
+        if (!$this->canEdit($item, $currentUser)) {
+              return false;
+        }
+        $prevDirectoryTeam = $this->teamRepository->findOneByDirectory($item->getPreviousList());
+        $currDirectoryTeam = $this->teamRepository->findOneByDirectory($item->getParentList());
+
+        if(is_null($prevDirectoryTeam) && $currDirectoryTeam) {
+            return false; //false if personal
+        }
+
+
+
+        return $item->getSignedOwner() === $currentUser;
     }
 }
