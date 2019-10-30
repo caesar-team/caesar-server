@@ -38,6 +38,7 @@ use App\Model\View\Item\OfferedItemsView;
 use App\Model\View\Team\TeamItemsView;
 use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
+use App\Security\ItemVoter;
 use App\Services\ChildItemActualizer;
 use App\Services\File\ItemMoveResolver;
 use App\Services\ShareManager;
@@ -408,7 +409,6 @@ final class ItemController extends AbstractController
         ItemRepository $itemRepository
     )
     {
-        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
         $replacedItem = new Item();
 
         $form = $this->createForm(MoveItemType::class, $replacedItem);
@@ -416,8 +416,10 @@ final class ItemController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
+        $replacedItem->setOwner($item->getOwner());
 
         $itemMoveResolver->move($item, $replacedItem->getParentList());
+        $this->denyAccessUnlessGranted(ItemVoter::MOVE_ITEM, $item);
         $itemRepository->flush();
 
         //$this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
@@ -1137,8 +1139,8 @@ final class ItemController extends AbstractController
         foreach ($itemsCollection->getItems() as $item) {
             $item = $manager->getRepository(Item::class)->find($item);
             if ($item instanceof Item) {
-                //$this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
                 $itemMoveResolver->move($item, $directory);
+                $this->denyAccessUnlessGranted(ItemVoter::MOVE_ITEM, $item);
             }
         }
         $manager->flush();
