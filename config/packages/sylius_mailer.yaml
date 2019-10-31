@@ -6,10 +6,15 @@ sylius_mailer:
         !php/const App\Mailer\MailRegistry::INVITE_SEND_MESSAGE:
             subject: 'You’ve been invited to join %env(APP_NAME)%'
             template: email/invite_message.html.twig
-        !php/const App\Mailer\MailRegistry::SHARE_SEND_MESSAGE:
-            subject: 'Shared access with you'
-            template: email/share_message.html.twig
         !php/const App\Mailer\MailRegistry::NEW_ITEM_MESSAGE:
             subject: 'You got access to new secure data'
             template: email/new_item_message.html.twig
-
+        !php/const App\Mailer\MailRegistry::NEW_TEAM_MEMBER_MESSAGE:
+            subject: 'You’ve been added to to a team'
+            template: email/new_team_member_message.html.twig
+        !php/const App\Mailer\MailRegistry::UPDATED_ITEM_MESSAGE:
+            subject: 'You have updates on the %env(APP_NAME)% secrets'
+            template: email/updated_item_message.html.twig
+        !php/const App\Mailer\MailRegistry::NEW_ITEMS_AND_UPDATES_MESSAGE:
+            subject: 'You have new and updated %env(APP_NAME)% secrets'
+            template: email/new_items_and_updates_message.html.twig

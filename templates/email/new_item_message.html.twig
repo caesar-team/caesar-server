@@ -1,12 +1,11 @@
-{% block subject %}{{ constant('App\\Services\\ChildItemActualizer::EVENT_NEW_ITEM') == event ? 'You got new secure data' : 'You got updated secure data' }}{% endblock %}
+{% extends 'email/layout.html.twig' %}
+
+{% block subject %}New {{ env('APP_NAME')|default('Caesar.Team') }} secrets are shared with you.{% endblock %}
+
 {% block body %}
-    {% if isNotFinishedStatusFlow|default(false) %}
-        {{ 'mail.share.incomplete_authorization.message' | trans() }}
-        <br>
-    {% endif %}
-    {% if constant('App\\Services\\ChildItemActualizer::EVENT_NEW_ITEM') == event %}
-        {{ 'mail.share.new_item.message' | trans({'%url%': url}) }}
-    {% else %}
-        {{ 'mail.share.updated_item.message' | trans({'%url%': url}) }}
-    {% endif %}
+    <h2>Hi, {{ username|default('Customer') }}!</h2>
+    <p>You have {{ itemsCount }} new secrets that have been shared with you.</p>
+    <p><a href="{{ url }}">Join {{ env('APP_NAME')|default('Caesar.Team') }}</a></p>
+    <p>{{ username }}, if you do not want to see the secrets, you can reject them when you log into Caesar.Team.</p>
+    <p>After you log into Caesar.Team. you will see accepted secrets in your Inbox.</p>
 {% endblock %}

@@ -483,6 +483,7 @@ final class UserController extends AbstractController
         foreach ($sendRequests->getMessages() as $requestMessage) {
             $message = new Message($requestMessage->getUser()->getId()->toString(), $requestMessage->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
                 'url' => $requestMessage->getUrl(),
+                'username' => $requestMessage->getUser()->getUsername(),
             ]);
             $messenger->send($requestMessage->getUser(), $message);
         }
