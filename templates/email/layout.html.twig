@@ -1,3 +1,36 @@
-{% block subject %}{% endblock %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>{% block title_tag %}Caesar Message{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body style="margin: 0; padding: 0;">
+<table  align="center" border="1" cellpadding="0" cellspacing="0" width="600">
+    <tr>
+        <td>
+            {% block subject %}{% endblock %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            {% block body %}{% endblock %}
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Sincerely yours,<br>
+            <a href="{{ env('WEB_CLIENT_URL') }}">{{ env('APP_NAME')|default('Caesar.Team') }}</a>.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>This is an automatically generated email – please do not reply to it.</p>
+            <p>If you have any questions, please check out our FAQ or contact
+                <a href="mailto:{{ env('SENDER_ADDRESS') }}">{{ env('SENDER_ADDRESS') }}</a></p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
 
-{% block body %}{% endblock %}

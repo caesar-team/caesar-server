@@ -4,7 +4,7 @@ sylius_mailer:
         address: '%env(SENDER_ADDRESS)%'
     emails:
         !php/const App\Mailer\MailRegistry::INVITE_SEND_MESSAGE:
-            subject: 'Shared access with you'
+            subject: 'You’ve been invited to join %env(APP_NAME)%'
             template: email/invite_message.html.twig
         !php/const App\Mailer\MailRegistry::SHARE_SEND_MESSAGE:
             subject: 'Shared access with you'

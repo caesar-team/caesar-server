@@ -432,6 +432,7 @@ final class UserController extends AbstractController
 
         $message = new Message($sendRequest->getUser()->getId()->toString(),$sendRequest->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
             'url' => $sendRequest->getUrl(),
+            'username' => $sendRequest->getUser()->getUsername(),
         ]);
         $messenger->send($sendRequest->getUser(), $message);
 

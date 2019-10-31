@@ -610,7 +610,6 @@ final class ItemController extends AbstractController
      * @param ItemListViewFactory $viewFactory
      *
      * @return ItemView[]|FormInterface
-     * @throws NonUniqueResultException
      */
     public function favorite(ItemListViewFactory $viewFactory)
     {
