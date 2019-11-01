@@ -14,4 +14,12 @@ final class MailRegistry
     public const NEW_TEAM_MEMBER_MESSAGE = 'new_team_member_message';
     public const UPDATED_ITEM_MESSAGE = 'updated_item_message';
     public const NEW_ITEMS_AND_UPDATES_MESSAGE = 'new_items_and_updates_message';
+
+    public const MESSAGE_TEMPLATES = [
+        self::INVITE_SEND_MESSAGE,
+        self::NEW_ITEM_MESSAGE,
+        self::NEW_TEAM_MEMBER_MESSAGE,
+        self::UPDATED_ITEM_MESSAGE,
+        self::NEW_ITEMS_AND_UPDATES_MESSAGE,
+    ];
 }

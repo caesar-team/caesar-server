@@ -8,8 +8,12 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 final class BufferedMessageHandler implements MessageHandlerInterface
 {
+    public function __construct()
+    {
+    }
+
     public function __invoke(BufferedMessage $message)
     {
-        dump('test'); die;
+        dump($message); die;
     }
 }

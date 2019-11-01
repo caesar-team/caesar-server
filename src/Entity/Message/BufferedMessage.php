@@ -41,7 +41,7 @@ class BufferedMessage
      */
     private $content;
 
-    public function __construct(string $template, array $recipients = [], string $content = '')
+    public function __construct(string $template, array $recipients, string $content)
     {
         $this->id = Uuid::uuid4();
         $this->template = $template;
