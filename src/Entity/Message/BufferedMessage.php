@@ -1,0 +1,66 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Entity\Message;
+
+use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
+
+/**
+ * Class BufferedMessage
+ * @ORM\Entity()
+ */
+class BufferedMessage
+{
+    use TimestampableEntity;
+
+    /**
+     * @var UuidInterface
+     *
+     * @ORM\Id
+     * @ORM\Column(type="uuid", unique=true)
+     */
+    protected $id;
+
+    /**
+     * @ORM\Column(type="string")
+     * @var string
+     */
+    private $template;
+    /**
+     * @var array
+     * @ORM\Column(type="json_array")
+     */
+    private $recipients;
+    /**
+     * @var string
+     * @ORM\Column(type="json", nullable=true)
+     */
+    private $content;
+
+    public function __construct(string $template, array $recipients = [], string $content = '')
+    {
+        $this->id = Uuid::uuid4();
+        $this->template = $template;
+        $this->recipients = $recipients;
+        $this->content = $content;
+    }
+
+    public function getTemplate(): string
+    {
+        return $this->template;
+    }
+
+    public function getRecipients(): array
+    {
+        return $this->recipients;
+    }
+
+    public function getContent(): string
+    {
+        return $this->content;
+    }
+}
