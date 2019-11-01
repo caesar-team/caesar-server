@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Model\Request\Message;
 
-use App\Entity\Message\BufferedMessage;
+use App\Model\DTO\Message\MessageInterface;
 
-class BufferedMessageRequest
+class MessageRequest implements MessageInterface
 {
     /**
      * @var string|null
@@ -49,10 +49,5 @@ class BufferedMessageRequest
     public function setContent(?string $content): void
     {
         $this->content = $content;
-    }
-
-    public function createBufferedMessage(): BufferedMessage
-    {
-        return new BufferedMessage($this->template, $this->recipients, $this->content);
     }
 }

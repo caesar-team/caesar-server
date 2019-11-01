@@ -6,9 +6,10 @@ namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
 use App\Entity\Message\BufferedMessage;
-use App\Form\Request\Message\BufferedMessageType;
+use App\Form\Request\Message\MessageType;
 use App\Mailer\MailRegistry;
-use App\Model\Request\Message\BufferedMessageRequest;
+use App\Model\DTO\Message\InstantMessage;
+use App\Model\Request\Message\MessageRequest;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -21,14 +22,41 @@ final class MessengerController extends AbstractController
      */
     public function bufferedNotice(Request $request)
     {
-        $bufferedMessageRequest = new BufferedMessageRequest();
-        $form = $this->createForm(BufferedMessageType::class, $bufferedMessageRequest);
+        if ('dev' !== getenv('APP_ENV')) {
+            return null;
+        }
+
+        $messageRequest = new MessageRequest();
+        $form = $this->createForm(MessageType::class, $messageRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        $this->dispatchMessage($bufferedMessageRequest->createBufferedMessage());
+        $this->dispatchMessage(new BufferedMessage($messageRequest));
+
+        return null;
+    }
+
+    /**
+     * @Route(path="/api/notification/instant", methods={"POST"})
+     * @param Request $request
+     * @return null
+     */
+    public function instantNotice(Request $request)
+    {
+        if ('dev' !== getenv('APP_ENV')) {
+            return null;
+        }
+
+        $messageRequest = new MessageRequest();
+        $form = $this->createForm(MessageType::class, $messageRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $this->dispatchMessage(new InstantMessage($messageRequest->getTemplate(), $messageRequest->getRecipients(), $messageRequest->getContent()));
 
         return null;
     }

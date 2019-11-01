@@ -44,6 +44,10 @@ services:
             - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
         volumes:
             - "redis:/etc/redis/database/caesarapp"
+    mailcatcher:
+        image: schickling/mailcatcher
+        ports:
+            - "1080:1080"
     rabbitmq:
         image: "rabbitmq:3-management-alpine"
         environment:

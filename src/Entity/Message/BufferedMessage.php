@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity\Message;
 
+use App\Model\DTO\Message\MessageInterface;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
@@ -13,7 +14,7 @@ use Ramsey\Uuid\UuidInterface;
  * Class BufferedMessage
  * @ORM\Entity()
  */
-class BufferedMessage
+class BufferedMessage implements MessageInterface
 {
     use TimestampableEntity;
 
@@ -41,12 +42,12 @@ class BufferedMessage
      */
     private $content;
 
-    public function __construct(string $template, array $recipients, string $content)
+    public function __construct(MessageInterface $message)
     {
         $this->id = Uuid::uuid4();
-        $this->template = $template;
-        $this->recipients = $recipients;
-        $this->content = $content;
+        $this->template = $message->getTemplate();
+        $this->recipients = $message->getRecipients();
+        $this->content = $message->getContent();
     }
 
     public function getTemplate(): string
