@@ -133,17 +133,25 @@ class ItemVoter extends Voter
 
     private function canMove(Item $item, User $currentUser): bool
     {
-        if (!$this->canEdit($item, $currentUser)) {
-              return false;
+        if ($currentUser->hasOneOfRoles([User::ROLE_ADMIN, User::ROLE_SUPER_ADMIN])) {
+            return true;
         }
+
+        if ($currentUser->hasRole(User::ROLE_ANONYMOUS_USER)) {
+            return false;
+        }
+
+        $userTeam = $this->findUserTeam($item, $currentUser);
+        if ($userTeam && UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole()) {
+            return true;
+        }
+
         $prevDirectoryTeam = $this->teamRepository->findOneByDirectory($item->getPreviousList());
         $currDirectoryTeam = $this->teamRepository->findOneByDirectory($item->getParentList());
 
-        if(is_null($prevDirectoryTeam) && $currDirectoryTeam) {
-            return false; //false if personal
+        if(is_null($prevDirectoryTeam) && $currDirectoryTeam && UserTeam::USER_ROLE_ADMIN !== $userTeam->getUserRole()) {
+            return false; //false if personal and just member
         }
-
-
 
         return $item->getSignedOwner() === $currentUser;
     }

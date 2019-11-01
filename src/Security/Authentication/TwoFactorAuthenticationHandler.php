@@ -4,6 +4,7 @@ namespace App\Security\Authentication;
 
 use App\Entity\User;
 use App\Security\Fingerprint\FingerprintManager;
+use App\Security\Fingerprint\FingerprintStasher;
 use App\Security\Voter\TwoFactorInProgressVoter;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
@@ -28,11 +29,16 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
      * @var FingerprintManager
      */
     private $fingerprintManager;
+    /**
+     * @var FingerprintStasher
+     */
+    private $fingerprintStasher;
 
-    public function __construct(JWTEncoderInterface $jwtEncoder, FingerprintManager $fingerprintManager)
+    public function __construct(JWTEncoderInterface $jwtEncoder, FingerprintManager $fingerprintManager, FingerprintStasher $fingerprintStasher)
     {
         $this->jwtEncoder = $jwtEncoder;
         $this->fingerprintManager = $fingerprintManager;
+        $this->fingerprintStasher = $fingerprintStasher;
     }
 
     /**
@@ -51,15 +57,17 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
             unset($data[TwoFactorInProgressVoter::CHECK_KEY_NAME]);
 
             $fingerprint = $request->request->get('fingerprint');
+            $response = new JsonResponse();
             if (!empty($fingerprint)) {
                 $this->fingerprintManager->rememberFingerprint($request->request->get('fingerprint'), $user);
+                $this->fingerprintStasher->stash($response, $request->request->get('fingerprint'));
             }
 
             $responseData = [
                 'token' => $this->jwtEncoder->encode($data),
             ];
 
-            return new JsonResponse($responseData);
+            return $response->setData($responseData);
         }
 
         throw new \InvalidArgumentException('Expected an instance of %s, but got "%s".', JWTUserToken::class, get_class($token));
