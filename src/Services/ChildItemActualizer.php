@@ -6,12 +6,7 @@ namespace App\Services;
 
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
-use App\Entity\Team;
 use App\Entity\User;
-use App\Entity\UserTeam;
-use App\Mailer\MailRegistry;
-use App\Model\DTO\Message;
-use App\Model\Request\ChildItem;
 use App\Model\Request\ItemCollectionRequest;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;

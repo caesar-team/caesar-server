@@ -5,10 +5,6 @@ declare(strict_types=1);
 namespace App\Strategy\ShareFactory;
 
 use App\Entity\Item;
-use App\Entity\User;
-use App\Mailer\MailRegistry;
-use App\Model\DTO\Message;
-use App\Model\Request\ChildItem;
 use App\Services\Messenger;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;

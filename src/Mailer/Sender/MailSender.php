@@ -32,8 +32,6 @@ final class MailSender implements SenderInterface
      */
     private $defaultSettingsProvider;
 
-    private $metaData;
-
     public function __construct(
         RendererAdapterInterface $rendererAdapter,
         SenderAdapterInterface $senderAdapter,
@@ -57,8 +55,6 @@ final class MailSender implements SenderInterface
 
         $renderedEmail = $this->rendererAdapter->render($email, $data);
 
-        $this->metaData['sender'] = [$senderAddress, $senderName];
-
         $this->senderAdapter->send(
             $recipients,
             $senderAddress,
@@ -69,13 +65,5 @@ final class MailSender implements SenderInterface
             $attachments,
             $replyTo
         );
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getMetaData(): string
-    {
-        return $this->metaData ? serialize($this->metaData) : '';
     }
 }
