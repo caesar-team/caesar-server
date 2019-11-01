@@ -42,12 +42,12 @@ class BufferedMessage implements MessageInterface
      */
     private $content;
 
-    public function __construct(MessageInterface $message)
+    public function __construct(string $template, array $recipients, string $content)
     {
         $this->id = Uuid::uuid4();
-        $this->template = $message->getTemplate();
-        $this->recipients = $message->getRecipients();
-        $this->content = $message->getContent();
+        $this->template = $template;
+        $this->recipients = $recipients;
+        $this->content = $content;
     }
 
     public function getTemplate(): string

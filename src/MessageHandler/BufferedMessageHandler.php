@@ -22,17 +22,6 @@ final class BufferedMessageHandler implements MessageHandlerInterface
 
     public function __invoke(BufferedMessage $message)
     {
-        $this->mailSender->send($message->getTemplate(), $message->getRecipients(), $this->jsonToArray($message->getContent()));
-    }
-
-    private function jsonToArray(string $content): array
-    {
-        try {
-            $array =  json_decode($content, true);
-        } catch (\Exception $exception) {
-            $array = [];
-        }
-
-        return is_array($array) ? $array : [];
+        //отложить сообщение
     }
 }

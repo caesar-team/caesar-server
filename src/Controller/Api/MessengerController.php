@@ -33,7 +33,7 @@ final class MessengerController extends AbstractController
             return $form;
         }
 
-        $this->dispatchMessage(new BufferedMessage($messageRequest));
+        $this->dispatchMessage(new BufferedMessage($messageRequest->getTemplate(), $messageRequest->getRecipients(), $messageRequest->getContent()));
 
         return null;
     }

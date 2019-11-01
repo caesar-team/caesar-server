@@ -56,45 +56,9 @@ class Messenger
         if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
             return;
         }
-        if ($this->skipUnlessGranted($user, $message)) {
-            return;
-        }
 
         $this->logger->debug('Registered in Messenger');
         $this->logger->debug(sprintf('a message with address %s is formed', $message->email));
         $this->producer->publish(serialize($message));
-        $messageHistory = new MessageHistory();
-        $messageHistory->setRecipientId($message->recipientId);
-        $messageHistory->setCode($message->code);
-        $this->entityManager->persist($messageHistory);
-        $this->entityManager->flush();
-    }
-
-    /**
-     * @param User $user
-     * @param Message $message
-     * @return bool
-     */
-    private function skipUnlessGranted(User $user, Message $message): bool
-    {
-        $messageHistory = $this->historyRepository->findOneBy([
-            'recipientId' => $user->getId()->toString(),
-            'category' => MessageHistory::DEFAULT_CATEGORY,
-            'code' => $message->code,
-        ], [
-            'createdAt' => 'DESC'
-        ]);
-
-        switch (true) {
-            case !$messageHistory instanceof MessageHistory:
-            case $messageHistory->getCode() !== MailRegistry::NEW_ITEM_MESSAGE:
-            case (new \DateTimeImmutable())->format('Y-m-d') !== $messageHistory->getCreatedAt()->format('Y-m-d'):
-                $isNotGranted = false;
-                break;
-            default:
-                $isNotGranted = true;
-        }
-
-        return $isNotGranted;
     }
 }
