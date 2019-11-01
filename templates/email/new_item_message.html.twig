@@ -3,7 +3,7 @@
 {% block subject %}New {{ env('APP_NAME')|default('Caesar.Team') }} secrets are shared with you.{% endblock %}
 
 {% block body %}
-    <h2>Hi, {{ username|default('Customer') }}!</h2>
+    <h2>Hi!</h2>
     <p>You have {{ itemsCount }} new secrets that have been shared with you.</p>
     <p><a href="{{ url }}">Join {{ env('APP_NAME')|default('Caesar.Team') }}</a></p>
     <p>{{ username }}, if you do not want to see the secrets, you can reject them when you log into Caesar.Team.</p>

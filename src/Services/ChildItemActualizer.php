@@ -98,9 +98,6 @@ class ChildItemActualizer
             }
 
             $this->entityManager->persist($item);
-            if ($currentOwner !== $user) {
-                $this->sendItemMessage($childItem, self::EVENT_UPDATED_ITEM);
-            }
         }
 
         $this->entityManager->flush();
@@ -111,23 +108,6 @@ class ChildItemActualizer
         $update = $this->extractUpdate($item, $currentOwner);
         $update->setSecret($secret);
         $this->entityManager->persist($update);
-    }
-
-    private function sendItemMessage(ChildItem $childItem, string $event = self::EVENT_NEW_ITEM)
-    {
-        if ($childItem->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)) {
-            return;
-        }
-
-        $options = [
-            'url' => $this->absoluteUrl,
-            'event' => $event,
-            'isNotFinishedStatusFlow' => User::FLOW_STATUS_FINISHED !== $childItem->getUser()->getFlowStatus(),
-        ];
-        $message = new Message($childItem->getUser()->getId()->toString(), $childItem->getUser()->getEmail(), MailRegistry::NEW_ITEM_MESSAGE, $options);
-        $this->messenger->send($childItem->getUser(), $message);
-
-        $this->logger->debug('Registered in ChildItemHandler');
     }
 
     /**

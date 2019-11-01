@@ -3,9 +3,9 @@
 {% block subject %}You’ve been added to to a team: {{ teamName }}.{% endblock %}
 
 {% block body %}
-    <h2>Hi, {{ username|default('Customer') }}!</h2>
+    <h2>Hi!</h2>
     <p>You’ve been added to a team: {{ teamName }}.</p>
-    <p><a href="{{ url }}">Join {{ env('APP_NAME')|default('Caesar.Team') }}</a></p>
+    <p><a href="{{ env('WEB_CLIENT_URL') }}">Join {{ env('APP_NAME')|default('Caesar.Team') }}</a></p>
     <p>{{ username }}, if you want to manage the team’s secrets, you need to switch teams after logging in. To do that:</p>
     <ol>
         <li>Click on your Username in Caesar.Team</li>

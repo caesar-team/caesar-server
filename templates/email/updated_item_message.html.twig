@@ -3,7 +3,7 @@
 {% block subject %}You have updates on the {{ env('APP_NAME')|default('Caesar.Team') }} secrets{% endblock %}
 
 {% block body %}
-    <h2>Hi, {{ username|default('Customer') }}!</h2>
+    <h2>Hi!</h2>
     <p>You have updates on {{ itemsCount }} secrets that are shared with you.</p>
     <p><a href="{{ url }}">Join {{ env('APP_NAME')|default('Caesar.Team') }}</a></p>
     <p>{{ username }}, after you log into Caesar.Team. you can accept or reject updates.</p>

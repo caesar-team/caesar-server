@@ -3,7 +3,7 @@
 {% block subject %}You’ve been invited to join {{ env('APP_NAME')|default('Caesar.Team') }}.{% endblock %}
 
 {% block body %}
-    <h2>Hi, {{ username|default('Customer') }}!</h2>
+    <h2>Hi!</h2>
     <p>You’ve been invited to join {{ env('APP_NAME')|default('Caesar.Team') }}, a reliable system to store and manage your secrets.
         Get started by creating an account for yourself.</p>
     <p><a href="{{ url }}">Join {{ env('APP_NAME')|default('Caesar.Team') }}</a></p>

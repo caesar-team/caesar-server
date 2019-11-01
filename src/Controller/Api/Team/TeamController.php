@@ -13,6 +13,8 @@ use App\Form\Request\Team\AddMemberType;
 use App\Form\Request\Team\CreateTeamType;
 use App\Form\Request\Team\EditTeamType;
 use App\Form\Request\Team\EditUserTeamType;
+use App\Mailer\MailRegistry;
+use App\Model\DTO\Message\InstantMessage;
 use App\Model\Request\Team\EditUserTeamRequest;
 use App\Model\View\Team\ListView;
 use App\Model\View\Team\MemberView;
@@ -357,12 +359,16 @@ class TeamController extends AbstractController
 
         if(!$form->isValid()) {
             return $form;
-        } else {
-            $userTeam->setUser($user);
-            $userTeam->setTeam($team);
-            $entityManager->persist($userTeam);
-            $entityManager->flush();
         }
+        $userTeam->setUser($user);
+        $userTeam->setTeam($team);
+        $entityManager->persist($userTeam);
+        $entityManager->flush();
+
+        $content = [
+            'teamName' => $team->getTitle(),
+        ];
+        $this->dispatchMessage(new InstantMessage(MailRegistry::NEW_TEAM_MEMBER_MESSAGE, [$user->getEmail()], json_encode($content)));
 
         return MemberView::create($userTeam);
     }

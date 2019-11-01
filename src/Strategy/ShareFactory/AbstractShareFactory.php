@@ -70,28 +70,6 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
         $this->logger = $logger;
     }
 
-    /**
-     * @param ChildItem $childItem
-     * @param string $event
-     * @throws \Exception
-     */
-    final protected function sendItemMessage(ChildItem $childItem, string $event = self::EVENT_NEW_ITEM)
-    {
-        if ($childItem->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)) {
-            return;
-        }
-
-        $options = [
-            'url' => $this->absoluteUrl,
-            'event' => $event,
-            'isNotFinishedStatusFlow' => User::FLOW_STATUS_FINISHED !== $childItem->getUser()->getFlowStatus(),
-        ];
-        $message = new Message($childItem->getUser()->getId()->toString(), $childItem->getUser()->getEmail(), MailRegistry::NEW_ITEM_MESSAGE, $options);
-        $this->messenger->send($childItem->getUser(), $message);
-
-        $this->logger->debug('Registered in ChildItemHandler');
-    }
-
     final protected function getStatusByCause(string $cause): string
     {
         switch ($cause) {
