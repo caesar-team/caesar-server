@@ -24,11 +24,10 @@ class ClearMessageHistoryCommand extends Command
         parent::__construct();
     }
 
-
     protected function configure()
     {
         $this
-            ->setDescription('Clear old data from message_history table')
+            ->setDescription('Clear old data from buffered_message table')
         ;
     }
 
@@ -49,7 +48,7 @@ class ClearMessageHistoryCommand extends Command
      */
     private function removeDataOlderThan(\DateTimeImmutable $data)
     {
-        $sql = "DELETE FROM message_history WHERE message_history.created_at <:dateString";
+        $sql = "DELETE FROM buffered_message WHERE buffered_message.created_at <:dateString";
         $dateString = $data->format('Y-m-d 00:00:00');
         $params = ['dateString' => $dateString];
 

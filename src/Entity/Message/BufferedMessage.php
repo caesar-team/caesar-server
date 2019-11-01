@@ -42,6 +42,12 @@ class BufferedMessage implements MessageInterface
      */
     private $content;
 
+    /**
+     * @var string
+     * @ORM\Column(type="string")
+     */
+    private $checkSum;
+
     public function __construct(string $template, array $recipients, string $content)
     {
         $this->id = Uuid::uuid4();
@@ -63,5 +69,21 @@ class BufferedMessage implements MessageInterface
     public function getContent(): string
     {
         return $this->content;
+    }
+
+    public function getCheckSum(): string
+    {
+        return $this->checkSum;
+    }
+
+    public function setCheckSum(string $checkSum): void
+    {
+        $this->checkSum = $checkSum;
+    }
+
+    public function createCheckSum(): string
+    {
+        $recipients = implode('.', $this->recipients);
+        return hash('sha256', $recipients.$this->content);
     }
 }

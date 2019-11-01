@@ -5,8 +5,8 @@
 {% block body %}
     <h2>Hi!</h2>
     <p>You have {{ newItemsCount }} new secrets that are shared with you and you have updates on {{ updatedItemsCount }} secrets that have been shared with you.</p>
-    <p><a href="{{ url }}">Join {{ env('APP_NAME')|default('Caesar.Team') }}</a></p>
-    <p>{{ username }}, if you do not want to see the new shared secrets, you can reject them when you log into Caesar.Team.</p>
+    <p><a href="{{ env('WEB_CLIENT_URL') }}">Join {{ env('APP_NAME')|default('Caesar.Team') }}</a></p>
+    <p>If you do not want to see the new shared secrets, you can reject them when you log into {{ env('APP_NAME')|default('Caesar.Team') }}.</p>
     <p>After you log into {{ env('APP_NAME')|default('Caesar.Team') }}:</p>
     <ul>
         <li>you will see accepted secrets in your Inbox.</li>

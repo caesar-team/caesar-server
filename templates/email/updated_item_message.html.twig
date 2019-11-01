@@ -5,6 +5,6 @@
 {% block body %}
     <h2>Hi!</h2>
     <p>You have updates on {{ itemsCount }} secrets that are shared with you.</p>
-    <p><a href="{{ url }}">Join {{ env('APP_NAME')|default('Caesar.Team') }}</a></p>
-    <p>{{ username }}, after you log into Caesar.Team. you can accept or reject updates.</p>
+    <p><a href="{{ env('WEB_CLIENT_URL') }}">Join {{ env('APP_NAME')|default('Caesar.Team') }}</a></p>
+    <p>After you log into Caesar.Team. you can accept or reject updates.</p>
 {% endblock %}

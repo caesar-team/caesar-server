@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-
-use App\Entity\MessageHistory;
 use App\Entity\User;
-use App\Mailer\MailRegistry;
-use App\Repository\MessageHistoryRepository;
 use App\Model\DTO\Message;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -21,10 +17,6 @@ class Messenger
      */
     private $producer;
     /**
-     * @var MessageHistoryRepository
-     */
-    private $historyRepository;
-    /**
      * @var EntityManagerInterface
      */
     private $entityManager;
@@ -35,12 +27,10 @@ class Messenger
 
     public function __construct(
         Producer $producer,
-        MessageHistoryRepository $historyRepository,
         EntityManagerInterface $entityManager,
         LoggerInterface $logger
     )
     {
-        $this->historyRepository = $historyRepository;
         $this->entityManager = $entityManager;
         $this->logger = $logger;
         $this->producer = $producer;
