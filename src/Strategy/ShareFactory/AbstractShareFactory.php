@@ -13,30 +13,6 @@ use Symfony\Component\Routing\RouterInterface;
 
 abstract class AbstractShareFactory implements ShareFactoryInterface
 {
-    protected const URL_ROOT = 'root';
-    protected const EVENT_NEW_ITEM = 'new';
-    protected const EVENT_UPDATED_ITEM = 'updated';
-
-    /**
-     * @var SenderInterface
-     */
-    protected $sender;
-    /**
-     * @var RouterInterface
-     */
-    protected $router;
-    /**
-     * @var Messenger
-     */
-    protected $messenger;
-    /**
-     * @var string
-     */
-    protected $absoluteUrl;
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
     /**
      * @var EntityManagerInterface
      */
@@ -45,25 +21,12 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
     /**
      * InviteHandler constructor.
      * @param EntityManagerInterface $entityManager
-     * @param SenderInterface $sender
-     * @param RouterInterface $router
-     * @param Messenger $messenger
-     * @param LoggerInterface $logger
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
-        SenderInterface $sender,
-        RouterInterface $router,
-        Messenger $messenger,
-        LoggerInterface $logger
+        EntityManagerInterface $entityManager
     )
     {
         $this->entityManager = $entityManager;
-        $this->sender = $sender;
-        $this->router = $router;
-        $this->messenger = $messenger;
-        $this->absoluteUrl = $this->router->generate(self::URL_ROOT, [], RouterInterface::ABSOLUTE_URL);
-        $this->logger = $logger;
     }
 
     final protected function getStatusByCause(string $cause): string

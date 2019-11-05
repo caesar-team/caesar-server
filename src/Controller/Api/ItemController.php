@@ -41,6 +41,7 @@ use App\Repository\TeamRepository;
 use App\Security\ItemVoter;
 use App\Services\ChildItemActualizer;
 use App\Services\File\ItemMoveResolver;
+use App\Services\ItemUpdater;
 use App\Services\ShareManager;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
@@ -490,7 +491,7 @@ final class ItemController extends AbstractController
      * @param EntityManagerInterface $entityManager
      *
      * @param SerializerInterface $serializer
-     * @param ChildItemActualizer $itemHandler
+     * @param ItemUpdater $itemUpdater
      * @return array|FormInterface
      */
     public function editItem(
@@ -498,7 +499,7 @@ final class ItemController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-        ChildItemActualizer $itemHandler
+        ItemUpdater $itemUpdater
     )
     {
         //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
@@ -514,7 +515,7 @@ final class ItemController extends AbstractController
 
         $entityManager->persist($item);
         if ($itemRequest->getOriginalItem()->getSecret()) {
-            $itemHandler->updateItem($item->getOriginalItem(), $itemRequest->getOriginalItem()->getSecret(), $this->getUser());
+            $itemUpdater->createUpdate($item->getOriginalItem(), $itemRequest->getOriginalItem()->getSecret(), $this->getUser());
         }
         $entityManager->flush();
 

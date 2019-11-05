@@ -5,72 +5,49 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Entity\Item;
-use App\Entity\ItemUpdate;
 use App\Entity\User;
+use App\Event\ItemUpdateEvent;
+use App\Event\ItemUpdatesFlushEvent;
 use App\Model\Request\ItemCollectionRequest;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
-use Sylius\Component\Mailer\Sender\SenderInterface;
-use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ChildItemActualizer
 {
-    const URL_ROOT = 'root';
-    const EVENT_NEW_ITEM = 'new';
-    const EVENT_UPDATED_ITEM = 'updated';
     /** @var EntityManagerInterface */
     private $entityManager;
 
     /**
-     * @var SenderInterface
+     * @var ItemUpdater
      */
-    private $sender;
+    private $itemUpdater;
     /**
-     * @var RouterInterface
+     * @var EventDispatcherInterface
      */
-    protected $router;
-    /**
-     * @var Messenger
-     */
-    private $messenger;
-    /**
-     * @var string
-     */
-    private $absoluteUrl;
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private $eventDispatcher;
 
     /**
      * InviteHandler constructor.
+     * @param ItemUpdater $itemUpdater
      * @param EntityManagerInterface $entityManager
-     * @param SenderInterface $sender
-     * @param RouterInterface $router
-     * @param Messenger $messenger
-     * @param LoggerInterface $logger
+     * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(
+        ItemUpdater $itemUpdater,
         EntityManagerInterface $entityManager,
-        SenderInterface $sender,
-        RouterInterface $router,
-        Messenger $messenger,
-        LoggerInterface $logger
+        EventDispatcherInterface $eventDispatcher
     )
     {
         $this->entityManager = $entityManager;
-        $this->sender = $sender;
-        $this->router = $router;
-        $this->messenger = $messenger;
-        $this->absoluteUrl = $this->router->generate(self::URL_ROOT, [], RouterInterface::ABSOLUTE_URL);
-        $this->logger = $logger;
+        $this->itemUpdater = $itemUpdater;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
      * @param ItemCollectionRequest $request
      * @param User $currentOwner
      */
-    public function updateChildItems(ItemCollectionRequest $request, User $currentOwner): void
+    public function updateCollection(ItemCollectionRequest $request, User $currentOwner): void
     {
         $parentItem = $request->getOriginalItem();
         if (null !== $parentItem->getOriginalItem()) {
@@ -85,7 +62,7 @@ class ChildItemActualizer
             if ($currentOwner === $user || Item::CAUSE_SHARE === $item->getCause()) {
                 $item->setSecret($childItem->getSecret());
             } else {
-                $update = $this->extractUpdate($item, $currentOwner);
+                $update = $this->itemUpdater->extractUpdate($item, $currentOwner);
                 $update->setSecret($childItem->getSecret());
             }
             if ($childItem->getLink()) {
@@ -93,16 +70,11 @@ class ChildItemActualizer
             }
 
             $this->entityManager->persist($item);
+            $this->eventDispatcher->dispatch(new ItemUpdateEvent($item));
         }
 
         $this->entityManager->flush();
-    }
-
-    public function updateItem(Item $item, string $secret, User $currentOwner): void
-    {
-        $update = $this->extractUpdate($item, $currentOwner);
-        $update->setSecret($secret);
-        $this->entityManager->persist($update);
+        $this->eventDispatcher->dispatch(new ItemUpdatesFlushEvent());
     }
 
     /**
@@ -125,14 +97,5 @@ class ChildItemActualizer
         }
 
         throw new \LogicException('No Such user in original invite '.$user->getId()->toString());
-    }
-
-    public function extractUpdate(Item $item, User $user): ItemUpdate
-    {
-        if ($item->getUpdate()) {
-            return $item->getUpdate();
-        }
-
-        return new ItemUpdate($item, $user);
     }
 }

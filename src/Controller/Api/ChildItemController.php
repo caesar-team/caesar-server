@@ -172,7 +172,7 @@ final class ChildItemController extends AbstractController
         }
         foreach ($batchChildItemsCollectionRequest->getCollectionItems() as $itemCollectionRequest) {
             $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $itemCollectionRequest->getOriginalItem());
-            $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
+            $childItemHandler->updateCollection($itemCollectionRequest, $this->getUser());
         }
 
         return null;
@@ -247,7 +247,7 @@ final class ChildItemController extends AbstractController
             return $form;
         }
 
-        $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
+        $childItemHandler->updateCollection($itemCollectionRequest, $this->getUser());
 
         return null;
     }

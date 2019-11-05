@@ -10,7 +10,7 @@ use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Table
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\ItemUpdateRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ItemUpdate
