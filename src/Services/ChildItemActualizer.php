@@ -6,11 +6,8 @@ namespace App\Services;
 
 use App\Entity\Item;
 use App\Entity\User;
-use App\Event\ItemUpdateEvent;
-use App\Event\ItemUpdatesFlushEvent;
 use App\Model\Request\ItemCollectionRequest;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ChildItemActualizer
 {
@@ -21,26 +18,19 @@ class ChildItemActualizer
      * @var ItemUpdater
      */
     private $itemUpdater;
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
 
     /**
      * InviteHandler constructor.
      * @param ItemUpdater $itemUpdater
      * @param EntityManagerInterface $entityManager
-     * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(
         ItemUpdater $itemUpdater,
-        EntityManagerInterface $entityManager,
-        EventDispatcherInterface $eventDispatcher
+        EntityManagerInterface $entityManager
     )
     {
         $this->entityManager = $entityManager;
         $this->itemUpdater = $itemUpdater;
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -70,11 +60,9 @@ class ChildItemActualizer
             }
 
             $this->entityManager->persist($item);
-            $this->eventDispatcher->dispatch(new ItemUpdateEvent($item));
         }
 
         $this->entityManager->flush();
-        $this->eventDispatcher->dispatch(new ItemUpdatesFlushEvent());
     }
 
     /**

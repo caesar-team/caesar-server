@@ -78,4 +78,16 @@ class ItemRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * @return array|Item[]
+     */
+    public function findOfferedChildren(): array
+    {
+        $qb = $this->createQueryBuilder('item');
+        $qb->where('item.status =:offered');
+        $qb->setParameter('offered', Item::STATUS_OFFERED);
+
+        return $qb->getQuery()->getResult();
+    }
 }

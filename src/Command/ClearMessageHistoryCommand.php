@@ -48,7 +48,7 @@ class ClearMessageHistoryCommand extends Command
      */
     private function removeDataOlderThan(\DateTimeImmutable $data)
     {
-        $sql = "DELETE FROM buffered_message WHERE buffered_message.created_at <:dateString";
+        $sql = "DELETE FROM notification_log WHERE notification_log.created_at <:dateString";
         $dateString = $data->format('Y-m-d 00:00:00');
         $params = ['dateString' => $dateString];
 

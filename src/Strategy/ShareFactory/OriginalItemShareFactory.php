@@ -6,26 +6,11 @@ namespace App\Strategy\ShareFactory;
 
 use App\Entity\Directory;
 use App\Entity\Item;
-use App\Event\ShareEvent;
-use App\Event\SharesFlushEvent;
 use App\Model\Request\BatchItemCollectionRequest;
 use App\Model\Request\ChildItem;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 final class OriginalItemShareFactory extends AbstractShareFactory
 {
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
-
-    public function __construct(EntityManagerInterface $entityManager, EventDispatcherInterface $eventDispatcher)
-    {
-        parent::__construct($entityManager);
-        $this->eventDispatcher = $eventDispatcher;
-    }
-
     /**
      * @param BatchItemCollectionRequest $itemCollectionRequest
      * @return array|Item[]
@@ -48,10 +33,8 @@ final class OriginalItemShareFactory extends AbstractShareFactory
 
             $this->entityManager->persist($item);
             $items[$itemCollectionRequest->getOriginalItem()->getId()->toString()][] = $item;
-            $this->eventDispatcher->dispatch(new ShareEvent($item));
         }
         $this->entityManager->flush();
-        $this->eventDispatcher->dispatch(new SharesFlushEvent());
 
         return $items;
     }
