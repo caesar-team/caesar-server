@@ -6,7 +6,7 @@
         "ext-bcmath": "*",
         "ext-iconv": "*",
         "ext-redis": "*",
-        "doctrine/doctrine-fixtures-bundle": "3.1.0",
+        "doctrine/doctrine-fixtures-bundle": "3.3.0",
         "easycorp/easyadmin-bundle": "2.1.1",
         "fresh/doctrine-enum-bundle": "6.3.0",
         "friendsofsymfony/rest-bundle": "2.5.0",
