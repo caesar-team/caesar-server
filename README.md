@@ -40,13 +40,13 @@ openssl rsa -pubout -in var/jwt/private.pem -out var/jwt/public.pem
 ### 6. Open project
 Just go to [http://localhost](http://localhost)
 
-####Run tests:
+#### Run tests:
 Reveal `TEST_DATABASE_URL` from .env
 ```bash
 APP_ENV=test vendor/bin/phpunit -d memory_limit=-1 #Phpunit
 ```
 
-####Access to the admin panel:
+#### Access to the admin panel:
 Create and promote admin user: `bin/console app:user:create`
 Promote an existing user: `bin/console fos:user:promote`
 Available roles: 
