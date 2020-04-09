@@ -16,26 +16,31 @@ On MacOS:
 ```bash
 docker-sync-stack start
 ```
-### 2. Install vendors
+
+### 2. Update .env:
+- Create a config file .env by .env.dist
+- Fill required values by instruction inside .env
+
+### 3. Install vendors
 ```bash
 docker-compose exec php composer install
 ```
-### 3. Run migrations, install fixtures
+
+### 4. Run migrations, install fixtures
 ```bash
 docker-compose exec php bin/console doctrine:migrations:migrate
 docker-compose exec php bin/console doctrine:fixtures:load
 ```
 
-### 4. Generate the SSH keys for JWT: 
+### 5. Generate the SSH keys for JWT: 
 ```bash
 mkdir -p var/jwt
 openssl genrsa -out var/jwt/private.pem -aes256 4096
 openssl rsa -pubout -in var/jwt/private.pem -out var/jwt/public.pem
 ```
 
-### 5. Update .env:
-- Create a config file .env by .env.dist
-- Fill required values by instruction inside .env
+Update JWT_PASSPHRASE setting in .env file
+
 
 ### 6. Open project
 Just go to [http://localhost](http://localhost)
