@@ -12,6 +12,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 
 final class TeamRepository extends ServiceEntityRepository
 {
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Team::class);

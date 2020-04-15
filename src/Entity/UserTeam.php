@@ -55,7 +55,7 @@ class UserTeam
     /**
      * @var User
      *
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="userTeams", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="userTeams")
      * @ORM\JoinColumn(name="user_id", nullable=false, onDelete="CASCADE")
      */
     private $user;
