@@ -81,13 +81,30 @@ globals:
   dry_run: true
   daemon_off: false
 
+- &confSaveBuild
+  dockerfile: Dockerfile
+  registry: registry2.4xxi.com
+  repo: registry2.4xxi.com/alfa/alfa-lk-frontend
+  tag: ${DRONE_BRANCH}
+  username:
+    from_secret: username
+  password:
+    from_secret: password
+
 - &stepCheckBuild
   name: build test
   image: plugins/docker
   settings:
     <<: *confNoSaveBuild
+
+- &stepMainBuild
+  name: build
+  image: plugins/docker
+  settings:
+    <<: *confSaveBuild
+    
 steps:
-- <<: *stepCheckBuild
+- <<: *stepMainBuild
   when:
     branch: [ feature/* ]
 trigger:
