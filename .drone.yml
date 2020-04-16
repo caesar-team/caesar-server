@@ -1,0 +1,95 @@
+kind: secret
+name: username
+get:
+  path: secret/data/registry
+  name: username
+---
+kind: secret
+name: password
+get:
+  path: secret/data/registry
+  name: password
+---
+kind: secret
+name: repository
+get:
+  path: caesar-team/data/caesar-server
+  name: repository
+---
+kind: secret
+name: registry
+get:
+  path: secret/data/registry
+  name: registry
+---
+kind: secret
+name: develop_url
+get:
+  path: secret/data/k8s-4xxi
+  name: develop_url
+---
+kind: secret
+name: develop_token
+get:
+  path: secret/data/k8s-4xxi
+  name: develop_token
+---
+kind: secret
+name: develop_ca
+get:
+  path: secret/data/k8s-4xxi
+  name: develop_ca
+---
+kind: secret
+name: staging_url
+get:
+  path: secret/data/k8s-4xxi
+  name: staging_url
+---
+kind: secret
+name: staging_token
+get:
+  path: secret/data/k8s-4xxi
+  name: staging_token
+---
+kind: secret
+name: staging_ca
+get:
+  path: secret/data/k8s-4xxi
+  name: staging_ca
+---
+kind: secret
+name: alfa-server
+get:
+  path: secret/data/notifications-4xxi
+  name: alfa-server
+---
+kind: secret
+name: ssh_key
+get:
+  path: secret/data/alfa-lk-ssh
+  name: ssh-priv-base64
+---
+kind: pipeline
+type: docker
+name: 4xxi
+globals:
+- &confNoSaveBuild
+  dockerfile: Dockerfile
+  repo: plugins/docker
+  tag: fourxxi
+  dry_run: true
+  daemon_off: false
+
+- &stepCheckBuild
+  name: build test
+  image: plugins/docker
+  settings:
+    <<: *confNoSaveBuild
+steps:
+- <<: *stepCheckBuild
+  when:
+    branch: [ feature/* ]
+trigger:
+  branch:
+  - feature/*
