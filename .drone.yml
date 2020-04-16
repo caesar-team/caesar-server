@@ -83,8 +83,10 @@ globals:
 
 - &confSaveBuild
   dockerfile: Dockerfile
-  registry: registry2.4xxi.com
-  repo: registry2.4xxi.com/alfa/alfa-lk-frontend
+  registry:
+    from_secret: registry
+  repo:
+    from_secret: repository
   tag: ${DRONE_BRANCH}
   username:
     from_secret: username
