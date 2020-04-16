@@ -17,6 +17,7 @@ use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
 use App\Security\Authentication\SrppAuthenticator;
 use App\Security\AuthorizationManager\AuthorizationManager;
+use App\Services\TeamManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
 use App\Utils\ErrorMessageFormatter;
@@ -88,6 +89,7 @@ final class SrpController extends AbstractController
      * @param Request $request
      * @param UserManagerInterface $userManager
      *
+     * @param TeamManager $teamManager
      * @param TranslatorInterface $translator
      * @param AuthorizationManager $authorizationManager
      * @param ErrorMessageFormatter $errorMessageFormatter
@@ -98,6 +100,7 @@ final class SrpController extends AbstractController
     public function registerAction(
         Request $request,
         UserManagerInterface $userManager,
+        TeamManager $teamManager,
         TranslatorInterface $translator,
         AuthorizationManager $authorizationManager,
         ErrorMessageFormatter $errorMessageFormatter
@@ -120,6 +123,10 @@ final class SrpController extends AbstractController
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
+        }
+
+        if ($user->isFullUser()) {
+            $teamManager->addTeamToUser($user);
         }
 
         $userManager->updateUser($user);

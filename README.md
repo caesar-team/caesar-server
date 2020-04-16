@@ -16,41 +16,49 @@ On MacOS:
 ```bash
 docker-sync-stack start
 ```
-### 2. Install vendors
+
+### 2. Update .env:
+- Create a config file .env by .env.dist
+- Fill required values by instruction inside .env
+
+### 3. Install vendors
 ```bash
 docker-compose exec php composer install
 ```
-### 3. Run migrations, install fixtures
+
+### 4. Run migrations, install fixtures
 ```bash
 docker-compose exec php bin/console doctrine:migrations:migrate
 docker-compose exec php bin/console doctrine:fixtures:load
 ```
 
-### 4. Generate the SSH keys for JWT: 
+### 5. Generate the SSH keys for JWT: 
 ```bash
 mkdir -p var/jwt
 openssl genrsa -out var/jwt/private.pem -aes256 4096
 openssl rsa -pubout -in var/jwt/private.pem -out var/jwt/public.pem
 ```
 
-### 5. Update .env:
-- Create a config file .env by .env.dist
-- Fill required values by instruction inside .env
+Update JWT_PASSPHRASE setting in .env file
+
 
 ### 6. Open project
 Just go to [http://localhost](http://localhost)
 
-####Run tests:
+#### Run tests:
 Reveal `TEST_DATABASE_URL` from .env
 ```bash
 APP_ENV=test vendor/bin/phpunit -d memory_limit=-1 #Phpunit
 ```
 
-####Access to the admin panel:
+#### Access to the admin panel:
 Create and promote admin user: `bin/console app:user:create`
+
 Promote an existing user: `bin/console fos:user:promote`
+
 Available roles: 
 - ROLE_ADMIN
 - ROLE_READ_ONLY_USER
 - ROLE_SUPER_ADMIN
+
 Ex: `bin/console fos:user:promote username ROLE_ADMIN`
