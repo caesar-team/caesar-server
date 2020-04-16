@@ -1,5 +1,5 @@
 # ---- Base Image ----
-FROM php:7.3-fpm-alpine AS base
+FROM php:7.4-fpm-alpine AS base
 RUN mkdir -p /var/www/html /var/www/html/public/static /var/www/html/var/cache /var/www/html/var/logs /var/www/html/var/sessions && chown -R www-data /var/www/html 
 # Set working directory
 WORKDIR /var/www/html
