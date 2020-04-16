@@ -92,4 +92,4 @@ steps:
     branch: [ feature/* ]
 trigger:
   branch:
-  - feature/*
+  - feature/test-cicd
