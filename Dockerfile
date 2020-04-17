@@ -21,7 +21,8 @@ RUN docker-php-ext-install \
     opcache \
     pdo \
     pdo_pgsql \
-    zip
+    zip \
+    sockets
 
 RUN pecl install gnupg redis \
     && docker-php-ext-enable redis
