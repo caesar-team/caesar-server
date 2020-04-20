@@ -7,6 +7,7 @@
         "ext-iconv": "*",
         "ext-json": "*",
         "ext-redis": "*",
+        "ext-sockets": "*",
         "doctrine/doctrine-fixtures-bundle": "3.3.0",
         "easycorp/easyadmin-bundle": "2.3.5",
         "fresh/doctrine-enum-bundle": "6.6.2",
