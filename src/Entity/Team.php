@@ -83,7 +83,7 @@ class Team
 
     /**
      * @var Collection|Item[]
-     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="owner")
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="team")
      */
     private $ownedItems;
 
