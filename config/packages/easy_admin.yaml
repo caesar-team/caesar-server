@@ -18,6 +18,13 @@ easy_admin:
           - domain
           - enabled
           - srp.id
+      show:
+        fields:
+          - enabled
+          - username
+          - email
+          - domain
+          - roles
       form:
         fields:
           - enabled
