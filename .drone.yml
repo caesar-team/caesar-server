@@ -76,12 +76,6 @@ get:
   path: secret/data/notifications-4xxi
   name: icon_url
 ---
-kind: secret
-name: ssh_key
-get:
-  path: secret/data/alfa-lk-ssh
-  name: ssh-priv-base64
----
 kind: pipeline
 type: docker
 name: 4xxi
