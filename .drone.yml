@@ -133,7 +133,7 @@ globals:
   - sed -i "s/\$CICD_GIT_COMMIT/$CICD_GIT_COMMIT/g" k8s/deployment.yaml
   - kubectl apply -f k8s/deployment.yaml
 
-- &stepStagingDeploy
+- &stepMasterDeploy
   name: deploy staging
   image: sinlead/drone-kubectl
   settings:
@@ -191,7 +191,7 @@ steps:
   when:
     branch: [ develop ]
 
-- <<: *stepStagingDeploy
+- <<: *stepMasterDeploy
   when:
     branch: [ master ]
 
