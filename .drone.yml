@@ -71,10 +71,10 @@ get:
   name: username
 ---
 kind: secret
-name: notification_username
+name: notification_icon
 get:
   path: secret/data/notifications-4xxi
-  name: notification_icon
+  name: icon_url
 ---
 kind: secret
 name: ssh_key
