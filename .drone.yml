@@ -129,9 +129,9 @@ globals:
     CICD_GIT_COMMIT: ${DRONE_COMMIT}
     CICD_GIT_BRANCH: ${DRONE_BRANCH}
   commands:
-  - sed -i "s/\$CICD_GIT_BRANCH/$CICD_GIT_BRANCH/g" k8s/*
-  - sed -i "s/\$CICD_GIT_COMMIT/$CICD_GIT_COMMIT/g" k8s/*
-  - kubectl apply -f k8s/
+  - sed -i "s/\$CICD_GIT_BRANCH/$CICD_GIT_BRANCH/g" k8s/deployment.yaml
+  - sed -i "s/\$CICD_GIT_COMMIT/$CICD_GIT_COMMIT/g" k8s/deployment.yaml
+  - kubectl apply -f k8s/deployment.yaml
 
 - &stepStagingDeploy
   name: deploy staging
@@ -147,9 +147,9 @@ globals:
     CICD_GIT_COMMIT: ${DRONE_COMMIT}
     CICD_GIT_BRANCH: ${DRONE_BRANCH}
   commands:
-  - sed -i "s/\$CICD_GIT_BRANCH/$CICD_GIT_BRANCH/g" k8s/*
-  - sed -i "s/\$CICD_GIT_COMMIT/$CICD_GIT_COMMIT/g" k8s/*
-  - kubectl apply -f k8s/
+  - sed -i "s/\$CICD_GIT_BRANCH/$CICD_GIT_BRANCH/g" k8s/deployment.yaml
+  - sed -i "s/\$CICD_GIT_COMMIT/$CICD_GIT_COMMIT/g" k8s/deployment.yaml
+  - kubectl apply -f k8s/deployment.yaml
 
 - &stepNotifyToSlack
   name: notify-to-slack
