@@ -29,6 +29,8 @@ class UserMasterSubscriber implements EventSubscriberInterface
         'api_security_2fa_backup_codes',
         'api_srp_update_password',
         'api_user_get_info',
+        'easyadmin',
+        'app.swagger_ui'
     ];
 
     /**
@@ -75,8 +77,8 @@ class UserMasterSubscriber implements EventSubscriberInterface
 
         if (User::FLOW_STATUS_INCOMPLETE === $user->getFlowStatus()) {
             if (!in_array($request->get('_route'), self::GRANTED_ROUTES)) {
-                $message = $this->translator->trans('app.exception.update_master_password');
-                $event->setResponse(new JsonResponse(['master' => $message], Response::HTTP_UNAUTHORIZED));
+                $message = $this->translator->trans('app.exception.update_user_password');
+                $event->setResponse(new JsonResponse(['errors' => [$message], 'route' => $request->get('_route')], Response::HTTP_UNAUTHORIZED));
             }
         }
     }

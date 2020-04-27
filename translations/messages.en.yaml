@@ -6,7 +6,7 @@ mail.share.created_link.message: 'You have access to a secured item. Follow this
 mail.share.updated_link.message: 'Shared item updated. Follow the new link %url%.'
 mail.share.new_item.message: 'You got access to new secure data. Follow this link %url%.'
 mail.share.updated_item.message: 'You got update for your secure data. Follow this link %url%.'
-app.exception.update_master_password: 'You must update your master password.'
+app.exception.update_user_password: 'You must update your password.'
 app.exception.delete_trash_only: 'You can fully delete item only from trash.'
 app.exception.item_has_no_update_to_accept: 'Item has no update to accept it.'
 app.exception.cant_edit_root_list: 'You can`t edit root list.'
