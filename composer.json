@@ -8,6 +8,7 @@
         "ext-json": "*",
         "ext-redis": "*",
         "ext-sockets": "*",
+        "caesar/security-message-bundle": "*",
         "doctrine/doctrine-fixtures-bundle": "3.3.0",
         "easycorp/easyadmin-bundle": "2.3.5",
         "fresh/doctrine-enum-bundle": "6.6.2",
@@ -96,5 +97,11 @@
             "id": "",
             "allow-contrib": false
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:caesar-team/CaesarSecureMessageBundle.git"
+        }
+    ]
 }
