@@ -48,6 +48,9 @@ security:
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
+        api_security_messages:
+            pattern: ^/api/message
+            anonymous: true
         api:
             pattern: ^/api
             provider: fos.user.provider
