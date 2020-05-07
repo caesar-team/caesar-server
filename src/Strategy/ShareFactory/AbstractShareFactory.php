@@ -48,11 +48,6 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
 
     /**
      * InviteHandler constructor.
-     * @param EntityManagerInterface $entityManager
-     * @param SenderInterface $sender
-     * @param RouterInterface $router
-     * @param Messenger $messenger
-     * @param LoggerInterface $logger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -60,8 +55,7 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
         RouterInterface $router,
         Messenger $messenger,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->sender = $sender;
         $this->router = $router;
@@ -71,11 +65,9 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
     }
 
     /**
-     * @param ChildItem $childItem
-     * @param string $event
      * @throws \Exception
      */
-    final protected function sendItemMessage(ChildItem $childItem, string $event = self::EVENT_NEW_ITEM)
+    final protected function sendItemMessage(ChildItem $childItem, string $event = self::EVENT_NEW_ITEM): void
     {
         if ($childItem->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)) {
             return;

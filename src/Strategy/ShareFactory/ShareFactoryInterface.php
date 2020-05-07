@@ -10,6 +10,7 @@ interface ShareFactoryInterface
 {
     /**
      * @param mixed $data
+     *
      * @return array|Item[]
      */
     public function share($data): array;

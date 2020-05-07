@@ -5,7 +5,6 @@ namespace App\Services\SecurityMessage;
 use Caesar\SecurityMessageBundle\Service\ClientInterface;
 use Redis;
 
-
 class Client implements ClientInterface
 {
     /**

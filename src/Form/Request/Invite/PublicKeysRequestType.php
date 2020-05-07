@@ -25,5 +25,4 @@ final class PublicKeysRequestType extends AbstractType
             'data_class' => PublicKeysRequest::class,
         ]);
     }
-
 }

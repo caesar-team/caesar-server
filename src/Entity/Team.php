@@ -8,26 +8,28 @@ use App\Utils\DefaultIcon;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use Doctrine\ORM\Mapping\UniqueConstraint;
 
 /**
- * Class Group
+ * Class Group.
+ *
  * @ORM\Entity(repositoryClass="App\Repository\TeamRepository")
  * @ORM\Table(name="groups",
- *    uniqueConstraints={
- *        @UniqueConstraint(name="unique_alias",
- *            columns={"alias"}),
- *        @UniqueConstraint(name="unique_title",
- *            columns={"title"}),
- *    }
+ *     uniqueConstraints={
+ *         @UniqueConstraint(name="unique_alias",
+ *         columns={"alias"}),
+ *         @UniqueConstraint(name="unique_title",
+ *         columns={"title"}),
+ *     }
  * )
  */
 class Team
 {
-    const DEFAULT_GROUP_ALIAS = 'default';
-    const DEFAULT_GROUP_TITLE = 'Default';
+    public const DEFAULT_GROUP_ALIAS = 'default';
+    public const DEFAULT_GROUP_TITLE = 'Default';
+
     /**
      * @var UuidInterface
      *
@@ -57,6 +59,7 @@ class Team
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     *
      * @var string|null
      */
     private $icon;
@@ -89,6 +92,7 @@ class Team
 
     /**
      * Group constructor.
+     *
      * @throws \Exception
      */
     public function __construct()
@@ -128,41 +132,26 @@ class Team
         $this->userTeams = $userTeams;
     }
 
-    /**
-     * @return string|null
-     */
     public function getAlias(): ?string
     {
         return $this->alias;
     }
 
-    /**
-     * @param string|null $alias
-     */
     public function setAlias(?string $alias): void
     {
         $this->alias = $alias;
     }
 
-    /**
-     * @return string|null
-     */
     public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    /**
-     * @param string $title
-     */
     public function setTitle(string $title): void
     {
         $this->title = $title;
     }
 
-    /**
-     * @return UuidInterface
-     */
     public function getId(): UuidInterface
     {
         return $this->id;
@@ -191,17 +180,11 @@ class Team
         );
     }
 
-    /**
-     * @return Directory
-     */
     public function getLists(): Directory
     {
         return $this->lists;
     }
 
-    /**
-     * @return Directory
-     */
     public function getTrash(): Directory
     {
         return $this->trash;

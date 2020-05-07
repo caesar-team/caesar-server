@@ -23,16 +23,16 @@ use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface, BackupCodeInterface
 {
-    const FLOW_STATUS_FINISHED = 'finished';
-    const FLOW_STATUS_INCOMPLETE = 'incomplete';
-    const FLOW_STATUS_CHANGE_PASSWORD = 'password_change';
-    const DEFAULT_FLOW_STATUS = self::FLOW_STATUS_FINISHED;
-    const ROLE_USER = 'ROLE_USER';
-    const ROLE_ADMIN = 'ROLE_ADMIN';
-    const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
-    const ROLE_READ_ONLY_USER = 'ROLE_READ_ONLY_USER';
-    const ROLE_ANONYMOUS_USER = 'ROLE_ANONYMOUS_USER';
-    const AVAILABLE_ROLES = [
+    public const FLOW_STATUS_FINISHED = 'finished';
+    public const FLOW_STATUS_INCOMPLETE = 'incomplete';
+    public const FLOW_STATUS_CHANGE_PASSWORD = 'password_change';
+    public const DEFAULT_FLOW_STATUS = self::FLOW_STATUS_FINISHED;
+    public const ROLE_USER = 'ROLE_USER';
+    public const ROLE_ADMIN = 'ROLE_ADMIN';
+    public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
+    public const ROLE_READ_ONLY_USER = 'ROLE_READ_ONLY_USER';
+    public const ROLE_ANONYMOUS_USER = 'ROLE_ANONYMOUS_USER';
+    public const AVAILABLE_ROLES = [
         self::ROLE_USER => self::ROLE_USER,
         self::ROLE_READ_ONLY_USER => self::ROLE_READ_ONLY_USER,
         self::ROLE_ANONYMOUS_USER => self::ROLE_ANONYMOUS_USER,
@@ -180,7 +180,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * User constructor.
      *
-     * @param Srp|null $srp
      * @throws \Exception
      */
     public function __construct(Srp $srp = null)
@@ -201,9 +200,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         BackUpCodesManager::generate($this);
     }
 
-    /**
-     * @return UuidInterface
-     */
     public function getId(): UuidInterface
     {
         return $this->id;
@@ -217,25 +213,16 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->googleId;
     }
 
-    /**
-     * @param string $googleId
-     */
     public function setGoogleId(string $googleId)
     {
         $this->googleId = $googleId;
     }
 
-    /**
-     * @return Avatar|null
-     */
     public function getAvatar(): ?Avatar
     {
         return $this->avatar;
     }
 
-    /**
-     * @param Avatar|null $avatar
-     */
     public function setAvatar(?Avatar $avatar): void
     {
         $this->avatar = $avatar;
@@ -247,9 +234,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->domain;
     }
 
-    /**
-     * @param null|string $domain
-     */
     public function setDomain(?string $domain): void
     {
         $this->domain = $domain;
@@ -289,7 +273,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->getEmail();
     }
 
-    public function getTrustedVersion()
+    public function getTrustedVersion(): ?int
     {
         return $this->trustedVersion;
     }
@@ -337,7 +321,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->credentialsNonExpired;
     }
 
-    public function setCredentialNonExpired(bool $flag)
+    public function setCredentialNonExpired(bool $flag): void
     {
         $this->credentialsNonExpired = $flag;
     }
@@ -347,7 +331,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->fingerprints->removeElement($fingerprint);
     }
 
-    public function addFingerprint(Fingerprint $fingerprint)
+    public function addFingerprint(Fingerprint $fingerprint): void
     {
         if (false === $this->fingerprints->contains($fingerprint)) {
             $this->fingerprints->add($fingerprint);
@@ -359,17 +343,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->fingerprints;
     }
 
-    /**
-     * @return string
-     */
     public function getFlowStatus(): string
     {
         return $this->flowStatus;
     }
 
-    /**
-     * @param string $flowStatus
-     */
     public function setFlowStatus(string $flowStatus): void
     {
         $this->flowStatus = $flowStatus;
@@ -377,36 +355,28 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 
     /**
      * Check if it is a valid backup code.
-     *
-     * @param string $code
-     *
-     * @return bool
      */
     public function isBackupCode(string $code): bool
     {
         $encoder = BackUpCodesManager::initEncoder();
         $code = $encoder->encode($code);
+
         return in_array($code, $this->backupCodes);
     }
 
     /**
      * Invalidate a backup code.
-     *
-     * @param string $code
      */
     public function invalidateBackupCode(string $code): void
     {
         $encoder = BackUpCodesManager::initEncoder();
         $code = $encoder->encode($code);
         $key = array_search($code, $this->backupCodes);
-        if ($key !== false){
+        if (false !== $key) {
             unset($this->backupCodes[$key]);
         }
     }
 
-    /**
-     * @param array|null $backupCodes
-     */
     public function setBackupCodes(?array $backupCodes): void
     {
         $this->backupCodes = $backupCodes;
@@ -422,9 +392,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return (bool) $this->getBackupCodesCount();
     }
 
-    /**
-     * @return array
-     */
     public function getBackupCodes(): array
     {
         $encoder = BackUpCodesManager::initEncoder();
@@ -464,7 +431,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 
     public function isFullUser(): bool
     {
-        return !$this->hasRole(self::ROLE_ANONYMOUS_USER) && !$this->hasRole(self::ROLE_READ_ONLY_USER) ;
+        return !$this->hasRole(self::ROLE_ANONYMOUS_USER) && !$this->hasRole(self::ROLE_READ_ONLY_USER);
     }
 
     public function getOwnedItems(): Collection
@@ -487,30 +454,21 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 
     public function getTeamsIds(): array
     {
-        return array_map(function (UserTeam $userTeam){
+        return array_map(function (UserTeam $userTeam) {
             return $userTeam->getTeam()->getId()->toString();
         }, $this->userTeams->toArray());
     }
 
-    /**
-     * @return Directory
-     */
     public function getInbox(): Directory
     {
         return $this->inbox;
     }
 
-    /**
-     * @return Directory
-     */
     public function getLists(): Directory
     {
         return $this->lists;
     }
 
-    /**
-     * @return Directory
-     */
     public function getTrash(): Directory
     {
         return $this->trash;

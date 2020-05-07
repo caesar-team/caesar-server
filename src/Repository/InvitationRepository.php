@@ -10,8 +10,6 @@ use Doctrine\ORM\EntityRepository;
 class InvitationRepository extends EntityRepository
 {
     /**
-     * @param string $hash
-     * @return Invitation|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findOneFreshByHash(string $hash): ?Invitation
@@ -34,7 +32,8 @@ class InvitationRepository extends EntityRepository
     {
         $startdate = $invitation->getCreatedAt()->format('Y-m-d H:i:s');
         $expire = strtotime($startdate.$invitation->getShelfLife());
-        $now = strtotime("now");
+        $now = strtotime('now');
+
         return ($now >= $expire) ? false : true;
     }
 }

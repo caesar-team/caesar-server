@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\DependencyInjection\Compiler;
 
 use App\Context\ViewFactoryContext;
+use App\Utils\CommonProcessCompilerPassTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use App\Utils\CommonProcessCompilerPassTrait;
 
 final class ViewFactoryContextCompilerPass implements CompilerPassInterface
 {

@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use Gedmo\Timestampable\Traits\TimestampableEntity;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
- * Class UserGroup
+ * Class UserGroup.
+ *
  * @ORM\Table(name="user_group",
- *    uniqueConstraints={
- *        @ORM\UniqueConstraint(name="user_team_uqid",
- *            columns={"user_id", "group_id"})
- *    }
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(name="user_team_uqid",
+ *         columns={"user_id", "group_id"})
+ *     }
  * )
  * @ORM\Entity(repositoryClass="App\Repository\UserTeamRepository")
  * @ORM\HasLifecycleCallbacks
@@ -30,7 +30,7 @@ class UserTeam
     public const USER_ROLE_ADMIN = 'admin';
     public const USER_ROLE_GUEST = 'guest';
     public const USER_ROLE_PRETENDER = 'pretender';
-    public const ROLES =  [
+    public const ROLES = [
         self::USER_ROLE_MEMBER,
         self::USER_ROLE_ADMIN,
         self::USER_ROLE_GUEST,
@@ -62,15 +62,16 @@ class UserTeam
 
     /**
      * @var string
-     * @ORM\Column(type="string", nullable=false, length=50, options={"default"="member"})
+     * @ORM\Column(type="string", nullable=false, length=50, options={"default": "member"})
      */
     private $userRole = self::DEFAULT_USER_ROLE;
 
     /**
      * UserGroup constructor.
+     *
      * @param User $user
      * @param Team $team
-     * @param string $userRole
+     *
      * @throws \Exception
      */
     public function __construct(?User $user = null, ?Team $team = null, string $userRole = self::USER_ROLE_MEMBER)
@@ -81,57 +82,36 @@ class UserTeam
         $this->userRole = $userRole;
     }
 
-    /**
-     * @return Team|null
-     */
     public function getTeam(): ?Team
     {
         return $this->team;
     }
 
-    /**
-     * @param Team $team
-     */
     public function setTeam(Team $team): void
     {
         $this->team = $team;
     }
 
-    /**
-     * @return User|null
-     */
     public function getUser(): ?User
     {
         return $this->user;
     }
 
-    /**
-     * @param User $user
-     */
     public function setUser(User $user): void
     {
         $this->user = $user;
     }
 
-    /**
-     * @return string|null
-     */
     public function getUserRole(): ?string
     {
         return $this->userRole;
     }
 
-    /**
-     * @param string $userRole
-     */
     public function setUserRole(string $userRole): void
     {
         $this->userRole = $userRole;
     }
 
-    /**
-     * @return UuidInterface
-     */
     public function getId(): UuidInterface
     {
         return $this->id;

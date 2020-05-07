@@ -53,7 +53,7 @@ class SecretType extends AbstractType
                     Item::CAUSE_INVITE => Item::CAUSE_INVITE,
                     Item::CAUSE_SHARE => Item::CAUSE_SHARE,
                 ],
-                'empty_data' => Item::CAUSE_INVITE
+                'empty_data' => Item::CAUSE_INVITE,
             ])
             ->add('link', TextType::class)
         ;

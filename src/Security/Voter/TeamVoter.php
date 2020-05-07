@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Security\Voter;
 
-
 use App\Entity\Team;
 use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -14,6 +13,7 @@ use Symfony\Component\Security\Core\Security;
 class TeamVoter extends Voter
 {
     public const TEAM_CREATE = 'team_create';
+
     /**
      * @var User
      */
@@ -24,12 +24,11 @@ class TeamVoter extends Voter
         $this->user = $security->getUser();
     }
 
-
     /**
      * Determines if the attribute and subject are supported by this voter.
      *
      * @param string $attribute An attribute
-     * @param mixed $subject The subject to secure, e.g. an object the user wants to access or any other PHP type
+     * @param mixed  $subject   The subject to secure, e.g. an object the user wants to access or any other PHP type
      *
      * @return bool True if the attribute and subject are supported, false otherwise
      */
@@ -51,8 +50,7 @@ class TeamVoter extends Voter
      * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
      *
      * @param string $attribute
-     * @param Team $team
-     * @param TokenInterface $token
+     * @param Team   $team
      *
      * @return bool
      */

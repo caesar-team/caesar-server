@@ -6,9 +6,9 @@ namespace App\Event\EventSubscriber;
 
 use App\Entity\Item;
 use Doctrine\Common\EventSubscriber;
+use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
-use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 
 class ItemRevokeSubscriber implements EventSubscriber
 {
@@ -29,9 +29,6 @@ class ItemRevokeSubscriber implements EventSubscriber
         ];
     }
 
-    /**
-     * @param LifecycleEventArgs $args
-     */
     public function postRemove(LifecycleEventArgs $args)
     {
         $item = $args->getObject();
@@ -45,10 +42,7 @@ class ItemRevokeSubscriber implements EventSubscriber
         $this->removeAbandonedUser($item);
     }
 
-    /**
-     * @param Item $item
-     */
-    private function removeAbandonedUser(Item $item)
+    private function removeAbandonedUser(Item $item): void
     {
         $user = $item->getSignedOwner();
         if (!$user->isFullUser()) {

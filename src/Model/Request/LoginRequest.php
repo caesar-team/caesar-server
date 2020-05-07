@@ -26,9 +26,6 @@ class LoginRequest
         return $this->user;
     }
 
-    /**
-     * @param User $user
-     */
     public function setUser(User $user): void
     {
         $this->user = $user;
@@ -42,9 +39,6 @@ class LoginRequest
         return $this->matcher;
     }
 
-    /**
-     * @param string $matcher
-     */
     public function setMatcher(string $matcher): void
     {
         $this->matcher = $matcher;

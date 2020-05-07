@@ -41,8 +41,6 @@ final class ViewFactoryContext
     /**
      * Any model[] or entity[].
      *
-     * @param array $data
-     *
      * @return mixed
      */
     public function viewList(array $data)

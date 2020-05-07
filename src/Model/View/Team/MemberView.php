@@ -60,6 +60,7 @@ final class MemberView
 
     /**
      * @param array|UserTeam[] $usersTeams
+     *
      * @return array|MemberView[]
      */
     public static function createMany(array $usersTeams): array

@@ -30,5 +30,4 @@ class Message
         $this->code = $emailCode;
         $this->recipientId = $recipientId;
     }
-
 }

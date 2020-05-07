@@ -6,13 +6,11 @@ namespace App\Controller\Api\Team;
 
 use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
-use App\Entity\Team;
 use App\Entity\User;
-use App\Entity\UserTeam;
 use App\Model\View\Team\UserTeamView;
-use Symfony\Component\Routing\Annotation\Route;
-use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Swagger\Annotations as SWG;
+use Symfony\Component\Routing\Annotation\Route;
 
 final class UserController extends AbstractController
 {
@@ -32,10 +30,10 @@ final class UserController extends AbstractController
      *     description="Unauthorized"
      * )
      * @Route(path="/api/user/teams", methods={"GET"})
-     * @param ViewFactoryContext $viewFactoryContext
+     *
      * @return array|UserTeamView[]
      */
-    public function teams(ViewFactoryContext $viewFactoryContext)
+    public function teams(ViewFactoryContext $viewFactoryContext): array
     {
         /** @var User $user */
         $user = $this->getUser();

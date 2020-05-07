@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace App\Factory\View;
 
 use App\Entity\User;

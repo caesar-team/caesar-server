@@ -9,7 +9,8 @@ use App\Utils\ErrorMessageFormatter;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Throwable;
 
 class ErrorResponseListener
 {
@@ -17,6 +18,7 @@ class ErrorResponseListener
      * @var LoggerInterface
      */
     private $logger;
+
     /**
      * @var ErrorMessageFormatter
      */
@@ -28,23 +30,23 @@ class ErrorResponseListener
         $this->errorMessageFormatter = $errorMessageFormatter;
     }
 
-    public function onKernelException(GetResponseForExceptionEvent $event)
+    public function onKernelException(ExceptionEvent $event)
     {
-        $exception = $event->getException();
+        $exception = $event->getThrowable();
         if ('dev' === getenv('APP_ENV')) {
             $this->logError($exception);
         }
 
-        $event->setException($this->createException($exception));
+        $event->setThrowable($this->createException($exception));
         /** @var ApiException $newException */
-        $newException = $event->getException();
+        $newException = $event->getThrowable();
 
         $event->allowCustomResponseCode();
         $response = new JsonResponse($newException->getData(), $newException->getCode());
         $event->setResponse($response);
     }
 
-    private function logError(\Exception $exception)
+    private function logError(Throwable $exception)
     {
         $context = [
             'code' => $exception->getCode(),
@@ -54,7 +56,7 @@ class ErrorResponseListener
         $this->logger->error($exception->getMessage(), $context);
     }
 
-    private function createException(\Exception $exception): ApiException
+    private function createException(Throwable $exception): ApiException
     {
         if ($exception instanceof ApiException) {
             return $exception;

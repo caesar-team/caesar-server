@@ -23,7 +23,6 @@ class ShareView
      */
     public $items = [];
 
-
     public static function create(string $id, array $items): self
     {
         $view = new self();

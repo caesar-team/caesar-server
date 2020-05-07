@@ -12,14 +12,12 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 
 final class TeamRepository extends ServiceEntityRepository
 {
-
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Team::class);
     }
 
     /**
-     * @param User $user
      * @return array|Team[]
      */
     public function findByUser(User $user): array
@@ -33,8 +31,6 @@ final class TeamRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Directory $directory
-     * @return Team|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findOneByDirectory(Directory $directory): ?Team

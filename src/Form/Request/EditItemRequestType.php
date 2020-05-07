@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-
 namespace App\Form\Request;
-
 
 use App\Model\Request\EditItemRequest;
 use Symfony\Component\Form\AbstractType;
@@ -27,5 +25,4 @@ class EditItemRequestType extends AbstractType
             'data_class' => EditItemRequest::class,
         ]);
     }
-
 }

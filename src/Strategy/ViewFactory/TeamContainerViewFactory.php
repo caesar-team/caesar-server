@@ -24,8 +24,6 @@ final class TeamContainerViewFactory implements ViewFactoryInterface
 
     /**
      * @param mixed $data
-     *
-     * @return bool
      */
     public function canView($data): bool
     {
@@ -37,7 +35,7 @@ final class TeamContainerViewFactory implements ViewFactoryInterface
      *
      * @return TeamItemsView
      */
-    public function view($data)
+    public function view($data): TeamItemsView
     {
         $team = $data->getTeam();
         $view = new TeamItemsView();
@@ -54,7 +52,7 @@ final class TeamContainerViewFactory implements ViewFactoryInterface
      *
      * @return TeamItemsView[]
      */
-    public function viewList(array $containers)
+    public function viewList(array $containers): array
     {
         $list = [];
         foreach ($containers as $teamContainer) {

@@ -14,7 +14,7 @@ class ItemsCollectionRequest
     /**
      * @return string[]
      */
-    public function getItems()
+    public function getItems(): array
     {
         return $this->items;
     }

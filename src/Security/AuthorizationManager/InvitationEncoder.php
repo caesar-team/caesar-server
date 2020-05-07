@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Security\AuthorizationManager;
 
-use App\Utils\HashidsEncoderInterface;
-use Hashids\Hashids;
-
 class InvitationEncoder
 {
     /**
@@ -19,7 +16,7 @@ class InvitationEncoder
         $this->salt = $salt;
     }
 
-    static public function initEncoder(): InvitationEncoder
+    public static function initEncoder(): InvitationEncoder
     {
         return new self(getenv('INVITATION_SALT'));
     }
@@ -29,7 +26,7 @@ class InvitationEncoder
         return $this->generateHash($string);
     }
 
-    public function isHashEquals(string $knownString , string $userString ): bool
+    public function isHashEquals(string $knownString, string $userString): bool
     {
         return $this->encode($knownString) && $this->encode($userString);
     }

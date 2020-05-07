@@ -13,8 +13,10 @@ final class OriginalItemShareFactory extends AbstractShareFactory
 {
     /**
      * @param BatchItemCollectionRequest $itemCollectionRequest
-     * @return array|Item[]
+     *
      * @throws \Exception
+     *
+     * @return array|Item[]
      */
     public function share($itemCollectionRequest): array
     {
@@ -42,7 +44,6 @@ final class OriginalItemShareFactory extends AbstractShareFactory
 
     /**
      * @param mixed $data
-     * @return bool
      */
     public function canShare($data): bool
     {

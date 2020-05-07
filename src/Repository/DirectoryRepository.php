@@ -9,7 +9,6 @@ use Doctrine\ORM\EntityRepository;
 class DirectoryRepository extends EntityRepository
 {
     /**
-     * @return int
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getMaxPosition(): int

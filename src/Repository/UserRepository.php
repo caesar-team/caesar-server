@@ -25,8 +25,6 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Item $item
-     * @return User|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getByItem(Item $item): ?User
@@ -37,8 +35,6 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Directory $list
-     * @return User|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getByList(Directory $list): ?User
@@ -68,7 +64,7 @@ class UserRepository extends ServiceEntityRepository
         }
         $qb = $this->createQueryBuilder('user');
         $qb
-            ->join('user.userTeams','userTeams')
+            ->join('user.userTeams', 'userTeams')
             ->where($qb->expr()->neq('user', ':userId'))
             ->andWhere('userTeams.team IN(:teams)')
             ->andWhere($qb->expr()->isNotNull('user.publicKey'))
@@ -87,8 +83,6 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param string $token
-     * @return User|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findByToken(string $token): ?User
@@ -103,8 +97,6 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param string $email
-     * @return User|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findOneWithPublicKeyByEmail(string $email): ?User
@@ -120,8 +112,6 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param string $email
-     * @return User|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findOneByEmail(string $email): ?User
@@ -137,7 +127,6 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Team $team
      * @return array|User[]
      */
     public function findByTeam(Team $team): array
@@ -151,7 +140,6 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param array $ids
      * @return array|User[]
      */
     public function findByIds(array $ids): array
@@ -165,6 +153,7 @@ class UserRepository extends ServiceEntityRepository
 
     /**
      * @param string $role
+     *
      * @return array|User[]
      */
     public function findAdmins($role = User::ROLE_ADMIN): array
@@ -177,7 +166,6 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param string $partOfEmail
      * @return array|User[]
      */
     public function findByPartOfEmail(string $partOfEmail): array

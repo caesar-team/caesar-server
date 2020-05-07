@@ -6,9 +6,9 @@ namespace App\Controller\Api;
 
 use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
-use App\Entity\Team;
 use App\Entity\Security\Invitation;
 use App\Entity\Srp;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
 use App\Factory\View\SecurityBootstrapViewFactory;
@@ -32,9 +32,9 @@ use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
-use App\Services\TeamManager;
 use App\Services\InvitationManager;
 use App\Services\Messenger;
+use App\Services\TeamManager;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -68,8 +68,6 @@ final class UserController extends AbstractController
      *     methods={"GET"}
      * )
      * @Rest\View(serializerGroups={"public"})
-     *
-     * @param SelfUserInfoViewFactory $viewFactory
      *
      * @return SelfUserInfoView
      */
@@ -105,9 +103,6 @@ final class UserController extends AbstractController
      * )
      * @Rest\View(serializerGroups={"public"})
      *
-     * @param User                $user
-     * @param UserKeysViewFactory $viewFactory
-     *
      * @return UserKeysView
      */
     public function publicKey(User $user, UserKeysViewFactory $viewFactory)
@@ -136,9 +131,6 @@ final class UserController extends AbstractController
      *     name="api_users_list",
      *     methods={"GET"}
      * )
-     *
-     * @param Request             $request
-     * @param UserListViewFactory $factory
      *
      * @return UserView[]|array|FormInterface
      */
@@ -181,8 +173,6 @@ final class UserController extends AbstractController
      * )
      * @Rest\View(serializerGroups={"key_detail_read"})
      *
-     * @param UserKeysViewFactory $viewFactory
-     *
      * @return UserKeysView|null
      */
     public function keyList(UserKeysViewFactory $viewFactory)
@@ -216,14 +206,11 @@ final class UserController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param EntityManagerInterface $entityManager
-     *
-     * @param TeamManager $teamManager
-     * @return FormInterface|null
      * @throws \Exception
+     *
+     * @return FormInterface|null
      */
-    public function saveKeys(Request $request, EntityManagerInterface $entityManager,  TeamManager $teamManager)
+    public function saveKeys(Request $request, EntityManagerInterface $entityManager, TeamManager $teamManager)
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -238,7 +225,6 @@ final class UserController extends AbstractController
         $oldUser = $entityManager->getUnitOfWork()->getOriginalEntityData($user);
         if (!$user->isFullUser()) {
             $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
-
         } else {
             $this->setFlowStatusByPrivateKeys($oldUser, $user);
         }
@@ -285,21 +271,16 @@ final class UserController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param UserRepository $userRepository
-     * @param EntityManagerInterface $entityManager
-     *
-     * @param TeamManager $teamManager
-     * @return array|FormInterface
      * @throws \Exception
+     *
+     * @return array|FormInterface
      */
     public function createUser(
         Request $request,
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         TeamManager $teamManager
-    )
-    {
+    ) {
         /** @var User $user */
         $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
         if (!$user) {
@@ -351,9 +332,6 @@ final class UserController extends AbstractController
      *     name="api_user_permissions",
      *     methods={"GET"}
      * )
-     *
-     * @param UserSecurityInfoViewFactory $infoViewFactory
-     * @return JsonResponse
      */
     public function permissions(UserSecurityInfoViewFactory $infoViewFactory): JsonResponse
     {
@@ -383,8 +361,6 @@ final class UserController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param SecurityBootstrapViewFactory $bootstrapViewFactory
-     * @return JsonResponse
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
      */
@@ -423,11 +399,9 @@ final class UserController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param Messenger $messenger
-     * @param LoggerInterface $logger
-     * @return FormInterface
      * @throws \Exception
+     *
+     * @return FormInterface
      */
     public function sendInvitation(Request $request, Messenger $messenger, LoggerInterface $logger)
     {
@@ -439,7 +413,7 @@ final class UserController extends AbstractController
             return $form;
         }
 
-        $message = new Message($sendRequest->getUser()->getId()->toString(),$sendRequest->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
+        $message = new Message($sendRequest->getUser()->getId()->toString(), $sendRequest->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
             'url' => $sendRequest->getUrl(),
         ]);
         $messenger->send($sendRequest->getUser(), $message);
@@ -473,10 +447,9 @@ final class UserController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param Messenger $messenger
-     * @return null|FormInterface
      * @throws \Exception
+     *
+     * @return FormInterface|null
      */
     public function sendInvitations(Request $request, Messenger $messenger)
     {
@@ -516,10 +489,9 @@ final class UserController extends AbstractController
      * )
      * @Rest\View(serializerGroups={"public"})
      *
-     * @param Request $request
-     * @param UserKeysViewFactory $viewFactory
-     * @return array|FormInterface
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return array|FormInterface
      */
     public function batchPublicKeyAction(Request $request, UserKeysViewFactory $viewFactory, UserRepository $userRepository)
     {
@@ -545,23 +517,23 @@ final class UserController extends AbstractController
      *     path="/api/user/batch",
      *     methods={"POST"}
      * )
-     * @param Request $request
-     * @param EntityManagerInterface $entityManager
-     * @return array|FormInterface
+     *
      * @throws \Exception
+     *
+     * @return array|FormInterface
      */
     public function batchCreateUser(
         Request $request,
         EntityManagerInterface $entityManager,
         TeamManager $groupManager
-    )
-    {
+    ) {
         $requestUsers = $request->request->get('users');
         $users = [];
         foreach ($requestUsers as $requestUser) {
             $user = new User(new Srp());
             $form = $this->createForm(CreateInvitedUserType::class, $user);
             $form->submit($requestUser);
+
             if (!$form->isValid()) {
                 return $form;
             }
@@ -580,7 +552,7 @@ final class UserController extends AbstractController
 
         $entityManager->flush();
 
-        return ["users" => $users];
+        return ['users' => $users];
     }
 
     /**
@@ -609,9 +581,7 @@ final class UserController extends AbstractController
      *     path="/api/users",
      *     methods={"GET"}
      * )
-     * @param Request $request
-     * @param UserRepository $userRepository
-     * @param ViewFactoryContext $viewFactoryContext
+     *
      * @return UserView[]
      */
     public function users(Request $request, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext): array
@@ -641,11 +611,10 @@ final class UserController extends AbstractController
      *     methods={"GET"}
      * )
      * @Rest\View(serializerGroups={"search_by_email"})
-     * @param string $email
-     * @param UserRepository $userRepository
-     * @param ViewFactoryContext $viewFactoryContext
-     * @return UserView|null
+     *
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return UserView|null
      */
     public function searchOneByEmail(string $email, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext)
     {
@@ -673,9 +642,6 @@ final class UserController extends AbstractController
      * )
      * @Rest\View(serializerGroups={"search_by_email"})
      *
-     * @param string $partOfEmail
-     * @param UserRepository $userRepository
-     * @param ViewFactoryContext $viewFactoryContext
      * @return UserView[]|array
      */
     public function autocompleteForEmail(string $partOfEmail, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext): array

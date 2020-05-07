@@ -23,8 +23,7 @@ final class EditUserTeamType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => EditUserTeamRequest::class
+            'data_class' => EditUserTeamRequest::class,
         ]);
     }
-
 }

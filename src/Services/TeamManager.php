@@ -8,6 +8,7 @@ use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 
 class TeamManager
 {
@@ -22,9 +23,6 @@ class TeamManager
     }
 
     /**
-     * @param User $user
-     * @param string $role
-     * @param Team|null $team
      * @throws \Exception
      */
     public function addTeamToUser(User $user, string $role = UserTeam::DEFAULT_USER_ROLE, Team $team = null)
@@ -37,10 +35,11 @@ class TeamManager
 
     private function findDefaultTeam(): Team
     {
+        /** @var Team $team */
         $team = $this->manager->getRepository(Team::class)->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
 
         if (is_null($team)) {
-            throw new \LogicException('At least one team must exists');
+            throw new LogicException('At least one team must exists');
         }
 
         return $team;

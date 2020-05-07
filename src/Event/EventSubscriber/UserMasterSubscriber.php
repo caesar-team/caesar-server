@@ -8,7 +8,7 @@ use App\Entity\User;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Security;
@@ -30,7 +30,7 @@ class UserMasterSubscriber implements EventSubscriberInterface
         'api_srp_update_password',
         'api_user_get_info',
         'easyadmin',
-        'app.swagger_ui'
+        'app.swagger_ui',
     ];
 
     /**
@@ -58,7 +58,7 @@ class UserMasterSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function onKernelResponse(FilterResponseEvent $event)
+    public function onKernelResponse(ResponseEvent $event)
     {
         $request = $event->getRequest();
 

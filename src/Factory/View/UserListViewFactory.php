@@ -11,8 +11,6 @@ use App\Model\View\User\UserView;
 class UserListViewFactory
 {
     /**
-     * @param PaginatedList $list
-     *
      * @return UserView[]
      */
     public function create(PaginatedList $list): array

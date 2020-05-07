@@ -17,13 +17,11 @@ class FileListener
 
     public function __construct(string $projectDir)
     {
-        $this->projectDir = \sprintf('%s/%s/', $projectDir, self::PUBLIC_FOLDER);
+        $this->projectDir = sprintf('%s/%s/', $projectDir, self::PUBLIC_FOLDER);
     }
 
     /**
      * @PostPersist
-     *
-     * @param AbstractFile $file
      */
     public function postPersistHandler(AbstractFile $file)
     {
@@ -32,8 +30,6 @@ class FileListener
 
     /**
      * @PreRemove
-     *
-     * @param AbstractFile $file
      */
     public function preRemoveHandler(AbstractFile $file)
     {

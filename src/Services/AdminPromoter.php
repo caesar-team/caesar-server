@@ -11,7 +11,6 @@ use App\Repository\UserRepository;
 
 final class AdminPromoter
 {
-
     /**
      * @var TeamManager
      */
@@ -28,8 +27,6 @@ final class AdminPromoter
     }
 
     /**
-     * @param Team $team
-     * @param User|null $excludedUser
      * @throws \Exception
      */
     public function addTeamToAdmins(Team $team, ?User $excludedUser = null): void

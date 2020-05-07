@@ -22,16 +22,14 @@ final class ItemMoveResolver
 
     public function __construct(TeamRepository $teamRepository, ItemRepository $itemRepository)
     {
-
         $this->teamRepository = $teamRepository;
         $this->itemRepository = $itemRepository;
     }
 
     /**
-     * @param Item $item
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    private function preMove(Item $item)
+    private function preMove(Item $item): void
     {
         $team = $this->teamRepository->findOneByDirectory($item->getParentList());
         if (is_null($team)) {
@@ -42,11 +40,9 @@ final class ItemMoveResolver
     }
 
     /**
-     * @param Item $item
-     * @param Directory $toDirectory
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function move(Item $item, Directory $toDirectory)
+    public function move(Item $item, Directory $toDirectory): void
     {
         $this->preMove($item);
         $item->setPreviousList($item->getParentList());
@@ -55,7 +51,7 @@ final class ItemMoveResolver
         $item->setTeam($team);
     }
 
-    private function removeChildren(Item $item)
+    private function removeChildren(Item $item): void
     {
         $items = $this->itemRepository->findByParentDirectoryAndParent($item);
 

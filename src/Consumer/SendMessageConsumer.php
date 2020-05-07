@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Consumer;
 
-use App\Entity\MessageHistory;
 use App\Mailer\Sender\MailSender;
 use App\Model\DTO\Message;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
 use Sylius\Component\Mailer\Sender\SenderInterface;
+use Throwable;
 
 class SendMessageConsumer implements ConsumerInterface
 {
@@ -18,6 +19,7 @@ class SendMessageConsumer implements ConsumerInterface
      * @var SenderInterface|MailSender
      */
     private $sender;
+
     /**
      * @var EntityManagerInterface
      */
@@ -29,7 +31,7 @@ class SendMessageConsumer implements ConsumerInterface
         $this->entityManager = $entityManager;
     }
 
-    public function execute(AMQPMessage $msg)
+    public function execute(AMQPMessage $msg): void
     {
         $message = unserialize($msg->getBody());
         if (!$message instanceof Message) {
@@ -42,10 +44,10 @@ class SendMessageConsumer implements ConsumerInterface
 
         try {
             $this->sender->send($code, [$email], $options);
-        } catch (\Exception $exception) {
-            print($exception->getMessage());
-        } catch (\Throwable $error) {
-            print($error->getMessage());
+        } catch (Exception $exception) {
+            echo $exception->getMessage();
+        } catch (Throwable $error) {
+            echo $error->getMessage();
         }
     }
 }
