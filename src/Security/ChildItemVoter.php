@@ -7,6 +7,7 @@ namespace App\Security;
 use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Entity\User;
+use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -34,8 +35,7 @@ class ChildItemVoter extends Voter
 
     /**
      * @param string $attribute
-     * @param Item $subject
-     * @param TokenInterface $token
+     * @param Item   $subject
      *
      * @return bool
      */
@@ -71,6 +71,6 @@ class ChildItemVoter extends Voter
             return false;
         }
 
-        throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');
+        throw new LogicException('This code should not be reached! You must update method UserVoter::supports()');
     }
 }

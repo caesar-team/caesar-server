@@ -6,12 +6,11 @@ namespace App\Event\EventSubscriber;
 
 use App\Entity\User;
 use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\Events;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
+use Doctrine\ORM\Events;
 
 final class RemoveDirectoriesDeletedUserSubscriber implements EventSubscriber
 {
-
     /**
      * Returns an array of events this subscriber wants to listen to.
      *
@@ -28,8 +27,7 @@ final class RemoveDirectoriesDeletedUserSubscriber implements EventSubscriber
     {
         $user = $args->getObject();
 
-        if (!$user instanceof User)
-        {
+        if (!$user instanceof User) {
             return;
         }
 

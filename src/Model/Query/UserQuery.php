@@ -31,9 +31,6 @@ class UserQuery extends AbstractQuery
         $this->userTeams = $user->getUserTeams();
     }
 
-    /**
-     * @return User
-     */
     public function getUser(): User
     {
         return $this->user;

@@ -9,10 +9,8 @@ use App\Model\View\Team\UserTeamView;
 
 final class UserTeamViewFactory implements ViewFactoryInterface
 {
-
     /**
      * @param mixed $data
-     *
      * @return bool
      */
     public function canView($data): bool
@@ -25,7 +23,7 @@ final class UserTeamViewFactory implements ViewFactoryInterface
      *
      * @return UserTeamView
      */
-    public function view($data)
+    public function view($data): UserTeamView
     {
         $view = new UserTeamView();
         $view->id = $data->getTeam()->getId()->toString();
@@ -44,7 +42,7 @@ final class UserTeamViewFactory implements ViewFactoryInterface
      *
      * @return UserTeamView[]
      */
-    public function viewList(array $data)
+    public function viewList(array $data): array
     {
         $list = [];
 

@@ -24,10 +24,7 @@ class MigrationEventSubscriber implements EventSubscriber
         ];
     }
 
-    /**
-     * @param GenerateSchemaEventArgs $args
-     */
-    public function postGenerateSchema(GenerateSchemaEventArgs $args)
+    public function postGenerateSchema(GenerateSchemaEventArgs $args): void
     {
         $schema = $args->getSchema();
 

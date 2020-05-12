@@ -32,5 +32,4 @@ class BatchUpdateChildItemsRequestType extends AbstractType
             'data_class' => BatchChildItemsCollectionRequest::class,
         ]);
     }
-
 }

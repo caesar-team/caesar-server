@@ -6,12 +6,11 @@ namespace App\Event\EventSubscriber;
 
 use App\Entity\Team;
 use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\Events;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
+use Doctrine\ORM\Events;
 
 final class RemoveDirectoriesDeletedTeamSubscriber implements EventSubscriber
 {
-
     /**
      * Returns an array of events this subscriber wants to listen to.
      *
@@ -28,8 +27,7 @@ final class RemoveDirectoriesDeletedTeamSubscriber implements EventSubscriber
     {
         $team = $args->getObject();
 
-        if (!$team instanceof Team)
-        {
+        if (!$team instanceof Team) {
             return;
         }
 

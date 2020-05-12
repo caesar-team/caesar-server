@@ -67,9 +67,6 @@ class Srp
         $this->id = Uuid::uuid4();
     }
 
-    /**
-     * @return UuidInterface
-     */
     public function getId(): UuidInterface
     {
         return $this->id;

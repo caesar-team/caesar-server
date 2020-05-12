@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mailer\Sender;
 
-use Sylius\Component\Mailer\Sender\SenderInterface;
 use Sylius\Component\Mailer\Provider\DefaultSettingsProviderInterface;
 use Sylius\Component\Mailer\Provider\EmailProviderInterface;
 use Sylius\Component\Mailer\Renderer\Adapter\AdapterInterface as RendererAdapterInterface;
 use Sylius\Component\Mailer\Sender\Adapter\AdapterInterface as SenderAdapterInterface;
+use Sylius\Component\Mailer\Sender\SenderInterface;
 
 final class MailSender implements SenderInterface
 {

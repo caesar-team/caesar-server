@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Form\Request\TwoFactoryAuthEnableType;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use RuntimeException;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
@@ -67,9 +68,6 @@ final class TwoFactorAuthController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                $request
-     * @param EntityManagerInterface $manager
-     *
      * @return FormInterface|Response
      */
     public function activateTwoFactor(Request $request, EntityManagerInterface $manager)
@@ -126,8 +124,6 @@ final class TwoFactorAuthController extends AbstractController
      *     name="api_security_2fa_code",
      *     methods={"GET"}
      * )
-     *
-     * @param GoogleAuthenticatorInterface $twoFactor
      *
      * @return FormInterface|JsonResponse
      */
@@ -206,11 +202,11 @@ final class TwoFactorAuthController extends AbstractController
     public function check()
     {
         $message = $this->translator->trans('app.exception.authentication_required');
-        throw new \RuntimeException($message);
+        throw new RuntimeException($message);
     }
 
     /**
-     * Return Backup codes
+     * Return Backup codes.
      *
      * @SWG\Tag(name="Security")
      *

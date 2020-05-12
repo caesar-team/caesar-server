@@ -4,13 +4,13 @@ namespace App\Command;
 
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Services\SrpHandler;
 use App\Services\TeamManager;
+use FOS\UserBundle\Command\CreateUserCommand as BaseCreateUserCommand;
 use FOS\UserBundle\Model\UserManagerInterface;
+use FOS\UserBundle\Util\UserManipulator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use FOS\UserBundle\Util\UserManipulator;
-use FOS\UserBundle\Command\CreateUserCommand as BaseCreateUserCommand;
-use App\Services\SrpHandler;
 
 class CreateUserCommand extends BaseCreateUserCommand
 {
@@ -38,8 +38,7 @@ class CreateUserCommand extends BaseCreateUserCommand
         UserManagerInterface $userManager,
         TeamManager $teamManager,
         SrpHandler $srpHandler
-    )
-    {
+    ) {
         parent::__construct($userManipulator);
 
         $this->userManipulator = $userManipulator;

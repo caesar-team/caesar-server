@@ -67,14 +67,15 @@ class FOSUBUserProvider extends BaseUserProvider
     }
 
     /**
-     * @param UserResponseInterface $response
-     * @return User|\FOS\UserBundle\Model\UserInterface|null|\Symfony\Component\Security\Core\User\UserInterface
      * @throws \Exception
      * @throws \TypeError
+     *
+     * @return User|\FOS\UserBundle\Model\UserInterface|\Symfony\Component\Security\Core\User\UserInterface|null
      */
     public function loadUserByOAuthUserResponse(UserResponseInterface $response)
     {
         try {
+            /** @var User $user */
             $user = parent::loadUserByOAuthUserResponse($response);
         } catch (AccountNotLinkedException $e) {
             $user = $this->userManager->findUserByEmail($response->getEmail());
@@ -109,11 +110,9 @@ class FOSUBUserProvider extends BaseUserProvider
     }
 
     /**
-     * @param UserResponseInterface $response
-     * @param User|null $user
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    private function denyAccessUnlessGranted(UserResponseInterface $response, User $user = null)
+    private function denyAccessUnlessGranted(UserResponseInterface $response, User $user = null): void
     {
         if (!$user instanceof User) {
             return;
@@ -121,26 +120,19 @@ class FOSUBUserProvider extends BaseUserProvider
 
         $email = $response->getEmail();
         if ($this->authorizationManager->hasInvitation($user)) {
-
             $errorMessage = $this->translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]);
             $error = [
                 'code' => AuthorizationManager::ERROR_UNFINISHED_FLOW_USER,
-                'description' => $errorMessage
+                'description' => $errorMessage,
             ];
 
-            throw new AccessDeniedHttpException(
-                json_encode($error),
-                null,
-                Response::HTTP_BAD_REQUEST
-            );
+            throw new AccessDeniedHttpException(json_encode($error), null, Response::HTTP_BAD_REQUEST);
         }
 
         $this->authorizationManager->checkEmailDomain($email);
 
         if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
-            throw new AuthenticationException(
-                $this->translator->trans('authentication.user_restriction', ['%email%' => $email])
-            );
+            throw new AuthenticationException($this->translator->trans('authentication.user_restriction', ['%email%' => $email]));
         }
     }
 }

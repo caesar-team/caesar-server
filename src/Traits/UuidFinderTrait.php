@@ -12,9 +12,7 @@ use Ramsey\Uuid\Uuid;
 trait UuidFinderTrait
 {
     /**
-     * @param string $id
-     *
-     * @return null|object
+     * @return object|null
      */
     public function findByUuid(string $id)
     {

@@ -12,6 +12,7 @@ class SharedItemView
      * @var string
      */
     public $originalItemId;
+
     /**
      * @var ItemView[]
      */

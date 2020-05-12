@@ -28,8 +28,6 @@ final class ListViewFactory implements ViewFactoryInterface
 
     /**
      * @param mixed $data
-     *
-     * @return bool
      */
     public function canView($data): bool
     {
@@ -39,8 +37,9 @@ final class ListViewFactory implements ViewFactoryInterface
     /**
      * @param Directory $data
      *
-     * @return mixed
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return mixed
      */
     public function view($data)
     {
@@ -48,7 +47,7 @@ final class ListViewFactory implements ViewFactoryInterface
         $view->id = $data->getId()->toString();
         $view->label = $data->getLabel();
         $view->type = $data->getType();
-        $view->sort  = $data->getSort();
+        $view->sort = $data->getSort();
         $view->children = $this->itemListViewFactory->create($data->getChildItems());
         $team = $this->teamRepository->findOneByDirectory($data);
         $view->teamId = $team ? $team->getId()->toString() : null;
@@ -59,8 +58,9 @@ final class ListViewFactory implements ViewFactoryInterface
     /**
      * @param Directory[] $data
      *
-     * @return mixed
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return mixed
      */
     public function viewList(array $data)
     {

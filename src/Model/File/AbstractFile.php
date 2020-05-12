@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Model\File;
 
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -34,25 +35,27 @@ abstract class AbstractFile
      */
     protected $file;
 
-    /**
-     * @return null|File
-     */
+    public function __construct()
+    {
+        $this->id = Uuid::uuid4();
+    }
+
+    abstract protected function getSubDir(): string;
+
     public function getFile(): ?File
     {
         return $this->file;
     }
 
     /**
-     * @param File $file
-     *
      * @throws \Exception
      *
      * @return $this
      */
-    public function setFile(File $file)
+    public function setFile(File $file): self
     {
         if (!$file->isReadable()) {
-            throw new \Exception('File read error');
+            throw new Exception('File read error');
         }
 
         $this->file = $file;
@@ -68,42 +71,26 @@ abstract class AbstractFile
         return $this;
     }
 
-    public function __construct()
-    {
-        $this->id = Uuid::uuid4();
-    }
-
-    /**
-     * @return string
-     */
     final public function getFilePath(): string
     {
         return sprintf('%s/%s', $this->getBasePath(), $this->getFileName());
     }
 
-    /**
-     * @return string|null
-     */
     public function getExtension(): ?string
     {
         return $this->extension;
     }
 
     /**
-     * @param string $extension
-     *
      * @return $this
      */
-    public function setExtension(string $extension)
+    public function setExtension(string $extension): self
     {
         $this->extension = $extension;
 
         return $this;
     }
 
-    /**
-     * @return UuidInterface
-     */
     public function getId(): UuidInterface
     {
         return $this->id;
@@ -111,10 +98,8 @@ abstract class AbstractFile
 
     /**
      * Puts file to filesystem.
-     *
-     * @param null|string $projectPath
      */
-    final public function saveFile(?string $projectPath = null)
+    final public function saveFile(?string $projectPath = null): void
     {
         $fs = new FileSystem();
         if (false === $fs->exists($projectPath.$this->getBasePath())) {
@@ -126,10 +111,8 @@ abstract class AbstractFile
 
     /**
      * Removes reference file.
-     *
-     * @param null|string $projectPath
      */
-    final public function removeFile(?string $projectPath = null)
+    final public function removeFile(?string $projectPath = null): void
     {
         $fs = new FileSystem();
         $fs->remove($projectPath.$this->getFilePath());
@@ -145,13 +128,6 @@ abstract class AbstractFile
         return sprintf('%s.%s', $this->getId(), $this->getExtension());
     }
 
-    abstract protected function getSubDir(): string;
-
-    /**
-     * @param File $file
-     *
-     * @return string
-     */
     protected function generateExtension(File $file): string
     {
         switch ($file->getMimeType()) {

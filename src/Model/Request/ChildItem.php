@@ -73,33 +73,21 @@ class ChildItem
         $this->access = $access;
     }
 
-    /**
-     * @return string
-     */
     public function getCause(): string
     {
         return $this->cause;
     }
 
-    /**
-     * @param string $cause
-     */
     public function setCause(string $cause): void
     {
         $this->cause = $cause;
     }
 
-    /**
-     * @return null|string
-     */
     public function getLink(): ?string
     {
         return $this->link;
     }
 
-    /**
-     * @param null|string $link
-     */
     public function setLink(?string $link): void
     {
         $this->link = $link;

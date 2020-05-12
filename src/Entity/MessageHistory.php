@@ -17,7 +17,7 @@ use Ramsey\Uuid\UuidInterface;
 class MessageHistory
 {
     use TimestampableEntity;
-    const DEFAULT_CATEGORY = 'email';
+    public const DEFAULT_CATEGORY = 'email';
 
     /**
      * @var UuidInterface
@@ -40,7 +40,7 @@ class MessageHistory
     private $recipientId;
     /**
      * @var string
-     * @ORM\Column(type="string", length=50, nullable=false, options={"default"="email"})
+     * @ORM\Column(type="string", length=50, nullable=false, options={"default": "email"})
      */
     private $category = self::DEFAULT_CATEGORY;
     /**
@@ -51,6 +51,7 @@ class MessageHistory
 
     /**
      * MessageHistory constructor.
+     *
      * @throws \Exception
      */
     public function __construct()
@@ -58,81 +59,51 @@ class MessageHistory
         $this->id = Uuid::uuid4();
     }
 
-    /**
-     * @return UuidInterface
-     */
     public function getId(): UuidInterface
     {
         return $this->id;
     }
 
-    /**
-     * @param UuidInterface $id
-     */
     public function setId(UuidInterface $id): void
     {
         $this->id = $id;
     }
 
-    /**
-     * @return string
-     */
     public function getCode(): string
     {
         return $this->code;
     }
 
-    /**
-     * @param string $code
-     */
     public function setCode(string $code): void
     {
         $this->code = $code;
     }
 
-    /**
-     * @return string
-     */
     public function getRecipientId(): string
     {
         return $this->recipientId;
     }
 
-    /**
-     * @param string $recipientId
-     */
     public function setRecipientId(string $recipientId): void
     {
         $this->recipientId = $recipientId;
     }
 
-    /**
-     * @return string
-     */
     public function getCategory(): string
     {
         return $this->category;
     }
 
-    /**
-     * @param string $category
-     */
     public function setCategory(string $category): void
     {
         $this->category = $category;
     }
 
-    /**
-     * @return null|string
-     */
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * @param null|string $description
-     */
     public function setDescription(?string $description): void
     {
         $this->description = $description;

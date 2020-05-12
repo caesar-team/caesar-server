@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Utils;
 
+use Exception;
 
 class CircularReferenceHandler
 {
@@ -11,7 +12,7 @@ class CircularReferenceHandler
     {
         try {
             return $object->getId();
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
         }
     }
 }

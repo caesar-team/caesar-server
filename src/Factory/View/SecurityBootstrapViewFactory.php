@@ -32,20 +32,17 @@ class SecurityBootstrapViewFactory
         AuthorizationManager $authorizationManager,
         TeamRepository $teamRepository,
         AuthorizationCheckerInterface $authorizationChecker
-    )
-    {
+    ) {
         $this->authorizationManager = $authorizationManager;
         $this->teamRepository = $teamRepository;
         $this->authorizationChecker = $authorizationChecker;
     }
 
     /**
-     * @param User $user
-     * @return SecurityBootstrapView
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws JWTDecodeFailureException
      */
-    public function create(User $user):SecurityBootstrapView
+    public function create(User $user): SecurityBootstrapView
     {
         $securityBootstrapView = new SecurityBootstrapView();
         $securityBootstrapView->twoFactorAuthState = $this->getTwoFactorAuthState($user);
@@ -56,11 +53,6 @@ class SecurityBootstrapViewFactory
         return $securityBootstrapView;
     }
 
-    /**
-     * @param User $user
-     * @return string
-     * @throws JWTDecodeFailureException
-     */
     private function getTwoFactorAuthState(User $user): string
     {
         if ($this->authorizationChecker->isGranted(TwoFactorAuthStateVoter::SKIP)) {
@@ -79,8 +71,6 @@ class SecurityBootstrapViewFactory
     }
 
     /**
-     * @param User $user
-     * @return string
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function getPasswordState(User $user): string
@@ -100,8 +90,6 @@ class SecurityBootstrapViewFactory
     }
 
     /**
-     * @param User $user
-     * @return string
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function getMasterPasswordState(User $user): string
@@ -112,7 +100,7 @@ class SecurityBootstrapViewFactory
                 $state = SecurityBootstrapView::STATE_CHECK;
                 break;
             case $user->isFullUser() && $this->authorizationManager->hasInvitation($user):
-                $state = SecurityBootstrapView::STATE_CREATE ;
+                $state = SecurityBootstrapView::STATE_CREATE;
                 break;
             default:
                 $state = is_null($user->getEncryptedPrivateKey()) ? SecurityBootstrapView::STATE_CREATE : SecurityBootstrapView::STATE_CHECK;
@@ -123,13 +111,10 @@ class SecurityBootstrapViewFactory
     }
 
     /**
-     * @param User $user
-     * @return string
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function getSharedItemsStepState(User $user): string
     {
-
         switch (true) {
             case $this->authorizationManager->hasInvitation($user) && SecurityBootstrapView::STATE_CREATE === $this->getMasterPasswordState($user):
                 $state = SecurityBootstrapView::STATE_CHECK;

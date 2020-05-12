@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\DataFixtures;
 
-
 use App\Entity\Team;
 use Doctrine\Common\DataFixtures\FixtureInterface;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 
 class GroupFixtures extends AbstractFixture implements FixtureInterface
 {
     /**
-     * @param ObjectManager $manager
      * @throws \Exception
      */
     protected function loadProd(ObjectManager $manager)

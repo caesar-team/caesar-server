@@ -6,5 +6,5 @@ use Hashids\Hashids;
 
 interface HashidsEncoderInterface
 {
-    static public function initEncoder(): Hashids;
+    public static function initEncoder(): Hashids;
 }

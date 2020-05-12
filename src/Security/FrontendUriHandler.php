@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FrontendUriHandler
 {
@@ -52,7 +51,7 @@ class FrontendUriHandler
         throw new BadRequestHttpException(sprintf('Frontend uri "%s" not in valid uri scope', $uri));
     }
 
-    public function persistUri(Response $response, string $uri)
+    public function persistUri(Response $response, string $uri): void
     {
         $this->validateUri($uri);
         $response->headers->setCookie(new Cookie(self::COOKIE_NAME, $uri, time() + self::COOKIE_LIFETIME));

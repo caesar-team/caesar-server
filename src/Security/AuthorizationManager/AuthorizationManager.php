@@ -9,12 +9,12 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
-use MongoDB\Driver\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AuthorizationManager
 {
-    const ERROR_UNFINISHED_FLOW_USER = 'ERROR_UNFINISHED_FLOW_USER';
+    public const ERROR_UNFINISHED_FLOW_USER = 'ERROR_UNFINISHED_FLOW_USER';
     /**
      * @var UserManagerInterface
      */
@@ -32,22 +32,19 @@ class AuthorizationManager
         UserManagerInterface $userManager,
         EntityManagerInterface $entityManager,
         TranslatorInterface $translator
-    )
-    {
+    ) {
         $this->userManager = $userManager;
         $this->entityManager = $entityManager;
         $this->translator = $translator;
     }
 
     /**
-     * @param string $email
-     * @return UserInterface|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findUserByInvitation(string $email): ?UserInterface
     {
         $user = $this->userManager->findUserByEmail($email);
-        if(!$this->hasInvitation($user)) {
+        if (!$this->hasInvitation($user)) {
             return null;
         }
 
@@ -55,8 +52,6 @@ class AuthorizationManager
     }
 
     /**
-     * @param UserInterface $user
-     * @return bool
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function hasInvitation(UserInterface $user): bool
@@ -64,7 +59,7 @@ class AuthorizationManager
         $hash = (InvitationEncoder::initEncoder())->encode($user->getEmail());
         $invitation = $this->entityManager->getRepository(Invitation::class)->findOneFreshByHash($hash);
 
-        if($invitation) {
+        if ($invitation) {
             return true;
         }
 

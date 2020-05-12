@@ -26,9 +26,6 @@ class AbstractController extends BaseController
         $this->teamRepository = $teamRepository;
     }
 
-    /**
-     * @return Team
-     */
     public function getDefaultTeam(): Team
     {
         return $this->teamRepository->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);

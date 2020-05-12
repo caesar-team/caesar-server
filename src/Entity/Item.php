@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Utils\ChildItemAwareInterface;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,18 +14,18 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- *  @ORM\Table
+ * @ORM\Table
  * @ORM\Entity(repositoryClass="App\Repository\ItemRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Item implements ChildItemAwareInterface
 {
-    const CAUSE_INVITE = 'invite';
-    const CAUSE_SHARE = 'share';
-    const STATUS_FINISHED = 'finished';
-    const STATUS_OFFERED = 'offered';
-    const STATUS_DEFAULT = self::STATUS_FINISHED;
-    const EXPIRATION_INTERVAL = '+ 1 day';
+    public const CAUSE_INVITE = 'invite';
+    public const CAUSE_SHARE = 'share';
+    public const STATUS_FINISHED = 'finished';
+    public const STATUS_OFFERED = 'offered';
+    public const STATUS_DEFAULT = self::STATUS_FINISHED;
+    public const EXPIRATION_INTERVAL = '+ 1 day';
     /**
      * @var UuidInterface
      *
@@ -130,13 +131,13 @@ class Item implements ChildItemAwareInterface
     protected $link;
     /**
      * @var string|null
-     * @ORM\Column(type="string", length=10, nullable=true, options={"default"="invite"})
+     * @ORM\Column(type="string", length=10, nullable=true, options={"default": "invite"})
      */
     protected $cause;
 
     /**
      * @var string
-     * @ORM\Column(type="string", nullable=false, options={"default"="finished"}, length=10)
+     * @ORM\Column(type="string", nullable=false, options={"default": "finished"}, length=10)
      */
     protected $status = self::STATUS_DEFAULT;
 
@@ -156,7 +157,7 @@ class Item implements ChildItemAwareInterface
 
     /**
      * Item constructor.
-     * @param User|null $user
+     *
      * @throws \Exception
      */
     public function __construct(?User $user = null)
@@ -169,33 +170,21 @@ class Item implements ChildItemAwareInterface
         $this->owner = $user;
     }
 
-    /**
-     * @return UuidInterface
-     */
     public function getId(): UuidInterface
     {
         return $this->id;
     }
 
-    /**
-     * @return Directory|null
-     */
     public function getParentList(): ?Directory
     {
         return $this->parentList;
     }
 
-    /**
-     * @param Directory $parentList
-     */
     public function setParentList(Directory $parentList)
     {
         $this->parentList = $parentList;
     }
 
-    /**
-     * @return string|null
-     */
     public function getSecret(): ?string
     {
         return $this->secret;
@@ -204,15 +193,12 @@ class Item implements ChildItemAwareInterface
     /**
      * @param string|null $secret
      */
-    public function setSecret(string $secret)
+    public function setSecret(string $secret): void
     {
         $this->secret = $secret;
     }
 
-    /**
-     * @return \DateTime
-     */
-    public function getLastUpdated(): \DateTime
+    public function getLastUpdated(): DateTime
     {
         return $this->lastUpdated;
     }
@@ -221,14 +207,11 @@ class Item implements ChildItemAwareInterface
      * @ORM\PreUpdate
      * @ORM\PrePersist
      */
-    public function refreshLastUpdated()
+    public function refreshLastUpdated(): void
     {
-        $this->lastUpdated = new \DateTime();
+        $this->lastUpdated = new DateTime();
     }
 
-    /**
-     * @return Item|null
-     */
     public function getOriginalItem(): ?Item
     {
         return $this->originalItem;
@@ -250,41 +233,26 @@ class Item implements ChildItemAwareInterface
         return $this->sharedItems;
     }
 
-    /**
-     * @param Collection $sharedItems
-     */
-    public function setSharedItems(Collection $sharedItems)
+    public function setSharedItems(Collection $sharedItems): void
     {
         $this->sharedItems = $sharedItems;
     }
 
-    /**
-     * @return bool
-     */
     public function isFavorite(): bool
     {
         return $this->favorite;
     }
 
-    /**
-     * @param bool $favorite
-     */
     public function setFavorite(bool $favorite): void
     {
         $this->favorite = $favorite;
     }
 
-    /**
-     * @return string
-     */
     public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * @param string $type
-     */
     public function setType(string $type): void
     {
         $this->type = $type;
@@ -338,49 +306,31 @@ class Item implements ChildItemAwareInterface
         $this->update = $update;
     }
 
-    /**
-     * @return int
-     */
     public function getSort(): int
     {
         return $this->sort;
     }
 
-    /**
-     * @param int $sort
-     */
     public function setSort(int $sort): void
     {
         $this->sort = $sort;
     }
 
-    /**
-     * @return null|string
-     */
     public function getLink(): ?string
     {
         return $this->link;
     }
 
-    /**
-     * @param null|string $link
-     */
     public function setLink(?string $link): void
     {
         $this->link = $link;
     }
 
-    /**
-     * @return null|string
-     */
     public function getCause(): ?string
     {
         return $this->cause;
     }
 
-    /**
-     * @param null|string $cause
-     */
     public function setCause(?string $cause): void
     {
         $this->cause = $cause;
@@ -402,17 +352,11 @@ class Item implements ChildItemAwareInterface
         $this->status = $status;
     }
 
-    /**
-     * @return Directory|null
-     */
     public function getPreviousList(): ?Directory
     {
         return $this->previousList;
     }
 
-    /**
-     * @param Directory|null $previousList
-     */
     public function setPreviousList(?Directory $previousList): void
     {
         $this->previousList = $previousList;

@@ -10,12 +10,6 @@ use App\Model\View\User\SelfUserInfoView;
 
 class SelfUserInfoViewFactory
 {
-
-    /**
-     * @param User $user
-     *
-     * @return SelfUserInfoView
-     */
     public function create(User $user): SelfUserInfoView
     {
         $view = new SelfUserInfoView();

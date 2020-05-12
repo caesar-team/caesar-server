@@ -5,14 +5,12 @@ namespace App\Controller\Admin;
 use App\Entity\User;
 use App\Mailer\FosUserMailer;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\EasyAdminController as BaseController;
-use EasyCorp\Bundle\EasyAdminBundle\Event\EasyAdminEvents;
 use FOS\UserBundle\Doctrine\UserManager;
 use FOS\UserBundle\Event\GetResponseNullableUserEvent;
 use FOS\UserBundle\Event\GetResponseUserEvent;
 use FOS\UserBundle\FOSUserEvents;
 use FOS\UserBundle\Util\TokenGeneratorInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class AdminController.
@@ -41,8 +39,7 @@ class UserController extends BaseController
         EventDispatcherInterface $eventDispatcher,
         TokenGeneratorInterface $tokenGenerator,
         FosUserMailer $fosUserMailer
-    )
-    {
+    ) {
         $this->userManager = $userManager;
         $this->eventDispatcher = $eventDispatcher;
         $this->tokenGenerator = $tokenGenerator;
@@ -71,10 +68,10 @@ class UserController extends BaseController
         $user->setGoogleAuthenticatorSecret(null);
         $this->userManager->updateUser($user);
 
-        return $this->redirectToRoute('easyadmin', array(
+        return $this->redirectToRoute('easyadmin', [
             'action' => 'list',
             'entity' => $this->request->query->get('entity'),
-        ));
+        ]);
     }
 
     /**
@@ -89,11 +86,11 @@ class UserController extends BaseController
         $this->em->flush();
 
         if (is_null($user->getSrp())) {
-            return $this->redirectToRoute('easyadmin', array(
+            return $this->redirectToRoute('easyadmin', [
                 'action' => 'list',
                 'errors' => ['resetPassword' => 'Invalid Srp'],
                 'entity' => $this->request->query->get('entity'),
-            ));
+            ]);
         }
 
         $event = new GetResponseNullableUserEvent($user, $this->request);
@@ -128,9 +125,9 @@ class UserController extends BaseController
             }
         }
 
-        return $this->redirectToRoute('easyadmin', array(
+        return $this->redirectToRoute('easyadmin', [
             'action' => 'list',
             'entity' => $this->request->query->get('entity'),
-        ));
+        ]);
     }
 }

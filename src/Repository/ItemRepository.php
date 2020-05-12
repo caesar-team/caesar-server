@@ -33,8 +33,6 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param User $user
-     *
      * @return Item[]|iterable
      */
     public function getFavoritesItems(User $user): iterable

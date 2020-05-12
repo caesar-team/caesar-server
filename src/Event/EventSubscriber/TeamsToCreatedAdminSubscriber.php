@@ -8,8 +8,8 @@ use App\Entity\User;
 use App\Entity\UserTeam;
 use App\Repository\TeamRepository;
 use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\Events;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
+use Doctrine\ORM\Events;
 
 final class TeamsToCreatedAdminSubscriber implements EventSubscriber
 {
@@ -36,7 +36,6 @@ final class TeamsToCreatedAdminSubscriber implements EventSubscriber
     }
 
     /**
-     * @param LifecycleEventArgs $args
      * @throws \Exception
      */
     public function prePersist(LifecycleEventArgs $args)

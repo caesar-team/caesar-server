@@ -16,7 +16,7 @@ final class AddMemberType extends AbstractType
     {
         $builder
             ->add('userRole', ChoiceType::class, [
-                'choices'  => UserTeam::ROLES,
+                'choices' => UserTeam::ROLES,
             ])
         ;
     }
@@ -24,8 +24,7 @@ final class AddMemberType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => UserTeam::class
+            'data_class' => UserTeam::class,
         ]);
     }
-
 }

@@ -17,9 +17,9 @@ use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
 use App\Security\Authentication\SrppAuthenticator;
 use App\Security\AuthorizationManager\AuthorizationManager;
-use App\Services\TeamManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
+use App\Services\TeamManager;
 use App\Utils\ErrorMessageFormatter;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -29,9 +29,9 @@ use FOS\UserBundle\Event\FormEvent;
 use FOS\UserBundle\Event\GetResponseUserEvent;
 use FOS\UserBundle\FOSUserEvents;
 use FOS\UserBundle\Model\UserManagerInterface;
-use HWI\Bundle\OAuthBundle\Security\Core\Authentication\Provider\OAuthProvider;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use RuntimeException;
 use Swagger\Annotations as SWG;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormInterface;
@@ -42,7 +42,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class SrpController extends AbstractController
@@ -86,16 +85,10 @@ final class SrpController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param UserManagerInterface $userManager
-     *
-     * @param TeamManager $teamManager
-     * @param TranslatorInterface $translator
-     * @param AuthorizationManager $authorizationManager
-     * @param ErrorMessageFormatter $errorMessageFormatter
-     * @return null
      * @throws ApiException
      * @throws NonUniqueResultException
+     *
+     * @return null
      */
     public function registerAction(
         Request $request,
@@ -104,8 +97,7 @@ final class SrpController extends AbstractController
         TranslatorInterface $translator,
         AuthorizationManager $authorizationManager,
         ErrorMessageFormatter $errorMessageFormatter
-    )
-    {
+    ) {
         $email = $request->request->get('email');
         /** @var User $user */
         $user = $userManager->findUserByEmail($email);
@@ -174,13 +166,9 @@ final class SrpController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param EntityManagerInterface $entityManager
-     * @param SrpHandler $srpHandler
-     * @param SrpPrepareViewFactory $viewFactory
+     * @throws Exception
      *
      * @return PreparedSrpView|FormInterface|JsonResponse
-     * @throws Exception
      */
     public function prepareLoginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler, SrpPrepareViewFactory $viewFactory)
     {
@@ -267,10 +255,6 @@ final class SrpController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                  $request
-     * @param SrpUserManager           $srpUserManager
-     * @param JWTTokenManagerInterface $jwtManager
-     *
      * @return array|FormInterface
      */
     public function loginAction(Request $request, SrpUserManager $srpUserManager, JWTTokenManagerInterface $jwtManager)
@@ -321,11 +305,9 @@ final class SrpController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @param Request $request
-     * @param UserManagerInterface $manager
+     * @throws Exception
      *
      * @return null
-     * @throws Exception
      */
     public function updatePassword(Request $request, UserManagerInterface $manager)
     {
@@ -371,11 +353,9 @@ final class SrpController extends AbstractController
      *     description="Access denied"
      * )
      *
-     * @param Request $request
      * @param $token
-     * @param UserManagerInterface $userManager
-     * @param EventDispatcherInterface $eventDispatcher
-     * @return null|FormInterface|RedirectResponse|Response
+     *
+     * @return FormInterface|RedirectResponse|Response|null
      */
     public function resetPassword(
         Request $request,
@@ -419,13 +399,11 @@ final class SrpController extends AbstractController
                 FOSUserEvents::RESETTING_RESET_COMPLETED,
                 new FilterUserResponseEvent($user, $request, $response)
             );
-
         } else {
             return $form;
         }
 
         return null;
-
     }
 
     /**
@@ -434,9 +412,6 @@ final class SrpController extends AbstractController
      *     name="srp_login2",
      *     methods={"POST"}
      * )
-     *
-     * @param Request                $request
-     * @param SrpHandler             $srpHandler
      *
      * @return null
      */
@@ -481,10 +456,9 @@ final class SrpController extends AbstractController
 
     /**
      * @Route(path="/srp_login_confirm", name="srp_login_confirm", methods={"POST"})
-     * @param Request $request
      */
     public function compareSessionKeysAndAuthorize(Request $request)
     {
-        throw new \RuntimeException('You should register an authenticator to pass this route');
+        throw new RuntimeException('You should register an authenticator to pass this route');
     }
 }

@@ -11,7 +11,6 @@ final class UserViewFactory implements ViewFactoryInterface
 {
     /**
      * @param mixed $data
-     *
      * @return bool
      */
     public function canView($data): bool

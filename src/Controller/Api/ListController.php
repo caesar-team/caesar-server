@@ -78,11 +78,9 @@ final class ListController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param EntityManagerInterface $manager
+     * @throws \Doctrine\ORM\NonUniqueResultException
      *
      * @return FormInterface|JsonResponse
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function createListAction(Request $request, EntityManagerInterface $manager)
     {
@@ -148,16 +146,11 @@ final class ListController extends AbstractController
      *     description="No such list"
      * )
      *
-     *
      * @Route(
      *     path="/api/list/{id}",
      *     name="api_edit_list",
      *     methods={"PATCH"}
      * )
-     *
-     * @param Directory              $list
-     * @param Request                $request
-     * @param EntityManagerInterface $manager
      *
      * @return SingleError|FormInterface|JsonResponse
      */
@@ -222,10 +215,6 @@ final class ListController extends AbstractController
      *     methods={"DELETE"}
      * )
      *
-     * @param Directory              $list
-     * @param ItemDisplacer          $itemDisplacer
-     * @param EntityManagerInterface $manager
-     *
      * @return null
      */
     public function deleteListAction(Directory $list, ItemDisplacer $itemDisplacer, EntityManagerInterface $manager)
@@ -246,7 +235,7 @@ final class ListController extends AbstractController
     }
 
     /**
-     * Sort List
+     * Sort List.
      *
      * @SWG\Tag(name="List", description="Sort list")
      *
@@ -276,16 +265,11 @@ final class ListController extends AbstractController
      *     description="No such list"
      * )
      *
-     *
      * @Route(
      *     path="/api/list/{id}/sort",
      *     name="api_sort_list",
      *     methods={"PATCH"}
      * )
-     *
-     * @param Directory              $list
-     * @param Request                $request
-     * @param EntityManagerInterface $manager
      *
      * @return SingleError|FormInterface|JsonResponse
      */

@@ -6,7 +6,6 @@ namespace App\Event\EventSubscriber;
 
 use App\Entity\User;
 use App\Security\Fingerprint\FingerprintManager;
-use App\Security\Fingerprint\FingerprintStasher;
 use App\Security\Voter\TwoFactorInProgressVoter;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events;
@@ -34,7 +33,7 @@ final class TwoFactorJWTSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function onJWTCreated(JWTCreatedEvent $event)
+    public function onJWTCreated(JWTCreatedEvent $event): void
     {
         $user = $event->getUser();
         if (!$user instanceof User) {
@@ -42,7 +41,6 @@ final class TwoFactorJWTSubscriber implements EventSubscriberInterface
         }
 
         if ($user->isGoogleAuthenticatorEnabled()) {
-
             if ($this->fingerprintManager->hasValidFingerPrint($user)) {
                 return;
             }

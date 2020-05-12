@@ -10,6 +10,7 @@ use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
+use App\Entity\User;
 use App\Factory\View\BatchListItemViewFactory;
 use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
@@ -45,6 +46,7 @@ use App\Services\ShareManager;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
+use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
@@ -53,7 +55,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use Symfony\Component\Serializer\SerializerInterface;
 
 final class ItemController extends AbstractController
@@ -80,10 +81,9 @@ final class ItemController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param ListTreeViewFactory $viewFactory
+     * @throws NonUniqueResultException
      *
      * @return ListView[]|array
-     * @throws NonUniqueResultException
      */
     public function fullListAction(ListTreeViewFactory $viewFactory)
     {
@@ -122,11 +122,9 @@ final class ItemController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param Request $request
-     * @param ItemListViewFactory $viewFactory
+     * @throws NonUniqueResultException
      *
      * @return ItemView[]|FormInterface
-     * @throws NonUniqueResultException
      */
     public function itemListAction(Request $request, ItemListViewFactory $viewFactory)
     {
@@ -146,7 +144,6 @@ final class ItemController extends AbstractController
         return $viewFactory->create($itemCollection);
     }
 
-
     /**
      * @SWG\Tag(name="Item")
      * @SWG\Response(
@@ -159,9 +156,6 @@ final class ItemController extends AbstractController
      *     methods={"DELETE"}
      * )
      *
-     * @param Request $request
-     * @param EntityManagerInterface $manager
-     * @param SerializerInterface $serializer
      * @return null
      */
     public function batchDelete(Request $request, EntityManagerInterface $manager, SerializerInterface $serializer)
@@ -207,9 +201,7 @@ final class ItemController extends AbstractController
      *     name="api_batch_delete_items_post",
      *     methods={"POST"}
      * )
-     * @param Request $request
-     * @param EntityManagerInterface $manager
-     * @param SerializerInterface $serializer
+     *
      * @return null
      */
     public function postBatchDelete(Request $request, EntityManagerInterface $manager, SerializerInterface $serializer)
@@ -261,11 +253,9 @@ final class ItemController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param Item $item
-     * @param ItemViewFactory $factory
+     * @throws NonUniqueResultException
      *
      * @return ItemView
-     * @throws NonUniqueResultException
      */
     public function itemShowAction(Item $item, ItemViewFactory $factory)
     {
@@ -314,20 +304,16 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param CreatedItemViewFactory $viewFactory
-     * @param ItemRepository $itemRepository
-     * @param TeamRepository $teamRepository
-     * @return CreatedItemView|FormInterface
      * @throws \Exception
+     *
+     * @return CreatedItemView|FormInterface
      */
     public function createItem(
         Request $request,
         CreatedItemViewFactory $viewFactory,
         ItemRepository $itemRepository,
         TeamRepository $teamRepository
-    )
-    {
+    ) {
         $item = new Item($this->getUser());
         $form = $this->createForm(CreateItemType::class, $item);
 
@@ -394,21 +380,17 @@ final class ItemController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @param Item $item
-     * @param Request $request
-     * @param ItemMoveResolver $itemMoveResolver
-     * @param ItemRepository $itemRepository
-     * @return FormInterface|JsonResponse
      * @throws NonUniqueResultException
      * @throws \Exception
+     *
+     * @return FormInterface|JsonResponse
      */
     public function moveItem(
         Item $item,
         Request $request,
         ItemMoveResolver $itemMoveResolver,
         ItemRepository $itemRepository
-    )
-    {
+    ) {
         $replacedItem = new Item();
 
         $form = $this->createForm(MoveItemType::class, $replacedItem);
@@ -485,12 +467,6 @@ final class ItemController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @param Item $item
-     * @param Request $request
-     * @param EntityManagerInterface $entityManager
-     *
-     * @param SerializerInterface $serializer
-     * @param ChildItemActualizer $itemHandler
      * @return array|FormInterface
      */
     public function editItem(
@@ -499,8 +475,7 @@ final class ItemController extends AbstractController
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         ChildItemActualizer $itemHandler
-    )
-    {
+    ) {
         //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
         /** @var EditItemRequest $itemRequest */
         $itemRequest = $serializer->deserialize($request->getContent(), EditItemRequest::class, 'json');
@@ -564,9 +539,6 @@ final class ItemController extends AbstractController
      *     methods={"DELETE"}
      * )
      *
-     * @param Item                   $item
-     * @param EntityManagerInterface $manager
-     *
      * @return null
      */
     public function deleteItem(Item $item, EntityManagerInterface $manager)
@@ -607,10 +579,9 @@ final class ItemController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param ItemListViewFactory $viewFactory
+     * @throws NonUniqueResultException
      *
      * @return ItemView[]|FormInterface
-     * @throws NonUniqueResultException
      */
     public function favorite(ItemListViewFactory $viewFactory)
     {
@@ -649,12 +620,9 @@ final class ItemController extends AbstractController
      *
      * @Rest\View(serializerGroups={"favorite_item"})
      *
-     * @param Item $item
-     * @param EntityManagerInterface $entityManager
-     * @param ItemViewFactory $factory
+     * @throws NonUniqueResultException
      *
      * @return ItemView
-     * @throws NonUniqueResultException
      */
     public function favoriteToggle(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
@@ -700,12 +668,10 @@ final class ItemController extends AbstractController
      *     name="api_item_sort",
      *     methods={"PATCH"}
      * )
-     * @param Item $item
-     * @param EntityManagerInterface $entityManager
-     * @param ItemViewFactory $factory
-     * @param Request $request
-     * @return ItemView|FormInterface
+     *
      * @throws NonUniqueResultException
+     *
+     * @return ItemView|FormInterface
      */
     public function sort(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory, Request $request)
     {
@@ -775,12 +741,8 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Item $item
-     * @param Request $request
      * @param ChildItemActualizer $childItemHandler
      *
-     * @param ItemViewFactory $viewFactory
-     * @param ShareFactoryContext $shareFactoryContext
      * @return ItemView|FormInterface
      */
     public function childItemToItem(
@@ -788,8 +750,7 @@ final class ItemController extends AbstractController
         Request $request,
         ItemViewFactory $viewFactory,
         ShareFactoryContext $shareFactoryContext
-    )
-    {
+    ) {
         //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 
         $itemCollectionRequest = new ItemCollectionRequest($item);
@@ -808,7 +769,7 @@ final class ItemController extends AbstractController
     }
 
     /**
-     * Items collection
+     * Items collection.
      *
      * @SWG\Tag(name="Item")
      *
@@ -822,12 +783,12 @@ final class ItemController extends AbstractController
      * )
      * @Rest\View(serializerGroups={"offered_item"})
      * @Route("/api/offered_item", methods={"GET"}, name="api_item_offered_list")
-     * @param TeamRepository $teamRepository
-     * @param ViewFactoryContext $viewFactoryContext
+     *
      * @return OfferedItemsView
      */
     public function getOfferedItemsList(TeamRepository $teamRepository, ViewFactoryContext $viewFactoryContext)
     {
+        /** @var User $user */
         $user = $this->getUser();
         $offeredItems = DirectoryHelper::extractOfferedItemsByUser($user);
 
@@ -857,10 +818,7 @@ final class ItemController extends AbstractController
      *
      * @Route("/api/accept_item", methods={"PATCH"}, name="api_item_accept")
      *
-     * @param Request $request
-     * @param SerializerInterface $serializer
-     * @param EntityManagerInterface $entityManager
-     * @return null|FormInterface
+     * @return FormInterface|null
      */
     public function acceptList(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManager)
     {
@@ -868,6 +826,7 @@ final class ItemController extends AbstractController
         $itemsCollection = $serializer->deserialize(json_encode($request->request->all()), ItemsCollectionRequest::class, 'json');
 
         foreach ($itemsCollection->getItems() as $item) {
+            // TODO check and fix $item['id']
             $item = $entityManager->getRepository(Item::class)->find($item['id']);
             if ($item instanceof Item) {
                 //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
@@ -895,8 +854,6 @@ final class ItemController extends AbstractController
      *     description="Items accepted",
      * )
      * @Route("/api/accept_teams_items", methods={"PATCH"})
-     * @param TeamRepository $teamRepository
-     * @param ItemRepository $itemRepository
      *
      * @return JsonResponse
      */
@@ -934,7 +891,7 @@ final class ItemController extends AbstractController
      *     description="Shared item not found or expired"
      * )
      * @Route("api/anonymous/share/{item}/check", methods={"GET"}, name="api_item_check_shared_item")
-     * @param Item $item
+     *
      * @return JsonResponse
      */
     public function checkSharedItem(Item $item)
@@ -973,12 +930,9 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Item $item
-     * @param EntityManagerInterface $entityManager
-     * @param ItemViewFactory $factory
+     * @throws NonUniqueResultException
      *
      * @return null
-     * @throws NonUniqueResultException
      */
     public function acceptItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
@@ -1000,8 +954,7 @@ final class ItemController extends AbstractController
     }
 
     /**
-     *
-     * Decline an item update
+     * Decline an item update.
      *
      * @SWG\Tag(name="Item")
      *
@@ -1029,11 +982,9 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Item $item
-     * @param EntityManagerInterface $entityManager
-     * @param ItemViewFactory $factory
-     * @return ItemView
      * @throws NonUniqueResultException
+     *
+     * @return ItemView
      */
     public function declineItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
     {
@@ -1069,20 +1020,16 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param ItemListViewFactory $viewFactory
-     * @param ItemRepository $itemRepository
-     * @param TeamRepository $teamRepository
-     * @return ItemView[]|array|FormInterface
      * @throws NonUniqueResultException
+     *
+     * @return ItemView[]|array|FormInterface
      */
     public function batchCreate(
         Request $request,
         ItemListViewFactory $viewFactory,
         ItemRepository $itemRepository,
         TeamRepository $teamRepository
-    )
-    {
+    ) {
         $itemsRequest = new ItemsCollectionRequest();
 
         $form = $this->createForm(CreateItemsType::class, $itemsRequest);
@@ -1117,13 +1064,10 @@ final class ItemController extends AbstractController
      *     name="api_batch_move_items",
      *     methods={"PATCH"}
      * )
-     * @param Request $request
-     * @param Directory $directory
-     * @param EntityManagerInterface $manager
-     * @param SerializerInterface $serializer
-     * @param ItemMoveResolver $itemMoveResolver
-     * @return null
+     *
      * @throws NonUniqueResultException
+     *
+     * @return null
      */
     public function batchMove(
         Request $request,
@@ -1131,8 +1075,7 @@ final class ItemController extends AbstractController
         EntityManagerInterface $manager,
         SerializerInterface $serializer,
         ItemMoveResolver $itemMoveResolver
-    )
-    {
+    ) {
         /** @var ItemsCollectionRequest $itemsCollection */
         $itemsCollection = $serializer->deserialize(json_encode($request->request->all()), ItemsCollectionRequest::class, 'json');
 
@@ -1168,18 +1111,15 @@ final class ItemController extends AbstractController
      * )
      * @Rest\View(serializerGroups={"child_item"})
      *
-     * @param Request $request
-     * @param ShareManager $shareManager
-     * @param BatchListItemViewFactory $listItemViewFactory
-     * @return ShareListView|FormInterface
      * @throws \Exception
+     *
+     * @return ShareListView|FormInterface
      */
     public function batchShare(
         Request $request,
         ShareManager $shareManager,
         BatchListItemViewFactory $listItemViewFactory
-    )
-    {
+    ) {
         $collectionRequest = new BatchShareRequest();
         $form = $this->createForm(BatchShareRequestType::class, $collectionRequest);
         $form->submit($request->request->all());

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Model\View\CredentialsList;
 
-use Swagger\Annotations as SWG;
 use App\Swagger\Annotations as AppSwagger;
+use Swagger\Annotations as SWG;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 class NodeView

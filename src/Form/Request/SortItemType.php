@@ -19,8 +19,8 @@ class SortItemType extends AbstractType
 
         $builder->add('sort', NumberType::class, [
             'constraints' => [
-                new NotBlank()
-            ]
+                new NotBlank(),
+            ],
         ]);
     }
 

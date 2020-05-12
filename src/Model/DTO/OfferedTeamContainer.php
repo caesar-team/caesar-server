@@ -25,6 +25,7 @@ class OfferedTeamContainer
 
     /**
      * @param array|Team[] $teams
+     *
      * @return array|self[]
      */
     public static function createMany(array $teams): array

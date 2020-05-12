@@ -79,7 +79,7 @@ class ChildItemView
     {
         $view = new self();
         $view->id = $item->getId()->toString();
-        $view->userId = "";
+        $view->userId = '';
         $view->lastUpdated = $item->getLastUpdated();
 
         return $view;

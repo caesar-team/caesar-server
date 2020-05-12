@@ -26,7 +26,6 @@ class ItemOwnerValidator extends ConstraintValidator
 
     /**
      * @param Collection $value
-     * @param Constraint $constraint
      */
     public function validate($value, Constraint $constraint)
     {

@@ -38,17 +38,18 @@ class SrppAuthenticator extends AbstractGuardAuthenticator
         $this->em = $em;
         $this->router = $router;
     }
-    public function start(Request $request, AuthenticationException $authException = null)
+
+    public function start(Request $request, AuthenticationException $authException = null): RedirectResponse
     {
         return new RedirectResponse($this->router->generate('_login'));
     }
 
-    public function supports(Request $request)
+    public function supports(Request $request): bool
     {
         return 'srp_login_confirm' === $request->attributes->get('_route') && $request->isMethod('POST');
     }
 
-    public function getCredentials(Request $request)
+    public function getCredentials(Request $request): array
     {
         $parsedRequest = json_decode($request->getContent(), true);
 
@@ -61,11 +62,12 @@ class SrppAuthenticator extends AbstractGuardAuthenticator
 
     /**
      * @param mixed $credentials
-     * @param UserProviderInterface $userProvider
-     * @return User|UserInterface|null
+     *
      * @throws NonUniqueResultException
+     *
+     * @return User|UserInterface|null
      */
-    public function getUser($credentials, UserProviderInterface $userProvider)
+    public function getUser($credentials, UserProviderInterface $userProvider): ?UserInterface
     {
         if (!$credentials[self::EMAIL_FIELD]) {
             return null;
@@ -74,7 +76,7 @@ class SrppAuthenticator extends AbstractGuardAuthenticator
         return $this->em->getRepository(User::class)->findOneByEmail($credentials[self::EMAIL_FIELD]);
     }
 
-    public function checkCredentials($credentials, UserInterface $user)
+    public function checkCredentials($credentials, UserInterface $user): bool
     {
         return $credentials[self::SERVER_SESSION_KEY_FIELD] === $credentials[self::CLIENT_SESSION_KEY_FIELD];
     }
@@ -84,14 +86,14 @@ class SrppAuthenticator extends AbstractGuardAuthenticator
         throw new AccessDeniedException('Authentication Failure');
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey): JsonResponse
     {
         return new JsonResponse([
-            'redirect' => $this->router->generate('easyadmin',[], UrlGeneratorInterface::ABSOLUTE_URL),
+            'redirect' => $this->router->generate('easyadmin', [], UrlGeneratorInterface::ABSOLUTE_URL),
         ]);
     }
 
-    public function supportsRememberMe()
+    public function supportsRememberMe(): bool
     {
         return false;
     }

@@ -3,11 +3,13 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use DateTime;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Throwable;
 
 final class ServiceController extends AbstractController
 {
@@ -50,7 +52,7 @@ final class ServiceController extends AbstractController
     {
         return [
             'database' => $this->checkDB(),
-            'date' => new \DateTime(),
+            'date' => new DateTime(),
         ];
     }
 
@@ -97,8 +99,6 @@ final class ServiceController extends AbstractController
     /**
      * @Route("/query2json", name="query2json")
      *
-     * @param Request $request
-     *
      * @return JsonResponse
      */
     public function query2Json(Request $request)
@@ -112,7 +112,7 @@ final class ServiceController extends AbstractController
             $this->getDoctrine()->getRepository(User::class)->findOneBy([]);
 
             return true;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             return false;
         }
     }

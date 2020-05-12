@@ -14,7 +14,6 @@ use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Valid;
 
 class BatchChildItemsRequestType extends AbstractType
 {
@@ -48,7 +47,7 @@ class BatchChildItemsRequestType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => BatchItemCollectionRequest::class,
-            'er'
+            'er',
         ]);
     }
 }
