@@ -109,8 +109,7 @@ globals:
 
 - &stepRunTests
   name: run tests
-  image: 
-    from_secret: repository
+  image: caesarteam/caesar-server
   pull: never
   environment:
     APP_ENV: 'test'
