@@ -111,7 +111,8 @@ globals:
   name: run tests
   image:
     from_secret: repository
-  pull: never
+  settings:
+    pull: never
   environment:
     APP_ENV: 'test'
   commands:
