@@ -123,6 +123,9 @@ globals:
 - &stepCheckBuild
   name: check build
   image: plugins/docker
+  volumes:
+  - name: dockersocket
+    path: /var/run/docker.sock
   settings:
     <<: *confNoSaveBuild
 
@@ -220,6 +223,11 @@ steps:
   when:
     status: [ success, failure ]
     branch: [ develop, master ]
+
+volumes:
+- name: dockersocket
+  host:
+    path: /var/run/docker.sock
 
 trigger:
   branch:
