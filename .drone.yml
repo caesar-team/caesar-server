@@ -116,6 +116,8 @@ globals:
     APP_ENV: 'test'
   commands:
     - pwd
+    - ls -la
+    - ls bin
     - bin/console doctrine:migrations:migrate --env=test
     - bin/codecept build
     - bin/codecept run api
