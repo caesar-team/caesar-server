@@ -94,7 +94,7 @@ globals:
   dockerfile: Dockerfile
   repo: plugins/docker
   tag: fourxxi
-  dry_run: true
+  #dry_run: true
   daemon_off: false
 
 - &confSaveBuild
@@ -109,10 +109,9 @@ globals:
 
 - &stepRunTests
   name: run tests
-  image: release
+  image:
+    from_secret: repository
   pull: never
-  settings:
-    <<: *confNoSaveBuild
   environment:
     APP_ENV: 'test'
   commands:
@@ -197,10 +196,6 @@ globals:
       {{/success}}
 
 steps:
-- <<: *stepRunTests
-  when:
-    branch: [ feature/* ]
-
 - <<: *stepCheckBuild
   when:
     branch: [ feature/* ]
@@ -208,6 +203,10 @@ steps:
 - <<: *stepMainBuild
   when:
     branch: [ develop, master ]
+
+- <<: *stepRunTests
+  when:
+    branch: [ feature/* ]
 
 - <<: *stepDevelopDeploy
   when:
