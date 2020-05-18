@@ -47,8 +47,15 @@ Just go to [http://localhost](http://localhost)
 
 #### Run tests:
 Reveal `TEST_DATABASE_URL` from .env
+
+Run migrations
 ```bash
-APP_ENV=test vendor/bin/phpunit -d memory_limit=-1 #Phpunit
+docker-compose exec php bin/console doctrine:migrations:migrate --env=test
+```
+
+```bash
+docker-compose exec php bin/codecept build
+docker-compose exec php bin/codecept run api
 ```
 
 #### Access to the admin panel:

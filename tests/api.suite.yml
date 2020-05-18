@@ -1,0 +1,18 @@
+actor: ApiTester
+modules:
+    enabled:
+#        - Symfony:
+#            app_path: 'src'
+#            environment: 'test'
+#        - Doctrine2:
+#            depends: Symfony
+#            cleanup: true # All doctrine queries will be wrapped in a transaction, which will be rolled back at the end of each test
+        - REST:
+            url: /api
+            depends: Symfony
+        - \App\Tests\Helper\Api
+#        - Db:
+#          dsn: 'pgsql:host=%TEST_POSTGRES_HOST%;dbname=%TEST_POSTGRES_DB%'
+#          user: '%TEST_POSTGRES_USER%'
+#          password: '%TEST_POSTGRES_PASSWORD%'
+#          cleanup: true

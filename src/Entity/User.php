@@ -316,6 +316,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->srp;
     }
 
+    public function setSrp(Srp $srp): void
+    {
+        $this->srp = $srp;
+    }
+
     public function isCredentialsNonExpired(): bool
     {
         return $this->credentialsNonExpired;
