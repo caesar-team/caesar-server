@@ -82,6 +82,7 @@ name: 4xxi
 
 services:
   - database:
+    name: test database
     image: postgres:9
     environment:
       POSTGRES_USER: 'test'
@@ -111,13 +112,15 @@ globals:
   image: plugins/docker
   settings:
     <<: *confNoSaveBuild
+  environment:
+    APP_ENV: 'test'
   commands:
     - bin/console doctrine:migrations:migrate --env=test
     - bin/codecept build
     - bin/codecept run api
 
 - &stepCheckBuild
-  name: build test
+  name: check build
   image: plugins/docker
   settings:
     <<: *confNoSaveBuild
