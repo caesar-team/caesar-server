@@ -92,8 +92,7 @@ services:
 globals:
 - &confNoSaveBuild
   dockerfile: Dockerfile
-  repo: 
-    from_secret: repository
+  repo: check_build
   tag: fourxxi
   daemon_off: false
 
@@ -109,7 +108,7 @@ globals:
 
 - &stepRunTests
   name: run tests
-  image: caesarteam/caesar-server
+  image: check_build:fourxxi
   pull: never
   environment:
     APP_ENV: 'test'
