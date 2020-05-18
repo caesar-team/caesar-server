@@ -118,6 +118,7 @@ globals:
     - pwd
     - ls -la
     - ls -la bin
+    - ls -la /var/www/html/vendor
     - bin/console doctrine:migrations:migrate --env=test
     - bin/codecept build
     - bin/codecept run api
