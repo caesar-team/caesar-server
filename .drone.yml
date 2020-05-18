@@ -109,10 +109,8 @@ globals:
 
 - &stepRunTests
   name: run tests
-  image:
-    from_secret: repository
-  settings:
-    pull: never
+  image: plugins/docker
+  pull: never
   environment:
     APP_ENV: 'test'
   commands:
