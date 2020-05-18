@@ -79,6 +79,15 @@ get:
 kind: pipeline
 type: docker
 name: 4xxi
+
+services:
+  database:
+    image: postgres:9
+#    add env
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
 globals:
 - &confNoSaveBuild
   dockerfile: Dockerfile
@@ -96,6 +105,16 @@ globals:
     from_secret: username
   password:
     from_secret: password
+
+- &stepRunTests
+  name: run tests
+  image: plugins/docker
+  settings:
+    <<: *confNoSaveBuild
+  commands:
+    - bin/console doctrine:migrations:migrate --env=test
+    - bin/codecept build
+    - bin/codecept run api
 
 - &stepCheckBuild
   name: build test
@@ -173,6 +192,10 @@ globals:
       {{/success}}
 
 steps:
+- <<: *stepRunTests
+  when:
+    branch: [ feature/* ]
+
 - <<: *stepCheckBuild
   when:
     branch: [ feature/* ]
