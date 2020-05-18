@@ -92,7 +92,8 @@ services:
 globals:
 - &confNoSaveBuild
   dockerfile: Dockerfile
-  repo: plugins/docker
+  repo: 
+    from_secret: repository
   tag: fourxxi
   daemon_off: false
 
