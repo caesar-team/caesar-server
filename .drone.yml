@@ -94,7 +94,6 @@ globals:
   dockerfile: Dockerfile
   repo: plugins/docker
   tag: fourxxi
-  #dry_run: true
   daemon_off: false
 
 - &confSaveBuild
