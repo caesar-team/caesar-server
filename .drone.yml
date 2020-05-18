@@ -93,7 +93,8 @@ globals:
 - &confNoSaveBuild
   dockerfile: Dockerfile
   repo: check_build
-  push: never
+  dry_run: true
+  purge: false
   tag: fourxxi
   daemon_off: false
 
