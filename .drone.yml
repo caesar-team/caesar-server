@@ -112,6 +112,7 @@ globals:
   name: run tests
   image: check_build:fourxxi
   pull: never
+  context: /var/www/html
   environment:
     APP_ENV: 'test'
   commands:
