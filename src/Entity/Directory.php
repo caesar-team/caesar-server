@@ -208,4 +208,9 @@ class Directory
     {
         $this->sort = $sort;
     }
+
+    public function __toString()
+    {
+        return $this->id->toString();
+    }
 }
