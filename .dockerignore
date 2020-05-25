@@ -4,6 +4,7 @@
 .rancher-pipeline.yml
 ./*.md
 ./*.yml
+!./codeception.yml
 phpunit.xml.dist
 Dockerfile
 docker-compose.yml

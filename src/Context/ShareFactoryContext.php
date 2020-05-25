@@ -7,7 +7,7 @@ namespace App\Context;
 use App\Entity\Item;
 use App\Strategy\ShareFactory\ShareFactoryInterface;
 
-final class ShareFactoryContext
+class ShareFactoryContext
 {
     /**
      * @var array|ShareFactoryInterface[]
