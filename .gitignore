@@ -30,3 +30,7 @@ npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
 .DS_Store
+
+###> tests ###
+!/tests/_envs
+###< tests ###

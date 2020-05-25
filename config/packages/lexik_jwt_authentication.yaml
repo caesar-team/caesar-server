@@ -1,10 +1,12 @@
 parameters:
     env(JWT_TOKEN_TTL): '86400'
+    env(JWT_SECRET_KEY): 'var/jwt/private.pem'
+    env(JWT_PUBLIC_KEY): 'var/jwt/public.pem'
 lexik_jwt_authentication:
-    secret_key: '%kernel.root_dir%/../var/jwt/private.pem'
-    public_key:  '%kernel.root_dir%/../var/jwt/public.pem'
-    pass_phrase:      '%env(JWT_PASSPHRASE)%'
-    token_ttl:        '%env(JWT_TOKEN_TTL)%'
+    secret_key: '%kernel.project_dir%/%env(JWT_SECRET_KEY)%'
+    public_key: '%kernel.project_dir%/%env(JWT_PUBLIC_KEY)%'
+    pass_phrase: '%env(JWT_PASSPHRASE)%'
+    token_ttl: '%env(JWT_TOKEN_TTL)%'
     token_extractors:
         # look for a token as Authorization Header
         authorization_header:
