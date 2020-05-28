@@ -12,6 +12,7 @@ $fm->define(User::class)->setDefinitions([
     'username_canonical' => Faker::firstNameMale(),
     'email_canonical' => Faker::email(),
     'enabled' => true,
-    'password' => '$2y$13$lHAN4DQVpsg.qX4SaNyDC.HXh0YFZWfj/PUTeLhXLkBR.fzjmmhWi', //oO123456()
-    'srp' => 'entity|' . Srp::class
+    'password' => '$2y$13$lHAN4DQVpsg.qX4SaNyDC.HXh0YFZWfj/PUTeLhXLkBR.fzjmmhWi',
+    'srp' => 'entity|' . Srp::class,
+    'flow_status' => User::FLOW_STATUS_FINISHED
 ]);

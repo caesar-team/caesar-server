@@ -1,6 +1,8 @@
 <?php
 namespace App\Tests;
 
+use FOS\UserBundle\Model\UserInterface;
+
 /**
  * Inherited Methods
  * @method void wantToTest($text)
@@ -20,7 +22,9 @@ class ApiTester extends \Codeception\Actor
 {
     use _generated\ApiTesterActions;
 
-    /**
-     * Define custom actions here
-     */
+    public function login(UserInterface $user): void
+    {
+        $token = $this->getToken($user);
+        $this->setCookie('token', $token);
+    }
 }

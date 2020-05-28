@@ -31,11 +31,11 @@ class InvitationRemoveSubscriber implements EventSubscriber
     public function getSubscribedEvents()
     {
         return [
-            Events::postRemove,
+            Events::preRemove,
         ];
     }
 
-    public function postRemove(LifecycleEventArgs $args): void
+    public function preRemove(LifecycleEventArgs $args): void
     {
         $user = $args->getObject();
         if (!$user instanceof User) {
@@ -43,6 +43,5 @@ class InvitationRemoveSubscriber implements EventSubscriber
         }
 
         InvitationManager::removeInvitation($user, $this->entityManager);
-        $this->entityManager->flush();
     }
 }

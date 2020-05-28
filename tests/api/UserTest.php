@@ -8,10 +8,7 @@ use Codeception\Util\HttpCode;
 
 class UserTest extends Unit
 {
-    /**
-     * @var \App\Tests\ApiTester
-     */
-    protected $tester;
+    protected ApiTester $tester;
 
     public function testLogin()
     {
@@ -23,22 +20,9 @@ class UserTest extends Unit
             'matcher' => 'a950b198a8a1679e0b470d884970f834f78961b61f4e7e9b11dbc87bd2a6a045'
         ]);
 
-        $schema = [
-            "properties" => [
-                "secondMatcher" => [
-                    "type" => "string"
-                ],
-                "jwt" => [
-                    "type" => "string"
-                ]
-            ],
-            "required" => [
-                "jwt",
-                "secondMatcher"
-            ]
-        ];
-
         $this->tester->seeResponseCodeIs(HttpCode::OK);
-        $this->tester->seeResponseIsValidOnJsonSchemaString(json_encode($schema));
+
+        $schema = $this->tester->getSchema('auth_srpp_login.json');
+        $this->tester->seeResponseIsValidOnJsonSchemaString($schema);
     }
 }

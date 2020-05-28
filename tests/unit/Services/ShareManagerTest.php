@@ -7,8 +7,9 @@ use App\Entity\Item;
 use App\Model\Request\BatchShareRequest;
 use App\Services\ShareManager;
 use App\Tests\UnitTester;
+use Codeception\Test\Unit;
 
-class ShareManagerTest extends \Codeception\Test\Unit
+class ShareManagerTest extends Unit
 {
     protected UnitTester $tester;
 

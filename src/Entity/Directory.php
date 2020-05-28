@@ -199,6 +199,11 @@ class Directory
         return $this->type;
     }
 
+    public function setType(string $type): void
+    {
+        $this->type = $type;
+    }
+
     public function getSort(): int
     {
         return $this->sort;
