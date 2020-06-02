@@ -37,6 +37,7 @@ parameters:
     env(BACKUP_CODE_HASH_LENGTH): 10
     env(APP_NAME): 'Caesar App'
     env(DELIVERY_ADDRESS): ''
+    env(LOGGING_LEVEL): 'warning'
     locale: 'en'
     frontend_uris: ['%env(ALLOW_FRONT_REDIRECT_PATTERN)%']
-    logging_level: critical
+    logging_level: '%env(LOGGING_LEVEL)%'
