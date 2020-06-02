@@ -2,9 +2,6 @@
 
 namespace App\Tests\Helper;
 
-// here you can define custom actions
-// all public methods declared in helper class will be available in $I
-
 use FOS\UserBundle\Model\UserInterface;
 
 class Api extends \Codeception\Module
@@ -14,6 +11,7 @@ class Api extends \Codeception\Module
     public function getToken(UserInterface $user): string
     {
         $jwtManager = $this->getSymfony()->grabService('lexik_jwt_authentication.jwt_manager');
+
         return $jwtManager->create($user);
     }
 
@@ -25,6 +23,7 @@ class Api extends \Codeception\Module
     public function getSchema(string $fileName): string
     {
         $projectRoot = $this->getSymfony()->kernel->getProjectDir();
+
         return file_get_contents($projectRoot . self::SCHEMA_FOLDER . $fileName);
     }
 

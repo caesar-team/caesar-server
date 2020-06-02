@@ -32,8 +32,6 @@ final class TeamContainerViewFactory implements ViewFactoryInterface
 
     /**
      * @param OfferedTeamContainer $data
-     *
-     * @return TeamItemsView
      */
     public function view($data): TeamItemsView
     {

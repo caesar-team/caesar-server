@@ -50,8 +50,6 @@ class ItemViewFactory
 
     /**
      * @param array|Item[] $items
-     *
-     * @return ItemView
      */
     public function createList(array $items): ItemView
     {
@@ -71,8 +69,6 @@ class ItemViewFactory
 
     /**
      * @param array|Item[] $items
-     *
-     * @return ItemView
      */
     public function createSharedItems(string $id, array $items): ItemView
     {
@@ -92,9 +88,6 @@ class ItemViewFactory
         return $view;
     }
 
-    /**
-     * @return array
-     */
     private function getInvitesCollection(Item $item): array
     {
         $ownerItem = $item;
@@ -158,9 +151,6 @@ class ItemViewFactory
         })->toArray();
     }
 
-    /**
-     * @return ChildItemView|null
-     */
     private function getSharesCollection(Item $item): ?ChildItemView
     {
         $ownerItem = $item;

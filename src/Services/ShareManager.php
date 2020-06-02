@@ -15,7 +15,8 @@ final class ShareManager
      */
     private $shareFactoryContext;
 
-    public function __construct(ShareFactoryContext $shareFactoryContext) {
+    public function __construct(ShareFactoryContext $shareFactoryContext)
+    {
         $this->shareFactoryContext = $shareFactoryContext;
     }
 

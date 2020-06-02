@@ -11,7 +11,6 @@ final class UserTeamViewFactory implements ViewFactoryInterface
 {
     /**
      * @param mixed $data
-     * @return bool
      */
     public function canView($data): bool
     {
@@ -20,8 +19,6 @@ final class UserTeamViewFactory implements ViewFactoryInterface
 
     /**
      * @param UserTeam $data
-     *
-     * @return UserTeamView
      */
     public function view($data): UserTeamView
     {
