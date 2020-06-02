@@ -8,7 +8,7 @@ use App\Entity\User;
 use League\FactoryMuffin\FactoryMuffin;
 use League\FactoryMuffin\Faker\Facade as Faker;
 
-/** @var $fm FactoryMuffin */
+/* @var $fm FactoryMuffin */
 $fm->define(Item::class)->setDefinitions([
     'parent_list' => 'entity|'.Directory::class,
     'secret' => Faker::word(),

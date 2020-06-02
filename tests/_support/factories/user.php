@@ -5,7 +5,7 @@ use App\Entity\User;
 use League\FactoryMuffin\FactoryMuffin;
 use League\FactoryMuffin\Faker\Facade as Faker;
 
-/** @var $fm FactoryMuffin */
+/* @var $fm FactoryMuffin */
 $fm->define(User::class)->setDefinitions([
     'email' => Faker::email(),
     'username' => Faker::firstNameMale(),
