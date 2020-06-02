@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Tests;
 
 use FOS\UserBundle\Model\UserInterface;
 
 /**
- * Inherited Methods
+ * Inherited Methods.
+ *
  * @method void wantToTest($text)
  * @method void wantTo($text)
  * @method void execute($callable)
@@ -17,7 +19,7 @@ use FOS\UserBundle\Model\UserInterface;
  * @method void pause()
  *
  * @SuppressWarnings(PHPMD)
-*/
+ */
 class ApiTester extends \Codeception\Actor
 {
     use _generated\ApiTesterActions;

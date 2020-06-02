@@ -26,7 +26,7 @@ final class PermissionManagerTest extends Unit
         $userTeam = $this->tester->make(UserTeam::class, [
             'user' => $user,
             'team' => $team,
-            'user_role' => $userRole
+            'user_role' => $userRole,
         ]);
 
         $item = $this->tester->make(Item::class, [

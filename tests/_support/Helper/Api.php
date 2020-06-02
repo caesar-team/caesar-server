@@ -24,7 +24,7 @@ class Api extends \Codeception\Module
     {
         $projectRoot = $this->getSymfony()->kernel->getProjectDir();
 
-        return file_get_contents($projectRoot . self::SCHEMA_FOLDER . $fileName);
+        return file_get_contents($projectRoot.self::SCHEMA_FOLDER.$fileName);
     }
 
     private function getSymfony()

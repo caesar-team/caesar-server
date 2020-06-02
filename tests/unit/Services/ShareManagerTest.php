@@ -33,6 +33,7 @@ class ShareManagerTest extends Unit
     public function shareProvider(): array
     {
         $item = $this->makeEmpty(Item::class);
+
         return [
             [[], []],
             [[$item, $item], [$item, $item]],

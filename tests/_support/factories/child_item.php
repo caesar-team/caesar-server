@@ -8,11 +8,11 @@ use League\FactoryMuffin\FactoryMuffin;
 use League\FactoryMuffin\Faker\Facade as Faker;
 
 //Doesn`t exist in DB, use only this way: $this->tester->make(ChildItem::class);
-/**@var $fm FactoryMuffin */
+/** @var $fm FactoryMuffin */
 $fm->define(ChildItem::class)->setDefinitions([
-    'owner' => 'entity|' . User::class,
+    'owner' => 'entity|'.User::class,
     'secret' => Faker::word(),
     'access' => AccessEnumType::TYPE_READ,
     'link' => null,
-    'team' => 'entity|' . Team::class,
+    'team' => 'entity|'.Team::class,
 ]);

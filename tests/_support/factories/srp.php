@@ -2,9 +2,8 @@
 
 use App\Entity\Srp;
 use League\FactoryMuffin\FactoryMuffin;
-use League\FactoryMuffin\Faker\Facade as Faker;
 
-/**@var $fm FactoryMuffin*/
+/** @var $fm FactoryMuffin */
 $fm->define(Srp::class)->setDefinitions([
     'seed' => 'e4448a3d14af7a3e211c44802ff9f1181d899eff8cd21fa83fc48cf5794caaf91d5516954372fdadfbe931f6ed85a85d36bd325b576bc52255cd03a26865fb85',
     'verifier' => '9d4550e7fab90cb40015dc44fe1fcf499ed7a5462b2fe5d4ed1f48ca8b3d4e6f7ac85789bc212983440a74028ed931f72ff088015b09723328770e72a9694e7f',

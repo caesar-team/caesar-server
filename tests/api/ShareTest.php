@@ -1,4 +1,6 @@
-<?php namespace App\Tests;
+<?php
+
+namespace App\Tests;
 
 use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
@@ -27,28 +29,26 @@ class ShareTest extends Unit
         $team = $this->tester->have(Team::class);
         $this->tester->have(UserTeam::class, [
             'user' => $admin,
-            'team' => $team
+            'team' => $team,
         ]);
 
         // Add user to admin team
         $this->tester->have(UserTeam::class, [
             'user' => $user,
             'team' => $team,
-            'user_role' => UserTeam::USER_ROLE_MEMBER
+            'user_role' => UserTeam::USER_ROLE_MEMBER,
         ]);
 
         /** @var Item $item */
         $item = $this->tester->have(Item::class, [
             'owner' => $user,
             'team' => $team,
-            'parent_list' => $admin->getLists()
+            'parent_list' => $admin->getLists(),
         ]);
-
 
         $this->tester->login($user);
         $this->tester->sendPOST('/item/batch/share',
-
-            $jayParsedAry = [
+            [
                 'originalItems' => [
                     [
                         'originalItem' => $item->getId()->toString(),
@@ -58,13 +58,12 @@ class ShareTest extends Unit
                                 'teamId' => $team->getId()->toString(),
                                 'secret' => 'Some secret string, it doesn`t matter for backend',
                                 'access' => AccessEnumType::TYPE_READ,
-                                'cause' => Item::CAUSE_INVITE
+                                'cause' => Item::CAUSE_INVITE,
                             ],
-                        ]
-                    ]
-                ]
+                        ],
+                    ],
+                ],
             ]
-
         );
 
         $this->tester->seeResponseCodeIs(HttpCode::OK);
