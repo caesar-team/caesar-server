@@ -260,7 +260,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      */
     public function getGoogleAuthenticatorSecret(): string
     {
-        return (string)$this->googleAuthenticatorSecret;
+        return (string) $this->googleAuthenticatorSecret;
     }
 
     public function setGoogleAuthenticatorSecret(?string $googleAuthenticatorSecret): void
@@ -394,7 +394,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 
     public function hasBackupCodes(): bool
     {
-        return (bool)$this->getBackupCodesCount();
+        return (bool) $this->getBackupCodesCount();
     }
 
     public function getBackupCodes(): array
@@ -481,7 +481,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 
     public function hasOneOfRoles(array $roles): bool
     {
-        return (bool)array_filter($roles, function ($role) {
+        return (bool) array_filter($roles, function ($role) {
             return $this->hasRole($role);
         });
     }

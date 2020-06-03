@@ -12,12 +12,20 @@ use App\Model\View\CredentialsList\InviteItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
 use App\Model\View\User\UserView;
+use App\Services\PermissionManager;
 use App\Utils\ChildItemAwareInterface;
 use Countable;
 use Doctrine\Common\Collections\Collection;
 
 class ItemViewFactory
 {
+    private PermissionManager $permissionManager;
+
+    public function __construct(PermissionManager $permissionManager)
+    {
+        $this->permissionManager = $permissionManager;
+    }
+
     public function create(Item $item): ItemView
     {
         $view = new ItemView();
@@ -42,8 +50,6 @@ class ItemViewFactory
 
     /**
      * @param array|Item[] $items
-     *
-     * @return ItemView
      */
     public function createList(array $items): ItemView
     {
@@ -63,8 +69,6 @@ class ItemViewFactory
 
     /**
      * @param array|Item[] $items
-     *
-     * @return ItemView
      */
     public function createSharedItems(string $id, array $items): ItemView
     {
@@ -84,9 +88,6 @@ class ItemViewFactory
         return $view;
     }
 
-    /**
-     * @return array
-     */
     private function getInvitesCollection(Item $item): array
     {
         $ownerItem = $item;
@@ -100,7 +101,7 @@ class ItemViewFactory
             $childItemView = new InviteItemView();
             $childItemView->id = $childItem->getId()->toString();
             $childItemView->userId = $childItem->getSignedOwner()->getId()->toString();
-            $childItemView->access = $childItem->getAccess();
+            $childItemView->access = $this->permissionManager->getItemAccessLevel($childItem);
             $children[] = $childItemView;
         }
 
@@ -150,9 +151,6 @@ class ItemViewFactory
         })->toArray();
     }
 
-    /**
-     * @return ChildItemView|null
-     */
     private function getSharesCollection(Item $item): ?ChildItemView
     {
         $ownerItem = $item;
@@ -174,7 +172,7 @@ class ItemViewFactory
         $childItemView->userId = $user->getId()->toString();
         $childItemView->email = $user->getEmail();
         $childItemView->lastUpdated = $item->getLastUpdated();
-        $childItemView->access = $item->getAccess();
+        $childItemView->access = $this->permissionManager->getItemAccessLevel($item);
         $childItemView->link = $item->getLink();
         $childItemView->isAccepted = User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
         $childItemView->publicKey = $user->getPublicKey();

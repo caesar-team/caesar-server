@@ -34,8 +34,6 @@ class TeamViewFactory implements ViewFactoryInterface
 
     /**
      * @param Team $team
-     *
-     * @return TeamView
      */
     public function view($team): TeamView
     {

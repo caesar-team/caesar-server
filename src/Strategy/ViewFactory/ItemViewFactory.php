@@ -30,7 +30,6 @@ final class ItemViewFactory implements ViewFactoryInterface
 
     /**
      * @param mixed $data
-     * @return bool
      */
     public function canView($data): bool
     {
@@ -39,8 +38,6 @@ final class ItemViewFactory implements ViewFactoryInterface
 
     /**
      * @param Item $item
-     *
-     * @return ItemView
      */
     public function view($item): ItemView
     {
@@ -83,9 +80,6 @@ final class ItemViewFactory implements ViewFactoryInterface
         return $list;
     }
 
-    /**
-     * @return array
-     */
     private function getInvitesCollection(Item $item): array
     {
         $ownerItem = $item;
@@ -118,9 +112,6 @@ final class ItemViewFactory implements ViewFactoryInterface
         })->toArray();
     }
 
-    /**
-     * @return ChildItemView|null
-     */
     private function getSharesCollection(Item $item): ?ChildItemView
     {
         $ownerItem = $item->getOriginalItem() ?? $item;

@@ -190,6 +190,11 @@ class Team
         return $this->trash;
     }
 
+    public function setTrash(Directory $trash): void
+    {
+        $this->trash = $trash;
+    }
+
     public function __toString()
     {
         return $this->title;

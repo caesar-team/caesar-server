@@ -69,8 +69,6 @@ class ItemVoter extends Voter
      * @param Item   $subject
      *
      * @throws \Doctrine\ORM\NonUniqueResultException
-     *
-     * @return bool
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {

@@ -11,7 +11,6 @@ docker-compose.yml
 README.md
 .env.*
 .env
-.php_cs.dist
 vendor/*
 var/cache/*
 var/jwt/*

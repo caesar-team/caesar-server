@@ -29,7 +29,7 @@ class FosUserMailer extends Mailer implements MailerInterface
      */
     public function sendResettingEmailMessage(UserInterface $user): void
     {
-        $webClientUrl= getenv('WEB_CLIENT_URL')
+        $webClientUrl = getenv('WEB_CLIENT_URL')
             ?: $this->router->generate('root', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $url = $webClientUrl.'resetting/'.$user->getEmail().'/'.$user->getConfirmationToken();

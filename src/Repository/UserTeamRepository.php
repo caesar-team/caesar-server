@@ -10,7 +10,7 @@ use App\Entity\UserTeam;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
-final class UserTeamRepository extends ServiceEntityRepository
+class UserTeamRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

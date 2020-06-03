@@ -10,8 +10,6 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * Class UserGroup.
- *
  * @ORM\Table(name="user_group",
  *     uniqueConstraints={
  *         @ORM\UniqueConstraint(name="user_team_uqid",

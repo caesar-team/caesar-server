@@ -16,7 +16,7 @@ final class OriginalItemShareFactory extends AbstractShareFactory
      *
      * @throws \Exception
      *
-     * @return array|Item[]
+     * @return Item[]
      */
     public function share($itemCollectionRequest): array
     {

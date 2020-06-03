@@ -26,11 +26,6 @@ class Client extends SymfonyClient
         return parent::getResponse()->getStatusCode();
     }
 
-    /**
-     * @param string $url
-     * @param array  $payload
-     * @param string $type
-     */
     public function sendJson(string $url, array $payload, string $type = 'POST'): void
     {
         $this->request(
@@ -43,10 +38,6 @@ class Client extends SymfonyClient
         );
     }
 
-    /**
-     * @param string $url
-     * @param array  $fileCollection
-     */
     public function sendFiles(string $url, array $fileCollection): void
     {
         $this->request(

@@ -17,7 +17,6 @@ interface ShareFactoryInterface
 
     /**
      * @param mixed $data
-     * @return bool
      */
     public function canShare($data): bool;
 }

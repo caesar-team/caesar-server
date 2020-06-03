@@ -7,8 +7,9 @@ namespace App\Model\Request;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Utils\ChildItemAwareInterface;
 
-class ChildItem
+class ChildItem implements ChildItemAwareInterface
 {
     /**
      * @var User
@@ -101,5 +102,10 @@ class ChildItem
     public function setTeam(?Team $team): void
     {
         $this->team = $team;
+    }
+
+    public function getSignedOwner(): User
+    {
+        return $this->user;
     }
 }
