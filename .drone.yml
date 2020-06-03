@@ -83,7 +83,7 @@ globals:
 - &confNoSaveBuild
   dockerfile: Dockerfile
   repo: plugins/docker
-  tag: fourxxi
+  tags: fourxxi
   dry_run: true
   daemon_off: false
 
@@ -91,22 +91,26 @@ globals:
   dockerfile: Dockerfile
   repo: 
     from_secret: repository
-  tag: ${DRONE_BRANCH}
   username:
     from_secret: username
   password:
     from_secret: password
 
-- &stepCheckBuild
-  name: build test
+- &stepFeatureBuild
   image: plugins/docker
   settings:
     <<: *confNoSaveBuild
 
-- &stepMainBuild
-  name: build
+- &stepDevelopBuild
   image: plugins/docker
   settings:
+    tags: [ "${DRONE_BRANCH}" ]
+    <<: *confSaveBuild
+
+- &stepMasterBuild
+  image: plugins/docker
+  settings:
+    tags: [ "${DRONE_BRANCH}", "latest" ]
     <<: *confSaveBuild
 
 - &stepDevelopDeploy
@@ -173,14 +177,21 @@ globals:
       {{/success}}
 
 steps:
-- <<: *stepCheckBuild
+- name: build feature
+  <<: *stepFeatureBuild
   when:
     branch: [ feature/* ]
 
-- <<: *stepMainBuild
+- name: build develop
+  <<: *stepDevelopBuild
   when:
-    branch: [ develop, master ]
+    branch: [ develop ]
 
+- name: build master
+  <<: *stepMasterBuild
+  when:
+    branch: [ master ]
+  
 - <<: *stepDevelopDeploy
   when:
     branch: [ develop ]
