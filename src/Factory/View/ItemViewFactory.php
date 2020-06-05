@@ -101,7 +101,7 @@ class ItemViewFactory
             $childItemView = new InviteItemView();
             $childItemView->id = $childItem->getId()->toString();
             $childItemView->userId = $childItem->getSignedOwner()->getId()->toString();
-            $childItemView->access = $this->permissionManager->getItemAccessLevel($childItem);
+            $childItemView->access = $childItem->getAccess();
             $children[] = $childItemView;
         }
 
