@@ -20,6 +20,10 @@ class PermissionManager
 
     public function getItemAccessLevel(ChildItemAwareInterface $item): string
     {
+        if (null === $item->getTeam()) {
+            return AccessEnumType::TYPE_READ;
+        }
+
         $userTeam = $this
             ->userTeamRepository
             ->findOneByUserAndTeam($item->getSignedOwner(), $item->getTeam());
