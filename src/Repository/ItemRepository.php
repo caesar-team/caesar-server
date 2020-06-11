@@ -46,7 +46,7 @@ class ItemRepository extends ServiceEntityRepository
             ->andWhere('item.favorite = true')
             ->setParameter('user', $user->getId());
 
-        if ($team === null) {
+        if (null === $team) {
             $queryBuilder->andWhere('item.team IS NULL');
         } else {
             $queryBuilder
