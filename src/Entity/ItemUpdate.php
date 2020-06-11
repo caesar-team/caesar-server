@@ -41,6 +41,7 @@ class ItemUpdate
      * @var User
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $updatedBy;
 
