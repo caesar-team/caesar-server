@@ -10,6 +10,7 @@ use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Factory\View\BatchListItemViewFactory;
 use App\Factory\View\CreatedItemViewFactory;
@@ -40,6 +41,7 @@ use App\Model\View\Team\TeamItemsView;
 use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
 use App\Security\ItemVoter;
+use App\Security\Voter\UserTeamVoter;
 use App\Services\ChildItemActualizer;
 use App\Services\File\ItemMoveResolver;
 use App\Services\ShareManager;
@@ -574,18 +576,20 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/items/favorite",
+     *     path="/api/items/favorite/{team}",
      *     name="api_favorites_item",
      *     methods={"GET"}
      * )
      *
-     * @throws NonUniqueResultException
-     *
      * @return ItemView[]|FormInterface
      */
-    public function favorite(ItemListViewFactory $viewFactory)
+    public function favorite(ItemListViewFactory $viewFactory, ItemRepository $repository, ?Team $team = null)
     {
-        $itemCollection = $this->getDoctrine()->getRepository(Item::class)->getFavoritesItems($this->getUser());
+        if (null !== $team) {
+            $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
+        }
+
+        $itemCollection = $repository->getFavoritesItems($this->getUser(), $team);
 
         return $viewFactory->create($itemCollection);
     }

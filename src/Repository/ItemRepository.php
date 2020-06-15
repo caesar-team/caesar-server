@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Item;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Model\Query\ItemListQuery;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -35,15 +36,24 @@ class ItemRepository extends ServiceEntityRepository
     /**
      * @return Item[]|iterable
      */
-    public function getFavoritesItems(User $user): iterable
+    public function getFavoritesItems(User $user, ?Team $team = null): iterable
     {
         $queryBuilder = $this->createQueryBuilder('item');
         $queryBuilder
             ->innerJoin('item.parentList', 'list')
-            ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list')
+            ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list OR user = item.owner')
             ->where('user.id = :user')
             ->andWhere('item.favorite = true')
             ->setParameter('user', $user->getId());
+
+        if (null === $team) {
+            $queryBuilder->andWhere('item.team IS NULL');
+        } else {
+            $queryBuilder
+                ->andWhere('item.team = :team')
+                ->setParameter('team', $team)
+            ;
+        }
 
         return $queryBuilder->getQuery()->getResult();
     }
