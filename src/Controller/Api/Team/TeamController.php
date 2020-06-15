@@ -22,7 +22,6 @@ use App\Repository\TeamRepository;
 use App\Repository\UserTeamRepository;
 use App\Security\Voter\TeamVoter;
 use App\Security\Voter\UserTeamVoter;
-use App\Services\AdminPromoter;
 use App\Services\TeamManager;
 use App\Utils\ItemExtractor;
 use Doctrine\ORM\EntityManagerInterface;
@@ -73,8 +72,7 @@ class TeamController extends AbstractController
         Request $request,
         ViewFactoryContext $viewFactoryContext,
         EntityManagerInterface $entityManager,
-        TeamManager $teamManager,
-        AdminPromoter $adminPromoter
+        TeamManager $teamManager
     ) {
         $team = new Team();
         $form = $this->createForm(CreateTeamType::class, $team);
@@ -87,7 +85,6 @@ class TeamController extends AbstractController
 
         $entityManager->persist($team);
         $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
-        $adminPromoter->addTeamToAdmins($team, $this->getUser());
         $entityManager->flush();
 
         $teamView = $viewFactoryContext->view($team);
