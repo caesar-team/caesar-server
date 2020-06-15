@@ -68,3 +68,12 @@ Available roles:
 - ROLE_SUPER_ADMIN
 
 Ex: `bin/console fos:user:promote username ROLE_ADMIN`
+
+### 7. Contribution
+
+#### PHP Static Analysis Tool
+
+```bash
+docker-compose exec php vendor/bin/phpstan analyse   
+docker-compose exec php vendor/bin/psalm --show-info=false
+```
