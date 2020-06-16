@@ -25,7 +25,8 @@ RUN docker-php-ext-install \
     sockets
 
 RUN pecl install gnupg redis \
-    && docker-php-ext-enable redis
+    && docker-php-ext-enable redis \
+    && docker-php-ext-enable gnupg 
 
 # Composer part
 COPY --from=composer /usr/bin/composer /usr/bin/composer
