@@ -100,10 +100,7 @@ class ItemUpdate
         return $this->updatedBy;
     }
 
-    /**
-     * @param Item $item|null
-     */
-    public function setItem(?Item $item): void
+    public function setItem(Item $item): void
     {
         $this->item = $item;
     }

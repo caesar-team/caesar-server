@@ -190,10 +190,7 @@ class Item implements ChildItemAwareInterface
         return $this->secret;
     }
 
-    /**
-     * @param string|null $secret
-     */
-    public function setSecret(string $secret): void
+    public function setSecret(?string $secret): void
     {
         $this->secret = $secret;
     }
@@ -217,9 +214,6 @@ class Item implements ChildItemAwareInterface
         return $this->originalItem;
     }
 
-    /**
-     * @param Item|null $originalItem
-     */
     public function setOriginalItem(Item $originalItem): void
     {
         $this->originalItem = $originalItem;
@@ -267,9 +261,9 @@ class Item implements ChildItemAwareInterface
     }
 
     /**
-     * @param iterable|Tag[] $tags
+     * @param Collection|Tag[] $tags
      */
-    public function setTags(iterable $tags): void
+    public function setTags(Collection $tags): void
     {
         $this->tags = $tags;
     }
@@ -336,18 +330,12 @@ class Item implements ChildItemAwareInterface
         $this->cause = $cause;
     }
 
-    /**
-     * @return string
-     */
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
 
-    /**
-     * @param string $status
-     */
-    public function setStatus(?string $status): void
+    public function setStatus(string $status): void
     {
         $this->status = $status;
     }
@@ -367,6 +355,10 @@ class Item implements ChildItemAwareInterface
         return $this->originalItem ? $this->originalItem->getOwner() : $this->owner;
     }
 
+    /**
+     * @psalm-suppress NullableReturnStatement
+     * @psalm-suppress InvalidNullableReturnType
+     */
     public function getSignedOwner(): User
     {
         return $this->owner;

@@ -27,7 +27,7 @@ final class UserViewFactory implements ViewFactoryInterface
         $view = new UserView();
         $view->id = $data->getId()->toString();
         $view->email = $data->getEmail();
-        $view->avatar = null === $data->getAvatar() ? null : $data->getAvatar()->getLink();
+        $view->avatar = null !== $data->getAvatar() ? $data->getAvatar()->getLink() : null;
         $view->publicKey = $data->getPublicKey();
         $view->teamIds = $data->getTeamsIds();
         $view->name = $data->getUsername();

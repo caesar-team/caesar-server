@@ -30,6 +30,8 @@ class BackUpCodesManager implements HashidsEncoderInterface
 
     public static function initEncoder(): Hashids
     {
-        return new Hashids(getenv('BACKUP_CODE_SALT'), getenv('BACKUP_CODE_HASH_LENGTH'));
+        $minHashLength = (int) getenv('BACKUP_CODE_HASH_LENGTH');
+
+        return new Hashids((string) getenv('BACKUP_CODE_SALT'), $minHashLength);
     }
 }

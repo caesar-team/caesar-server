@@ -7,7 +7,6 @@ namespace App\Security;
 use App\Entity\Directory;
 use App\Entity\User;
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -18,12 +17,11 @@ class ListVoter extends Voter
     public const EDIT = 'edit_list';
     public const DELETE_LIST = 'delete_list';
 
-    /** @var UserRepository */
-    private $userRepository;
+    private UserRepository $userRepository;
 
-    public function __construct(EntityManagerInterface $manager)
+    public function __construct(UserRepository $userRepository)
     {
-        $this->userRepository = $manager->getRepository(User::class);
+        $this->userRepository = $userRepository;
     }
 
     /**

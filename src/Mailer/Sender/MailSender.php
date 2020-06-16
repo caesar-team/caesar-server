@@ -32,7 +32,10 @@ final class MailSender implements SenderInterface
      */
     private $defaultSettingsProvider;
 
-    private $metaData;
+    /**
+     * @var array
+     */
+    private $metaData = [];
 
     public function __construct(
         RendererAdapterInterface $rendererAdapter,
@@ -71,9 +74,6 @@ final class MailSender implements SenderInterface
         );
     }
 
-    /**
-     * @return mixed
-     */
     public function getMetaData(): string
     {
         return $this->metaData ? serialize($this->metaData) : '';

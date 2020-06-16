@@ -13,14 +13,14 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20190926093526 extends AbstractMigration
 {
-    public function getDescription() : string
+    public function getDescription(): string
     {
         return '';
     }
 
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
-        $teams = $this->connection->fetchAll("SELECT id, lists_id, trash_id FROM groups WHERE lists_id IS NULL OR trash_id IS NULL");
+        $teams = $this->connection->fetchAll('SELECT id, lists_id, trash_id FROM groups WHERE lists_id IS NULL OR trash_id IS NULL');
         foreach ($teams as $team) {
             $root = Directory::createRootList();
             $default = Directory::createDefaultList();
@@ -28,7 +28,7 @@ final class Version20190926093526 extends AbstractMigration
             $trash = Directory::createTrash();
 
             $this->addSql(
-                "INSERT INTO directory (id, parent_list_id, label, type, sort) VALUES (?,?,?,?,?)",
+                'INSERT INTO directory (id, parent_list_id, label, type, sort) VALUES (?,?,?,?,?)',
                 [
                     $root->getId()->toString(),
                     null,
@@ -37,10 +37,10 @@ final class Version20190926093526 extends AbstractMigration
                     $root->getSort(),
                 ]
             );
-            $this->addSql("UPDATE groups SET lists_id = ? WHERE id = ?", [$root->getId()->toString(), $team['id']]);
+            $this->addSql('UPDATE groups SET lists_id = ? WHERE id = ?', [$root->getId()->toString(), $team['id']]);
 
             $this->addSql(
-                "INSERT INTO directory (id, parent_list_id, label, type, sort) VALUES (?,?,?,?,?)",
+                'INSERT INTO directory (id, parent_list_id, label, type, sort) VALUES (?,?,?,?,?)',
                 [
                     $default->getId()->toString(),
                     $default->getParentList()->getId()->toString(),
@@ -51,7 +51,7 @@ final class Version20190926093526 extends AbstractMigration
             );
 
             $this->addSql(
-                "INSERT INTO directory (id, parent_list_id, label, type, sort) VALUES (?,?,?,?,?)",
+                'INSERT INTO directory (id, parent_list_id, label, type, sort) VALUES (?,?,?,?,?)',
                 [
                     $trash->getId()->toString(),
                     null,
@@ -60,11 +60,11 @@ final class Version20190926093526 extends AbstractMigration
                     $trash->getSort(),
                 ]
             );
-            $this->addSql("UPDATE groups SET trash_id = ? WHERE id = ?", [$trash->getId()->toString(), $team['id']]);
+            $this->addSql('UPDATE groups SET trash_id = ? WHERE id = ?', [$trash->getId()->toString(), $team['id']]);
         }
     }
 
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
         $itShouldntChanges = true;
         $this->skipIf($itShouldntChanges, 'It shouldn\'t changes');

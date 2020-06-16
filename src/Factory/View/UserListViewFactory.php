@@ -10,6 +10,13 @@ use App\Model\View\User\UserView;
 
 class UserListViewFactory
 {
+    private UserViewFactory $userViewFactory;
+
+    public function __construct(UserViewFactory $userViewFactory)
+    {
+        $this->userViewFactory = $userViewFactory;
+    }
+
     /**
      * @return UserView[]
      */
@@ -18,15 +25,7 @@ class UserListViewFactory
         $userViewCollection = [];
         /** @var User $user */
         foreach ($list->getData() as $user) {
-            $view = new UserView();
-
-            $view->id = $user->getId();
-            $view->name = $user->getUsername();
-            $view->avatar = null === $user->getAvatar() ? null : $user->getAvatar()->getLink();
-            $view->publicKey = $user->getPublicKey();
-            $view->email = $user->getEmail();
-
-            $userViewCollection[] = $view;
+            $userViewCollection[] = $this->userViewFactory->create($user);
         }
 
         return $userViewCollection;

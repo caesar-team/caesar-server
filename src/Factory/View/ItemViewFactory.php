@@ -14,7 +14,6 @@ use App\Model\View\CredentialsList\UpdateView;
 use App\Model\View\User\UserView;
 use App\Services\PermissionManager;
 use App\Utils\ChildItemAwareInterface;
-use Countable;
 use Doctrine\Common\Collections\Collection;
 
 class ItemViewFactory
@@ -30,7 +29,7 @@ class ItemViewFactory
     {
         $view = new ItemView();
 
-        $view->id = $item->getId();
+        $view->id = $item->getId()->toString();
         $view->type = $item->getType();
         $view->lastUpdated = $item->getLastUpdated();
         $view->listId = $item->getParentList()->getId()->toString();
@@ -140,11 +139,11 @@ class ItemViewFactory
     }
 
     /**
-     * @param Countable|ChildItemAwareInterface[]|Collection $childItems
+     * @param ChildItemAwareInterface[]|Collection $childItems
      *
      * @return array|Item[]
      */
-    private function extractChildItemByCause(Countable $childItems, string $cause = Item::CAUSE_INVITE): array
+    private function extractChildItemByCause(Collection $childItems, string $cause = Item::CAUSE_INVITE): array
     {
         return $childItems->filter(function (ChildItemAwareInterface $childItem) use ($cause) {
             return $cause === $childItem->getCause();
@@ -164,6 +163,9 @@ class ItemViewFactory
             return null;
         }
         $item = current($sharedItems);
+        if (!$item instanceof Item) {
+            return null;
+        }
 
         $user = $item->getSignedOwner();
 

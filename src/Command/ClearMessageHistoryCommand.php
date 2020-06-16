@@ -34,9 +34,11 @@ class ClearMessageHistoryCommand extends Command
     /**
      * @throws \Doctrine\DBAL\DBALException
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->removeDataOlderThan(new DateTimeImmutable());
+
+        return 0;
     }
 
     /**

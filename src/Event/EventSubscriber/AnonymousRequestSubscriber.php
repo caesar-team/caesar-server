@@ -50,7 +50,6 @@ class AnonymousRequestSubscriber implements EventSubscriberInterface
     {
         $request = $event->getRequest();
         $route = $request->get('_route');
-        /** @var User $user */
         $user = $this->security->getUser();
         if (!$user instanceof User) {
             return;

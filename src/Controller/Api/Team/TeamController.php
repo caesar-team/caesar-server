@@ -247,9 +247,9 @@ class TeamController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @return ListView[]
+     * @return MemberView[]
      */
-    public function defaultTeamMembers(UserTeamRepository $userTeamRepository)
+    public function defaultTeamMembers(UserTeamRepository $userTeamRepository): array
     {
         $team = $this->getDefaultTeam();
 

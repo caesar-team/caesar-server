@@ -30,14 +30,14 @@ class FrontendUriHandler
         $this->validUriCollection = $validUriCollection;
     }
 
-    public function validateUri($uri): bool
+    public function validateUri(?string $uri): bool
     {
         if (empty($uri)) {
             return  true;
         }
 
         $redirectUri = parse_url($uri);
-        $redirectUri = $redirectUri['host'].(isset($redirectUri['port']) ? ':'.$redirectUri['port'] : '');
+        $redirectUri = ($redirectUri['host'] ?? '').(isset($redirectUri['port']) ? ':'.$redirectUri['port'] : '');
         if ($this->requestStack->getCurrentRequest()->getHttpHost() === $redirectUri) {
             return true;
         }
@@ -59,7 +59,7 @@ class FrontendUriHandler
 
     public function extractUri(Request $request): ?string
     {
-        $uri = $request->cookies->get(self::COOKIE_NAME);
+        $uri = (string) $request->cookies->get(self::COOKIE_NAME);
         $this->validateUri($uri);
 
         return $uri;

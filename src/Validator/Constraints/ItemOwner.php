@@ -11,5 +11,5 @@ use Symfony\Component\Validator\Constraint;
  */
 class ItemOwner extends Constraint
 {
-    public $message = 'You do not have access to this item.';
+    public string $message = 'You do not have access to this item.';
 }

@@ -10,6 +10,12 @@ use App\Entity\UserTeam;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
+/**
+ * @method UserTeam|null find($id, $lockMode = null, $lockVersion = null)
+ * @method UserTeam|null findOneBy(array $criteria, array $orderBy = null)
+ * @method UserTeam[]    findAll()
+ * @method UserTeam[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class UserTeamRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

@@ -13,15 +13,24 @@ use App\Model\Response\PaginatedList;
 use App\Traits\PaginatorTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\Query\Expr\Join;
 
+/**
+ * @method User|null find($id, $lockMode = null, $lockVersion = null)
+ * @method User|null findOneBy(array $criteria, array $orderBy = null)
+ * @method User[]    findAll()
+ * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class UserRepository extends ServiceEntityRepository
 {
     use PaginatorTrait;
 
-    public function __construct(ManagerRegistry $registry)
+    private DirectoryRepository $directoryRepository;
+
+    public function __construct(ManagerRegistry $registry, DirectoryRepository $directoryRepository)
     {
         parent::__construct($registry, User::class);
+
+        $this->directoryRepository = $directoryRepository;
     }
 
     /**
@@ -44,16 +53,7 @@ class UserRepository extends ServiceEntityRepository
             return $this->getByList($parent);
         }
 
-        $qb = $this->_em->getRepository(Directory::class)->createQueryBuilder('list');
-
-        return $qb
-            ->select('user')
-            ->join(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list')
-            ->where($qb->expr()->eq('list', ':list'))
-            ->setParameter('list', $list)
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
+        return $this->directoryRepository->getUserByList($list);
     }
 
     public function getByQuery(UserQuery $query): PaginatedList
@@ -62,24 +62,24 @@ class UserRepository extends ServiceEntityRepository
         foreach ($query->getUserTeams() as $userTeam) {
             $teams[] = $userTeam->getTeam()->getId();
         }
-        $qb = $this->createQueryBuilder('user');
-        $qb
+        $queryBuilder = $this->createQueryBuilder('user');
+        $queryBuilder
             ->join('user.userTeams', 'userTeams')
-            ->where($qb->expr()->neq('user', ':userId'))
+            ->where($queryBuilder->expr()->neq('user', ':userId'))
             ->andWhere('userTeams.team IN(:teams)')
-            ->andWhere($qb->expr()->isNotNull('user.publicKey'))
+            ->andWhere($queryBuilder->expr()->isNotNull('user.publicKey'))
             ->setParameter('teams', $teams)
             ->setParameter('userId', $query->getUser())
             ->setMaxResults($query->getPerPage())
             ->setFirstResult($query->getFirstResult());
 
         if ($query->name) {
-            $qb
-                ->andWhere($qb->expr()->like($qb->expr()->lower('user.username'), ':username'))
+            $queryBuilder
+                ->andWhere('LOWER(user.username) LIKE :username')
                 ->setParameter('username', '%'.mb_strtolower($query->name).'%');
         }
 
-        return $this->createPaginatedList($qb, $query);
+        return $this->createPaginatedList($queryBuilder, $query);
     }
 
     /**
@@ -116,11 +116,11 @@ class UserRepository extends ServiceEntityRepository
      */
     public function findOneByEmail(string $email): ?User
     {
-        $qb = $this->createQueryBuilder('user');
+        $queryBuilder = $this->createQueryBuilder('user');
 
-        return $qb
-            ->where($qb->expr()->eq('user.email', ':email'))
-            ->setParameter('email', $email)
+        return $queryBuilder
+            ->where('LOWER(user.email) = :email')
+            ->setParameter('email', mb_strtolower($email))
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -156,21 +156,25 @@ class UserRepository extends ServiceEntityRepository
      */
     public function findByPartOfEmail(string $partOfEmail): array
     {
-        $qb = $this->createQueryBuilder('user');
-        $qb->where($qb->expr()->like($qb->expr()->lower('user.email'), ':email'));
-        $qb->andWhere($qb->expr()->notLike($qb->expr()->lower('user.roles'), ':role'));
-        $qb->setParameter('email', '%'.mb_strtolower($partOfEmail).'%');
-        $qb->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%');
+        $queryBuilder = $this->createQueryBuilder('user');
+        $queryBuilder
+            ->where('LOWER(user.email) LIKE :email')
+            ->andWhere('LOWER(user.roles) NOT LIKE :role')
+            ->setParameter('email', '%'.mb_strtolower($partOfEmail).'%')
+            ->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%')
+        ;
 
-        return $qb->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getResult();
     }
 
     public function findAllExceptAnonymous(): array
     {
-        $qb = $this->createQueryBuilder('user');
-        $qb->andWhere($qb->expr()->notLike($qb->expr()->lower('user.roles'), ':role'));
-        $qb->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%');
+        $queryBuilder = $this->createQueryBuilder('user');
+        $queryBuilder
+            ->andWhere('LOWER(user.roles) NOT LIKE :role')
+            ->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%')
+        ;
 
-        return $qb->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getResult();
     }
 }

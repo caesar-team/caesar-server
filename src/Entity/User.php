@@ -93,7 +93,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     protected $googleAuthenticatorSecret;
 
     /**
-     * @var int|null
+     * @var int
      *
      * @ORM\Column(name="trusted_version", type="integer", options={"default": 0})
      */
@@ -120,16 +120,16 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      *
      * @ORM\OneToMany(targetEntity="Fingerprint", mappedBy="user", orphanRemoval=true, cascade={"persist"})
      */
-    private $fingerprints = [];
+    private $fingerprints;
 
     /**
      * @var string
      * @ORM\Column(type="string", options={"default": "finished"}, nullable=false)
      */
-    private $flowStatus = self::DEFAULT_FLOW_STATUS;
+    private $flowStatus;
 
     /**
-     * @var array|null
+     * @var array
      * @ORM\Column(type="json_array", nullable=true)
      */
     private $backupCodes = [];
@@ -343,9 +343,12 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }
     }
 
-    public function getFingerprints(): Collection
+    /**
+     * @return Fingerprint[]
+     */
+    public function getFingerprints(): array
     {
-        return $this->fingerprints;
+        return $this->fingerprints->toArray();
     }
 
     public function getFlowStatus(): string
@@ -382,7 +385,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }
     }
 
-    public function setBackupCodes(?array $backupCodes): void
+    public function setBackupCodes(array $backupCodes): void
     {
         $this->backupCodes = $backupCodes;
     }
@@ -439,9 +442,12 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return !$this->hasRole(self::ROLE_ANONYMOUS_USER) && !$this->hasRole(self::ROLE_READ_ONLY_USER);
     }
 
-    public function getOwnedItems(): Collection
+    /**
+     * @return Item[]
+     */
+    public function getOwnedItems(): array
     {
-        return $this->ownedItems;
+        return $this->ownedItems->toArray();
     }
 
     public function addOwnedItem(Item $item): void
@@ -457,6 +463,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->ownedItems->removeElement($item);
     }
 
+    /**
+     * @return string[]
+     */
     public function getTeamsIds(): array
     {
         return array_map(function (UserTeam $userTeam) {
@@ -491,5 +500,10 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return array_map(function (UserTeam $userTeam) {
             return $userTeam->getTeam();
         }, $this->userTeams->toArray());
+    }
+
+    public function equals(?User $user): bool
+    {
+        return null !== $user && $this->getId()->toString() === $user->getId()->toString();
     }
 }

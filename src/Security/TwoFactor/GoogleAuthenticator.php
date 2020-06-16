@@ -28,7 +28,7 @@ class GoogleAuthenticator implements GoogleAuthenticatorInterface
      */
     private $issuer;
 
-    public function __construct(SonataGoogleAuthenticatorInterface $authenticator, $server, $issuer)
+    public function __construct(SonataGoogleAuthenticatorInterface $authenticator, string $server, string $issuer)
     {
         $this->authenticator = $authenticator;
         $this->server = $server;

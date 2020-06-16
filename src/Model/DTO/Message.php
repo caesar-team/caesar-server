@@ -7,7 +7,7 @@ namespace App\Model\DTO;
 class Message
 {
     /**
-     * @var string
+     * @var string|null
      */
     public $email;
     /**
@@ -15,7 +15,7 @@ class Message
      */
     public $options = [];
     /**
-     * @var string
+     * @var string|null
      */
     public $code;
     /**

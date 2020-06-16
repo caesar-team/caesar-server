@@ -155,7 +155,9 @@ class SrpHandler
 
     public function generateVerifier($x)
     {
+        /* @phpstan-ignore-next-line */
         $g = new Math_BigInteger(self::G, 10);
+        /* @phpstan-ignore-next-line */
         $n = new Math_BigInteger(self::N_BASE64, 16);
         $x = new Math_BigInteger($x, 16);
 

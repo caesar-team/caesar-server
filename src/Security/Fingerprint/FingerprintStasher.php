@@ -42,6 +42,8 @@ class FingerprintStasher
 
     public function unstash(): ?string
     {
-        return $this->requestStack->getCurrentRequest()->cookies->get(self::COOKIE_NAME);
+        $request = $this->requestStack->getCurrentRequest();
+
+        return null !== $request ? (string) $request->cookies->get(self::COOKIE_NAME) : null;
     }
 }

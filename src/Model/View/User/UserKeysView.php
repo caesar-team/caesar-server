@@ -17,7 +17,7 @@ class UserKeysView
     public $userId;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @SWG\Property(example="asdfasdra34w56")
      * @Groups({"key_detail_read"})
@@ -25,7 +25,7 @@ class UserKeysView
     public $encryptedPrivateKey;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @SWG\Property(example="asdfassdaaw46t4wesdra34w56")
      * @Groups({"key_detail_read", "public"})

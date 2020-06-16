@@ -102,11 +102,11 @@ abstract class AbstractFile
     final public function saveFile(?string $projectPath = null): void
     {
         $fs = new FileSystem();
-        if (false === $fs->exists($projectPath.$this->getBasePath())) {
-            $fs->mkdir($projectPath.$this->getBasePath());
+        if (false === $fs->exists(strval($projectPath).$this->getBasePath())) {
+            $fs->mkdir(strval($projectPath).$this->getBasePath());
         }
 
-        $this->file->move($projectPath.$this->getBasePath(), $this->getFileName());
+        $this->file->move(strval($projectPath).$this->getBasePath(), $this->getFileName());
     }
 
     /**
@@ -115,7 +115,7 @@ abstract class AbstractFile
     final public function removeFile(?string $projectPath = null): void
     {
         $fs = new FileSystem();
-        $fs->remove($projectPath.$this->getFilePath());
+        $fs->remove(strval($projectPath).$this->getFilePath());
     }
 
     final protected function getBasePath(): string
@@ -125,7 +125,7 @@ abstract class AbstractFile
 
     final protected function getFileName(): string
     {
-        return sprintf('%s.%s', $this->getId(), $this->getExtension());
+        return sprintf('%s.%s', $this->getId()->toString(), $this->getExtension());
     }
 
     protected function generateExtension(File $file): string

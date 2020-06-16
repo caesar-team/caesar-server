@@ -14,7 +14,7 @@ final class MemberShortView
     public $id;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $role;
 
@@ -28,9 +28,9 @@ final class MemberShortView
     }
 
     /**
-     * @param array|UserTeam[] $usersTeams
+     * @param UserTeam[] $usersTeams
      *
-     * @return array|MemberView[]
+     * @return MemberShortView[]
      */
     public static function createMany(array $usersTeams): array
     {

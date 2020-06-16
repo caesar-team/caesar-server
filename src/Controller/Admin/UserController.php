@@ -2,13 +2,14 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\User;
 use App\Mailer\FosUserMailer;
+use App\Repository\UserRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\EasyAdminController as BaseController;
 use FOS\UserBundle\Doctrine\UserManager;
 use FOS\UserBundle\Event\GetResponseNullableUserEvent;
 use FOS\UserBundle\Event\GetResponseUserEvent;
 use FOS\UserBundle\FOSUserEvents;
+use FOS\UserBundle\Model\UserInterface;
 use FOS\UserBundle\Util\TokenGeneratorInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -34,19 +35,23 @@ class UserController extends BaseController
      */
     private $fosUserMailer;
 
+    private UserRepository $userRepository;
+
     public function __construct(
         UserManager $userManager,
         EventDispatcherInterface $eventDispatcher,
         TokenGeneratorInterface $tokenGenerator,
-        FosUserMailer $fosUserMailer
+        FosUserMailer $fosUserMailer,
+        UserRepository $userRepository
     ) {
         $this->userManager = $userManager;
         $this->eventDispatcher = $eventDispatcher;
         $this->tokenGenerator = $tokenGenerator;
         $this->fosUserMailer = $fosUserMailer;
+        $this->userRepository = $userRepository;
     }
 
-    public function createNewUserEntity(): User
+    public function createNewUserEntity(): UserInterface
     {
         $user = $this->userManager->createUser();
         $user->setPlainPassword(md5(uniqid('', true)));
@@ -61,8 +66,7 @@ class UserController extends BaseController
     public function reset_2faAction()
     {
         $id = $this->request->query->get('id');
-        /** @var $user User */
-        $user = $this->em->getRepository(User::class)->find($id);
+        $user = $this->userRepository->find($id);
         $this->em->flush();
 
         $user->setGoogleAuthenticatorSecret(null);
@@ -81,11 +85,10 @@ class UserController extends BaseController
     public function resetPasswordAction()
     {
         $id = $this->request->query->get('id');
-        /** @var $user User */
-        $user = $this->em->getRepository(User::class)->find($id);
+        $user = $this->userRepository->find($id);
         $this->em->flush();
 
-        if (is_null($user->getSrp())) {
+        if ($user && is_null($user->getSrp())) {
             return $this->redirectToRoute('easyadmin', [
                 'action' => 'list',
                 'errors' => ['resetPassword' => 'Invalid Srp'],
@@ -94,6 +97,11 @@ class UserController extends BaseController
         }
 
         $event = new GetResponseNullableUserEvent($user, $this->request);
+        /**
+         * @phpstan-ignore-next-line
+         * @psalm-suppress InvalidArgument
+         * @psalm-suppress TooManyArguments
+         */
         $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_INITIALIZE, $event);
 
         if (null !== $event->getResponse()) {
@@ -102,6 +110,11 @@ class UserController extends BaseController
 
         if (null !== $user) {
             $event = new GetResponseUserEvent($user, $this->request);
+            /**
+             * @phpstan-ignore-next-line
+             * @psalm-suppress InvalidArgument
+             * @psalm-suppress TooManyArguments
+             */
             $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_RESET_REQUEST, $event);
             if (null !== $event->getResponse()) {
                 return $event->getResponse();
@@ -111,6 +124,11 @@ class UserController extends BaseController
             $user->setEnabled(false);
 
             $event = new GetResponseUserEvent($user, $this->request);
+            /**
+             * @phpstan-ignore-next-line
+             * @psalm-suppress InvalidArgument
+             * @psalm-suppress TooManyArguments
+             */
             $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_CONFIRM, $event);
             if (null !== $event->getResponse()) {
                 return $event->getResponse();
@@ -119,6 +137,11 @@ class UserController extends BaseController
             $user->setPasswordRequestedAt(new \DateTime());
             $this->userManager->updateUser($user);
             $event = new GetResponseUserEvent($user, $this->request);
+            /**
+             * @phpstan-ignore-next-line
+             * @psalm-suppress InvalidArgument
+             * @psalm-suppress TooManyArguments
+             */
             $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_COMPLETED, $event);
             if (null !== $event->getResponse()) {
                 return $event->getResponse();
