@@ -78,7 +78,25 @@ get:
 ---
 kind: pipeline
 type: docker
-name: 4xxi
+name: 4xxi test
+steps:
+- name: Prepare. install composer
+  image: composer
+  commands:
+  - composer-install
+
+- name: Run. analyse quality
+  image: php:7.3-fpm-alpine
+  commands:
+  - vendor/bin/phpstan analyse
+  - vendor/bin/psalm --show-info=false
+trigger:
+  branch: [ feature/* ]
+---
+kind: pipeline
+type: docker
+name: 4xxi build
+
 globals:
 - &confNoSaveBuild
   dockerfile: Dockerfile
@@ -195,8 +213,5 @@ steps:
     branch: [ develop, master ]
 
 trigger:
-  branch:
-  - master
-  - develop
-  - feature/*
+  branch: [ master, develop, feature/* ]
 
