@@ -63,7 +63,7 @@ COPY tests/_scripts/wait-for-it.sh /usr/local/bin
 COPY . .
 RUN composer install
 RUN vendor/bin/php-cs-fixer fix --config=.php_cs.dist -v --dry-run --using-cache=no
-RUN vendor/bin/phpstan analyse
+RUN vendor/bin/phpstan analyse --memory-limit=-1
 RUN vendor/bin/psalm --show-info=false
 
 RUN bash init_db.sh postgres & wait-for-it.sh 127.0.0.1:5432 -- echo "postgres is up" \
