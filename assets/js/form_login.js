@@ -12,7 +12,7 @@ function generateSession(data) {
     let sessionKey = srp.generateK(data.S);
 
     axios.post(
-        '/srp_login_confirm', {
+        '/api/srp_login_confirm', {
             'clientSessionKey': sessionKey,
             'email': data.email
         })

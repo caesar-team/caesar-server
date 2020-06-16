@@ -455,7 +455,7 @@ final class SrpController extends AbstractController
     }
 
     /**
-     * @Route(path="/srp_login_confirm", name="srp_login_confirm", methods={"POST"})
+     * @Route(path="/api/srp_login_confirm", name="srp_login_confirm", methods={"POST"})
      */
     public function compareSessionKeysAndAuthorize(Request $request)
     {
