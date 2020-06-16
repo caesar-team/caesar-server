@@ -83,10 +83,10 @@ class ItemVoter extends Voter
                     return $this->canMove($subject, $user);
                 case self::EDIT_ITEM:
                     return $this->canEdit($subject, $user);
-                case self::CREATE_ITEM && $userTeam instanceof UserTeam:
-                    return  in_array($userTeam->getUserRole(), self::AVAILABLE_TEAM_ROLES);
                 case self::CREATE_ITEM:
-                    return User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
+                    return ($userTeam instanceof UserTeam && in_array($userTeam->getUserRole(), self::AVAILABLE_TEAM_ROLES))
+                        || User::FLOW_STATUS_FINISHED === $user->getFlowStatus()
+                    ;
                 case self::DELETE_ITEM:
                     $teamUserRole = $userTeam instanceof UserTeam ? $userTeam->getUserRole() : null;
                     $isAdmin = $user->hasRole(User::ROLE_ADMIN) || UserTeam::USER_ROLE_ADMIN === $teamUserRole;

@@ -18,7 +18,7 @@ class InvitationEncoder
 
     public static function initEncoder(): InvitationEncoder
     {
-        return new self(getenv('INVITATION_SALT'));
+        return new self((string) getenv('INVITATION_SALT'));
     }
 
     public function encode(string $string): string

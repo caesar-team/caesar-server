@@ -76,7 +76,7 @@ class ListTreeViewFactory
     protected function createListView(Directory $directory)
     {
         $view = new ListView();
-        $view->id = $directory->getId();
+        $view->id = $directory->getId()->toString();
         $view->label = $directory->getLabel();
         $view->type = NodeEnumType::TYPE_LIST;
         $view->children = $this->getChildren($directory);

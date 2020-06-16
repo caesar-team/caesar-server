@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Security\Authentication;
 
 use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\UserRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -24,18 +24,14 @@ class SrppAuthenticator extends AbstractGuardAuthenticator
     public const SERVER_SESSION_KEY_FIELD = 'serverSessionKey';
     private const CLIENT_SESSION_KEY_FIELD = 'clientSessionKey';
     private const EMAIL_FIELD = 'email';
-    /**
-     * @var EntityManagerInterface
-     */
-    private $em;
-    /**
-     * @var RouterInterface
-     */
-    private $router;
 
-    public function __construct(EntityManagerInterface $em, RouterInterface $router)
+    private UserRepository $repository;
+
+    private RouterInterface $router;
+
+    public function __construct(UserRepository $repository, RouterInterface $router)
     {
-        $this->em = $em;
+        $this->repository = $repository;
         $this->router = $router;
     }
 
@@ -73,7 +69,7 @@ class SrppAuthenticator extends AbstractGuardAuthenticator
             return null;
         }
 
-        return $this->em->getRepository(User::class)->findOneByEmail($credentials[self::EMAIL_FIELD]);
+        return $this->repository->findOneByEmail($credentials[self::EMAIL_FIELD]);
     }
 
     public function checkCredentials($credentials, UserInterface $user): bool

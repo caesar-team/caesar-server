@@ -44,6 +44,7 @@ final class ShareItemSubscriber implements EventSubscriber
             return;
         }
 
+        /** @psalm-suppress ArgumentTypeCoercion */
         if (!$this->isUnique($item)) {
             throw new InvalidArgumentException('item.invite.user.already_invited');
         }

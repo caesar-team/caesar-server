@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Security\AuthorizationManager;
 
-use App\Entity\Security\Invitation;
 use App\Entity\User;
+use App\Repository\InvitationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
@@ -28,14 +28,18 @@ class AuthorizationManager
      */
     private $translator;
 
+    private InvitationRepository $invitationRepository;
+
     public function __construct(
         UserManagerInterface $userManager,
         EntityManagerInterface $entityManager,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        InvitationRepository $invitationRepository
     ) {
         $this->userManager = $userManager;
         $this->entityManager = $entityManager;
         $this->translator = $translator;
+        $this->invitationRepository = $invitationRepository;
     }
 
     /**
@@ -57,7 +61,7 @@ class AuthorizationManager
     public function hasInvitation(UserInterface $user): bool
     {
         $hash = (InvitationEncoder::initEncoder())->encode($user->getEmail());
-        $invitation = $this->entityManager->getRepository(Invitation::class)->findOneFreshByHash($hash);
+        $invitation = $this->invitationRepository->findOneFreshByHash($hash);
 
         if ($invitation) {
             return true;
@@ -71,7 +75,7 @@ class AuthorizationManager
         $userRepository = $this->entityManager->getRepository(User::class);
         preg_match('/(?<=@)(.+)$/', $email, $matches);
         $domain = $matches[1];
-        if (!in_array($domain, explode(',', getenv('OAUTH_ALLOWED_DOMAINS')), true)
+        if (!in_array($domain, explode(',', (string) getenv('OAUTH_ALLOWED_DOMAINS')), true)
             && !$userRepository->findOneBy(['email' => $email])
         ) {
             throw new AuthenticationException($this->translator->trans('authentication.email_domain_restriction', ['%domain%' => $domain]));

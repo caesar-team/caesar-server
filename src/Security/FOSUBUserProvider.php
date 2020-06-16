@@ -10,11 +10,11 @@ use App\Repository\UserRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\File\FileDownloader;
 use App\Services\TeamManager;
+use FOS\UserBundle\Model\UserInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
 use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
 use HWI\Bundle\OAuthBundle\Security\Core\Exception\AccountNotLinkedException;
 use HWI\Bundle\OAuthBundle\Security\Core\User\FOSUBUserProvider as BaseUserProvider;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,7 +25,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FOSUBUserProvider extends BaseUserProvider
 {
-    /** @var EventDispatcher */
+    /** @var EventDispatcherInterface */
     private $eventDispatcher;
 
     /** @var FileDownloader */
@@ -67,15 +67,11 @@ class FOSUBUserProvider extends BaseUserProvider
     }
 
     /**
-     * @throws \Exception
-     * @throws \TypeError
-     *
-     * @return User|\FOS\UserBundle\Model\UserInterface|\Symfony\Component\Security\Core\User\UserInterface|null
+     * @psalm-suppress InvalidReturnType
      */
     public function loadUserByOAuthUserResponse(UserResponseInterface $response)
     {
         try {
-            /** @var User $user */
             $user = parent::loadUserByOAuthUserResponse($response);
         } catch (AccountNotLinkedException $e) {
             $user = $this->userManager->findUserByEmail($response->getEmail());
@@ -83,20 +79,25 @@ class FOSUBUserProvider extends BaseUserProvider
             $this->denyAccessUnlessGranted($response, $user);
 
             if (!$user) {
-                /** @var User $user */
                 $user = $this->userManager->createUser();
                 $user->setEmail($response->getEmail());
                 $user->setPlainPassword(md5(uniqid('', true)));
                 $user->setUsername($response->getEmail());
                 $user->setEnabled(true);
-                $this->groupManager->addTeamToUser($user);
-
-                $avatar = $this->downloader->createAvatarFromLink($response->getProfilePicture());
-                $user->setAvatar($avatar);
+                if ($user instanceof User) {
+                    $this->groupManager->addTeamToUser($user);
+                    $avatar = $this->downloader->createAvatarFromLink($response->getProfilePicture());
+                    $user->setAvatar($avatar);
+                }
 
                 $this->userManager->updateCanonicalFields($user);
                 $this->userManager->updatePassword($user);
 
+                /**
+                 * @phpstan-ignore-next-line
+                 * @psalm-suppress InvalidArgument
+                 * @psalm-suppress TooManyArguments
+                 */
                 $this->eventDispatcher->dispatch(AppEvents::REGISTER_BY_GOOGLE, new GenericEvent($user));
             }
         }
@@ -106,13 +107,14 @@ class FOSUBUserProvider extends BaseUserProvider
         $accessor = PropertyAccess::createPropertyAccessor();
         $accessor->setValue($user, ucfirst($serviceName).'Id', $response->getUsername());
 
+        /** @psalm-suppress InvalidReturnStatement */
         return $user;
     }
 
     /**
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    private function denyAccessUnlessGranted(UserResponseInterface $response, User $user = null): void
+    private function denyAccessUnlessGranted(UserResponseInterface $response, UserInterface $user = null): void
     {
         if (!$user instanceof User) {
             return;

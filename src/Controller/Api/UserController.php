@@ -68,12 +68,9 @@ final class UserController extends AbstractController
      *     methods={"GET"}
      * )
      * @Rest\View(serializerGroups={"public"})
-     *
-     * @return SelfUserInfoView
      */
-    public function userInfo(SelfUserInfoViewFactory $viewFactory)
+    public function userInfo(SelfUserInfoViewFactory $viewFactory): ?SelfUserInfoView
     {
-        /** @var User $user */
         $user = $this->getUser();
 
         return $user ? $viewFactory->create($user) : null;
@@ -102,10 +99,8 @@ final class UserController extends AbstractController
      *     expr="repository.findByEmail(email)"
      * )
      * @Rest\View(serializerGroups={"public"})
-     *
-     * @return UserKeysView
      */
-    public function publicKey(User $user, UserKeysViewFactory $viewFactory)
+    public function publicKey(User $user, UserKeysViewFactory $viewFactory): ?UserKeysView
     {
         return $viewFactory->create($user);
     }
@@ -134,7 +129,7 @@ final class UserController extends AbstractController
      *
      * @return UserView[]|array|FormInterface
      */
-    public function userList(Request $request, UserListViewFactory $factory)
+    public function userList(Request $request, UserListViewFactory $factory, UserRepository $repository)
     {
         $userQuery = new UserQuery($this->getUser());
 
@@ -144,7 +139,7 @@ final class UserController extends AbstractController
             return $form;
         }
 
-        $userCollection = $this->getDoctrine()->getRepository(User::class)->getByQuery($userQuery);
+        $userCollection = $repository->getByQuery($userQuery);
 
         return $factory->create($userCollection);
     }
@@ -281,9 +276,8 @@ final class UserController extends AbstractController
         EntityManagerInterface $entityManager,
         TeamManager $teamManager
     ) {
-        /** @var User $user */
         $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
-        if (!$user) {
+        if (null === $user) {
             $user = new User(new Srp());
         } elseif (null !== $user->getPublicKey()) {
             $message = $this->translator->trans('app.exception.user_already_exists');
@@ -400,10 +394,8 @@ final class UserController extends AbstractController
      * )
      *
      * @throws \Exception
-     *
-     * @return FormInterface
      */
-    public function sendInvitation(Request $request, Messenger $messenger, LoggerInterface $logger)
+    public function sendInvitation(Request $request, Messenger $messenger, LoggerInterface $logger): ?FormInterface
     {
         $sendRequest = new SendInviteRequest();
 

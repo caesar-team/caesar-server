@@ -22,6 +22,9 @@ class PGPVerifier implements RequestVerifierInterface
         }
         $verify = current($verify);
 
+        /**
+         * @psalm-suppress MixedArrayAccess
+         */
         return $verify['fingerprint'] === $public['fingerprint'];
     }
 

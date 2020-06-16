@@ -101,7 +101,7 @@ class AuditEventsQuery extends AbstractQuery
         return $this->item;
     }
 
-    public function setItem(?Item $item): void
+    public function setItem(Item $item): void
     {
         $this->item = $item;
     }

@@ -1,5 +1,7 @@
 parameters:
-  level: 1
+  level: 5
   inferPrivatePropertyTypeFromConstructor: true
   paths:
     - src
+  excludes_analyse:
+    - %currentWorkingDirectory%/src/Migrations/*

@@ -10,7 +10,6 @@ use App\Entity\User;
 use App\Form\Request\CreateListType;
 use App\Form\Request\EditListType;
 use App\Form\Request\SortListType;
-use App\Model\View\Error\SingleError;
 use App\Security\ListVoter;
 use App\Services\ItemDisplacer;
 use Doctrine\ORM\EntityManagerInterface;
@@ -151,10 +150,8 @@ final class ListController extends AbstractController
      *     name="api_edit_list",
      *     methods={"PATCH"}
      * )
-     *
-     * @return SingleError|FormInterface|JsonResponse
      */
-    public function editListAction(Directory $list, Request $request, EntityManagerInterface $manager)
+    public function editListAction(Directory $list, Request $request, EntityManagerInterface $manager): ?FormInterface
     {
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
         if (null === $list->getParentList()) { //root list
@@ -270,10 +267,8 @@ final class ListController extends AbstractController
      *     name="api_sort_list",
      *     methods={"PATCH"}
      * )
-     *
-     * @return SingleError|FormInterface|JsonResponse
      */
-    public function sortList(Directory $list, Request $request, EntityManagerInterface $manager)
+    public function sortList(Directory $list, Request $request, EntityManagerInterface $manager): ?FormInterface
     {
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
         if (null === $list->getParentList()) { //root list

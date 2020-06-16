@@ -43,7 +43,7 @@ class ChildItemView
     public $teamId;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|string
      * @Groups({"child_item"})
      */
     public $lastUpdated;
@@ -63,7 +63,7 @@ class ChildItemView
     public $email;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $link;
     /**
@@ -71,7 +71,7 @@ class ChildItemView
      */
     public $isAccepted;
     /**
-     * @var string
+     * @var string|null
      */
     public $publicKey;
 

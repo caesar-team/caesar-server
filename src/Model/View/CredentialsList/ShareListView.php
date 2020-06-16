@@ -16,7 +16,7 @@ final class ShareListView
     public $shares;
 
     /**
-     * @param array|Item[] $parentItems
+     * @param array<string, array<int, Item>> $parentItems
      *
      * @return ShareListView
      */

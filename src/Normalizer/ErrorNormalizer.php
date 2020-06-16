@@ -8,21 +8,12 @@ use InvalidArgumentException;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
-/**
- * Class ErrorNormalizer.
- */
 class ErrorNormalizer implements NormalizerInterface
 {
-    /**
-     * @var TranslatorInterface
-     */
-    private $translator;
+    private TranslatorInterface $translator;
 
-    /**
-     * ErrorNormalizer constructor.
-     */
     public function __construct(TranslatorInterface $translator)
     {
         $this->translator = $translator;
@@ -54,13 +45,14 @@ class ErrorNormalizer implements NormalizerInterface
     {
         $errors = [];
         foreach ($form->getErrors() as $error) {
+            if (!$error instanceof FormError) {
+                continue;
+            }
             $errors[] = $this->getErrorMessage($error);
         }
         foreach ($form->all() as $childForm) {
-            if ($childForm instanceof FormInterface) {
-                if ($childErrors = $this->getFormErrors($childForm)) {
-                    $errors[$childForm->getName()] = $childErrors;
-                }
+            if ($childErrors = $this->getFormErrors($childForm)) {
+                $errors[$childForm->getName()] = $childErrors;
             }
         }
 
@@ -70,10 +62,6 @@ class ErrorNormalizer implements NormalizerInterface
     private function getErrorMessage(FormError $error): string
     {
         try {
-            if (null !== $error->getMessagePluralization()) {
-                return $this->translator->transChoice($error->getMessageTemplate(), $error->getMessagePluralization(), $error->getMessageParameters(), 'validators');
-            }
-
             return $this->translator->trans($error->getMessageTemplate(), $error->getMessageParameters(), 'validators');
         } catch (InvalidArgumentException $exception) {
             return '';

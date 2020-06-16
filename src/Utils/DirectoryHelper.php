@@ -56,14 +56,14 @@ class DirectoryHelper
 
     /**
      * @param array|Directory[] $directories
-     *
-     * @return mixed
      */
     public static function getListsItems(array $directories, array $items = []): array
     {
         foreach ($directories as $directory) {
+            /** @psalm-suppress MixedOperand */
             $items = $items + $directory->getChildItems();
-            if ($directory->getChildLists()) {
+            if ($directory->getChildLists()->count() > 0) {
+                /** @psalm-suppress MixedOperand */
                 $items = $items + DirectoryHelper::getListsItems($directory->getChildLists()->toArray(), $items);
             }
         }

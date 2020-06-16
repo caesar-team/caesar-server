@@ -15,13 +15,13 @@ class FrontendRedirectSubscriber implements EventSubscriberInterface
 {
     private const OAUTH_ROUTE_NAME = 'hwi_oauth_service_redirect';
 
-    /** @var string */
+    /** @var string|null */
     private $frontendUri;
 
     /** @var FrontendUriHandler */
     private $frontendUriHandler;
 
-    /** @var string */
+    /** @var string|null */
     private $fingerprint;
 
     /** @var FingerprintStasher */
