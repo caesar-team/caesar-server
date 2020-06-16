@@ -83,7 +83,7 @@ steps:
 - name: Prepare. install composer
   image: composer
   commands:
-  - composer-install
+  - composer install
 
 - name: Run. analyse quality
   image: php:7.3-fpm-alpine
@@ -96,6 +96,8 @@ trigger:
 kind: pipeline
 type: docker
 name: 4xxi build
+
+depends_on: [ "4xxi test" ]
 
 globals:
 - &confNoSaveBuild
