@@ -12,6 +12,12 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 
+/**
+ * @method Item|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Item|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Item[]    findAll()
+ * @method Item[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class ItemRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -34,7 +40,7 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Item[]|iterable
+     * @return Item[]
      */
     public function getFavoritesItems(User $user, ?Team $team = null): iterable
     {

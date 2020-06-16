@@ -12,16 +12,15 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20190329134040 extends AbstractMigration
 {
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
         $schema->dropTable('audit_events');
     }
 
     /**
-     * @param Schema $schema
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
         $this->abortIf('postgresql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'postgresql\'.');
 

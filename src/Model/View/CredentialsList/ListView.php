@@ -14,7 +14,7 @@ class ListView extends NodeView
     public $children;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @SWG\Property(example="lists")
      */

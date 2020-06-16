@@ -12,20 +12,22 @@ use App\Model\View\CredentialsList\InviteItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
 use App\Utils\ChildItemAwareInterface;
-use Countable;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Security\Core\Security;
 
 final class ItemViewFactory implements ViewFactoryInterface
 {
     /**
-     * @var User
+     * @var User|null
      */
     private $currentUser;
 
     public function __construct(Security $security)
     {
-        $this->currentUser = $security->getUser();
+        $user = $security->getUser();
+        if ($user instanceof User) {
+            $this->currentUser = $user;
+        }
     }
 
     /**
@@ -43,17 +45,16 @@ final class ItemViewFactory implements ViewFactoryInterface
     {
         $view = new ItemView();
 
-        $view->id = $item->getId();
+        $view->id = $item->getId()->toString();
         $view->type = $item->getType();
         $view->lastUpdated = $item->getLastUpdated();
-        $view->listId = $item->getParentList()->getId()->toString();
+        $view->listId = null !== $item->getParentList() ? $item->getParentList()->getId()->toString() : null;
         $view->previousListId = $item->getPreviousList() ? $item->getPreviousList()->getId()->toString() : null;
-
         $view->secret = $item->getSecret();
         $view->invited = $this->getInvitesCollection($item);
         $view->shared = $this->getSharesCollection($item);
         $view->update = $this->getUpdateView($item->getUpdate());
-        $view->ownerId = $item->getOwner()->getId()->toString();
+        $view->ownerId = null !== $item->getOwner() ? $item->getOwner()->getId()->toString() : null;
         $view->favorite = $item->isFavorite();
         $view->sort = $item->getSort();
         $view->originalItemId = $item->getOriginalItem() ? $item->getOriginalItem()->getId()->toString() : null;
@@ -70,7 +71,7 @@ final class ItemViewFactory implements ViewFactoryInterface
     {
         $list = [];
         foreach ($items as $item) {
-            if ($this->currentUser !== $item->getSignedOwner()) {
+            if (!$item->getSignedOwner()->equals($this->currentUser)) {
                 continue;
             }
 
@@ -101,11 +102,11 @@ final class ItemViewFactory implements ViewFactoryInterface
     }
 
     /**
-     * @param \Countable|ChildItemAwareInterface[]|Collection $childItems
+     * @param ChildItemAwareInterface[]|Collection $childItems
      *
      * @return array|Item[]
      */
-    private function extractChildItemByCause(Countable $childItems, string $cause = Item::CAUSE_INVITE): array
+    private function extractChildItemByCause(Collection $childItems, string $cause = Item::CAUSE_INVITE): array
     {
         return $childItems->filter(function (ChildItemAwareInterface $childItem) use ($cause) {
             return $cause === $childItem->getCause();

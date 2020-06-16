@@ -14,7 +14,6 @@ services:
         environment:
             - PARENT_USER_ID
             - APP_ENV
-            - JWT_PASSPHRASE
             - PHP_IDE_CONFIG
         user: "$UID:$UID"
         depends_on:

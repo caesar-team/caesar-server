@@ -13,6 +13,6 @@ use Symfony\Component\Validator\Constraint;
  */
 class EnumType extends Constraint
 {
-    public $message = 'Value %current_type% does not exist in possible variants (%variants%)';
-    public $type;
+    public string $message = 'Value %current_type% does not exist in possible variants (%variants%)';
+    public ?string $type;
 }

@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Team;
+use App\Entity\User;
 use App\Repository\TeamRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as BaseController;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+/**
+ * @method User|null getUser()
+ */
 class AbstractController extends BaseController
 {
     /**
@@ -26,7 +30,7 @@ class AbstractController extends BaseController
         $this->teamRepository = $teamRepository;
     }
 
-    public function getDefaultTeam(): Team
+    public function getDefaultTeam(): ?Team
     {
         return $this->teamRepository->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
     }

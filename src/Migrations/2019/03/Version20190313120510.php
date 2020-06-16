@@ -13,24 +13,22 @@ use Doctrine\Migrations\AbstractMigration;
 final class Version20190313120510 extends AbstractMigration
 {
     /**
-     * @param Schema $schema
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
         $itemMasktable = $schema->getTable('item_mask');
         $itemMasktable->dropColumn('last_updated');
 
-        $this->addSql("CREATE TABLE invitation (id UUID NOT NULL, hash TEXT NOT NULL, PRIMARY KEY(id))");
-        $this->addSql("CREATE UNIQUE INDEX UNIQ_F11D61A2D1B862B8 ON invitation (hash)");
+        $this->addSql('CREATE TABLE invitation (id UUID NOT NULL, hash TEXT NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_F11D61A2D1B862B8 ON invitation (hash)');
         $this->addSql("COMMENT ON COLUMN invitation.id IS '(DC2Type:uuid)'");
     }
 
     /**
-     * @param Schema $schema
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
         $itemMasktable = $schema->getTable('item_mask');
         $itemMasktable->addColumn('last_updated', 'datetime');

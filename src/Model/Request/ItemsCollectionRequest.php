@@ -7,20 +7,17 @@ namespace App\Model\Request;
 class ItemsCollectionRequest
 {
     /**
-     * @var string[]
+     * @var array
      */
     private $items = [];
 
-    /**
-     * @return string[]
-     */
     public function getItems(): array
     {
         return $this->items;
     }
 
     /**
-     * @param string[] $items
+     * @param array $items
      */
     public function setItems($items): void
     {

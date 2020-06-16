@@ -126,7 +126,7 @@ class Directory
     }
 
     /**
-     * @return Item[]
+     * @return array<Item>
      */
     public function getChildItems(string $status = null): array
     {
@@ -189,7 +189,7 @@ class Directory
         return $this->label;
     }
 
-    public function setLabel(?string $label): void
+    public function setLabel(string $label): void
     {
         $this->label = $label;
     }

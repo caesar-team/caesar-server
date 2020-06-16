@@ -14,6 +14,10 @@ trait CommonProcessCompilerPassTrait
         $services = $container->findTaggedServiceIds($serviceTag);
         $serviceDefinition = $container->getDefinition($serviceClass);
 
+        /**
+         * @var string $serviceId
+         * @var array  $tags
+         */
         foreach ($services as $serviceId => $tags) {
             if ($serviceDefinition->getClass() === $serviceId) {
                 continue;

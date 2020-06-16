@@ -14,7 +14,7 @@ class SelfUserInfoViewFactory
     {
         $view = new SelfUserInfoView();
 
-        $view->id = $user->getId();
+        $view->id = $user->getId()->toString();
         $view->email = $user->getEmail();
         $view->name = $user->getUsername();
         $view->avatar = $this->getImage($user->getAvatar());

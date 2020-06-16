@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 class BatchChildItemsCollectionRequest
 {
     /**
-     * @var ItemCollectionRequest[]
+     * @var ItemCollectionRequest[]|ArrayCollection
      */
     private $collectionItems;
 

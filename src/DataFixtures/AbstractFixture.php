@@ -18,6 +18,9 @@ abstract class AbstractFixture extends DoctrineAbstractFixture implements ORMFix
     /** @var ObjectManager */
     protected $manager;
 
+    /**
+     * @var string
+     */
     protected $environment;
 
     final public function load(ObjectManager $manager)
@@ -58,7 +61,7 @@ abstract class AbstractFixture extends DoctrineAbstractFixture implements ORMFix
     }
 
     /**
-     * @param $object
+     * @param mixed $object
      */
     protected function addRef(string $className, string $uniqueName, $object)
     {

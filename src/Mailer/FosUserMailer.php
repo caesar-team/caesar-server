@@ -17,7 +17,7 @@ class FosUserMailer extends Mailer implements MailerInterface
     public const FROM_EMAIL = 'no-reply@caesar.team';
 
     /**
-     * Mailer constructor.
+     * @psalm-suppress ArgumentTypeCoercion
      */
     public function __construct(Swift_Mailer $mailer, UrlGeneratorInterface $router, EngineInterface $templating)
     {
@@ -32,7 +32,7 @@ class FosUserMailer extends Mailer implements MailerInterface
         $webClientUrl = getenv('WEB_CLIENT_URL')
             ?: $this->router->generate('root', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $url = $webClientUrl.'resetting/'.$user->getEmail().'/'.$user->getConfirmationToken();
+        $url = $webClientUrl.'resetting/'.$user->getEmail().'/'.strval($user->getConfirmationToken());
 
         $rendered = $this->templating->render('email/password_resetting.email.html.twig', [
             'user' => $user,

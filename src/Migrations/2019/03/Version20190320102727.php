@@ -13,10 +13,9 @@ use Doctrine\Migrations\AbstractMigration;
 final class Version20190320102727 extends AbstractMigration
 {
     /**
-     * @param Schema $schema
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
         $table = $schema->getTable('invitation');
         $table->addColumn('shelf_life', 'string', [
@@ -24,15 +23,14 @@ final class Version20190320102727 extends AbstractMigration
             'notnull' => true,
             'length' => 10,
         ]);
-        $this->addSql("ALTER TABLE invitation ADD created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL");
-        $this->addSql("ALTER TABLE invitation ADD updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL");
+        $this->addSql('ALTER TABLE invitation ADD created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL');
+        $this->addSql('ALTER TABLE invitation ADD updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL');
     }
 
     /**
-     * @param Schema $schema
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
         $table = $schema->getTable('invitation');
         $table->dropColumn('shelf_life');

@@ -6,7 +6,7 @@ namespace App\Model\Query;
 
 use App\Entity\User;
 use App\Entity\UserTeam;
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 class UserQuery extends AbstractQuery
 {
@@ -16,7 +16,7 @@ class UserQuery extends AbstractQuery
     public $name;
 
     /**
-     * @var UserTeam[]|ArrayCollection
+     * @var UserTeam[]|Collection
      */
     public $userTeams;
 
@@ -39,8 +39,8 @@ class UserQuery extends AbstractQuery
     /**
      * @return UserTeam[]
      */
-    public function getUserTeams()
+    public function getUserTeams(): array
     {
-        return $this->userTeams;
+        return $this->userTeams->toArray();
     }
 }

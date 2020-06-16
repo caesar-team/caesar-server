@@ -13,10 +13,9 @@ use Doctrine\Migrations\AbstractMigration;
 final class Version20190318115912 extends AbstractMigration
 {
     /**
-     * @param Schema $schema
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
         $itemTable = $schema->getTable('item');
         $itemTable->addColumn('cause', 'string', [
@@ -28,7 +27,6 @@ final class Version20190318115912 extends AbstractMigration
             'length' => 510,
             'notnull' => false,
         ]);
-
 
         $itemMaskTable = $schema->getTable('item_mask');
         $itemMaskTable->addColumn('link', 'string', [
@@ -43,10 +41,9 @@ final class Version20190318115912 extends AbstractMigration
     }
 
     /**
-     * @param Schema $schema
      * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
         $itemTable = $schema->getTable('item');
         $itemTable->dropColumn('cause');

@@ -71,7 +71,7 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
             return $response->setData($responseData);
         }
 
-        throw new InvalidArgumentException('Expected an instance of %s, but got "%s".', JWTUserToken::class, get_class($token));
+        throw new InvalidArgumentException(sprintf('Expected an instance of %s, but got "%s".', JWTUserToken::class, get_class($token)));
     }
 
     /**

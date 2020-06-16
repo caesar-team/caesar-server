@@ -42,7 +42,7 @@ class ErrorResponseListener
         $newException = $event->getThrowable();
 
         $event->allowCustomResponseCode();
-        $response = new JsonResponse($newException->getData(), $newException->getCode());
+        $response = new JsonResponse($newException->getData(), (int) $newException->getCode());
         $event->setResponse($response);
     }
 
