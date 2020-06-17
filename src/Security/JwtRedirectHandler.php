@@ -60,11 +60,6 @@ class JwtRedirectHandler implements AuthenticationSuccessHandlerInterface
         return new RedirectResponse($url);
     }
 
-    /**
-     * @param User $user
-     *
-     * @return string
-     */
     private function generateFrontendUri(Request $request, string $jwt): ?string
     {
         $uri = $this->frontendUriHandler->extractUri($request);

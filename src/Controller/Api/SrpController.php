@@ -15,6 +15,7 @@ use App\Form\Request\Srp\RegistrationType;
 use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
+use App\Repository\UserRepository;
 use App\Security\Authentication\SrppAuthenticator;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\SrpHandler;
@@ -87,8 +88,6 @@ final class SrpController extends AbstractController
      *
      * @throws ApiException
      * @throws NonUniqueResultException
-     *
-     * @return null
      */
     public function registerAction(
         Request $request,
@@ -97,9 +96,8 @@ final class SrpController extends AbstractController
         TranslatorInterface $translator,
         AuthorizationManager $authorizationManager,
         ErrorMessageFormatter $errorMessageFormatter
-    ) {
+    ): ?FormInterface {
         $email = $request->request->get('email');
-        /** @var User $user */
         $user = $userManager->findUserByEmail($email);
         if ($user instanceof User && $authorizationManager->hasInvitation($user)) {
             $errorMessage = $translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]);
@@ -170,11 +168,15 @@ final class SrpController extends AbstractController
      *
      * @return PreparedSrpView|FormInterface|JsonResponse
      */
-    public function prepareLoginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler, SrpPrepareViewFactory $viewFactory)
-    {
-        $email = $request->request->get('email');
-        /** @var User $user */
-        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
+    public function prepareLoginAction(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository,
+        SrpHandler $srpHandler,
+        SrpPrepareViewFactory $viewFactory
+    ) {
+        $email = (string) $request->request->get('email');
+        $user = $userRepository->findOneByEmail($email);
         if (null === $user) {
             $message = $this->translator->trans('app.exception.user_not_found');
             throw new AccessDeniedHttpException($message, null, Response::HTTP_BAD_REQUEST);
@@ -306,10 +308,8 @@ final class SrpController extends AbstractController
      * )
      *
      * @throws Exception
-     *
-     * @return null
      */
-    public function updatePassword(Request $request, UserManagerInterface $manager)
+    public function updatePassword(Request $request, UserManagerInterface $manager): ?FormInterface
     {
         $user = $this->getUser();
         if (!$user instanceof User) {
@@ -353,7 +353,7 @@ final class SrpController extends AbstractController
      *     description="Access denied"
      * )
      *
-     * @param $token
+     * @param mixed $token
      *
      * @return FormInterface|RedirectResponse|Response|null
      */
@@ -375,6 +375,11 @@ final class SrpController extends AbstractController
         }
 
         $event = new GetResponseUserEvent($user, $request);
+        /**
+         * @phpstan-ignore-next-line
+         * @psalm-suppress InvalidArgument
+         * @psalm-suppress TooManyArguments
+         */
         $eventDispatcher->dispatch(FOSUserEvents::RESETTING_RESET_INITIALIZE, $event);
 
         if (null !== $event->getResponse()) {
@@ -386,6 +391,11 @@ final class SrpController extends AbstractController
 
         if ($form->isValid()) {
             $event = new FormEvent($form, $request);
+            /**
+             * @phpstan-ignore-next-line
+             * @psalm-suppress InvalidArgument
+             * @psalm-suppress TooManyArguments
+             */
             $eventDispatcher->dispatch(FOSUserEvents::RESETTING_RESET_SUCCESS, $event);
             $user->setEnabled(true);
             $userManager->updateUser($user);
@@ -395,6 +405,11 @@ final class SrpController extends AbstractController
                 $response = new RedirectResponse($url);
             }
 
+            /**
+             * @phpstan-ignore-next-line
+             * @psalm-suppress InvalidArgument
+             * @psalm-suppress TooManyArguments
+             */
             $eventDispatcher->dispatch(
                 FOSUserEvents::RESETTING_RESET_COMPLETED,
                 new FilterUserResponseEvent($user, $request, $response)
@@ -412,10 +427,8 @@ final class SrpController extends AbstractController
      *     name="srp_login2",
      *     methods={"POST"}
      * )
-     *
-     * @return null
      */
-    public function login2Action(Request $request, SrpHandler $srpHandler)
+    public function login2Action(Request $request, SrpHandler $srpHandler): JsonResponse
     {
         $parsedRequest = json_decode($request->getContent(), true);
         /** @var User $user */

@@ -87,7 +87,7 @@ final class TwoFactorAuthController extends AbstractController
         $manager->persist($user);
         $manager->flush();
 
-        return null;
+        return new Response();
     }
 
     /**

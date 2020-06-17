@@ -23,7 +23,7 @@ final class ShareManager
     /**
      * @throws \Exception
      *
-     * @return array|Item[]
+     * @return array<string, array<int, Item>> string as uid
      */
     public function share(BatchShareRequest $collectionRequest): array
     {

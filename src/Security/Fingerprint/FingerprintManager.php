@@ -72,7 +72,7 @@ class FingerprintManager
         return false;
     }
 
-    public function findFingerPrintByUser($user): ?Fingerprint
+    public function findFingerPrintByUser(User $user): ?Fingerprint
     {
         $this->invalidateOutdated($user);
         $repo = $this->entityManager->getRepository(Fingerprint::class);

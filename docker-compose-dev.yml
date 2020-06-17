@@ -7,6 +7,14 @@ services:
             dockerfile: Dockerfile.dev
             args:
                 APP_ENV: ${APP_ENV}
+                XDEBUG_REMOTE_HOST: ${XDEBUG_REMOTE_HOST}
+                XDEBUG_REMOTE_ENABLE: ${XDEBUG_REMOTE_ENABLE}
+                XDEBUG_REMOTE_AUTOSTART: ${XDEBUG_REMOTE_AUTOSTART}
+                XDEBUG_REMOTE_CONNECT_BACK: ${XDEBUG_REMOTE_CONNECT_BACK}
+                XDEBUG_IDEKEY: ${XDEBUG_IDEKEY}
+                XDEBUG_REMOTE_PORT: ${XDEBUG_REMOTE_PORT}
+                XDEBUG_PROFILER_ENABLE: ${XDEBUG_PROFILER_ENABLE}
+                XDEBUG_PROFILER_ENABLE_TRIGGER: ${XDEBUG_PROFILER_ENABLE_TRIGGER}
         volumes:
             - .:/var/www/html
         expose:
@@ -14,7 +22,6 @@ services:
         environment:
             - PARENT_USER_ID
             - APP_ENV
-            - JWT_PASSPHRASE
             - PHP_IDE_CONFIG
         user: "$UID:$UID"
         depends_on:

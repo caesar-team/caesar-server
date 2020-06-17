@@ -10,7 +10,6 @@ services:
         environment:
             - PARENT_USER_ID
             - APP_ENV
-            - JWT_PASSPHRASE
         user: "$UID:$UID"
         depends_on:
             - db

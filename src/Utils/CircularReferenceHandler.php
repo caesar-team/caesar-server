@@ -8,6 +8,9 @@ use Exception;
 
 class CircularReferenceHandler
 {
+    /**
+     * @psalm-suppress MissingParamType
+     */
     public function __invoke($object)
     {
         try {

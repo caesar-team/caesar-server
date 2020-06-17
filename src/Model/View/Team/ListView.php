@@ -10,7 +10,7 @@ use App\Model\View\CredentialsList\NodeView;
 final class ListView extends NodeView
 {
     /**
-     * @var string
+     * @var string|null
      */
     public $label;
     /**

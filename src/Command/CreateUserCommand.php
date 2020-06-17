@@ -52,9 +52,12 @@ class CreateUserCommand extends BaseCreateUserCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $username = $input->getArgument('username');
-        $email = $input->getArgument('email');
-        $password = $input->getArgument('password');
+        /** @psalm-suppress PossiblyInvalidCast */
+        $username = (string) $input->getArgument('username');
+        /** @psalm-suppress PossiblyInvalidCast */
+        $email = (string) $input->getArgument('email');
+        /** @psalm-suppress PossiblyInvalidCast */
+        $password = (string) $input->getArgument('password');
         $inactive = $input->getOption('inactive');
         $superadmin = $input->getOption('super-admin');
 
@@ -73,5 +76,7 @@ class CreateUserCommand extends BaseCreateUserCommand
         $this->userManager->updateUser($user);
 
         $output->writeln(sprintf('Created user <comment>%s</comment>', $username));
+
+        return 0;
     }
 }

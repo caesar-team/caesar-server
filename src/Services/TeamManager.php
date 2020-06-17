@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
+use App\Repository\TeamRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 
@@ -15,11 +16,16 @@ class TeamManager
     /**
      * @var EntityManagerInterface
      */
-    private $manager;
+    private $entityManager;
 
-    public function __construct(EntityManagerInterface $manager)
-    {
-        $this->manager = $manager;
+    private TeamRepository $repository;
+
+    public function __construct(
+        EntityManagerInterface $manager,
+        TeamRepository $repository
+    ) {
+        $this->entityManager = $manager;
+        $this->repository = $repository;
     }
 
     /**
@@ -30,13 +36,12 @@ class TeamManager
         $team = $team ?: $this->findDefaultTeam();
 
         $userTeam = new UserTeam($user, $team, $role);
-        $this->manager->persist($userTeam);
+        $this->entityManager->persist($userTeam);
     }
 
     private function findDefaultTeam(): Team
     {
-        /** @var Team $team */
-        $team = $this->manager->getRepository(Team::class)->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
+        $team = $this->repository->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
 
         if (is_null($team)) {
             throw new LogicException('At least one team must exists');

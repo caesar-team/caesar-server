@@ -9,9 +9,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 class PublicKeysRequest
 {
     /**
-     * @var array
+     * @var ArrayCollection
      */
-    private $emails = [];
+    private $emails;
 
     public function __construct()
     {

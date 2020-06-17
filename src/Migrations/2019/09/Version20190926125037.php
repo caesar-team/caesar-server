@@ -13,17 +13,17 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20190926125037 extends AbstractMigration
 {
-    public function getDescription() : string
+    public function getDescription(): string
     {
         return '';
     }
 
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
-        $this->addSql("UPDATE groups SET icon=? WHERE icon IS NULL", [DefaultIcon::getDefaultIcon()]);
+        $this->addSql('UPDATE groups SET icon=? WHERE icon IS NULL', [DefaultIcon::getDefaultIcon()]);
     }
 
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
         $itShouldntChanges = true;
         $this->skipIf($itShouldntChanges, 'It shouldn\'t changes');

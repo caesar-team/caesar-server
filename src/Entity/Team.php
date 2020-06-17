@@ -200,9 +200,12 @@ class Team
         return $this->title;
     }
 
-    public function getOwnedItems(): Collection
+    /**
+     * @return Item[]
+     */
+    public function getOwnedItems(): array
     {
-        return $this->ownedItems;
+        return $this->ownedItems->toArray();
     }
 
     public function addOwnedItem(Item $item): void

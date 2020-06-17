@@ -124,11 +124,9 @@ final class ItemController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @throws NonUniqueResultException
-     *
-     * @return ItemView[]|FormInterface
+     * @return array<int, ItemView>|FormInterface
      */
-    public function itemListAction(Request $request, ItemListViewFactory $viewFactory)
+    public function itemListAction(Request $request, ItemListViewFactory $viewFactory, ItemRepository $repository)
     {
         $itemListQuery = new ItemListQuery();
 
@@ -141,7 +139,7 @@ final class ItemController extends AbstractController
         //todo: CAES-572 permissions refactoring
         //$this->denyAccessUnlessGranted(ListVoter::SHOW_ITEMS, $itemListQuery->list);
 
-        $itemCollection = $this->getDoctrine()->getRepository(Item::class)->getByQuery($itemListQuery);
+        $itemCollection = $repository->getByQuery($itemListQuery);
 
         return $viewFactory->create($itemCollection);
     }
@@ -384,15 +382,13 @@ final class ItemController extends AbstractController
      *
      * @throws NonUniqueResultException
      * @throws \Exception
-     *
-     * @return FormInterface|JsonResponse
      */
     public function moveItem(
         Item $item,
         Request $request,
         ItemMoveResolver $itemMoveResolver,
         ItemRepository $itemRepository
-    ) {
+    ): ?FormInterface {
         $replacedItem = new Item();
 
         $form = $this->createForm(MoveItemType::class, $replacedItem);
@@ -581,9 +577,9 @@ final class ItemController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @return ItemView[]|FormInterface
+     * @return ItemView[]
      */
-    public function favorite(ItemListViewFactory $viewFactory, ItemRepository $repository, ?Team $team = null)
+    public function favorite(ItemListViewFactory $viewFactory, ItemRepository $repository, ?Team $team = null): array
     {
         if (null !== $team) {
             $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
@@ -745,8 +741,6 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param ChildItemActualizer $childItemHandler
-     *
      * @return ItemView|FormInterface
      */
     public function childItemToItem(
@@ -831,7 +825,7 @@ final class ItemController extends AbstractController
 
         foreach ($itemsCollection->getItems() as $item) {
             // TODO check and fix $item['id']
-            $item = $entityManager->getRepository(Item::class)->find($item['id']);
+            $item = $entityManager->getRepository(Item::class)->find($item['id'] ?? $item);
             if ($item instanceof Item) {
                 //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
                 $item->setStatus(Item::STATUS_FINISHED);
@@ -933,12 +927,8 @@ final class ItemController extends AbstractController
      *     name="api_accept_item_update",
      *     methods={"POST"}
      * )
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return null
      */
-    public function acceptItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
+    public function acceptItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory): ItemView
     {
         //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
 

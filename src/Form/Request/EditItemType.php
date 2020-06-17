@@ -15,10 +15,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class EditItemType extends AbstractType
 {
-    /**
-     * @var InjectTagListener
-     */
-    private $injectTagListener;
+    private ?InjectTagListener $injectTagListener;
 
     public function __construct(?InjectTagListener $injectTagListener = null)
     {

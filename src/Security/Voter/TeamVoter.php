@@ -8,29 +8,13 @@ use App\Entity\Team;
 use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Symfony\Component\Security\Core\Security;
 
 class TeamVoter extends Voter
 {
     public const TEAM_CREATE = 'team_create';
 
     /**
-     * @var User
-     */
-    private $user;
-
-    public function __construct(Security $security)
-    {
-        $this->user = $security->getUser();
-    }
-
-    /**
-     * Determines if the attribute and subject are supported by this voter.
-     *
-     * @param string $attribute An attribute
-     * @param mixed  $subject   The subject to secure, e.g. an object the user wants to access or any other PHP type
-     *
-     * @return bool True if the attribute and subject are supported, false otherwise
+     * {@inheritdoc}
      */
     protected function supports($attribute, $subject)
     {
@@ -38,7 +22,7 @@ class TeamVoter extends Voter
             return false;
         }
 
-        if (!$subject instanceof Team || is_null($this->user)) {
+        if (!$subject instanceof Team) {
             return false;
         }
 
@@ -46,24 +30,27 @@ class TeamVoter extends Voter
     }
 
     /**
-     * Perform a single access check operation on a given attribute, subject and token.
-     * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
-     *
-     * @param string $attribute
-     * @param Team   $team
-     *
-     * @return bool
+     * {@inheritdoc}
      */
-    protected function voteOnAttribute($attribute, $team, TokenInterface $token)
+    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
+        if (!$subject instanceof Team) {
+            return false;
+        }
+
         if (self::TEAM_CREATE !== $attribute) {
             return false;
         }
 
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
+        if (Team::DEFAULT_GROUP_ALIAS === $subject->getAlias()) {
             return false;
         }
 
-        return $this->user->hasRole(User::ROLE_ADMIN) || $this->user->hasRole(User::ROLE_SUPER_ADMIN);
+        $user = $token->getUser();
+        if (!$user instanceof User) {
+            return false;
+        }
+
+        return $user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_SUPER_ADMIN);
     }
 }
