@@ -21,7 +21,7 @@ security:
             pattern: ^/api/anonymous
             anonymous: true
         doc:
-            pattern: ^/(api/doc|admin)
+            pattern: ^/(api/doc|admin|api/srp_login_confirm)
             logout: true
             stateless: false
             anonymous: false
