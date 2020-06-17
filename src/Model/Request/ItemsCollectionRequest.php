@@ -7,7 +7,7 @@ namespace App\Model\Request;
 class ItemsCollectionRequest
 {
     /**
-     * @var array
+     * @var string[]
      */
     private $items = [];
 
@@ -17,7 +17,7 @@ class ItemsCollectionRequest
     }
 
     /**
-     * @param array $items
+     * @param string[] $items
      */
     public function setItems($items): void
     {
