@@ -45,7 +45,7 @@ class ChildItemView
     /**
      * @var \DateTime|string
      * @Groups({"child_item"})
-     * 
+     *
      * @SWG\Property(type="string")
      */
     public $lastUpdated;
