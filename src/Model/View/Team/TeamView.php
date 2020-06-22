@@ -7,6 +7,7 @@ namespace App\Model\View\Team;
 use App\Entity\Team;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
+use Swagger\Annotations as SWG;
 
 /**
  * @Hateoas\Relation(
@@ -76,10 +77,11 @@ class TeamView
      * @var Team|null
      *
      * @Serializer\Exclude
+     * @SWG\Property(type="string")
      */
     private $team;
 
-    public function getTeam(): ?Team
+    public function team(): ?Team
     {
         return $this->team;
     }

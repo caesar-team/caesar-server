@@ -8,6 +8,8 @@ use App\Entity\Team;
 use App\Entity\UserTeam;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
+use Swagger\Annotations as SWG;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @Hateoas\Relation(
@@ -56,6 +58,7 @@ final class MemberShortView
      * @var Team|null
      *
      * @Serializer\Exclude
+     * @SWG\Property(type="string")
      */
     private $team;
 
@@ -86,6 +89,9 @@ final class MemberShortView
         return $list;
     }
 
+    /**
+     * @Groups({"excluded"})
+     */
     public function getTeam(): ?Team
     {
         return $this->team;

@@ -141,6 +141,7 @@ class ItemView extends NodeView
      * @var Item|null
      *
      * @Serializer\Exclude
+     * @SWG\Property(type="string")
      */
     private $item;
 

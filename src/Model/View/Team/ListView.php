@@ -59,6 +59,7 @@ final class ListView extends NodeView
      * @var Directory|null
      *
      * @Serializer\Exclude
+     * @SWG\Property(type="string")
      */
     private $directory;
 
