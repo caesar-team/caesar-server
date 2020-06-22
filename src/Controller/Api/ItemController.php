@@ -136,8 +136,6 @@ final class ItemController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
-        //todo: CAES-572 permissions refactoring
-        //$this->denyAccessUnlessGranted(ListVoter::SHOW_ITEMS, $itemListQuery->list);
 
         $itemCollection = $repository->getByQuery($itemListQuery);
 

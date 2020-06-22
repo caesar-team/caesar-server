@@ -10,7 +10,7 @@ lexik_jwt_authentication:
     token_extractors:
         # look for a token as Authorization Header
         authorization_header:
-            enabled: false
+            enabled: true
             prefix:  Bearer
             name:    Authorization
 

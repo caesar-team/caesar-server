@@ -7,6 +7,7 @@ namespace App\Entity;
 use App\Utils\DefaultIcon;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use Ramsey\Uuid\Uuid;
@@ -112,6 +113,20 @@ class Team
     public function getUserTeams(): Collection
     {
         return $this->userTeams;
+    }
+
+    public function getUserTeamByUser(User $user): ?UserTeam
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('user', $user));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $userTeam = $this->userTeams->matching($criteria)->first();
+
+        return $userTeam instanceof UserTeam ? $userTeam : null;
     }
 
     public function addUserTeam(UserTeam $userTeam): void

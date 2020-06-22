@@ -17,7 +17,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 /**
  * @ORM\Table
  * @ORM\Entity(repositoryClass="App\Repository\DirectoryRepository")
- * @UniqueEntity(fields={"label"}, errorPath="label", message="list.create.label.already_exists")
+ * @UniqueEntity(fields={"label"}, errorPath="label", message="list.create.label.already_exists", groups={"unique_label"})
  */
 class Directory
 {
@@ -217,5 +217,14 @@ class Directory
     public function __toString()
     {
         return $this->id->toString();
+    }
+
+    public function equals(?Directory $directory): bool
+    {
+        if (null === $directory) {
+            return false;
+        }
+
+        return $this->getId()->toString() === $directory->getId()->toString();
     }
 }

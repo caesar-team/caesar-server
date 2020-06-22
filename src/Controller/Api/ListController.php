@@ -216,7 +216,7 @@ final class ListController extends AbstractController
      */
     public function deleteListAction(Directory $list, ItemDisplacer $itemDisplacer, EntityManagerInterface $manager)
     {
-        $this->denyAccessUnlessGranted(ListVoter::DELETE_LIST, $list);
+        $this->denyAccessUnlessGranted(ListVoter::DELETE, $list);
 
         if (null === $list->getParentList()) { //root list
             $message = $this->translator->trans('app.exception.cant_delete_root_list');
@@ -270,7 +270,7 @@ final class ListController extends AbstractController
      */
     public function sortList(Directory $list, Request $request, EntityManagerInterface $manager): ?FormInterface
     {
-        $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
+        $this->denyAccessUnlessGranted(ListVoter::SORT, $list);
         if (null === $list->getParentList()) { //root list
             $message = $this->translator->trans('app.exception.cant_edit_root_list');
             throw new BadRequestHttpException($message);

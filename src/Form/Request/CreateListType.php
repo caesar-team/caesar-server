@@ -29,6 +29,9 @@ class CreateListType extends AbstractType
         parent::configureOptions($resolver);
         $resolver->setDefaults([
             'data_class' => Directory::class,
+            'validation_groups' => [
+                'Default', 'unique_label',
+            ],
         ]);
     }
 }
