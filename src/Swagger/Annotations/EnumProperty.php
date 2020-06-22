@@ -11,7 +11,7 @@ class EnumProperty extends Property
 {
     private const ENUM_PROPERTY = 'enumPath';
 
-    public $glue = '|';
+    public string $glue = '|';
 
     /**
      * @param string $property
@@ -21,6 +21,8 @@ class EnumProperty extends Property
     {
         if (self::ENUM_PROPERTY === $property) {
             $choices = $value::getValues();
+            /** @psalm-suppress InvalidPropertyAssignmentValue */
+            /* @phpstan-ignore-next-line */
             $this->example = implode($this->glue, $choices);
         } else {
             parent::__set($property, $value);

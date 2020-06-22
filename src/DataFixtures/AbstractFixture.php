@@ -9,7 +9,7 @@ use App\Entity\Item;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\ORMFixtureInterface;
 use Doctrine\Common\DataFixtures\AbstractFixture as DoctrineAbstractFixture;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -18,11 +18,11 @@ abstract class AbstractFixture extends DoctrineAbstractFixture implements ORMFix
     /** @var ObjectManager */
     protected $manager;
 
+    /**
+     * @var string
+     */
     protected $environment;
 
-    /**
-     * @param ObjectManager $manager
-     */
     final public function load(ObjectManager $manager)
     {
         $this->manager = $manager;
@@ -47,18 +47,12 @@ abstract class AbstractFixture extends DoctrineAbstractFixture implements ORMFix
 
     abstract protected function loadProd(ObjectManager $manager);
 
-    /**
-     * @return bool
-     */
     protected function isProd(): bool
     {
         return 'prod' === $this->environment;
     }
 
     /**
-     * @param string $className
-     * @param string $uniqueName
-     *
      * @return User|Directory|Item|object
      */
     protected function getRef(string $className, string $uniqueName)
@@ -67,19 +61,13 @@ abstract class AbstractFixture extends DoctrineAbstractFixture implements ORMFix
     }
 
     /**
-     * @param string $className
-     * @param string $uniqueName
-     * @param        $object
+     * @param mixed $object
      */
     protected function addRef(string $className, string $uniqueName, $object)
     {
         $this->addReference($className.$uniqueName, $object);
     }
 
-    /**
-     * @param array       $collection
-     * @param string|null $referenceClass
-     */
     protected function save(array $collection, string $referenceClass = null)
     {
         foreach ($collection as $name => $item) {

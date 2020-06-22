@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Item;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Model\Query\ItemListQuery;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 
+/**
+ * @method Item|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Item|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Item[]    findAll()
+ * @method Item[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class ItemRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -33,19 +40,26 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param User $user
-     *
-     * @return Item[]|iterable
+     * @return Item[]
      */
-    public function getFavoritesItems(User $user): iterable
+    public function getFavoritesItems(User $user, ?Team $team = null): iterable
     {
         $queryBuilder = $this->createQueryBuilder('item');
         $queryBuilder
             ->innerJoin('item.parentList', 'list')
-            ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list')
+            ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list OR user = item.owner')
             ->where('user.id = :user')
             ->andWhere('item.favorite = true')
             ->setParameter('user', $user->getId());
+
+        if (null === $team) {
+            $queryBuilder->andWhere('item.team IS NULL');
+        } else {
+            $queryBuilder
+                ->andWhere('item.team = :team')
+                ->setParameter('team', $team)
+            ;
+        }
 
         return $queryBuilder->getQuery()->getResult();
     }

@@ -1,0 +1,90 @@
+# ---- Base Image ----
+FROM php:7.4-fpm-alpine AS base
+RUN mkdir -p /var/www/html /var/www/html/public/static /var/www/html/var/cache /var/www/html/var/logs /var/www/html/var/sessions && chown -R www-data /var/www/html
+# Set working directory
+WORKDIR /var/www/html
+
+RUN apk --update add \
+    build-base \
+    autoconf \
+    git \
+    icu-dev \
+    gpgme-dev \
+    gpgme \
+    libzip-dev \
+    postgresql-dev \
+    zip
+
+RUN docker-php-ext-install \
+    intl \
+    bcmath\
+    opcache \
+    pdo \
+    pdo_pgsql \
+    zip \
+    sockets
+
+RUN pecl install gnupg redis \
+    && docker-php-ext-enable redis
+
+# Composer part
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+ENV COMPOSER_MEMORY_LIMIT -1
+# ENV COMPOSER_ALLOW_SUPERUSER 1
+RUN composer global require hirak/prestissimo  --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-interaction --no-plugins --no-scripts
+
+# Run in production mode
+ENV APP_ENV=prod
+# Copy project file
+COPY composer.json .
+COPY composer.lock .
+
+
+
+ARG XDEBUG_REMOTE_HOST=172.17.0.1
+ARG XDEBUG_REMOTE_ENABLE=1
+ARG XDEBUG_REMOTE_AUTOSTART=1
+ARG XDEBUG_REMOTE_CONNECT_BACK=1
+ARG XDEBUG_IDEKEY=PHPSTORM
+ARG XDEBUG_REMOTE_PORT=9001
+ARG XDEBUG_PROFILER_ENABLE=0
+ARG XDEBUG_PROFILER_ENABLE_TRIGGER=1
+
+RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS coreutils \
+   && yes | pecl install xdebug \
+   && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
+   && echo "xdebug.remote_enable=${XDEBUG_REMOTE_ENABLE}" >> /usr/local/etc/php/conf.d/xdebug.ini \
+   && echo "xdebug.remote_autostart=${XDEBUG_REMOTE_AUTOSTART}" >> /usr/local/etc/php/conf.d/xdebug.ini \
+   && echo "xdebug.remote_host=${XDEBUG_REMOTE_HOST}" >> /usr/local/etc/php/conf.d/xdebug.ini \
+   && echo "xdebug.remote_port=${XDEBUG_REMOTE_PORT}" >> /usr/local/etc/php/conf.d/xdebug.ini \
+   && echo "xdebug.remote_connect_back=${XDEBUG_REMOTE_CONNECT_BACK}" >> /usr/local/etc/php/conf.d/xdebug.ini \
+   && echo "xdebug.idekey=${XDEBUG_IDEKEY}" >> /usr/local/etc/php/conf.d/xdebug.ini \
+   && echo "xdebug.profiler_enable=${XDEBUG_PROFILER_ENABLE}" >> /usr/local/etc/php/conf.d/xdebug.ini \
+   && echo "xdebug.profiler_enable_trigger=${XDEBUG_PROFILER_ENABLE_TRIGGER}" >> /usr/local/etc/php/conf.d/xdebug.ini \
+   && echo "xdebug.profiler_output_dir=/var/www/GDL/var/profiler_snapshots" >> /usr/local/etc/php/conf.d/xdebug.ini \
+   && echo "xdebug.max_nesting_level=9999" >> /usr/local/etc/php/conf.d/xdebug.ini \
+   && apk del .build-deps
+
+FROM node:8-alpine AS yarn-enc
+COPY . .
+RUN yarn install && yarn encore production
+# ---- Dependencies ----
+FROM base AS dependencies
+# install vendors
+USER www-data
+RUN APP_ENV=prod composer install --prefer-dist --no-plugins --no-scripts --no-dev --optimize-autoloader
+
+# ---- Release ----
+FROM base AS release
+EXPOSE 9000
+USER www-data
+# copy production vendors
+COPY --chown=www-data:www-data . .
+COPY --chown=www-data:www-data --from=dependencies /var/www/html/vendor /var/www/html/vendor
+COPY --from=yarn-enc ./public/build /var/www/html/public/build
+COPY ./config/docker/php/symfony.ini /usr/local/etc/php/conf.d
+# COPY ./config/docker/php/symfony.pool.conf /usr/local/etc/php-fpm.d/
+COPY --chown=www-data:www-data entrypoint.sh /usr/local/bin/
+RUN php bin/console assets:install public
+# expose port and define CMD
+ENTRYPOINT ["entrypoint.sh"]

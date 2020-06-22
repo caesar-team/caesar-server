@@ -17,14 +17,18 @@ class ItemListViewFactory
     private $secretViewFactory;
 
     /**
-     * @var User
+     * @var User|null
      */
     private $currentUser;
 
     public function __construct(ItemViewFactory $secretViewFactory, Security $security)
     {
         $this->secretViewFactory = $secretViewFactory;
-        $this->currentUser = $security->getUser();
+
+        $user = $security->getUser();
+        if ($user instanceof User) {
+            $this->currentUser = $user;
+        }
     }
 
     /**
@@ -36,7 +40,7 @@ class ItemListViewFactory
     {
         $viewCollection = [];
         foreach ($itemCollection as $item) {
-            if ($this->currentUser !== $item->getSignedOwner()) {
+            if (!$item->getSignedOwner()->equals($this->currentUser)) {
                 continue;
             }
 

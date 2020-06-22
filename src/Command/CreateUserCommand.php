@@ -4,13 +4,13 @@ namespace App\Command;
 
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Services\SrpHandler;
 use App\Services\TeamManager;
+use FOS\UserBundle\Command\CreateUserCommand as BaseCreateUserCommand;
 use FOS\UserBundle\Model\UserManagerInterface;
+use FOS\UserBundle\Util\UserManipulator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use FOS\UserBundle\Util\UserManipulator;
-use FOS\UserBundle\Command\CreateUserCommand as BaseCreateUserCommand;
-use App\Services\SrpHandler;
 
 class CreateUserCommand extends BaseCreateUserCommand
 {
@@ -38,8 +38,7 @@ class CreateUserCommand extends BaseCreateUserCommand
         UserManagerInterface $userManager,
         TeamManager $teamManager,
         SrpHandler $srpHandler
-    )
-    {
+    ) {
         parent::__construct($userManipulator);
 
         $this->userManipulator = $userManipulator;
@@ -53,9 +52,12 @@ class CreateUserCommand extends BaseCreateUserCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $username = $input->getArgument('username');
-        $email = $input->getArgument('email');
-        $password = $input->getArgument('password');
+        /** @psalm-suppress PossiblyInvalidCast */
+        $username = (string) $input->getArgument('username');
+        /** @psalm-suppress PossiblyInvalidCast */
+        $email = (string) $input->getArgument('email');
+        /** @psalm-suppress PossiblyInvalidCast */
+        $password = (string) $input->getArgument('password');
         $inactive = $input->getOption('inactive');
         $superadmin = $input->getOption('super-admin');
 
@@ -74,5 +76,7 @@ class CreateUserCommand extends BaseCreateUserCommand
         $this->userManager->updateUser($user);
 
         $output->writeln(sprintf('Created user <comment>%s</comment>', $username));
+
+        return 0;
     }
 }

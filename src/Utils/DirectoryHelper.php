@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-
 namespace App\Utils;
-
 
 use App\Entity\Directory;
 use App\Entity\Item;
@@ -13,7 +11,7 @@ use App\Entity\User;
 
 class DirectoryHelper
 {
-    static public function hasOfferedItems(User $user, array $teams = []): bool
+    public static function hasOfferedItems(User $user, array $teams = []): bool
     {
         $teamsOfferedItemsCount = count(DirectoryHelper::extractOfferedItemsByUser($user));
         foreach ($teams as $team) {
@@ -24,10 +22,9 @@ class DirectoryHelper
     }
 
     /**
-     * @param User $user
      * @return array|Item[]
      */
-    static public function extractOfferedItemsByUser(User $user): array
+    public static function extractOfferedItemsByUser(User $user): array
     {
         $inbox = $user->getInbox();
         $inboxItems = array_filter($inbox->getChildItems(), [DirectoryHelper::class, 'filterByOffered']);
@@ -39,11 +36,9 @@ class DirectoryHelper
     }
 
     /**
-     * @param User $user
-     * @param Team $team
      * @return array|Item[]
      */
-    static public function extractOfferedTeamsItemsByUser(User $user, Team $team): array
+    public static function extractOfferedTeamsItemsByUser(User $user, Team $team): array
     {
         $lists = $team->getLists();
         $items = DirectoryHelper::getListsItems([$lists], $lists->getChildItems());
@@ -54,20 +49,21 @@ class DirectoryHelper
         return $items;
     }
 
-    static public function filterByOffered (Item $item) {
+    public static function filterByOffered(Item $item): bool
+    {
         return Item::STATUS_OFFERED === $item->getStatus();
     }
 
     /**
      * @param array|Directory[] $directories
-     * @param array $items
-     * @return mixed
      */
-    static public function getListsItems(array $directories, array $items = []): array
+    public static function getListsItems(array $directories, array $items = []): array
     {
         foreach ($directories as $directory) {
+            /** @psalm-suppress MixedOperand */
             $items = $items + $directory->getChildItems();
-            if ($directory->getChildLists()) {
+            if ($directory->getChildLists()->count() > 0) {
+                /** @psalm-suppress MixedOperand */
                 $items = $items + DirectoryHelper::getListsItems($directory->getChildLists()->toArray(), $items);
             }
         }

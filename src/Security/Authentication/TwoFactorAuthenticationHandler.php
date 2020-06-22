@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Security\Fingerprint\FingerprintManager;
 use App\Security\Fingerprint\FingerprintStasher;
 use App\Security\Voter\TwoFactorInProgressVoter;
+use InvalidArgumentException;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use Scheb\TwoFactorBundle\Security\Http\Authentication\AuthenticationRequiredHandlerInterface;
@@ -29,6 +30,7 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
      * @var FingerprintManager
      */
     private $fingerprintManager;
+
     /**
      * @var FingerprintStasher
      */
@@ -42,11 +44,10 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
     }
 
     /**
-     * @param Request $request
-     * @param TokenInterface $token
-     * @return JsonResponse|Response
      * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
      * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTEncodeFailureException
+     *
+     * @return JsonResponse|Response
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token)
     {
@@ -70,7 +71,7 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
             return $response->setData($responseData);
         }
 
-        throw new \InvalidArgumentException('Expected an instance of %s, but got "%s".', JWTUserToken::class, get_class($token));
+        throw new InvalidArgumentException(sprintf('Expected an instance of %s, but got "%s".', JWTUserToken::class, get_class($token)));
     }
 
     /**

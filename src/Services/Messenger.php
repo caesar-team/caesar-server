@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-
 use App\Entity\MessageHistory;
 use App\Entity\User;
 use App\Mailer\MailRegistry;
-use App\Repository\MessageHistoryRepository;
 use App\Model\DTO\Message;
+use App\Repository\MessageHistoryRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\Producer;
+use Psr\Log\LoggerInterface;
 
 class Messenger
 {
@@ -38,8 +38,7 @@ class Messenger
         MessageHistoryRepository $historyRepository,
         EntityManagerInterface $entityManager,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->historyRepository = $historyRepository;
         $this->entityManager = $entityManager;
         $this->logger = $logger;
@@ -47,11 +46,9 @@ class Messenger
     }
 
     /**
-     * @param User $user
-     * @param Message $message
      * @throws \Exception
      */
-    public function send(User $user, Message $message)
+    public function send(User $user, Message $message): void
     {
         if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
             return;
@@ -70,11 +67,6 @@ class Messenger
         $this->entityManager->flush();
     }
 
-    /**
-     * @param User $user
-     * @param Message $message
-     * @return bool
-     */
     private function skipUnlessGranted(User $user, Message $message): bool
     {
         $messageHistory = $this->historyRepository->findOneBy([
@@ -82,13 +74,13 @@ class Messenger
             'category' => MessageHistory::DEFAULT_CATEGORY,
             'code' => $message->code,
         ], [
-            'createdAt' => 'DESC'
+            'createdAt' => 'DESC',
         ]);
 
         switch (true) {
             case !$messageHistory instanceof MessageHistory:
-            case $messageHistory->getCode() !== MailRegistry::NEW_ITEM_MESSAGE:
-            case (new \DateTimeImmutable())->format('Y-m-d') !== $messageHistory->getCreatedAt()->format('Y-m-d'):
+            case MailRegistry::NEW_ITEM_MESSAGE !== $messageHistory->getCode():
+            case (new DateTimeImmutable())->format('Y-m-d') !== $messageHistory->getCreatedAt()->format('Y-m-d'):
                 $isNotGranted = false;
                 break;
             default:

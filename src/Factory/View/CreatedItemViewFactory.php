@@ -13,7 +13,7 @@ class CreatedItemViewFactory
     {
         $view = new CreatedItemView();
 
-        $view->id = $item->getId();
+        $view->id = $item->getId()->toString();
         $view->lastUpdated = $item->getLastUpdated();
 
         return $view;

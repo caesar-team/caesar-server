@@ -10,6 +10,7 @@ use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
+use InvalidArgumentException;
 
 final class ShareItemSubscriber implements EventSubscriber
 {
@@ -28,7 +29,7 @@ final class ShareItemSubscriber implements EventSubscriber
      *
      * @return string[]
      */
-    public function getSubscribedEvents()
+    public function getSubscribedEvents(): array
     {
         return [
             Events::prePersist,
@@ -36,20 +37,20 @@ final class ShareItemSubscriber implements EventSubscriber
         ];
     }
 
-    public function prePersist(LifecycleEventArgs $args)
+    public function prePersist(LifecycleEventArgs $args): void
     {
         $item = $args->getObject();
         if (!$this->canProcess($item)) {
             return;
         }
 
+        /** @psalm-suppress ArgumentTypeCoercion */
         if (!$this->isUnique($item)) {
-            throw new \InvalidArgumentException('item.invite.user.already_invited');
+            throw new InvalidArgumentException('item.invite.user.already_invited');
         }
-
     }
 
-    public function preUpdate(PreUpdateEventArgs $args)
+    public function preUpdate(PreUpdateEventArgs $args): void
     {
         $item = $args->getObject();
         if (!$this->canProcess($item)) {

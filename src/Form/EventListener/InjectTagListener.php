@@ -7,6 +7,7 @@ namespace App\Form\EventListener;
 use App\Entity\Item;
 use App\Entity\Tag;
 use App\Repository\TagRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -52,7 +53,7 @@ final class InjectTagListener implements EventSubscriberInterface
                 $tags[] = $existTags[$tag] ?? new Tag($tag);
             }
 
-            $item->setTags($tags);
+            $item->setTags(new ArrayCollection($tags));
         }
     }
 }

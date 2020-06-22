@@ -18,16 +18,16 @@ final class BatchListItemViewFactory
         $this->itemViewFactory = $itemViewFactory;
     }
 
-    /**
-     * @param array $items
-     * @return ShareListView
-     */
     public function createList(array $items): ShareListView
     {
         $view = new ShareListView();
-        foreach ($items as $id => $item)
-        {
-            $view->shares[] = $this->itemViewFactory->createSharedItems($id, $item);
+        foreach ($items as $id => $sharedItems) {
+            /** @todo candidate to refactoring */
+            /**
+             * @phpstan-ignore-next-line
+             * @psalm-suppress InvalidPropertyAssignmentValue
+             */
+            $view->shares[] = $this->itemViewFactory->createSharedItems($id, $sharedItems);
         }
 
         return $view;

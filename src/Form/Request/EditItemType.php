@@ -6,7 +6,6 @@ namespace App\Form\Request;
 
 use App\Entity\Item;
 use App\Form\EventListener\InjectTagListener;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -16,10 +15,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class EditItemType extends AbstractType
 {
-    /**
-     * @var InjectTagListener
-     */
-    private $injectTagListener;
+    private ?InjectTagListener $injectTagListener;
 
     public function __construct(?InjectTagListener $injectTagListener = null)
     {

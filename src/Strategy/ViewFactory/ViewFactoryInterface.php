@@ -2,16 +2,12 @@
 
 declare(strict_types=1);
 
-
 namespace App\Strategy\ViewFactory;
-
 
 interface ViewFactoryInterface
 {
     /**
      * @param mixed $data
-     *
-     * @return bool
      */
     public function canView($data): bool;
 
@@ -23,8 +19,6 @@ interface ViewFactoryInterface
     public function view($data);
 
     /**
-     * @param array $data
-     *
      * @return mixed
      */
     public function viewList(array $data);

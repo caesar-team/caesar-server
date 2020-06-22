@@ -10,7 +10,6 @@ use App\Entity\User;
 use App\Form\Request\CreateListType;
 use App\Form\Request\EditListType;
 use App\Form\Request\SortListType;
-use App\Model\View\Error\SingleError;
 use App\Security\ListVoter;
 use App\Services\ItemDisplacer;
 use Doctrine\ORM\EntityManagerInterface;
@@ -78,11 +77,9 @@ final class ListController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param EntityManagerInterface $manager
+     * @throws \Doctrine\ORM\NonUniqueResultException
      *
      * @return FormInterface|JsonResponse
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function createListAction(Request $request, EntityManagerInterface $manager)
     {
@@ -148,20 +145,13 @@ final class ListController extends AbstractController
      *     description="No such list"
      * )
      *
-     *
      * @Route(
      *     path="/api/list/{id}",
      *     name="api_edit_list",
      *     methods={"PATCH"}
      * )
-     *
-     * @param Directory              $list
-     * @param Request                $request
-     * @param EntityManagerInterface $manager
-     *
-     * @return SingleError|FormInterface|JsonResponse
      */
-    public function editListAction(Directory $list, Request $request, EntityManagerInterface $manager)
+    public function editListAction(Directory $list, Request $request, EntityManagerInterface $manager): ?FormInterface
     {
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
         if (null === $list->getParentList()) { //root list
@@ -222,10 +212,6 @@ final class ListController extends AbstractController
      *     methods={"DELETE"}
      * )
      *
-     * @param Directory              $list
-     * @param ItemDisplacer          $itemDisplacer
-     * @param EntityManagerInterface $manager
-     *
      * @return null
      */
     public function deleteListAction(Directory $list, ItemDisplacer $itemDisplacer, EntityManagerInterface $manager)
@@ -246,7 +232,7 @@ final class ListController extends AbstractController
     }
 
     /**
-     * Sort List
+     * Sort List.
      *
      * @SWG\Tag(name="List", description="Sort list")
      *
@@ -276,20 +262,13 @@ final class ListController extends AbstractController
      *     description="No such list"
      * )
      *
-     *
      * @Route(
      *     path="/api/list/{id}/sort",
      *     name="api_sort_list",
      *     methods={"PATCH"}
      * )
-     *
-     * @param Directory              $list
-     * @param Request                $request
-     * @param EntityManagerInterface $manager
-     *
-     * @return SingleError|FormInterface|JsonResponse
      */
-    public function sortList(Directory $list, Request $request, EntityManagerInterface $manager)
+    public function sortList(Directory $list, Request $request, EntityManagerInterface $manager): ?FormInterface
     {
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
         if (null === $list->getParentList()) { //root list

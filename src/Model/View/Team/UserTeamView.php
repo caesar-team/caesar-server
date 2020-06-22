@@ -12,17 +12,17 @@ final class UserTeamView
     public $id;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $title;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $type;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $userRole;
 
@@ -37,7 +37,7 @@ final class UserTeamView
     public $updatedAt;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $icon;
 }

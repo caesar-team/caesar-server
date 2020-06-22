@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Entity\UserTeam;
 use App\Repository\TeamRepository;
 use App\Repository\UserTeamRepository;
+use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -65,13 +66,11 @@ class ItemVoter extends Voter
 
     /**
      * @param string $attribute
-     * @param Item $subject
-     * @param TokenInterface $token
+     * @param Item   $subject
      *
-     * @return bool
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
+    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
         /** @var User $user */
         $user = $token->getUser();
@@ -84,13 +83,14 @@ class ItemVoter extends Voter
                     return $this->canMove($subject, $user);
                 case self::EDIT_ITEM:
                     return $this->canEdit($subject, $user);
-                case self::CREATE_ITEM && $userTeam instanceof UserTeam:
-                    return  in_array($userTeam->getUserRole(), self::AVAILABLE_TEAM_ROLES);
                 case self::CREATE_ITEM:
-                    return User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
+                    return ($userTeam instanceof UserTeam && in_array($userTeam->getUserRole(), self::AVAILABLE_TEAM_ROLES))
+                        || User::FLOW_STATUS_FINISHED === $user->getFlowStatus()
+                    ;
                 case self::DELETE_ITEM:
                     $teamUserRole = $userTeam instanceof UserTeam ? $userTeam->getUserRole() : null;
                     $isAdmin = $user->hasRole(User::ROLE_ADMIN) || UserTeam::USER_ROLE_ADMIN === $teamUserRole;
+
                     return $itemOwner === $user || $isAdmin;
                 case self::SHOW_ITEM:
                     return true;
@@ -99,13 +99,10 @@ class ItemVoter extends Voter
             }
         }
 
-        throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');
+        throw new LogicException('This code should not be reached! You must update method UserVoter::supports()');
     }
 
     /**
-     * @param Item $item
-     * @param User $user
-     * @return UserTeam|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function findUserTeam(Item $item, User $user): ?UserTeam
@@ -149,7 +146,7 @@ class ItemVoter extends Voter
         $prevDirectoryTeam = $this->teamRepository->findOneByDirectory($item->getPreviousList());
         $currDirectoryTeam = $this->teamRepository->findOneByDirectory($item->getParentList());
 
-        if(is_null($prevDirectoryTeam) && $currDirectoryTeam && UserTeam::USER_ROLE_ADMIN !== $userTeam->getUserRole()) {
+        if (is_null($prevDirectoryTeam) && $currDirectoryTeam && UserTeam::USER_ROLE_ADMIN !== $userTeam->getUserRole()) {
             return false; //false if personal and just member
         }
 

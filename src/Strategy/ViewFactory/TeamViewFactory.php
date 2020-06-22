@@ -12,14 +12,12 @@ use App\Model\View\Team\TeamView;
 class TeamViewFactory implements ViewFactoryInterface
 {
     /**
-     * @param Team $team
      * @return array|MemberShortView[]
      */
     private function extractUsers(Team $team): array
     {
         $userTeams = $team->getUserTeams()->toArray();
         $userTeams = array_filter($userTeams, function (UserTeam $userTeam) {
-
             return UserTeam::USER_ROLE_PRETENDER !== $userTeam->getUserRole();
         });
 
@@ -28,8 +26,6 @@ class TeamViewFactory implements ViewFactoryInterface
 
     /**
      * @param mixed $data
-     *
-     * @return bool
      */
     public function canView($data): bool
     {
@@ -38,10 +34,8 @@ class TeamViewFactory implements ViewFactoryInterface
 
     /**
      * @param Team $team
-     *
-     * @return TeamView
      */
-    public function view($team)
+    public function view($team): TeamView
     {
         $view = new TeamView();
         $view->id = $team->getId()->toString();

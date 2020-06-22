@@ -7,43 +7,37 @@ namespace App\Mailer;
 use FOS\UserBundle\Mailer\Mailer;
 use FOS\UserBundle\Mailer\MailerInterface;
 use FOS\UserBundle\Model\UserInterface;
+use Swift_Mailer;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Templating\EngineInterface;
 
 class FosUserMailer extends Mailer implements MailerInterface
 {
-    const RESETTING_TEMPLATE = ':email:password_resetting.email.html.twig';
-    const FROM_EMAIL = 'no-reply@caesar.team';
+    public const RESETTING_TEMPLATE = ':email:password_resetting.email.html.twig';
+    public const FROM_EMAIL = 'no-reply@caesar.team';
 
     /**
-     * Mailer constructor.
-     *
-     * @param \Swift_Mailer         $mailer
-     * @param UrlGeneratorInterface $router
-     * @param EngineInterface       $templating
+     * @psalm-suppress ArgumentTypeCoercion
      */
-    public function __construct(\Swift_Mailer $mailer, UrlGeneratorInterface  $router, EngineInterface $templating)
+    public function __construct(Swift_Mailer $mailer, UrlGeneratorInterface $router, EngineInterface $templating)
     {
         parent::__construct($mailer, $router, $templating, []);
     }
 
     /**
      * Send an email to a user to confirm the password reset.
-     *
-     * @param UserInterface $user
      */
-    public function sendResettingEmailMessage(UserInterface $user)
+    public function sendResettingEmailMessage(UserInterface $user): void
     {
-        $webClientUrl
-            = getenv('WEB_CLIENT_URL') ?:
-            $this->router->generate('root', [], UrlGeneratorInterface::ABSOLUTE_URL)
-        ;
-        $url = $webClientUrl.'resetting/'.$user->getEmail().'/'.$user->getConfirmationToken();
+        $webClientUrl = getenv('WEB_CLIENT_URL')
+            ?: $this->router->generate('root', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $rendered = $this->templating->render('email/password_resetting.email.html.twig', array(
+        $url = $webClientUrl.'resetting/'.$user->getEmail().'/'.strval($user->getConfirmationToken());
+
+        $rendered = $this->templating->render('email/password_resetting.email.html.twig', [
             'user' => $user,
             'confirmationUrl' => $url,
-        ));
+        ]);
 
         $senderAddress = getenv('SENDER_ADDRESS') ?: self::FROM_EMAIL;
         $this->sendEmailMessage($rendered, $senderAddress, (string) $user->getEmail());

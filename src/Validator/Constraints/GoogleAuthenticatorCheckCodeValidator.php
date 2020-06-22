@@ -9,6 +9,7 @@ use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticator
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class GoogleAuthenticatorCheckCodeValidator extends ConstraintValidator
 {
@@ -28,13 +29,18 @@ class GoogleAuthenticatorCheckCodeValidator extends ConstraintValidator
     }
 
     /**
-     * @param string                                  $value
-     * @param Constraint|GoogleAuthenticatorCheckCode $constraint
+     * {@inheritdoc}
      */
     public function validate($value, Constraint $constraint)
     {
         $user = $this->security->getUser();
+        if (!$constraint instanceof GoogleAuthenticatorCheckCode) {
+            throw new UnexpectedTypeException($constraint, GoogleAuthenticatorCheckCode::class);
+        }
         if (!$user instanceof TwoFactorInterface) {
+            return;
+        }
+        if (!is_scalar($value)) {
             return;
         }
 

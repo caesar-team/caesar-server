@@ -6,6 +6,7 @@ namespace App\Utils;
 
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Throwable;
 
 class ErrorMessageFormatter
 {
@@ -19,7 +20,7 @@ class ErrorMessageFormatter
         $this->translator = $translator;
     }
 
-    public function errorFormat(\Exception $exception, string $internalCode = null): array
+    public function errorFormat(Throwable $exception, string $internalCode = null): array
     {
         $code = $this->getCode($exception, $internalCode);
 
@@ -33,11 +34,9 @@ class ErrorMessageFormatter
     }
 
     /**
-     * @param \Exception $exception
-     * @param string|null $internalCode
      * @return int|string
      */
-    private function getCode(\Exception $exception, string $internalCode = null)
+    private function getCode(Throwable $exception, string $internalCode = null)
     {
         switch (true) {
             case $internalCode:

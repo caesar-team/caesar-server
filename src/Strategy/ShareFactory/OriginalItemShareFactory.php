@@ -13,13 +13,19 @@ final class OriginalItemShareFactory extends AbstractShareFactory
 {
     /**
      * @param BatchItemCollectionRequest $itemCollectionRequest
-     * @return array|Item[]
+     *
      * @throws \Exception
+     *
+     * @return array<string, array<int, Item>>
      */
     public function share($itemCollectionRequest): array
     {
         $items = [];
         foreach ($itemCollectionRequest->getItems() as $childItem) {
+            if (null === $itemCollectionRequest->getOriginalItem()) {
+                continue;
+            }
+
             $item = new Item($childItem->getUser());
             $item->setTeam($childItem->getTeam());
             $directory = $this->getSuggestedDirectory($childItem);
@@ -42,7 +48,6 @@ final class OriginalItemShareFactory extends AbstractShareFactory
 
     /**
      * @param mixed $data
-     * @return bool
      */
     public function canShare($data): bool
     {
@@ -55,6 +60,9 @@ final class OriginalItemShareFactory extends AbstractShareFactory
             return $childItem->getTeam()->getDefaultDirectory();
         }
 
+        /**
+         * @psalm-suppress PossiblyNullReference
+         */
         return $childItem->getUser()->getInbox();
     }
 }

@@ -10,7 +10,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class ItemView extends NodeView
 {
     /**
-     * @var string
+     * @var string|null
      *
      * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      * @Groups({"offered_item", "favorite_item"})
@@ -18,7 +18,7 @@ class ItemView extends NodeView
     public $listId;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @SWG\Property(example="-----BEGIN PGP MESSAGE----- Version: OpenPGP.js v4.2.2 ....")
      * @Groups({"offered_item"})
@@ -31,7 +31,7 @@ class ItemView extends NodeView
     public $invited;
 
     /**
-     * @var ChildItemView
+     * @var ChildItemView|null
      */
     public $shared;
 
@@ -42,7 +42,7 @@ class ItemView extends NodeView
     public $items;
 
     /**
-     * @var UpdateView
+     * @var UpdateView|null
      */
     public $update;
 
@@ -67,11 +67,13 @@ class ItemView extends NodeView
 
     /**
      * @Groups({"favorite_item"})
+     *
      * @var bool
      */
     public $favorite = false;
+
     /**
-     * @var string
+     * @var string|null
      * @Groups({"offered_item"})
      */
     public $ownerId;
@@ -81,13 +83,16 @@ class ItemView extends NodeView
      * @Groups({"offered_item"})
      */
     public $sort;
+
     /**
-     * @Groups({"child_item","offered_item"})
-     * @var null|string
+     * @Groups({"child_item", "offered_item"})
+     *
+     * @var string|null
      */
     public $originalItemId;
+
     /**
-     * @var null|string
+     * @var string|null
      * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      */
     public $previousListId;

@@ -43,8 +43,10 @@ class ChildItemView
     public $teamId;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|string
      * @Groups({"child_item"})
+     *
+     * @SWG\Property(type="string")
      */
     public $lastUpdated;
 
@@ -63,7 +65,7 @@ class ChildItemView
     public $email;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $link;
     /**
@@ -71,7 +73,7 @@ class ChildItemView
      */
     public $isAccepted;
     /**
-     * @var string
+     * @var string|null
      */
     public $publicKey;
 
@@ -79,7 +81,7 @@ class ChildItemView
     {
         $view = new self();
         $view->id = $item->getId()->toString();
-        $view->userId = "";
+        $view->userId = '';
         $view->lastUpdated = $item->getLastUpdated();
 
         return $view;

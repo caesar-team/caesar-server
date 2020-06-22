@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 class BatchChildItemsCollectionRequest
 {
     /**
-     * @var ItemCollectionRequest[]
+     * @var ItemCollectionRequest[]|ArrayCollection
      */
     private $collectionItems;
 
@@ -26,9 +26,6 @@ class BatchChildItemsCollectionRequest
         return $this->collectionItems;
     }
 
-    /**
-     * @param ItemCollectionRequest $itemCollectionRequest
-     */
     public function addChildItemCollectionRequest(ItemCollectionRequest $itemCollectionRequest): void
     {
         if (false === $this->collectionItems->contains($itemCollectionRequest)) {

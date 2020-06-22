@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FrontendUriHandler
 {
@@ -31,14 +30,14 @@ class FrontendUriHandler
         $this->validUriCollection = $validUriCollection;
     }
 
-    public function validateUri($uri): bool
+    public function validateUri(?string $uri): bool
     {
         if (empty($uri)) {
             return  true;
         }
 
         $redirectUri = parse_url($uri);
-        $redirectUri = $redirectUri['host'].(isset($redirectUri['port']) ? ':'.$redirectUri['port'] : '');
+        $redirectUri = ($redirectUri['host'] ?? '').(isset($redirectUri['port']) ? ':'.$redirectUri['port'] : '');
         if ($this->requestStack->getCurrentRequest()->getHttpHost() === $redirectUri) {
             return true;
         }
@@ -52,7 +51,7 @@ class FrontendUriHandler
         throw new BadRequestHttpException(sprintf('Frontend uri "%s" not in valid uri scope', $uri));
     }
 
-    public function persistUri(Response $response, string $uri)
+    public function persistUri(Response $response, string $uri): void
     {
         $this->validateUri($uri);
         $response->headers->setCookie(new Cookie(self::COOKIE_NAME, $uri, time() + self::COOKIE_LIFETIME));
@@ -60,7 +59,7 @@ class FrontendUriHandler
 
     public function extractUri(Request $request): ?string
     {
-        $uri = $request->cookies->get(self::COOKIE_NAME);
+        $uri = (string) $request->cookies->get(self::COOKIE_NAME);
         $this->validateUri($uri);
 
         return $uri;

@@ -41,13 +41,11 @@ class TwoFactorAuthStateVoter extends Voter
         FingerprintManager $fingerprintManager,
         Security $security,
         JWTEncoderInterface $encoder
-    )
-    {
+    ) {
         $this->fingerprintManager = $fingerprintManager;
         $this->security = $security;
         $this->encoder = $encoder;
     }
-
 
     protected function supports($attribute, $subject)
     {
@@ -60,11 +58,11 @@ class TwoFactorAuthStateVoter extends Voter
 
     /**
      * @param string $attribute
-     * @param mixed $subject
-     * @param TokenInterface $token
+     * @param mixed  $subject
+     *
+     * @throws JWTDecodeFailureException
      *
      * @return bool
-     * @throws JWTDecodeFailureException
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
@@ -75,6 +73,7 @@ class TwoFactorAuthStateVoter extends Voter
                 if ($user->hasRole(User::ROLE_ANONYMOUS_USER) || !$user->isFullUser()) {
                     return true;
                 }
+
                 return  $this->isCompleteJwt($user);
             case self::CREATE:
                 return !$user->isGoogleAuthenticatorEnabled();
@@ -94,8 +93,6 @@ class TwoFactorAuthStateVoter extends Voter
     }
 
     /**
-     * @param User $user
-     * @return bool
      * @throws JWTDecodeFailureException
      */
     private function isCompleteJwt(User $user): bool

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Model\Request;
 
-final class BatchShareRequest
+class BatchShareRequest
 {
     /**
      * @var BatchItemCollectionRequest[]

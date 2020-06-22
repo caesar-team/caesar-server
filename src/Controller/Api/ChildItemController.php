@@ -48,9 +48,6 @@ final class ChildItemController extends AbstractController
      *     methods={"DELETE"}
      * )
      *
-     * @param Item                   $item
-     * @param EntityManagerInterface $entityManager
-     *
      * @return null
      */
     public function revokeChildItemAction(Item $item, EntityManagerInterface $entityManager)
@@ -113,10 +110,6 @@ final class ChildItemController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @param Item                   $item
-     * @param Request                $request
-     * @param EntityManagerInterface $entityManager
-     *
      * @return FormInterface|null
      */
     public function updateChildItemAccessAction(Item $item, Request $request, EntityManagerInterface $entityManager)
@@ -157,10 +150,10 @@ final class ChildItemController extends AbstractController
      *     name="api_item_batch_update",
      *     methods={"PATCH"}
      * )
-     * @param Request $request
-     * @param ChildItemActualizer $childItemHandler
-     * @return null|FormInterface
+     *
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return FormInterface|null
      */
     public function batchUpdateChildItems(Request $request, ChildItemActualizer $childItemHandler)
     {
@@ -172,6 +165,7 @@ final class ChildItemController extends AbstractController
         }
         foreach ($batchChildItemsCollectionRequest->getCollectionItems() as $itemCollectionRequest) {
             $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $itemCollectionRequest->getOriginalItem());
+            /** @psalm-suppress ArgumentTypeCoercion */
             $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
         }
 
@@ -179,7 +173,8 @@ final class ChildItemController extends AbstractController
     }
 
     /**
-     * Update item with children
+     * Update item with children.
+     *
      * @SWG\Tag(name="Child Item")
      *
      * @SWG\Parameter(
@@ -229,12 +224,9 @@ final class ChildItemController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @param Item $item
-     * @param Request $request
-     * @param ChildItemActualizer $childItemHandler
+     * @throws \Doctrine\ORM\NonUniqueResultException
      *
      * @return FormInterface|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function updateChildItems(Item $item, Request $request, ChildItemActualizer $childItemHandler)
     {
@@ -247,6 +239,7 @@ final class ChildItemController extends AbstractController
             return $form;
         }
 
+        /** @psalm-suppress ArgumentTypeCoercion */
         $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
 
         return null;

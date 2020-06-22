@@ -15,18 +15,15 @@ final class ShareManager
      */
     private $shareFactoryContext;
 
-    public function __construct(
-        ShareFactoryContext $shareFactoryContext
-    )
+    public function __construct(ShareFactoryContext $shareFactoryContext)
     {
         $this->shareFactoryContext = $shareFactoryContext;
     }
 
     /**
-     * @param BatchShareRequest $collectionRequest
-     *
-     * @return array|Item[]
      * @throws \Exception
+     *
+     * @return array<string, array<int, Item>> string as uid
      */
     public function share(BatchShareRequest $collectionRequest): array
     {

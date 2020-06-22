@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace App\Security\Voter;
 
 use App\Entity\User;
+use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class UserPermissionsVoter extends Voter
 {
-    const CREATE = 'user_permission_create';
-    const READ = 'user_permission_read';
-    const UPDATE = 'user_permission_update';
-    const DELETE = 'user_permission_delete';
-    const AVAILABLE_ATTRIBUTES = [
+    public const CREATE = 'user_permission_create';
+    public const READ = 'user_permission_read';
+    public const UPDATE = 'user_permission_update';
+    public const DELETE = 'user_permission_delete';
+    public const AVAILABLE_ATTRIBUTES = [
         self::CREATE,
         self::READ,
         self::UPDATE,
@@ -51,8 +52,7 @@ class UserPermissionsVoter extends Voter
                 return $this->canDelete($user);
         }
 
-
-        throw new \LogicException('This code should not be reached!');
+        throw new LogicException('This code should not be reached!');
     }
 
     private function canCreate(User $user): bool
@@ -60,22 +60,26 @@ class UserPermissionsVoter extends Voter
         return !$user->hasRole(User::ROLE_ANONYMOUS_USER) && !$user->hasRole(User::ROLE_READ_ONLY_USER);
     }
 
-    private function canRead()
+    private function canRead(): bool
     {
         return true;
     }
 
-    private function canUpdate(User $user)
+    private function canUpdate(User $user): bool
     {
         if ($this->canCreate($user)) {
             return true;
         }
+
+        return false;
     }
 
-    private function canDelete(User $user)
+    private function canDelete(User $user): bool
     {
         if ($this->canCreate($user)) {
             return true;
         }
+
+        return false;
     }
 }

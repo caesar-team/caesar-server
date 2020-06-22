@@ -9,7 +9,7 @@ use Swagger\Annotations as SWG;
 class UpdateView
 {
     /**
-     * @var string
+     * @var string|null
      *
      * @SWG\Property(example="-----BEGIN PGP MESSAGE----- Version: OpenPGP.js v4.2.2 ....")
      */

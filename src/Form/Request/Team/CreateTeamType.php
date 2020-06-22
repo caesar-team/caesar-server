@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Form\Request\Team;
 
-
 use App\Entity\Team;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -32,5 +31,4 @@ class CreateTeamType extends AbstractType
             'data_class' => Team::class,
         ]);
     }
-
 }

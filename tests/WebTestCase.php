@@ -15,9 +15,6 @@ use Symfony\Component\HttpFoundation\Response;
 class WebTestCase extends SymfonyTestCase
 {
     /**
-     * @param array $options
-     * @param array $server
-     *
      * @return SymfonyClient|Client
      */
     public static function createClient(array $options = [], array $server = [])
@@ -25,11 +22,6 @@ class WebTestCase extends SymfonyTestCase
         return parent::createClient($options, $server);
     }
 
-    /**
-     * @param string $className
-     *
-     * @return EntityRepository
-     */
     protected function getRepository(string $className): EntityRepository
     {
         self::bootKernel();
@@ -37,11 +29,6 @@ class WebTestCase extends SymfonyTestCase
         return static::$kernel->getContainer()->get('doctrine')->getRepository($className);
     }
 
-    /**
-     * @param Client|null $client
-     *
-     * @return Client
-     */
     protected function authenticateAdmin(Client $client = null): Client
     {
         /** @var Client $client */

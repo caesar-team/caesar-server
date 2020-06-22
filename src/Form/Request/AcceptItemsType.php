@@ -16,15 +16,14 @@ class AcceptItemsType extends AbstractType
     {
         $builder->add('items', CollectionType::class, [
             'entry_type' => AcceptItemType::class,
-            'allow_add' => true
+            'allow_add' => true,
         ]);
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => ItemsCollectionRequest::class
+            'data_class' => ItemsCollectionRequest::class,
         ]);
     }
-
 }

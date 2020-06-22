@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace App\Factory\View;
 
 use App\Entity\User;
@@ -14,7 +13,7 @@ class UserViewFactory
     {
         $view = new UserView();
 
-        $view->id = $user->getId();
+        $view->id = $user->getId()->toString();
         $view->name = $user->getUsername();
         $view->avatar = null === $user->getAvatar() ? null : $user->getAvatar()->getLink();
         $view->publicKey = $user->getPublicKey();

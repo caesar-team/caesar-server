@@ -16,7 +16,8 @@ final class ShareListView
     public $shares;
 
     /**
-     * @param array|Item[] $parentItems
+     * @param array<string, array<int, Item>> $parentItems
+     *
      * @return ShareListView
      */
     public static function create(array $parentItems): self

@@ -18,6 +18,13 @@ easy_admin:
           - domain
           - enabled
           - srp.id
+      show:
+        fields:
+          - enabled
+          - username
+          - email
+          - domain
+          - roles
       form:
         fields:
           - enabled
@@ -42,3 +49,46 @@ easy_admin:
           - { property: 'team', type: 'entity', type_options: { disabled: true } }
           - { property: 'user', type: 'entity', type_options: { disabled: true } }
           - { property: 'userRole', type: 'choice', type_options: { choices: { 'member': 'member',  'admin': 'admin' } } }
+    Team:
+      class: App\Entity\Team
+      label: 'Teams'
+      disabled_actions: ['new']
+      list:
+        title: 'Teams'
+        fields:
+          - id
+          - alias
+          - title
+          - lists
+          - trash
+      show:
+        fields:
+          - id
+          - alias
+          - title
+      form:
+        fields:
+          - title
+    Directory:
+      class: App\Entity\Directory
+      label: 'Lists'
+      disabled_actions: ['new']
+      list:
+        title: 'Lists'
+        fields:
+          - id
+          - label
+          - { property: 'type', type: 'text' }
+          - parent_list
+          - sort
+      show:
+        fields:
+          - id
+          - label
+          - { property: 'type', type: 'text' }
+          - parent_list
+          - sort
+      form:
+        fields:
+          - label
+          - sort

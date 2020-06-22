@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,7 +24,6 @@ class ClearMessageHistoryCommand extends Command
         parent::__construct();
     }
 
-
     protected function configure()
     {
         $this
@@ -33,28 +32,25 @@ class ClearMessageHistoryCommand extends Command
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int|null|void
      * @throws \Doctrine\DBAL\DBALException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->removeDataOlderThan(new \DateTimeImmutable());
+        $this->removeDataOlderThan(new DateTimeImmutable());
+
+        return 0;
     }
 
     /**
-     * @param \DateTimeImmutable $data
      * @throws \Doctrine\DBAL\DBALException
      */
-    private function removeDataOlderThan(\DateTimeImmutable $data)
+    private function removeDataOlderThan(DateTimeImmutable $data): void
     {
-        $sql = "DELETE FROM message_history WHERE message_history.created_at <:dateString";
+        $sql = 'DELETE FROM message_history WHERE message_history.created_at <:dateString';
         $dateString = $data->format('Y-m-d 00:00:00');
         $params = ['dateString' => $dateString];
 
         $stmt = $this->entityManager->getConnection()->prepare($sql);
         $stmt->execute($params);
     }
-
 }

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Security\AuthorizationManager;
 
-use App\Entity\Security\Invitation;
 use App\Entity\User;
+use App\Repository\InvitationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\UserBundle\Model\UserInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
-use MongoDB\Driver\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AuthorizationManager
 {
-    const ERROR_UNFINISHED_FLOW_USER = 'ERROR_UNFINISHED_FLOW_USER';
+    public const ERROR_UNFINISHED_FLOW_USER = 'ERROR_UNFINISHED_FLOW_USER';
     /**
      * @var UserManagerInterface
      */
@@ -28,26 +28,27 @@ class AuthorizationManager
      */
     private $translator;
 
+    private InvitationRepository $invitationRepository;
+
     public function __construct(
         UserManagerInterface $userManager,
         EntityManagerInterface $entityManager,
-        TranslatorInterface $translator
-    )
-    {
+        TranslatorInterface $translator,
+        InvitationRepository $invitationRepository
+    ) {
         $this->userManager = $userManager;
         $this->entityManager = $entityManager;
         $this->translator = $translator;
+        $this->invitationRepository = $invitationRepository;
     }
 
     /**
-     * @param string $email
-     * @return UserInterface|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findUserByInvitation(string $email): ?UserInterface
     {
         $user = $this->userManager->findUserByEmail($email);
-        if(!$this->hasInvitation($user)) {
+        if (!$this->hasInvitation($user)) {
             return null;
         }
 
@@ -55,16 +56,14 @@ class AuthorizationManager
     }
 
     /**
-     * @param UserInterface $user
-     * @return bool
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function hasInvitation(UserInterface $user): bool
     {
         $hash = (InvitationEncoder::initEncoder())->encode($user->getEmail());
-        $invitation = $this->entityManager->getRepository(Invitation::class)->findOneFreshByHash($hash);
+        $invitation = $this->invitationRepository->findOneFreshByHash($hash);
 
-        if($invitation) {
+        if ($invitation) {
             return true;
         }
 
@@ -76,7 +75,7 @@ class AuthorizationManager
         $userRepository = $this->entityManager->getRepository(User::class);
         preg_match('/(?<=@)(.+)$/', $email, $matches);
         $domain = $matches[1];
-        if (!in_array($domain, explode(',', getenv('OAUTH_ALLOWED_DOMAINS')), true)
+        if (!in_array($domain, explode(',', (string) getenv('OAUTH_ALLOWED_DOMAINS')), true)
             && !$userRepository->findOneBy(['email' => $email])
         ) {
             throw new AuthenticationException($this->translator->trans('authentication.email_domain_restriction', ['%domain%' => $domain]));

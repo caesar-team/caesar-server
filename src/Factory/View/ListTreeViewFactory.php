@@ -29,10 +29,9 @@ class ListTreeViewFactory
     }
 
     /**
-     * @param User $user
+     * @throws \Doctrine\ORM\NonUniqueResultException
      *
      * @return ListView[]
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function create(User $user): array
     {
@@ -44,9 +43,9 @@ class ListTreeViewFactory
     }
 
     /**
-     * @param Directory $inbox
-     * @return ListView
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return ListView
      */
     protected function createInboxView(Directory $inbox)
     {
@@ -57,9 +56,9 @@ class ListTreeViewFactory
     }
 
     /**
-     * @param Directory $inbox
-     * @return ListView
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return ListView
      */
     protected function createTrashView(Directory $inbox)
     {
@@ -70,14 +69,14 @@ class ListTreeViewFactory
     }
 
     /**
-     * @param Directory $directory
-     * @return ListView
      * @throws \Doctrine\ORM\NonUniqueResultException
+     *
+     * @return ListView
      */
     protected function createListView(Directory $directory)
     {
         $view = new ListView();
-        $view->id = $directory->getId();
+        $view->id = $directory->getId()->toString();
         $view->label = $directory->getLabel();
         $view->type = NodeEnumType::TYPE_LIST;
         $view->children = $this->getChildren($directory);

@@ -15,11 +15,12 @@ use App\Form\Request\Srp\RegistrationType;
 use App\Form\Request\Srp\UpdatePasswordType;
 use App\Model\Request\LoginRequest;
 use App\Model\View\Srp\PreparedSrpView;
+use App\Repository\UserRepository;
 use App\Security\Authentication\SrppAuthenticator;
 use App\Security\AuthorizationManager\AuthorizationManager;
-use App\Services\TeamManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
+use App\Services\TeamManager;
 use App\Utils\ErrorMessageFormatter;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -29,9 +30,9 @@ use FOS\UserBundle\Event\FormEvent;
 use FOS\UserBundle\Event\GetResponseUserEvent;
 use FOS\UserBundle\FOSUserEvents;
 use FOS\UserBundle\Model\UserManagerInterface;
-use HWI\Bundle\OAuthBundle\Security\Core\Authentication\Provider\OAuthProvider;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use RuntimeException;
 use Swagger\Annotations as SWG;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormInterface;
@@ -42,7 +43,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class SrpController extends AbstractController
@@ -86,14 +86,6 @@ final class SrpController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param UserManagerInterface $userManager
-     *
-     * @param TeamManager $teamManager
-     * @param TranslatorInterface $translator
-     * @param AuthorizationManager $authorizationManager
-     * @param ErrorMessageFormatter $errorMessageFormatter
-     * @return null
      * @throws ApiException
      * @throws NonUniqueResultException
      */
@@ -104,10 +96,8 @@ final class SrpController extends AbstractController
         TranslatorInterface $translator,
         AuthorizationManager $authorizationManager,
         ErrorMessageFormatter $errorMessageFormatter
-    )
-    {
+    ): ?FormInterface {
         $email = $request->request->get('email');
-        /** @var User $user */
         $user = $userManager->findUserByEmail($email);
         if ($user instanceof User && $authorizationManager->hasInvitation($user)) {
             $errorMessage = $translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]);
@@ -174,19 +164,19 @@ final class SrpController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request $request
-     * @param EntityManagerInterface $entityManager
-     * @param SrpHandler $srpHandler
-     * @param SrpPrepareViewFactory $viewFactory
+     * @throws Exception
      *
      * @return PreparedSrpView|FormInterface|JsonResponse
-     * @throws Exception
      */
-    public function prepareLoginAction(Request $request, EntityManagerInterface $entityManager, SrpHandler $srpHandler, SrpPrepareViewFactory $viewFactory)
-    {
-        $email = $request->request->get('email');
-        /** @var User $user */
-        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
+    public function prepareLoginAction(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository,
+        SrpHandler $srpHandler,
+        SrpPrepareViewFactory $viewFactory
+    ) {
+        $email = (string) $request->request->get('email');
+        $user = $userRepository->findOneByEmail($email);
         if (null === $user) {
             $message = $this->translator->trans('app.exception.user_not_found');
             throw new AccessDeniedHttpException($message, null, Response::HTTP_BAD_REQUEST);
@@ -267,10 +257,6 @@ final class SrpController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @param Request                  $request
-     * @param SrpUserManager           $srpUserManager
-     * @param JWTTokenManagerInterface $jwtManager
-     *
      * @return array|FormInterface
      */
     public function loginAction(Request $request, SrpUserManager $srpUserManager, JWTTokenManagerInterface $jwtManager)
@@ -321,13 +307,9 @@ final class SrpController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @param Request $request
-     * @param UserManagerInterface $manager
-     *
-     * @return null
      * @throws Exception
      */
-    public function updatePassword(Request $request, UserManagerInterface $manager)
+    public function updatePassword(Request $request, UserManagerInterface $manager): ?FormInterface
     {
         $user = $this->getUser();
         if (!$user instanceof User) {
@@ -371,11 +353,9 @@ final class SrpController extends AbstractController
      *     description="Access denied"
      * )
      *
-     * @param Request $request
-     * @param $token
-     * @param UserManagerInterface $userManager
-     * @param EventDispatcherInterface $eventDispatcher
-     * @return null|FormInterface|RedirectResponse|Response
+     * @param mixed $token
+     *
+     * @return FormInterface|RedirectResponse|Response|null
      */
     public function resetPassword(
         Request $request,
@@ -395,6 +375,11 @@ final class SrpController extends AbstractController
         }
 
         $event = new GetResponseUserEvent($user, $request);
+        /**
+         * @phpstan-ignore-next-line
+         * @psalm-suppress InvalidArgument
+         * @psalm-suppress TooManyArguments
+         */
         $eventDispatcher->dispatch(FOSUserEvents::RESETTING_RESET_INITIALIZE, $event);
 
         if (null !== $event->getResponse()) {
@@ -406,6 +391,11 @@ final class SrpController extends AbstractController
 
         if ($form->isValid()) {
             $event = new FormEvent($form, $request);
+            /**
+             * @phpstan-ignore-next-line
+             * @psalm-suppress InvalidArgument
+             * @psalm-suppress TooManyArguments
+             */
             $eventDispatcher->dispatch(FOSUserEvents::RESETTING_RESET_SUCCESS, $event);
             $user->setEnabled(true);
             $userManager->updateUser($user);
@@ -415,17 +405,20 @@ final class SrpController extends AbstractController
                 $response = new RedirectResponse($url);
             }
 
+            /**
+             * @phpstan-ignore-next-line
+             * @psalm-suppress InvalidArgument
+             * @psalm-suppress TooManyArguments
+             */
             $eventDispatcher->dispatch(
                 FOSUserEvents::RESETTING_RESET_COMPLETED,
                 new FilterUserResponseEvent($user, $request, $response)
             );
-
         } else {
             return $form;
         }
 
         return null;
-
     }
 
     /**
@@ -434,13 +427,8 @@ final class SrpController extends AbstractController
      *     name="srp_login2",
      *     methods={"POST"}
      * )
-     *
-     * @param Request                $request
-     * @param SrpHandler             $srpHandler
-     *
-     * @return null
      */
-    public function login2Action(Request $request, SrpHandler $srpHandler)
+    public function login2Action(Request $request, SrpHandler $srpHandler): JsonResponse
     {
         $parsedRequest = json_decode($request->getContent(), true);
         /** @var User $user */
@@ -480,11 +468,10 @@ final class SrpController extends AbstractController
     }
 
     /**
-     * @Route(path="/srp_login_confirm", name="srp_login_confirm", methods={"POST"})
-     * @param Request $request
+     * @Route(path="/api/srp_login_confirm", name="srp_login_confirm", methods={"POST"})
      */
     public function compareSessionKeysAndAuthorize(Request $request)
     {
-        throw new \RuntimeException('You should register an authenticator to pass this route');
+        throw new RuntimeException('You should register an authenticator to pass this route');
     }
 }

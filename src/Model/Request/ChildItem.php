@@ -7,8 +7,9 @@ namespace App\Model\Request;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Utils\ChildItemAwareInterface;
 
-class ChildItem
+class ChildItem implements ChildItemAwareInterface
 {
     /**
      * @var User
@@ -73,33 +74,21 @@ class ChildItem
         $this->access = $access;
     }
 
-    /**
-     * @return string
-     */
     public function getCause(): string
     {
         return $this->cause;
     }
 
-    /**
-     * @param string $cause
-     */
     public function setCause(string $cause): void
     {
         $this->cause = $cause;
     }
 
-    /**
-     * @return null|string
-     */
     public function getLink(): ?string
     {
         return $this->link;
     }
 
-    /**
-     * @param null|string $link
-     */
     public function setLink(?string $link): void
     {
         $this->link = $link;
@@ -113,5 +102,10 @@ class ChildItem
     public function setTeam(?Team $team): void
     {
         $this->team = $team;
+    }
+
+    public function getSignedOwner(): User
+    {
+        return $this->user;
     }
 }

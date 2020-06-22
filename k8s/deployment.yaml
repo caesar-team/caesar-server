@@ -1,12 +1,12 @@
 ---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: caesar-server
   namespace: dev-caesar-team
   labels:
     app: caesar-server
-    CICD_GIT_COMMIT: ${CICD_GIT_COMMIT}
+    CICD_GIT_COMMIT: $CICD_GIT_COMMIT
 spec:
   replicas: 1
   selector:
@@ -22,11 +22,11 @@ spec:
       namespace: dev-caesar-team
       labels:
         app: caesar-server
-        CICD_GIT_COMMIT: ${CICD_GIT_COMMIT}
+        CICD_GIT_COMMIT: $CICD_GIT_COMMIT
     spec:
       containers:
       - name: caesar-server
-        image: "caesarteam/caesar-server:${CICD_GIT_BRANCH}"
+        image: "caesarteam/caesar-server:$CICD_GIT_BRANCH"
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
@@ -69,7 +69,7 @@ spec:
           name: caesar-static-files
       initContainers:
       - name: copy-public
-        image: "caesarteam/caesar-server:${CICD_GIT_BRANCH}"
+        image: "caesarteam/caesar-server:$CICD_GIT_BRANCH"
         imagePullPolicy: IfNotPresent
         command: [ "/bin/cp", "-r", "public/.", "public_site/" ]
         volumeMounts:

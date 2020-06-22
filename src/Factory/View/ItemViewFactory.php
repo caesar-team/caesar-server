@@ -12,20 +12,24 @@ use App\Model\View\CredentialsList\InviteItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
 use App\Model\View\User\UserView;
+use App\Services\PermissionManager;
 use App\Utils\ChildItemAwareInterface;
 use Doctrine\Common\Collections\Collection;
 
 class ItemViewFactory
 {
-    /**
-     * @param Item $item
-     * @return ItemView
-     */
+    private PermissionManager $permissionManager;
+
+    public function __construct(PermissionManager $permissionManager)
+    {
+        $this->permissionManager = $permissionManager;
+    }
+
     public function create(Item $item): ItemView
     {
         $view = new ItemView();
 
-        $view->id = $item->getId();
+        $view->id = $item->getId()->toString();
         $view->type = $item->getType();
         $view->lastUpdated = $item->getLastUpdated();
         $view->listId = $item->getParentList()->getId()->toString();
@@ -38,16 +42,15 @@ class ItemViewFactory
         $view->ownerId = $item->getOwner()->getId()->toString();
         $view->favorite = $item->isFavorite();
         $view->sort = $item->getSort();
-        $view->originalItemId = $item->getOriginalItem()?$item->getOriginalItem()->getId()->toString():null;
+        $view->originalItemId = $item->getOriginalItem() ? $item->getOriginalItem()->getId()->toString() : null;
 
         return $view;
     }
 
     /**
      * @param array|Item[] $items
-     * @return ItemView
      */
-    public function createList(array $items)
+    public function createList(array $items): ItemView
     {
         $view = new ItemView();
         $childItems = [];
@@ -64,11 +67,9 @@ class ItemViewFactory
     }
 
     /**
-     * @param string $id
      * @param array|Item[] $items
-     * @return ItemView
      */
-    public function createSharedItems(string $id, array $items)
+    public function createSharedItems(string $id, array $items): ItemView
     {
         $view = new ItemView();
         $view->originalItemId = $id;
@@ -86,11 +87,7 @@ class ItemViewFactory
         return $view;
     }
 
-    /**
-     * @param Item $item
-     * @return array
-     */
-    private function getInvitesCollection(Item $item)
+    private function getInvitesCollection(Item $item): array
     {
         $ownerItem = $item;
         if (null !== $item->getOriginalItem()) {
@@ -108,9 +105,11 @@ class ItemViewFactory
         }
 
         $collection = [];
+
         return array_filter($children, function (InviteItemView $inviteItemView) use (&$collection) {
             if (!in_array($inviteItemView->userId, $collection)) {
                 $collection[] = $inviteItemView->userId;
+
                 return true;
             }
 
@@ -118,10 +117,6 @@ class ItemViewFactory
         });
     }
 
-    /**
-     * @param Item $item
-     * @return UserView
-     */
     private function getOwner(Item $item): UserView
     {
         $user = $item->getOwner();
@@ -144,22 +139,18 @@ class ItemViewFactory
     }
 
     /**
-     * @param \Countable|ChildItemAwareInterface[]|Collection $childItems
-     * @param string $cause
+     * @param ChildItemAwareInterface[]|Collection $childItems
+     *
      * @return array|Item[]
      */
-    private function extractChildItemByCause(\Countable $childItems, string $cause = Item::CAUSE_INVITE): array
+    private function extractChildItemByCause(Collection $childItems, string $cause = Item::CAUSE_INVITE): array
     {
-        return $childItems->filter(function(ChildItemAwareInterface $childItem) use ($cause) {
+        return $childItems->filter(function (ChildItemAwareInterface $childItem) use ($cause) {
             return $cause === $childItem->getCause();
         })->toArray();
     }
 
-    /**
-     * @param Item $item
-     * @return ChildItemView|null
-     */
-    private function getSharesCollection(Item $item)
+    private function getSharesCollection(Item $item): ?ChildItemView
     {
         $ownerItem = $item;
         if (null !== $item->getOriginalItem()) {
@@ -172,6 +163,9 @@ class ItemViewFactory
             return null;
         }
         $item = current($sharedItems);
+        if (!$item instanceof Item) {
+            return null;
+        }
 
         $user = $item->getSignedOwner();
 
@@ -180,7 +174,7 @@ class ItemViewFactory
         $childItemView->userId = $user->getId()->toString();
         $childItemView->email = $user->getEmail();
         $childItemView->lastUpdated = $item->getLastUpdated();
-        $childItemView->access = $item->getAccess();
+        $childItemView->access = $this->permissionManager->getItemAccessLevel($item);
         $childItemView->link = $item->getLink();
         $childItemView->isAccepted = User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
         $childItemView->publicKey = $user->getPublicKey();

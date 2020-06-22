@@ -11,10 +11,7 @@ class ItemsCollectionRequest
      */
     private $items = [];
 
-    /**
-     * @return string[]
-     */
-    public function getItems()
+    public function getItems(): array
     {
         return $this->items;
     }

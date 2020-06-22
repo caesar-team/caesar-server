@@ -7,10 +7,10 @@ namespace App\Context;
 use App\Entity\Item;
 use App\Strategy\ShareFactory\ShareFactoryInterface;
 
-final class ShareFactoryContext
+class ShareFactoryContext
 {
     /**
-     * @var array|ShareFactoryInterface[]
+     * @var ShareFactoryInterface[]
      */
     private $factories;
 
@@ -20,9 +20,9 @@ final class ShareFactoryContext
     }
 
     /**
-     * @param $data
+     * @param mixed $data
      *
-     * @return array|Item[]
+     * @return array<string, array<int, Item>> string as uid
      */
     public function share($data): array
     {

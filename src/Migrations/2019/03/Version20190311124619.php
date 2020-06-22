@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace DoctrineMigrations;
 
@@ -11,7 +13,7 @@ use Ramsey\Uuid\Uuid;
  */
 final class Version20190311124619 extends AbstractMigration
 {
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
         $this->addSql('CREATE TABLE groups (id UUID NOT NULL, alias VARCHAR(50) NOT NULL, title VARCHAR(50) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('COMMENT ON COLUMN "groups".id IS \'(DC2Type:uuid)\'');
@@ -26,7 +28,7 @@ final class Version20190311124619 extends AbstractMigration
 
         $uuid = Uuid::uuid4();
         $this->addSql("INSERT INTO \"groups\" (id, alias, title) VALUES ('{$uuid}','default', 'Default')");
-        $users = $this->connection->fetchAll("SELECT id FROM fos_user");
+        $users = $this->connection->fetchAll('SELECT id FROM fos_user');
 
         foreach ($users as $user) {
             $userGroupUuid = Uuid::uuid4();
@@ -36,7 +38,7 @@ final class Version20190311124619 extends AbstractMigration
         }
     }
 
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
         $schema->dropTable('groups');
         $schema->dropTable('user_group');

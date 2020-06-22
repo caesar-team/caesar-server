@@ -10,7 +10,13 @@ use App\Entity\UserTeam;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
-final class UserTeamRepository extends ServiceEntityRepository
+/**
+ * @method UserTeam|null find($id, $lockMode = null, $lockVersion = null)
+ * @method UserTeam|null findOneBy(array $criteria, array $orderBy = null)
+ * @method UserTeam[]    findAll()
+ * @method UserTeam[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
+class UserTeamRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -18,8 +24,6 @@ final class UserTeamRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Team $team
-     * @param array $ids
      * @return array|UserTeam[]
      */
     public function findMembers(Team $team, array $ids = []): array
@@ -45,9 +49,6 @@ final class UserTeamRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param User $user
-     * @param Team $team
-     * @return UserTeam|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findOneByUserAndTeam(User $user, Team $team): ?UserTeam

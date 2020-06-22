@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<psalm
+    resolveFromConfigFile="true"
+    allowStringToStandInForClass="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <directory name="src"/>
+        <ignoreFiles>
+            <directory name="vendor"/>
+            <directory name="src/Migrations"/>
+            <file name="src/Kernel.php"/>
+            <file name="src/Services/SrpHandler.php"/>
+        </ignoreFiles>
+    </projectFiles>
+    <issueHandlers>
+        <InternalMethod errorLevel="suppress"/>
+        <UndefinedDocblockClass errorLevel="suppress"/>
+        <MissingReturnType errorLevel="suppress"/>
+        <MissingParamType errorLevel="info"/>
+        <MixedArgument errorLevel="suppress"/>
+        <MixedMethodCall errorLevel="suppress"/>
+        <MixedAssignment errorLevel="suppress"/>
+        <MixedArrayAccess errorLevel="suppress"/>
+        <MixedArgumentTypeCoercion errorLevel="suppress"/>
+        <MixedPropertyTypeCoercion errorLevel="suppress"/>
+        <MixedReturnTypeCoercion errorLevel="suppress"/>
+        <MixedReturnStatement errorLevel="info"/>
+        <MixedInferredReturnType errorLevel="info"/>
+        <MismatchingDocblockParamType errorLevel="suppress"/>
+        <MismatchingDocblockReturnType errorLevel="suppress"/>
+        <MoreSpecificImplementedParamType errorLevel="suppress"/>
+        <MoreSpecificReturnType errorLevel="suppress"/>
+        <PropertyNotSetInConstructor errorLevel="suppress"/>
+        <PossiblyInvalidMethodCall errorLevel="suppress"/>
+        <ForbiddenCode errorLevel="suppress"/>
+        <PossiblyNullArgument errorLevel="info"/>
+        <PossiblyNullReference errorLevel="info"/>
+        <DeprecatedClass errorLevel="info"/>
+        <DeprecatedInterface errorLevel="info"/>
+        <MixedArrayOffset errorLevel="info"/>
+        <RedundantCondition>
+            <errorLevel type="suppress">
+                <file name="src/Services/Messenger.php"/>
+            </errorLevel>
+        </RedundantCondition>
+        <LessSpecificImplementedReturnType errorLevel="suppress"/>
+        <UndefinedClass>
+            <errorLevel type="suppress">
+                <file name="src/Security/Request/PGPVerifier.php"/>
+            </errorLevel>
+        </UndefinedClass>
+    </issueHandlers>
+    <plugins>
+        <pluginClass class="Weirdan\DoctrinePsalmPlugin\Plugin"/>
+        <pluginClass class="Psalm\SymfonyPsalmPlugin\Plugin"/>
+    </plugins>
+</psalm>

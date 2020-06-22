@@ -15,8 +15,8 @@ use Symfony\Component\Security\Core\Security;
 final class UserTeamVoter extends Voter
 {
     public const USER_TEAM_LEAVE = 'user_team_leave';
-    public const USER_TEAM_EDIT   = 'user_team_edit';
-    public const USER_TEAM_VIEW   = 'user_team_view';
+    public const USER_TEAM_EDIT = 'user_team_edit';
+    public const USER_TEAM_VIEW = 'user_team_view';
     public const USER_TEAM_REMOVE_MEMBER = 'user_team_remove_member';
 
     private const ROLES_TO_VIEW = [
@@ -43,7 +43,7 @@ final class UserTeamVoter extends Voter
      * Determines if the attribute and subject are supported by this voter.
      *
      * @param string $attribute An attribute
-     * @param mixed $subject The subject to secure, e.g. an object the user wants to access or any other PHP type
+     * @param mixed  $subject   The subject to secure, e.g. an object the user wants to access or any other PHP type
      *
      * @return bool True if the attribute and subject are supported, false otherwise
      */
@@ -65,11 +65,11 @@ final class UserTeamVoter extends Voter
      * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
      *
      * @param string $attribute
-     * @param Team $subject
-     * @param TokenInterface $token
+     * @param Team   $subject
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
      *
      * @return bool
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {

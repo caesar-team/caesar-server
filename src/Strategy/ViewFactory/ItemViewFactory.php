@@ -18,18 +18,20 @@ use Symfony\Component\Security\Core\Security;
 final class ItemViewFactory implements ViewFactoryInterface
 {
     /**
-     * @var User
+     * @var User|null
      */
     private $currentUser;
 
     public function __construct(Security $security)
     {
-        $this->currentUser = $security->getUser();
+        $user = $security->getUser();
+        if ($user instanceof User) {
+            $this->currentUser = $user;
+        }
     }
+
     /**
      * @param mixed $data
-     *
-     * @return bool
      */
     public function canView($data): bool
     {
@@ -38,27 +40,24 @@ final class ItemViewFactory implements ViewFactoryInterface
 
     /**
      * @param Item $item
-     *
-     * @return ItemView
      */
-    public function view($item)
+    public function view($item): ItemView
     {
         $view = new ItemView();
 
-        $view->id = $item->getId();
+        $view->id = $item->getId()->toString();
         $view->type = $item->getType();
         $view->lastUpdated = $item->getLastUpdated();
-        $view->listId = $item->getParentList()->getId()->toString();
+        $view->listId = null !== $item->getParentList() ? $item->getParentList()->getId()->toString() : null;
         $view->previousListId = $item->getPreviousList() ? $item->getPreviousList()->getId()->toString() : null;
-
         $view->secret = $item->getSecret();
         $view->invited = $this->getInvitesCollection($item);
         $view->shared = $this->getSharesCollection($item);
         $view->update = $this->getUpdateView($item->getUpdate());
-        $view->ownerId = $item->getOwner()->getId()->toString();
+        $view->ownerId = null !== $item->getOwner() ? $item->getOwner()->getId()->toString() : null;
         $view->favorite = $item->isFavorite();
         $view->sort = $item->getSort();
-        $view->originalItemId = $item->getOriginalItem()?$item->getOriginalItem()->getId()->toString():null;
+        $view->originalItemId = $item->getOriginalItem() ? $item->getOriginalItem()->getId()->toString() : null;
 
         return $view;
     }
@@ -68,11 +67,11 @@ final class ItemViewFactory implements ViewFactoryInterface
      *
      * @return array|ItemView[]
      */
-    public function viewList(array $items)
+    public function viewList(array $items): array
     {
         $list = [];
         foreach ($items as $item) {
-            if ($this->currentUser !== $item->getSignedOwner()) {
+            if (!$item->getSignedOwner()->equals($this->currentUser)) {
                 continue;
             }
 
@@ -82,11 +81,7 @@ final class ItemViewFactory implements ViewFactoryInterface
         return $list;
     }
 
-    /**
-     * @param Item $item
-     * @return array
-     */
-    private function getInvitesCollection(Item $item)
+    private function getInvitesCollection(Item $item): array
     {
         $ownerItem = $item;
         if (null !== $item->getOriginalItem()) {
@@ -107,27 +102,20 @@ final class ItemViewFactory implements ViewFactoryInterface
     }
 
     /**
-     * @param \Countable|ChildItemAwareInterface[]|Collection $childItems
-     * @param string $cause
+     * @param ChildItemAwareInterface[]|Collection $childItems
+     *
      * @return array|Item[]
      */
-    private function extractChildItemByCause(\Countable $childItems, string $cause = Item::CAUSE_INVITE): array
+    private function extractChildItemByCause(Collection $childItems, string $cause = Item::CAUSE_INVITE): array
     {
-        return $childItems->filter(function(ChildItemAwareInterface $childItem) use ($cause) {
+        return $childItems->filter(function (ChildItemAwareInterface $childItem) use ($cause) {
             return $cause === $childItem->getCause();
         })->toArray();
     }
 
-    /**
-     * @param Item $item
-     * @return ChildItemView|null
-     */
-    private function getSharesCollection(Item $item)
+    private function getSharesCollection(Item $item): ?ChildItemView
     {
-        $ownerItem = $item;
-        if (null !== $item->getOriginalItem()) {
-            $ownerItem = $item->getOriginalItem();
-        }
+        $ownerItem = $item->getOriginalItem() ?? $item;
 
         $sharedItems = $this->extractChildItemByCause($ownerItem->getSharedItems(), Item::CAUSE_SHARE);
 

@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-
 namespace App\Event\EventSubscriber;
-
 
 use App\Entity\Team;
 use App\Entity\User;
@@ -41,10 +39,9 @@ class PromoteAdminSubscriber implements EventSubscriber
     }
 
     /**
-     * @param OnFlushEventArgs $args
      * @throws \Exception
      */
-    public function onFlush(OnFlushEventArgs  $args): void
+    public function onFlush(OnFlushEventArgs $args): void
     {
         $em = $args->getEntityManager();
         $uow = $em->getUnitOfWork();
@@ -79,10 +76,8 @@ class PromoteAdminSubscriber implements EventSubscriber
     }
 
     /**
-     * @param EntityManagerInterface $em
-     * @param UnitOfWork $uow
-     * @param User $user
      * @param array|Team[] $teams
+     *
      * @throws \Exception
      */
     private function assignTeams(EntityManagerInterface $em, UnitOfWork $uow, User $user, array $teams): void
@@ -106,7 +101,7 @@ class PromoteAdminSubscriber implements EventSubscriber
         return false;
     }
 
-    private function addAdminRole(EntityManagerInterface $em, UnitOfWork $uow, User $user)
+    private function addAdminRole(EntityManagerInterface $em, UnitOfWork $uow, User $user): void
     {
         $classMetadata = $em->getClassMetadata('App\Entity\User');
         $user->addRole(User::ROLE_SUPER_ADMIN);

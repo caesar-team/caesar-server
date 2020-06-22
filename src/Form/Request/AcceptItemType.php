@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Request;
 
-
 use App\Entity\Item;
-use App\Model\Request\ChildItem;
-use Nelmio\ApiDocBundle\Tests\Functional\Form\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -26,8 +23,8 @@ class AcceptItemType extends AbstractType
                         'choices' => [
                             Item::STATUS_FINISHED => Item::STATUS_FINISHED,
                             Item::STATUS_OFFERED => Item::STATUS_OFFERED,
-                        ]
-                    ])
+                        ],
+                    ]),
                 ],
                 'empty_data' => Item::STATUS_FINISHED,
             ])
@@ -37,8 +34,7 @@ class AcceptItemType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => Item::class
+            'data_class' => Item::class,
         ]);
     }
-
 }

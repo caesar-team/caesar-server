@@ -10,17 +10,11 @@ use App\Model\View\User\SelfUserInfoView;
 
 class SelfUserInfoViewFactory
 {
-
-    /**
-     * @param User $user
-     *
-     * @return SelfUserInfoView
-     */
     public function create(User $user): SelfUserInfoView
     {
         $view = new SelfUserInfoView();
 
-        $view->id = $user->getId();
+        $view->id = $user->getId()->toString();
         $view->email = $user->getEmail();
         $view->name = $user->getUsername();
         $view->avatar = $this->getImage($user->getAvatar());

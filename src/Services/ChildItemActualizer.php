@@ -6,24 +6,26 @@ namespace App\Services;
 
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
-use App\Entity\Team;
 use App\Entity\User;
-use App\Entity\UserTeam;
 use App\Mailer\MailRegistry;
 use App\Model\DTO\Message;
 use App\Model\Request\ChildItem;
 use App\Model\Request\ItemCollectionRequest;
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 class ChildItemActualizer
 {
-    const URL_ROOT = 'root';
-    const EVENT_NEW_ITEM = 'new';
-    const EVENT_UPDATED_ITEM = 'updated';
-    /** @var EntityManagerInterface */
+    public const URL_ROOT = 'root';
+    public const EVENT_NEW_ITEM = 'new';
+    public const EVENT_UPDATED_ITEM = 'updated';
+
+    /**
+     * @var EntityManagerInterface
+     */
     private $entityManager;
 
     /**
@@ -49,11 +51,6 @@ class ChildItemActualizer
 
     /**
      * InviteHandler constructor.
-     * @param EntityManagerInterface $entityManager
-     * @param SenderInterface $sender
-     * @param RouterInterface $router
-     * @param Messenger $messenger
-     * @param LoggerInterface $logger
      */
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -61,8 +58,7 @@ class ChildItemActualizer
         RouterInterface $router,
         Messenger $messenger,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->sender = $sender;
         $this->router = $router;
@@ -71,10 +67,6 @@ class ChildItemActualizer
         $this->logger = $logger;
     }
 
-    /**
-     * @param ItemCollectionRequest $request
-     * @param User $currentOwner
-     */
     public function updateChildItems(ItemCollectionRequest $request, User $currentOwner): void
     {
         $parentItem = $request->getOriginalItem();
@@ -113,7 +105,7 @@ class ChildItemActualizer
         $this->entityManager->persist($update);
     }
 
-    private function sendItemMessage(ChildItem $childItem, string $event = self::EVENT_NEW_ITEM)
+    private function sendItemMessage(ChildItem $childItem, string $event = self::EVENT_NEW_ITEM): void
     {
         if ($childItem->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)) {
             return;
@@ -130,11 +122,6 @@ class ChildItemActualizer
         $this->logger->debug('Registered in ChildItemHandler');
     }
 
-    /**
-     * @param User $user
-     * @param Item $originalItem
-     * @return array
-     */
     private function getItem(User $user, Item $originalItem): array
     {
         $owner = $originalItem->getSignedOwner();
@@ -149,7 +136,7 @@ class ChildItemActualizer
             }
         }
 
-        throw new \LogicException('No Such user in original invite '.$user->getId()->toString());
+        throw new LogicException('No Such user in original invite '.$user->getId()->toString());
     }
 
     public function extractUpdate(Item $item, User $user): ItemUpdate

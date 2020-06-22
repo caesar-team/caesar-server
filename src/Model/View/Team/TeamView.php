@@ -11,7 +11,7 @@ class TeamView
      */
     public $id;
     /**
-     * @var string
+     * @var string|null
      */
     public $title;
     /**
@@ -24,12 +24,12 @@ class TeamView
     public $lists;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $icon;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $type;
 }

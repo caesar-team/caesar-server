@@ -6,14 +6,11 @@ namespace App\Model\Response;
 
 class PaginatedList
 {
-    /** @var array */
-    private $data;
+    private array $data;
 
-    /** @var int */
-    private $totalPages;
+    private int $totalPages;
 
-    /** @var int */
-    private $total;
+    private int $total;
 
     public function __construct(array $data, int $totalPages, int $total)
     {
@@ -22,25 +19,16 @@ class PaginatedList
         $this->total = $total;
     }
 
-    /**
-     * @return array
-     */
     public function getData(): array
     {
         return $this->data;
     }
 
-    /**
-     * @return int
-     */
     public function getTotalPages(): int
     {
         return $this->totalPages;
     }
 
-    /**
-     * @return int
-     */
     public function getTotal(): int
     {
         return $this->total;

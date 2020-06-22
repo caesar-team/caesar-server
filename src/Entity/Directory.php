@@ -8,10 +8,11 @@ use App\DBAL\Types\Enum\NodeEnumType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+use LogicException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Table
@@ -20,10 +21,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class Directory
 {
-    const LIST_DEFAULT = 'default';
-    const LIST_TRASH = 'trash';
-    const LIST_ROOT_LIST = 'lists';
-    const LIST_INBOX = 'inbox';
+    public const LIST_DEFAULT = 'default';
+    public const LIST_TRASH = 'trash';
+    public const LIST_ROOT_LIST = 'lists';
+    public const LIST_INBOX = 'inbox';
     /**
      * @var UuidInterface
      *
@@ -36,7 +37,7 @@ class Directory
      * @var Collection|Directory[]
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList", cascade={"remove", "persist"})
-     * @ORM\OrderBy({"sort" = "ASC"})
+     * @ORM\OrderBy({"sort": "ASC"})
      */
     protected $childLists;
 
@@ -52,7 +53,7 @@ class Directory
      * @var Collection|Item[]
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="parentList", cascade={"remove"})
-     * @ORM\OrderBy({"sort" = "ASC", "lastUpdated" = "DESC"})
+     * @ORM\OrderBy({"sort": "ASC", "lastUpdated": "DESC"})
      */
     protected $childItems;
 
@@ -87,7 +88,7 @@ class Directory
         }
     }
 
-    public static function createTrash()
+    public static function createTrash(): self
     {
         $list = new self(self::LIST_TRASH);
         $list->type = NodeEnumType::TYPE_TRASH;
@@ -95,7 +96,7 @@ class Directory
         return $list;
     }
 
-    public static function createRootList()
+    public static function createRootList(): self
     {
         $list = new self(self::LIST_ROOT_LIST);
         $list->type = NodeEnumType::TYPE_LIST;
@@ -103,7 +104,7 @@ class Directory
         return $list;
     }
 
-    public static function createDefaultList()
+    public static function createDefaultList(): self
     {
         $list = new self(self::LIST_DEFAULT);
         $list->type = NodeEnumType::TYPE_LIST;
@@ -111,7 +112,7 @@ class Directory
         return $list;
     }
 
-    public static function createInbox()
+    public static function createInbox(): self
     {
         $list = new self(self::LIST_INBOX);
         $list->type = NodeEnumType::TYPE_LIST;
@@ -119,19 +120,15 @@ class Directory
         return $list;
     }
 
-    /**
-     * @return UuidInterface
-     */
     public function getId(): UuidInterface
     {
         return $this->id;
     }
 
     /**
-     * @param string|null $status
-     * @return Item[]
+     * @return array<Item>
      */
-    public function getChildItems(string $status = null)
+    public function getChildItems(string $status = null): array
     {
         if ($status) {
             return array_filter($this->childItems->toArray(), function (Item $item) use ($status) {
@@ -142,7 +139,7 @@ class Directory
         return $this->childItems->toArray();
     }
 
-    public function addChildItem(Item $item)
+    public function addChildItem(Item $item): void
     {
         if (false === $this->childItems->contains($item)) {
             $this->childItems->add($item);
@@ -150,7 +147,7 @@ class Directory
         }
     }
 
-    public function removeChildItem(Item $item)
+    public function removeChildItem(Item $item): void
     {
         $this->childItems->removeElement($item);
     }
@@ -163,7 +160,7 @@ class Directory
         return $this->childLists;
     }
 
-    public function addChildList(Directory $directory)
+    public function addChildList(Directory $directory): void
     {
         if (false === $this->childLists->contains($directory)) {
             $this->childLists->add($directory);
@@ -171,21 +168,15 @@ class Directory
         }
     }
 
-    /**
-     * @return Directory|null
-     */
     public function getParentList(): ?Directory
     {
         return $this->parentList;
     }
 
-    /**
-     * @param Directory|null $parentList
-     */
-    public function setParentList(?Directory $parentList)
+    public function setParentList(?Directory $parentList): void
     {
         if ($parentList === $this) {
-            throw new \LogicException('Can not be self parent');
+            throw new LogicException('Can not be self parent');
         }
         $this->parentList = $parentList;
     }
@@ -198,35 +189,33 @@ class Directory
         return $this->label;
     }
 
-    /**
-     * @param string|null $label
-     */
-    public function setLabel(?string $label)
+    public function setLabel(string $label): void
     {
         $this->label = $label;
     }
 
-    /**
-     * @return string
-     */
     public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * @return int
-     */
+    public function setType(string $type): void
+    {
+        $this->type = $type;
+    }
+
     public function getSort(): int
     {
         return $this->sort;
     }
 
-    /**
-     * @param int $sort
-     */
     public function setSort(int $sort): void
     {
         $this->sort = $sort;
+    }
+
+    public function __toString()
+    {
+        return $this->id->toString();
     }
 }

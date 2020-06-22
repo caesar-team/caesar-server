@@ -13,9 +13,6 @@ final class ShareFactoryContextCompilerPass implements CompilerPassInterface
 {
     use CommonProcessCompilerPassTrait;
 
-    /**
-     * @param ContainerBuilder $container
-     */
     public function process(ContainerBuilder $container)
     {
         $this->registerProcess($container, ShareFactoryContext::class, 'app.share_factory');

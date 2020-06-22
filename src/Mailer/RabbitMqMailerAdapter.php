@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Mailer;
 
 use OldSound\RabbitMqBundle\RabbitMq\Producer;
+use Psr\Log\LoggerInterface;
 use Sylius\Component\Mailer\Model\EmailInterface;
 use Sylius\Component\Mailer\Renderer\RenderedEmail;
 use Sylius\Component\Mailer\Sender\Adapter\AbstractAdapter;
-use Psr\Log\LoggerInterface;
 
 class RabbitMqMailerAdapter extends AbstractAdapter
 {
@@ -36,8 +36,7 @@ class RabbitMqMailerAdapter extends AbstractAdapter
         array $data,
         array $attachments = [],
         array $replyTo = []
-    ): void
-    {
+    ): void {
         $message = [];
         $message['recipients'] = $recipients;
         $message['senderAddress'] = $senderAddress;

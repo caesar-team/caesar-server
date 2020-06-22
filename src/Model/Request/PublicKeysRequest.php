@@ -8,31 +8,27 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 class PublicKeysRequest
 {
-
     /**
-     * @var array
+     * @var ArrayCollection
      */
-    private $emails = [];
+    private $emails;
 
     public function __construct()
     {
         $this->emails = new ArrayCollection();
     }
 
-    /**
-     * @return array
-     */
     public function getEmails(): array
     {
         return $this->emails->toArray();
     }
 
-    public function addEmail(string $email)
+    public function addEmail(string $email): void
     {
         $this->emails->add($email);
     }
 
-    public function removeEmail(string $email)
+    public function removeEmail(string $email): void
     {
         $this->emails->removeElement($email);
     }

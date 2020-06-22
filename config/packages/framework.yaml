@@ -39,4 +39,4 @@ parameters:
     env(DELIVERY_ADDRESS): ''
     locale: 'en'
     frontend_uris: ['%env(ALLOW_FRONT_REDIRECT_PATTERN)%']
-    logging_level: critical
+    logging_level: warning

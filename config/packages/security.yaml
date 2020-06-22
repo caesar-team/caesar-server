@@ -21,7 +21,7 @@ security:
             pattern: ^/api/anonymous
             anonymous: true
         doc:
-            pattern: ^/(api/doc|admin)
+            pattern: ^/(api/doc|admin|api/srp_login_confirm)
             logout: true
             stateless: false
             anonymous: false
@@ -48,6 +48,9 @@ security:
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
+        api_security_messages:
+            pattern: ^/api/message
+            anonymous: true
         api:
             pattern: ^/api
             provider: fos.user.provider
@@ -88,8 +91,9 @@ security:
         - { path: ^/api/message, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/anonymous, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api/srp_login_confirm, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/auth, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/user/self, roles: [IS_AUTHENTICATED_ANONYMOUSLY], methods: [GET] }
-        - { path: ^/api/doc, roles: [ROLE_SUPER_ADMIN]}
+        - { path: ^/api/doc, roles: [ROLE_SUPER_ADMIN, ROLE_ADMIN]}
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}

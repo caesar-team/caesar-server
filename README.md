@@ -46,9 +46,15 @@ Update JWT_PASSPHRASE setting in .env file
 Just go to [http://localhost](http://localhost)
 
 #### Run tests:
-Reveal `TEST_DATABASE_URL` from .env
+Run migrations
 ```bash
-APP_ENV=test vendor/bin/phpunit -d memory_limit=-1 #Phpunit
+docker-compose exec php bin/console doctrine:migrations:migrate --env=test
+```
+
+```bash
+docker-compose exec php bin/codecept build
+docker-compose exec php bin/codecept run unit
+docker-compose exec php bin/codecept run api
 ```
 
 #### Access to the admin panel:
@@ -62,3 +68,12 @@ Available roles:
 - ROLE_SUPER_ADMIN
 
 Ex: `bin/console fos:user:promote username ROLE_ADMIN`
+
+### 7. Contribution
+
+#### PHP Static Analysis Tool
+
+```bash
+docker-compose exec php vendor/bin/phpstan analyse   
+docker-compose exec php vendor/bin/psalm --show-info=false
+```

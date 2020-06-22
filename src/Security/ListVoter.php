@@ -7,7 +7,7 @@ namespace App\Security;
 use App\Entity\Directory;
 use App\Entity\User;
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -17,12 +17,11 @@ class ListVoter extends Voter
     public const EDIT = 'edit_list';
     public const DELETE_LIST = 'delete_list';
 
-    /** @var UserRepository */
-    private $userRepository;
+    private UserRepository $userRepository;
 
-    public function __construct(EntityManagerInterface $manager)
+    public function __construct(UserRepository $userRepository)
     {
-        $this->userRepository = $manager->getRepository(User::class);
+        $this->userRepository = $userRepository;
     }
 
     /**
@@ -50,9 +49,8 @@ class ListVoter extends Voter
      * Perform a single access check operation on a given attribute, subject and token.
      * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
      *
-     * @param string         $attribute
-     * @param mixed          $subject
-     * @param TokenInterface $token
+     * @param string $attribute
+     * @param mixed  $subject
      *
      * @return bool
      */
@@ -67,6 +65,6 @@ class ListVoter extends Voter
             return $itemOwner === $user;
         }
 
-        throw new \LogicException('This code should not be reached! You must update method UserVoter::supports()');
+        throw new LogicException('This code should not be reached! You must update method UserVoter::supports()');
     }
 }

@@ -7,9 +7,9 @@ namespace App\Event\EventSubscriber;
 use App\Entity\User;
 use App\Services\InvitationManager;
 use Doctrine\Common\EventSubscriber;
+use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
-use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 
 class InvitationRemoveSubscriber implements EventSubscriber
 {
@@ -22,6 +22,7 @@ class InvitationRemoveSubscriber implements EventSubscriber
     {
         $this->entityManager = $entityManager;
     }
+
     /**
      * Returns an array of events this subscriber wants to listen to.
      *
@@ -30,14 +31,11 @@ class InvitationRemoveSubscriber implements EventSubscriber
     public function getSubscribedEvents()
     {
         return [
-            Events::postRemove,
+            Events::preRemove,
         ];
     }
 
-    /**
-     * @param LifecycleEventArgs $args
-     */
-    public function postRemove(LifecycleEventArgs $args)
+    public function preRemove(LifecycleEventArgs $args): void
     {
         $user = $args->getObject();
         if (!$user instanceof User) {
@@ -45,6 +43,5 @@ class InvitationRemoveSubscriber implements EventSubscriber
         }
 
         InvitationManager::removeInvitation($user, $this->entityManager);
-        $this->entityManager->flush();
     }
 }

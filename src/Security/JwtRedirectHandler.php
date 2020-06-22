@@ -10,15 +10,20 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
 
 class JwtRedirectHandler implements AuthenticationSuccessHandlerInterface
 {
-    /** @var JWTTokenManagerInterface */
+    /**
+     * @var JWTTokenManagerInterface
+     */
     private $jwtTokenManager;
-    /** @var FrontendUriHandler */
+
+    /**
+     * @var FrontendUriHandler
+     */
     private $frontendUriHandler;
+
     /**
      * @var RouterInterface
      */
@@ -26,17 +31,12 @@ class JwtRedirectHandler implements AuthenticationSuccessHandlerInterface
 
     /**
      * JwtRedirectHandler constructor.
-     *
-     * @param JWTTokenManagerInterface $jwtTokenManager
-     * @param FrontendUriHandler $frontendUriHandler
-     * @param RouterInterface $router
      */
     public function __construct(
         JWTTokenManagerInterface $jwtTokenManager,
         FrontendUriHandler $frontendUriHandler,
         RouterInterface $router
-    )
-    {
+    ) {
         $this->jwtTokenManager = $jwtTokenManager;
         $this->frontendUriHandler = $frontendUriHandler;
         $this->router = $router;
@@ -45,7 +45,7 @@ class JwtRedirectHandler implements AuthenticationSuccessHandlerInterface
     /**
      * {@inheritdoc}
      */
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token)
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token): RedirectResponse
     {
         /** @var User $user */
         $user = $token->getUser();
@@ -60,17 +60,10 @@ class JwtRedirectHandler implements AuthenticationSuccessHandlerInterface
         return new RedirectResponse($url);
     }
 
-    /**
-     * @param Request $request
-     * @param string  $jwt
-     * @param User    $user
-     *
-     * @return string
-     */
     private function generateFrontendUri(Request $request, string $jwt): ?string
     {
         $uri = $this->frontendUriHandler->extractUri($request);
 
-        return $uri ? \sprintf('%s?jwt=%s', $uri, $jwt) : null;
+        return $uri ? sprintf('%s?jwt=%s', $uri, $jwt) : null;
     }
 }

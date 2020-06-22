@@ -6,7 +6,6 @@ namespace App\Validator\Constraints;
 
 use App\Entity\Item;
 use App\Entity\User;
-use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -14,10 +13,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class ItemOwnerValidator extends ConstraintValidator
 {
-    /**
-     * @var Security
-     */
-    private $security;
+    private Security $security;
 
     public function __construct(Security $security)
     {
@@ -25,12 +21,11 @@ class ItemOwnerValidator extends ConstraintValidator
     }
 
     /**
-     * @param Collection $value
-     * @param Constraint $constraint
+     * {@inheritdoc}
      */
     public function validate($value, Constraint $constraint)
     {
-        if (null === $value || !is_iterable($value)) {
+        if (!is_iterable($value)) {
             return;
         }
 
@@ -38,17 +33,19 @@ class ItemOwnerValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, ItemOwner::class);
         }
 
-        /** @var User $user */
+        /** @var User|null $user */
         $user = $this->security->getUser();
         foreach ($value as $item) {
-            if ($item instanceof Item) {
-                $itemUser = $item->getSignedOwner();
-                if (null === $user || $user !== $itemUser) {
-                    $this->context
-                        ->buildViolation($constraint->message)
-                        ->addViolation()
-                    ;
-                }
+            if (!$item instanceof Item) {
+                continue;
+            }
+
+            $itemUser = $item->getSignedOwner();
+            if (!$itemUser->equals($user)) {
+                $this->context
+                    ->buildViolation($constraint->message)
+                    ->addViolation()
+                ;
             }
         }
     }

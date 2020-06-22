@@ -19,12 +19,12 @@ final class MemberView
     public $email;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $avatar;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $publicKey;
 
@@ -39,7 +39,7 @@ final class MemberView
     public $teamIds;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $role;
 
@@ -60,6 +60,7 @@ final class MemberView
 
     /**
      * @param array|UserTeam[] $usersTeams
+     *
      * @return array|MemberView[]
      */
     public static function createMany(array $usersTeams): array

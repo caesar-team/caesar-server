@@ -11,5 +11,5 @@ use Symfony\Component\Validator\Constraint;
  */
 class GoogleAuthenticatorCheckCode extends Constraint
 {
-    public $message = 'Invalid two-factor authentication code.';
+    public string $message = 'Invalid two-factor authentication code.';
 }

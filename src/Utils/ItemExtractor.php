@@ -11,8 +11,6 @@ use App\Entity\User;
 final class ItemExtractor
 {
     /**
-     * @param Team $team
-     * @param User $user
      * @return array|Item[]
      */
     public static function getTeamItemsForUser(Team $team, User $user): array
@@ -29,7 +27,7 @@ final class ItemExtractor
 
     /**
      * @param array|Item[] $items
-     * @param User $user
+     *
      * @return array|Item[]
      */
     private static function filterByUser(array $items, User $user): array

@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Event\EventSubscriber;
 
-
 use App\Entity\User;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Security;
@@ -15,7 +14,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AnonymousRequestSubscriber implements EventSubscriberInterface
 {
-    const AVAILABLE_ROUTES = [
+    public const AVAILABLE_ROUTES = [
         'api_item_check_shared_item',
         'api_user_security_bootstrap',
         'api_srp_login_prepare',
@@ -39,6 +38,7 @@ class AnonymousRequestSubscriber implements EventSubscriberInterface
         $this->security = $security;
         $this->translator = $translator;
     }
+
     public static function getSubscribedEvents()
     {
         return [
@@ -46,11 +46,10 @@ class AnonymousRequestSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function onKernelRequest(GetResponseEvent $event)
+    public function onKernelRequest(RequestEvent $event)
     {
         $request = $event->getRequest();
         $route = $request->get('_route');
-        /** @var User $user */
         $user = $this->security->getUser();
         if (!$user instanceof User) {
             return;

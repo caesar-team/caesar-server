@@ -1,0 +1,4 @@
+security_message_bundle:
+  resource: '@SecurityMessageBundle/Controller/MessageController.php'
+  prefix: /api
+  type: annotation

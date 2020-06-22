@@ -22,18 +22,18 @@ use App\Repository\TeamRepository;
 use App\Repository\UserTeamRepository;
 use App\Security\Voter\TeamVoter;
 use App\Security\Voter\UserTeamVoter;
-use App\Services\AdminPromoter;
 use App\Services\TeamManager;
 use App\Utils\ItemExtractor;
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Swagger\Annotations as SWG;
-use Nelmio\ApiDocBundle\Annotation\Model;
 
 /**
  * @Route(
@@ -64,24 +64,16 @@ class TeamController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     *
-     * @param Request $request
-     * @param ViewFactoryContext $viewFactoryContext
-     * @param EntityManagerInterface $entityManager
-     * @param TeamManager $teamManager
-     *
-     * @param AdminPromoter $adminPromoter
-     * @return TeamView|FormInterface
      * @throws \Exception
+     *
+     * @return TeamView|FormInterface
      */
-    public  function create(
+    public function create(
         Request $request,
         ViewFactoryContext $viewFactoryContext,
         EntityManagerInterface $entityManager,
-        TeamManager $teamManager,
-        AdminPromoter $adminPromoter
-    )
-    {
+        TeamManager $teamManager
+    ) {
         $team = new Team();
         $form = $this->createForm(CreateTeamType::class, $team);
         $form->submit($request->request->all());
@@ -93,7 +85,6 @@ class TeamController extends AbstractController
 
         $entityManager->persist($team);
         $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
-        $adminPromoter->addTeamToAdmins($team, $this->getUser());
         $entityManager->flush();
 
         $teamView = $viewFactoryContext->view($team);
@@ -120,9 +111,6 @@ class TeamController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     *
-     * @param Team $team
-     * @param ViewFactoryContext $viewFactoryContext
      * @return TeamView
      */
     public function team(Team $team, ViewFactoryContext $viewFactoryContext)
@@ -154,9 +142,6 @@ class TeamController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     *
-     * @param ViewFactoryContext $viewFactoryContext
-     * @param TeamRepository $teamRepository
      * @return TeamView[]
      */
     public function teams(ViewFactoryContext $viewFactoryContext, TeamRepository $teamRepository)
@@ -166,12 +151,10 @@ class TeamController extends AbstractController
         if ($user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_SUPER_ADMIN)) {
             $teams = $teamRepository->findAll();
         } else {
-            $teams = $teamRepository->findByUser($this->getUser());
+            $teams = $teamRepository->findByUser($user);
         }
 
-        $teamView = $viewFactoryContext->viewList($teams);
-
-        return $teamView;
+        return $viewFactoryContext->viewList($teams);
     }
 
     /**
@@ -198,11 +181,6 @@ class TeamController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     *
-     * @param Team $team
-     * @param Request $request
-     * @param ViewFactoryContext $viewFactoryContext
-     * @param EntityManagerInterface $entityManager
      * @return TeamView
      */
     public function update(Team $team, Request $request, ViewFactoryContext $viewFactoryContext, EntityManagerInterface $entityManager)
@@ -237,9 +215,6 @@ class TeamController extends AbstractController
      *     methods={"DELETE"}
      * )
      *
-     *
-     * @param Team $team
-     * @param EntityManagerInterface $entityManager
      * @return JsonResponse
      */
     public function delete(Team $team, EntityManagerInterface $entityManager)
@@ -250,7 +225,6 @@ class TeamController extends AbstractController
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
     }
-
 
     /**
      * @SWG\Tag(name="Team")
@@ -273,10 +247,9 @@ class TeamController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @param UserTeamRepository $userTeamRepository
-     * @return ListView[]
+     * @return MemberView[]
      */
-    public function defaultTeamMembers(UserTeamRepository $userTeamRepository)
+    public function defaultTeamMembers(UserTeamRepository $userTeamRepository): array
     {
         $team = $this->getDefaultTeam();
 
@@ -306,9 +279,7 @@ class TeamController extends AbstractController
      *     path="/{team}/members",
      *     methods={"GET"}
      * )
-     * @param Request $request
-     * @param Team $team
-     * @param UserTeamRepository $userTeamRepository
+     *
      * @return MemberView[]
      */
     public function members(Request $request, Team $team, UserTeamRepository $userTeamRepository)
@@ -341,12 +312,10 @@ class TeamController extends AbstractController
      *     path="/{team}/members/{user}",
      *     methods={"POST"}
      * )
-     * @param Request $request
-     * @param Team $team
-     * @param User $user
-     * @param EntityManagerInterface $entityManager
-     * @return MemberView|FormInterface
+     *
      * @throws \Exception
+     *
+     * @return MemberView|FormInterface
      */
     public function addMember(Request $request, Team $team, User $user, EntityManagerInterface $entityManager)
     {
@@ -355,7 +324,7 @@ class TeamController extends AbstractController
         $form = $this->createForm(AddMemberType::class, $userTeam);
         $form->submit($request->request->all());
 
-        if(!$form->isValid()) {
+        if (!$form->isValid()) {
             return $form;
         } else {
             $userTeam->setUser($user);
@@ -378,11 +347,7 @@ class TeamController extends AbstractController
      *     path="/{team}/members/{user}",
      *     methods={"DELETE"}
      * )
-     * @param Team $team
-     * @param User $user
-     * @param UserTeamRepository $userTeamRepository
-     * @param ItemRepository $itemRepository
-     * @return JsonResponse
+     *
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function removeMember(
@@ -390,10 +355,9 @@ class TeamController extends AbstractController
         User $user,
         UserTeamRepository $userTeamRepository,
         ItemRepository $itemRepository
-    ): JsonResponse
-    {
+    ): JsonResponse {
         if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
+            throw new LogicException('Illegal team');
         }
 
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
@@ -434,18 +398,15 @@ class TeamController extends AbstractController
      *     path="/{team}/members/{user}",
      *     methods={"PATCH"}
      * )
-     * @param Request $request
-     * @param Team $team
-     * @param User $user
-     * @param UserTeamRepository $userTeamRepository
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
      *
      * @return MemberView|FormInterface
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function editMember(Request $request, Team $team, User $user, UserTeamRepository $userTeamRepository)
     {
         if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
+            throw new LogicException('Illegal team');
         }
 
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
@@ -487,8 +448,7 @@ class TeamController extends AbstractController
      *     path="/{team}/lists",
      *     methods={"GET"}
      * )
-     * @param Team $team
-     * @param ViewFactoryContext $viewFactoryContext
+     *
      * @return ListView[]
      */
     public function lists(Team $team, ViewFactoryContext $viewFactoryContext)

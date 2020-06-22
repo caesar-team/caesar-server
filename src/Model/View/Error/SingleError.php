@@ -16,9 +16,6 @@ class SingleError
         $this->errors = $errors;
     }
 
-    /**
-     * @return array
-     */
     public function getErrors(): array
     {
         return $this->errors;

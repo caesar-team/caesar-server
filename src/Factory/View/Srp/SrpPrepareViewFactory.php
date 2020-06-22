@@ -9,11 +9,6 @@ use App\Model\View\Srp\PreparedSrpView;
 
 class SrpPrepareViewFactory
 {
-    /**
-     * @param Srp $srp
-     *
-     * @return PreparedSrpView
-     */
     public function create(Srp $srp): PreparedSrpView
     {
         $view = new PreparedSrpView();

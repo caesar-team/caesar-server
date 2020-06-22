@@ -25,9 +25,6 @@ abstract class AbstractQuery
      */
     protected $perPage;
 
-    /**
-     * @return int
-     */
     public function getPage(): int
     {
         return $this->page > 0 ? $this->page : static::FIRST_PAGE;
@@ -36,34 +33,26 @@ abstract class AbstractQuery
     /**
      * @param int $page
      */
-    public function setPage(?int $page)
+    public function setPage(?int $page): void
     {
         $this->page = $page;
     }
 
-    /**
-     * @return int
-     */
     public function getPerPage(): int
     {
         return $this->perPage > 0 ? $this->perPage : static::PER_PAGE;
     }
 
     /**
-     * @param int|null $perPage
-     *
      * @return $this
      */
-    public function setPerPage(?int $perPage)
+    public function setPerPage(?int $perPage): self
     {
         $this->perPage = $perPage;
 
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getFirstResult(): int
     {
         return $this->getPerPage() * ($this->getPage() - 1);
