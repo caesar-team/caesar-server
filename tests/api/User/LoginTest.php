@@ -41,7 +41,7 @@ class LoginTest extends Unit
     public function invalidLogin()
     {
         $I = $this->tester;
-        
+
         /** @var User $user */
         $user = $I->have(User::class);
 
