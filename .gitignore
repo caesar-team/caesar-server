@@ -33,5 +33,4 @@ yarn-error.log
 
 ###> tests ###
 !/tests/_envs
-codeception.yml
 ###< tests ###
