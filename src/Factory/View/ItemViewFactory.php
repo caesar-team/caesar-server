@@ -11,7 +11,6 @@ use App\Model\View\CredentialsList\ChildItemView;
 use App\Model\View\CredentialsList\InviteItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
-use App\Model\View\User\UserView;
 use App\Services\PermissionManager;
 use App\Utils\ChildItemAwareInterface;
 use Doctrine\Common\Collections\Collection;
@@ -59,7 +58,7 @@ class ItemViewFactory
             $childItem = new ChildItemView();
             $childItem->id = $item->getId()->toString();
             $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
-            $childItem->userId = $this->getOwner($item)->id;
+            $childItem->userId = $item->getOwner()->getId()->toString();
             $childItems[] = $childItem;
         }
         $view->items = $childItems;
@@ -116,13 +115,6 @@ class ItemViewFactory
 
             return false;
         });
-    }
-
-    private function getOwner(Item $item): UserView
-    {
-        $user = $item->getOwner();
-
-        return (new UserViewFactory())->create($user);
     }
 
     private function getUpdateView(?ItemUpdate $update): ?UpdateView

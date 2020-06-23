@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace App\Factory\View\User;
 
 use App\Entity\User;
-use App\Model\View\User\SearchUserView;
+use App\Model\View\User\UserView;
 
-final class SearchUserViewFactory
+class UserViewFactory
 {
-    public function createSingle(User $user): SearchUserView
+    public function createSingle(User $user): UserView
     {
-        $view = new SearchUserView();
+        $view = new UserView();
+
         $view->setId($user->getId()->toString());
-        $view->setEmail($user->getEmail());
         $view->setName($user->getUsername());
         $view->setAvatar($user->getAvatarLink());
-        $view->setTeamIds($user->getTeamsIds());
+        $view->setPublicKey($user->getPublicKey());
+        $view->setEmail($user->getEmail());
 
         return $view;
     }
@@ -24,7 +25,7 @@ final class SearchUserViewFactory
     /**
      * @param User[] $users
      *
-     * @return SearchUserView[]
+     * @return UserView[]
      */
     public function createCollection(array $users): array
     {

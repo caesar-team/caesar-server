@@ -8,11 +8,10 @@ use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
-use App\Model\Query\UserQuery;
-use App\Model\Response\PaginatedList;
 use App\Traits\PaginatorTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Ramsey\Uuid\Uuid;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -54,32 +53,6 @@ class UserRepository extends ServiceEntityRepository
         }
 
         return $this->directoryRepository->getUserByList($list);
-    }
-
-    public function getByQuery(UserQuery $query): PaginatedList
-    {
-        $teams = [];
-        foreach ($query->getUserTeams() as $userTeam) {
-            $teams[] = $userTeam->getTeam()->getId();
-        }
-        $queryBuilder = $this->createQueryBuilder('user');
-        $queryBuilder
-            ->join('user.userTeams', 'userTeams')
-            ->where($queryBuilder->expr()->neq('user', ':userId'))
-            ->andWhere('userTeams.team IN(:teams)')
-            ->andWhere($queryBuilder->expr()->isNotNull('user.publicKey'))
-            ->setParameter('teams', $teams)
-            ->setParameter('userId', $query->getUser())
-            ->setMaxResults($query->getPerPage())
-            ->setFirstResult($query->getFirstResult());
-
-        if ($query->name) {
-            $queryBuilder
-                ->andWhere('LOWER(user.username) LIKE :username')
-                ->setParameter('username', '%'.mb_strtolower($query->name).'%');
-        }
-
-        return $this->createPaginatedList($queryBuilder, $query);
     }
 
     /**
@@ -140,10 +113,18 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array|User[]
+     * @return User[]
      */
     public function findByIds(array $ids): array
     {
+        $ids = array_filter($ids, static function (string $id) {
+            return Uuid::isValid($id);
+        });
+
+        if (empty($ids)) {
+            return [];
+        }
+
         $qb = $this->createQueryBuilder('user');
         $qb->where('user.id IN(:ids)');
         $qb->setParameter('ids', $ids);
