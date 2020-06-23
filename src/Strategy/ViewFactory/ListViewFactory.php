@@ -51,6 +51,7 @@ final class ListViewFactory implements ViewFactoryInterface
         $view->children = $this->itemListViewFactory->create($data->getChildItems());
         $team = $this->teamRepository->findOneByDirectory($data);
         $view->teamId = $team ? $team->getId()->toString() : null;
+        $view->setDirectory($data);
 
         return $view;
     }

@@ -6,6 +6,7 @@ namespace App\Model\View\CredentialsList;
 
 use App\Entity\Item;
 use App\Swagger\Annotations as AppSwagger;
+use JMS\Serializer\Annotation as Serializer;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -16,6 +17,7 @@ class ChildItemView
      *
      * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      * @Groups({"child_item"})
+     * @Serializer\Groups({"child_item"})
      */
     public $id;
 
@@ -31,6 +33,7 @@ class ChildItemView
      *
      * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      * @Groups({"child_item"})
+     * @Serializer\Groups({"child_item"})
      */
     public $userId;
 
@@ -39,12 +42,14 @@ class ChildItemView
      *
      * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      * @Groups({"child_item"})
+     * @Serializer\Groups({"child_item"})
      */
     public $teamId;
 
     /**
      * @var \DateTime|string
      * @Groups({"child_item"})
+     * @Serializer\Groups({"child_item"})
      *
      * @SWG\Property(type="string")
      */

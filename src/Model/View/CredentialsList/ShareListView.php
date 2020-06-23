@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Model\View\CredentialsList;
 
 use App\Entity\Item;
+use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 final class ShareListView
@@ -12,6 +13,7 @@ final class ShareListView
     /**
      * @var ShareView[]
      * @Groups({"child_item"})
+     * @Serializer\Groups({"child_item"})
      */
     public $shares;
 

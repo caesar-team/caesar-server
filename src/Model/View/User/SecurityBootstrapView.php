@@ -15,25 +15,25 @@ class SecurityBootstrapView
 
     /**
      * @var string
-     * @SWG\Property(example="SKIP|CREATE|CHECK")
+     * @SWG\Property(type="string", example="SKIP|CREATE|CHECK")
      */
     public $twoFactorAuthState;
 
     /**
      * @var string
-     * @SWG\Property(example="SKIP|CHANGE")
+     * @SWG\Property(type="string", example="SKIP|CHANGE")
      */
     public $passwordState;
 
     /**
      * @var string
-     * @SWG\Property(example="CREATE|SKIP|CHANGE|CHECK_SHARED")
+     * @SWG\Property(type="string", example="CREATE|SKIP|CHANGE|CHECK_SHARED")
      */
     public $masterPasswordState;
 
     /**
      * @var string
-     * @SWG\Property(example="SKIP|CHECK")
+     * @SWG\Property(type="string", example="SKIP|CHECK")
      */
     public $sharedItemsState;
 }

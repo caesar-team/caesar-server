@@ -29,4 +29,6 @@ return [
     Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle::class => ['all' => true],
     Symfony\WebpackEncoreBundle\WebpackEncoreBundle::class => ['all' => true],
     Caesar\SecurityMessageBundle\SecurityMessageBundle::class => ['all' => true],
+    JMS\SerializerBundle\JMSSerializerBundle::class => ['all' => true],
+    Bazinga\Bundle\HateoasBundle\BazingaHateoasBundle::class => ['all' => true],
 ];

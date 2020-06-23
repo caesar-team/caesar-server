@@ -55,13 +55,12 @@ final class UserController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="User information response",
-     *     @Model(type="\App\Model\View\User\SelfUserInfoView")
+     *     @Model(type="\App\Model\View\User\SelfUserInfoView", groups={"public"})
      * )
      * @SWG\Response(
      *     response=401,
      *     description="Unauthorized"
      * )
-     *
      * @Route(
      *     path="/api/user/self",
      *     name="api_user_get_info",

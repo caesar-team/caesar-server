@@ -10,13 +10,13 @@ class UserSecurityInfoView
 {
     /**
      * @var string[]
-     * @SWG\Property(example="['ROLE_USER']")
+     * @SWG\Property(type="string[]", example="['ROLE_USER']")
      */
     public $roles = [];
 
     /**
      * @var string[]
-     * @SWG\Property(example="['create', 'read', 'update', 'delete']")
+     * @SWG\Property(type="string[]", example="['create', 'read', 'update', 'delete']")
      */
     public $permissions = [];
 }

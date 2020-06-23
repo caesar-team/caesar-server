@@ -43,6 +43,7 @@ class ItemViewFactory
         $view->favorite = $item->isFavorite();
         $view->sort = $item->getSort();
         $view->originalItemId = $item->getOriginalItem() ? $item->getOriginalItem()->getId()->toString() : null;
+        $view->setItem($item);
 
         return $view;
     }

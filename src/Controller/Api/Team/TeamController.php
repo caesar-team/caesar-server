@@ -81,7 +81,7 @@ class TeamController extends AbstractController
             return $form;
         }
 
-        $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $team);
+        $this->denyAccessUnlessGranted(TeamVoter::CREATE, $team);
 
         $entityManager->persist($team);
         $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
@@ -211,7 +211,7 @@ class TeamController extends AbstractController
      *
      * @Route(
      *     path="/{team}",
-     *     name="api__team_delete",
+     *     name="api_team_delete",
      *     methods={"DELETE"}
      * )
      *
@@ -219,7 +219,7 @@ class TeamController extends AbstractController
      */
     public function delete(Team $team, EntityManagerInterface $entityManager)
     {
-        $this->denyAccessUnlessGranted(TeamVoter::TEAM_CREATE, $team);
+        $this->denyAccessUnlessGranted(TeamVoter::DELETE, $team);
         $entityManager->remove($team);
         $entityManager->flush();
 
@@ -277,6 +277,7 @@ class TeamController extends AbstractController
      *
      * @Route(
      *     path="/{team}/members",
+     *     name="api_team_members",
      *     methods={"GET"}
      * )
      *
@@ -310,6 +311,7 @@ class TeamController extends AbstractController
      * )
      * @Route(
      *     path="/{team}/members/{user}",
+     *     name="api_team_member_add",
      *     methods={"POST"}
      * )
      *
@@ -345,6 +347,7 @@ class TeamController extends AbstractController
      *
      * @Route(
      *     path="/{team}/members/{user}",
+     *     name="api_team_member_remove",
      *     methods={"DELETE"}
      * )
      *
@@ -396,6 +399,7 @@ class TeamController extends AbstractController
      *
      * @Route(
      *     path="/{team}/members/{user}",
+     *     name="api_team_member_edit",
      *     methods={"PATCH"}
      * )
      *

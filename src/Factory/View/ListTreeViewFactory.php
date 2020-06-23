@@ -83,6 +83,7 @@ class ListTreeViewFactory
         $view->sort = $directory->getSort();
         $team = $this->teamRepository->findOneByDirectory($directory);
         $view->teamId = $team ? $team->getId()->toString() : null;
+        $view->setDirectory($directory);
 
         return $view;
     }

@@ -2,15 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Security;
+namespace App\Security\Voter;
 
 use App\Entity\Directory;
 use App\Entity\User;
+use App\Entity\UserTeam;
+use App\Repository\TeamRepository;
 use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-class ListVoter extends Voter
+class TeamListVoter extends Voter
 {
     public const EDIT = 'edit_list';
     public const SORT = 'sort_list';
@@ -19,9 +21,14 @@ class ListVoter extends Voter
 
     private UserRepository $userRepository;
 
-    public function __construct(UserRepository $userRepository)
-    {
+    private TeamRepository $teamRepository;
+
+    public function __construct(
+        UserRepository $userRepository,
+        TeamRepository $teamRepository
+    ) {
         $this->userRepository = $userRepository;
+        $this->teamRepository = $teamRepository;
     }
 
     /**
@@ -52,43 +59,54 @@ class ListVoter extends Voter
         if (!$subject instanceof Directory) {
             return false;
         }
-        if ($subject->equals($user->getInbox()) || $subject->equals($user->getTrash())) {
+        $team = $this->teamRepository->findOneByDirectory($subject);
+        if (null === $team) {
+            return false;
+        }
+        if ($subject->equals($team->getTrash())) {
+            return false;
+        }
+
+        $userTeam = $team->getUserTeamByUser($user);
+        if (null === $userTeam) {
             return false;
         }
 
         switch ($attribute) {
             case self::EDIT:
-                return $this->canEdit($subject, $user);
+                return $this->canEdit($subject, $userTeam);
             case self::DELETE:
-                return $this->canDelete($subject, $user);
+                return $this->canDelete($subject, $userTeam);
             case self::SORT:
-                return $this->canSort($subject, $user);
+                return $this->canSort($subject, $userTeam);
             case self::CREATE_ITEM:
-                return $this->canCreateItem($subject, $user);
+                return $this->canCreateItem($subject, $userTeam);
         }
 
         return false;
     }
 
-    private function canEdit(Directory $subject, User $user): bool
+    private function canEdit(Directory $subject, UserTeam $user): bool
     {
         return $this->canSort($subject, $user) && Directory::LIST_DEFAULT !== $subject->getLabel();
     }
 
-    private function canDelete(Directory $subject, User $user): bool
+    private function canDelete(Directory $subject, UserTeam $user): bool
     {
         return $this->canEdit($subject, $user);
     }
 
-    private function canSort(Directory $subject, User $user): bool
+    private function canSort(Directory $subject, UserTeam $user): bool
     {
         $itemOwner = $this->userRepository->getByList($subject);
 
-        return $user->equals($itemOwner);
+        return $user->getUser()->equals($itemOwner)
+            || UserTeam::USER_ROLE_ADMIN === $user->getUserRole()
+        ;
     }
 
-    private function canCreateItem(Directory $subject, User $user): bool
+    private function canCreateItem(Directory $subject, UserTeam $user): bool
     {
-        return $this->canSort($subject, $user);
+        return $this->canSort($subject, $user) || UserTeam::USER_ROLE_MEMBER === $user->getUserRole();
     }
 }
