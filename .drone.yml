@@ -185,9 +185,9 @@ steps:
   when:
     branch: [ develop ]
 
-- <<: *stepMasterDeploy
-  when:
-    branch: [ master ]
+#- <<: *stepMasterDeploy
+#  when:
+#    branch: [ master ]
 
 - <<: *stepNotifyToSlack
   when:
