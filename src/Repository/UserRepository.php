@@ -13,6 +13,7 @@ use App\Model\Response\PaginatedList;
 use App\Traits\PaginatorTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Ramsey\Uuid\Uuid;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -140,10 +141,18 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array|User[]
+     * @return User[]
      */
     public function findByIds(array $ids): array
     {
+        $ids = array_filter($ids, static function (string $id) {
+            return Uuid::isValid($id);
+        });
+
+        if (empty($ids)) {
+            return [];
+        }
+
         $qb = $this->createQueryBuilder('user');
         $qb->where('user.id IN(:ids)');
         $qb->setParameter('ids', $ids);

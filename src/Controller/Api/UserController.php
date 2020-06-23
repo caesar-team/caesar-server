@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
 use App\Entity\Security\Invitation;
 use App\Entity\Srp;
@@ -14,9 +13,7 @@ use App\Entity\UserTeam;
 use App\Factory\View\SecurityBootstrapViewFactory;
 use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
-use App\Factory\View\UserListViewFactory;
 use App\Factory\View\UserSecurityInfoViewFactory;
-use App\Form\Query\UserQueryType;
 use App\Form\Request\CreateInvitedUserType;
 use App\Form\Request\Invite\PublicKeysRequestType;
 use App\Form\Request\SaveKeysType;
@@ -24,13 +21,11 @@ use App\Form\Request\SendInvitesType;
 use App\Form\Request\SendInviteType;
 use App\Mailer\MailRegistry;
 use App\Model\DTO\Message;
-use App\Model\Query\UserQuery;
 use App\Model\Request\PublicKeysRequest;
 use App\Model\Request\SendInviteRequest;
 use App\Model\Request\SendInviteRequests;
 use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
-use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
 use App\Services\InvitationManager;
 use App\Services\Messenger;
@@ -102,45 +97,6 @@ final class UserController extends AbstractController
     public function publicKey(User $user, UserKeysViewFactory $viewFactory): ?UserKeysView
     {
         return $viewFactory->create($user);
-    }
-
-    /**
-     * @SWG\Tag(name="User")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="Users list",
-     *     @SWG\Schema(
-     *         type="array",
-     *         @Model(type="\App\Model\View\User\UserView")
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/user",
-     *     name="api_users_list",
-     *     methods={"GET"}
-     * )
-     *
-     * @return UserView[]|array|FormInterface
-     */
-    public function userList(Request $request, UserListViewFactory $factory, UserRepository $repository)
-    {
-        $userQuery = new UserQuery($this->getUser());
-
-        $form = $this->createForm(UserQueryType::class, $userQuery);
-        $form->submit($request->query->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        $userCollection = $repository->getByQuery($userQuery);
-
-        return $factory->create($userCollection);
     }
 
     /**
@@ -544,44 +500,6 @@ final class UserController extends AbstractController
         $entityManager->flush();
 
         return ['users' => $users];
-    }
-
-    /**
-     * @SWG\Tag(name="User")
-     * @SWG\Parameter(
-     *     name="ids",
-     *     in="query",
-     *     description="users ids",
-     *     type="array",
-     *     @Model(type="App\Model\View\User\UserView")
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="List of users",
-     *     @SWG\Schema(
-     *         type="array",
-     *         @Model(type="App\Model\View\User\UserView")
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/users",
-     *     methods={"GET"}
-     * )
-     *
-     * @return UserView[]
-     */
-    public function users(Request $request, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext): array
-    {
-        $ids = $request->query->get('ids', []);
-
-        $users = 0 < count($ids) ? $userRepository->findByIds($ids) : $userRepository->findAllExceptAnonymous();
-
-        return $viewFactoryContext->viewList($users);
     }
 
     private function setFlowStatus(string $currentFlowStatus): string

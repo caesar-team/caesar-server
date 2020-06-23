@@ -16,6 +16,9 @@
       "avatar": {
         "type": ["string", "null"]
       },
+      "publicKey": {
+        "type": ["string", "null"]
+      },
       "teamIds": {
         "type": "array"
       }
@@ -24,6 +27,7 @@
       "id",
       "email",
       "name",
+      "publicKey",
       "teamIds"
     ]
   }
