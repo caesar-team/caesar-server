@@ -50,7 +50,10 @@ final class ListController extends AbstractController
     {
         $ids = $request->query->get('ids', []);
 
-        $users = 0 < count($ids) ? $userRepository->findByIds($ids) : $userRepository->findAllExceptAnonymous();
+        $users = !empty($ids)
+            ? $userRepository->findByIds($ids)
+            : $userRepository->findAllExceptAnonymous()
+        ;
 
         return $viewFactory->createCollection($users);
     }

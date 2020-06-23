@@ -57,32 +57,6 @@ class UserRepository extends ServiceEntityRepository
         return $this->directoryRepository->getUserByList($list);
     }
 
-    public function getByQuery(UserQuery $query): PaginatedList
-    {
-        $teams = [];
-        foreach ($query->getUserTeams() as $userTeam) {
-            $teams[] = $userTeam->getTeam()->getId();
-        }
-        $queryBuilder = $this->createQueryBuilder('user');
-        $queryBuilder
-            ->join('user.userTeams', 'userTeams')
-            ->where($queryBuilder->expr()->neq('user', ':userId'))
-            ->andWhere('userTeams.team IN(:teams)')
-            ->andWhere($queryBuilder->expr()->isNotNull('user.publicKey'))
-            ->setParameter('teams', $teams)
-            ->setParameter('userId', $query->getUser())
-            ->setMaxResults($query->getPerPage())
-            ->setFirstResult($query->getFirstResult());
-
-        if ($query->name) {
-            $queryBuilder
-                ->andWhere('LOWER(user.username) LIKE :username')
-                ->setParameter('username', '%'.mb_strtolower($query->name).'%');
-        }
-
-        return $this->createPaginatedList($queryBuilder, $query);
-    }
-
     /**
      * @throws \Doctrine\ORM\NonUniqueResultException
      */

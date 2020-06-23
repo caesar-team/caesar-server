@@ -23,7 +23,7 @@ class UserViewFactory
     }
 
     /**
-     * @param User[] $data
+     * @param User[] $users
      *
      * @return UserView[]
      */

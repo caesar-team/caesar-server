@@ -22,7 +22,7 @@ final class SearchUserViewFactory
     }
 
     /**
-     * @param User[] $data
+     * @param User[] $users
      *
      * @return SearchUserView[]
      */
