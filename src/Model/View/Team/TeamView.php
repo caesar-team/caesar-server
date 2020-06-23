@@ -81,7 +81,7 @@ class TeamView
      */
     private $team;
 
-    public function team(): ?Team
+    public function getTeam(): ?Team
     {
         return $this->team;
     }
