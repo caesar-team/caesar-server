@@ -223,6 +223,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->avatar;
     }
 
+    public function getAvatarLink(): ?string
+    {
+        return null !== $this->avatar ? $this->avatar->getLink() : null;
+    }
+
     public function setAvatar(?Avatar $avatar): void
     {
         $this->avatar = $avatar;
