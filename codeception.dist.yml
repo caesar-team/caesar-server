@@ -10,7 +10,7 @@ extensions:
     enabled:
         - Codeception\Extension\RunFailed
 params:
-    envs: tests/_envs/.env
+    envs: tests/_envs/.env.dist
 
 modules:
     enabled:
