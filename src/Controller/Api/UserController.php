@@ -584,64 +584,6 @@ final class UserController extends AbstractController
         return $viewFactoryContext->viewList($users);
     }
 
-    /**
-     * @SWG\Tag(name="User")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="User by email",
-     *     @Model(type="\App\Model\View\User\UserView", groups={"search_by_email"})
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/users/email/{email}",
-     *     methods={"GET"}
-     * )
-     * @Rest\View(serializerGroups={"search_by_email"})
-     *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     *
-     * @return UserView|null
-     */
-    public function searchOneByEmail(string $email, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext)
-    {
-        $user = $userRepository->findOneByEmail($email);
-
-        return $user ? $viewFactoryContext->view($user) : null;
-    }
-
-    /**
-     * @SWG\Tag(name="User")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="User by part of email",
-     *     @Model(type="\App\Model\View\User\UserView", groups={"search_by_email"})
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/users/search/{partOfEmail}",
-     *     methods={"GET"}
-     * )
-     * @Rest\View(serializerGroups={"search_by_email"})
-     *
-     * @return UserView[]|array
-     */
-    public function autocompleteForEmail(string $partOfEmail, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext): array
-    {
-        $users = $userRepository->findByPartOfEmail($partOfEmail);
-
-        return $viewFactoryContext->viewList($users);
-    }
-
     private function setFlowStatus(string $currentFlowStatus): string
     {
         if (User::FLOW_STATUS_CHANGE_PASSWORD === $currentFlowStatus) {

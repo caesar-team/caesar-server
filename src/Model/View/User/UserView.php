@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Model\View\User;
 
-use JMS\Serializer\Annotation as Serializer;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Serializer\Annotation\Groups;
 
 class UserView
 {
@@ -14,8 +12,6 @@ class UserView
      * @var string
      *
      * @SWG\Property(type="string", example="a68833af-ab0f-4db3-acde-fccc47641b9e")
-     * @Groups({"search_by_email"})
-     * @Serializer\Groups({"search_by_email"})
      */
     public $id;
 
@@ -23,8 +19,6 @@ class UserView
      * @var string
      *
      * @SWG\Property(type="string", example="email@gmail.com")
-     * @Groups({"search_by_email"})
-     * @Serializer\Groups({"search_by_email"})
      */
     public $email;
 
@@ -32,8 +26,6 @@ class UserView
      * @var string
      *
      * @SWG\Property(type="string", example="ipopov")
-     * @Groups({"search_by_email"})
-     * @Serializer\Groups({"search_by_email"})
      */
     public $name;
 
@@ -41,8 +33,6 @@ class UserView
      * @var string|null
      *
      * @SWG\Property(type="string", example="static/images/user/b3d4d910-bf9d-4718-b93c-553f1e6711bb.jpeg")
-     * @Groups({"search_by_email"})
-     * @Serializer\Groups({"search_by_email"})
      */
     public $avatar;
 
@@ -55,8 +45,6 @@ class UserView
 
     /**
      * @var string[]
-     * @Groups({"search_by_email"})
-     * @Serializer\Groups({"search_by_email"})
      */
     public $teamIds = [];
 }
