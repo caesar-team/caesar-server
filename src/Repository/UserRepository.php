@@ -8,8 +8,6 @@ use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
-use App\Model\Query\UserQuery;
-use App\Model\Response\PaginatedList;
 use App\Traits\PaginatorTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
