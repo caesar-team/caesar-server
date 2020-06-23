@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * @Route(path="/api/users")
  */
-final class ListController extends AbstractController
+final class InfoController extends AbstractController
 {
     /**
      * Get self user info.
