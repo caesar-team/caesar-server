@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "avatar": {
+      "type": ["string", "null"]
+    },
+    "teamIds": {
+      "type": "array"
+    },
+    "_links": {
+      "type": "object",
+      "items": {
+        "type": "object",
+        "properties": {
+          "href": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "id",
+    "email",
+    "name",
+    "teamIds",
+    "_links"
+  ]
+}

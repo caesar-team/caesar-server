@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Model\View\User;
 
 use Hateoas\Configuration\Annotation as Hateoas;
-use JMS\Serializer\Annotation as Serializer;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @Hateoas\Relation(
@@ -17,19 +15,17 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *         "api_team_create"
  *     ),
  *     exclusion=@Hateoas\Exclusion(
- *         groups={"public"},
  *         excludeIf="expr(not is_granted('ROLE_ADMIN'))"
  *     )
  * )
  *
  * @Hateoas\Relation(
- *     "create_list",
+ *     "list_create",
  *     attributes={"method": "POST"},
  *     href=@Hateoas\Route(
  *         "api_create_list"
  *     ),
  *     exclusion=@Hateoas\Exclusion(
- *         groups={"public"},
  *         excludeIf="expr(not is_granted('ROLE_USER'))"
  *     )
  * )
@@ -37,52 +33,108 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class SelfUserInfoView
 {
     /**
-     * @var string
-     *
      * @SWG\Property(type="string", example="a68833af-ab0f-4db3-acde-fccc47641b9e")
-     * @Groups({"public"})
-     * @Serializer\Groups({"public"})
      */
-    public $id;
+    private string $id;
 
     /**
-     * @var string
-     *
      * @SWG\Property(type="string", example="ipopov@4xxi.com")
-     * @Groups({"public"})
-     * @Serializer\Groups({"public"})
      */
-    public $email;
+    private string $email;
 
     /**
-     * @var string
-     *
      * @SWG\Property(type="string", example="ipopov")
-     * @Groups({"public"})
-     * @Serializer\Groups({"public"})
      */
-    public $name;
+    private string $name;
 
     /**
-     * @var string
-     *
      * @SWG\Property(type="string", example="static/images/user/b3d4d910-bf9d-4718-b93c-553f1e6711bb.jpeg")
-     * @Groups({"public"})
-     * @Serializer\Groups({"public"})
      */
-    public $avatar;
+    private ?string $avatar;
 
     /**
      * @var string[]
      *
-     * @SWG\Property(type="string[]", example="['ROLE_USER']")
-     * @Groups({"public"})
-     * @Serializer\Groups({"public"})
+     * @SWG\Property(type="string[]", example={"ROLE_USER"})
      */
-    public $roles = [];
+    private array $roles = [];
 
     /**
      * @var string[]
+     *
+     * @SWG\Property(type="string[]", example={"a68833af-ab0f-4db3-acde-fccc47641b9e"})
      */
-    public $teamIds = [];
+    private array $teamIds = [];
+
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    public function setId(string $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): void
+    {
+        $this->email = $email;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    public function getAvatar(): ?string
+    {
+        return $this->avatar;
+    }
+
+    public function setAvatar(?string $avatar): void
+    {
+        $this->avatar = $avatar;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getRoles(): array
+    {
+        return $this->roles;
+    }
+
+    /**
+     * @param string[] $roles
+     */
+    public function setRoles(array $roles): void
+    {
+        $this->roles = $roles;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getTeamIds(): array
+    {
+        return $this->teamIds;
+    }
+
+    /**
+     * @param string[] $teamIds
+     */
+    public function setTeamIds(array $teamIds): void
+    {
+        $this->teamIds = $teamIds;
+    }
 }

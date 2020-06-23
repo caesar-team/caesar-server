@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route(path="/api")
+ * @Route(path="/api/users")
  */
 final class ListController extends AbstractController
 {
@@ -42,7 +42,7 @@ final class ListController extends AbstractController
      *     description="Unauthorized"
      * )
      *
-     * @Route(path="/users", methods={"GET"})
+     * @Route(path="", methods={"GET"})
      *
      * @return UserView[]
      */
