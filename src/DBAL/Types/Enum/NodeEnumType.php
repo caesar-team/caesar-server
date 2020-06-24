@@ -21,4 +21,8 @@ class NodeEnumType extends AbstractEnumType
         self::TYPE_TRASH => 'enum.node_type.trash',
         self::TYPE_CRED => 'enum.node_type.credentials',
     ];
+
+    public const AVAILABLE_TYPES = [
+        self::TYPE_LIST, self::TYPE_INBOX, self::TYPE_TRASH, self::TYPE_CRED, self::TYPE_DOCUMENT,
+    ];
 }

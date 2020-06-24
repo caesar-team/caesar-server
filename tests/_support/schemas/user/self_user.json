@@ -28,7 +28,11 @@
           "method": {
             "type": "string"
           }
-        }
+        },
+        "required": [
+          "href",
+          "method"
+        ]
       }
     }
   },
