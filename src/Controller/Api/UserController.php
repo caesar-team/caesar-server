@@ -11,7 +11,6 @@ use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
 use App\Factory\View\SecurityBootstrapViewFactory;
-use App\Factory\View\SelfUserInfoViewFactory;
 use App\Factory\View\UserKeysViewFactory;
 use App\Factory\View\UserSecurityInfoViewFactory;
 use App\Form\Request\CreateInvitedUserType;
@@ -24,7 +23,6 @@ use App\Model\DTO\Message;
 use App\Model\Request\PublicKeysRequest;
 use App\Model\Request\SendInviteRequest;
 use App\Model\Request\SendInviteRequests;
-use App\Model\View\User\SelfUserInfoView;
 use App\Model\View\User\UserKeysView;
 use App\Repository\UserRepository;
 use App\Services\InvitationManager;
@@ -44,32 +42,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 final class UserController extends AbstractController
 {
-    /**
-     * @SWG\Tag(name="User")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="User information response",
-     *     @Model(type="\App\Model\View\User\SelfUserInfoView", groups={"public"})
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @Route(
-     *     path="/api/user/self",
-     *     name="api_user_get_info",
-     *     methods={"GET"}
-     * )
-     * @Rest\View(serializerGroups={"public"})
-     */
-    public function userInfo(SelfUserInfoViewFactory $viewFactory): ?SelfUserInfoView
-    {
-        $user = $this->getUser();
-
-        return $user ? $viewFactory->create($user) : null;
-    }
-
     /**
      * @SWG\Tag(name="Invitation")
      *
