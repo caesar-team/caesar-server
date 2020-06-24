@@ -21,6 +21,10 @@ nelmio_api_doc:
               description: ''
             - name: User
               description: ''
+            - name: Item
+              description: ''
+            - name: 'Item / Favorite'
+              description: ''
         paths:
             /connect/google:
                 get:

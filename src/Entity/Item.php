@@ -214,6 +214,11 @@ class Item implements ChildItemAwareInterface
         return $this->originalItem;
     }
 
+    public function getOriginalItemId(): ?string
+    {
+        return null !== $this->originalItem ? $this->originalItem->getId()->toString() : null;
+    }
+
     public function setOriginalItem(Item $originalItem): void
     {
         $this->originalItem = $originalItem;
@@ -240,6 +245,11 @@ class Item implements ChildItemAwareInterface
     public function setFavorite(bool $favorite): void
     {
         $this->favorite = $favorite;
+    }
+
+    public function toggleFavorite(): void
+    {
+        $this->favorite = !$this->favorite;
     }
 
     public function getType(): string
@@ -343,6 +353,11 @@ class Item implements ChildItemAwareInterface
     public function getPreviousList(): ?Directory
     {
         return $this->previousList;
+    }
+
+    public function getPreviousListId(): ?string
+    {
+        return null !== $this->previousList ? $this->previousList->getId()->toString() : null;
     }
 
     public function setPreviousList(?Directory $previousList): void

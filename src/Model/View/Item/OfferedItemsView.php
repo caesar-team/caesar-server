@@ -4,30 +4,37 @@ declare(strict_types=1);
 
 namespace App\Model\View\Item;
 
-use App\Model\View\CredentialsList\ItemView;
-use App\Model\View\Team\TeamItemsView;
-use JMS\Serializer\Annotation as Serializer;
-use Symfony\Component\Serializer\Annotation\Groups;
-
 final class OfferedItemsView
 {
     /**
-     * @var ItemView[]
-     * @Groups({"offered_item"})
-     * @Serializer\Groups({"offered_item"})
+     * @var OfferedItemView[]
      */
-    public $personal;
+    private array $personal;
 
     /**
-     * @var TeamItemsView[]
-     * @Groups({"offered_item"})
-     * @Serializer\Groups({"offered_item"})
+     * @var OfferedTeamItemsView[]
      */
-    public $teams;
+    private array $teams;
 
     public function __construct(array $personal = [], array $teams = [])
     {
         $this->personal = $personal;
         $this->teams = $teams;
+    }
+
+    /**
+     * @return OfferedItemView[]
+     */
+    public function getPersonal(): array
+    {
+        return $this->personal;
+    }
+
+    /**
+     * @return OfferedTeamItemsView[]
+     */
+    public function getTeams(): array
+    {
+        return $this->teams;
     }
 }

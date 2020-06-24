@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Context\ShareFactoryContext;
-use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
-use App\Entity\Team;
 use App\Entity\User;
 use App\Factory\View\BatchListItemViewFactory;
 use App\Factory\View\CreatedItemViewFactory;
@@ -25,7 +23,6 @@ use App\Form\Request\EditItemRequestType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
 use App\Form\Request\MoveItemType;
 use App\Form\Request\SortItemType;
-use App\Model\DTO\OfferedTeamContainer;
 use App\Model\Query\ItemListQuery;
 use App\Model\Request\BatchItemCollectionRequest;
 use App\Model\Request\BatchShareRequest;
@@ -36,12 +33,9 @@ use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
 use App\Model\View\CredentialsList\ShareListView;
-use App\Model\View\Item\OfferedItemsView;
-use App\Model\View\Team\TeamItemsView;
 use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
 use App\Security\ItemVoter;
-use App\Security\Voter\UserTeamVoter;
 use App\Services\ChildItemActualizer;
 use App\Services\File\ItemMoveResolver;
 use App\Services\ShareManager;
@@ -552,88 +546,6 @@ final class ItemController extends AbstractController
     }
 
     /**
-     * Get list of favourite items.
-     *
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="List of favourite items"
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of this item"
-     * )
-     *
-     * @Route(
-     *     path="/api/items/favorite/{team}",
-     *     name="api_favorites_item",
-     *     methods={"GET"}
-     * )
-     *
-     * @return ItemView[]
-     */
-    public function favorite(ItemListViewFactory $viewFactory, ItemRepository $repository, ?Team $team = null): array
-    {
-        if (null !== $team) {
-            $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
-        }
-
-        $itemCollection = $repository->getFavoritesItems($this->getUser(), $team);
-
-        return $viewFactory->create($itemCollection);
-    }
-
-    /**
-     * Toggle favorite item.
-     *
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="Set favorite is on or off"
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of this item"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="No such item"
-     * )
-     *
-     * @Route(
-     *     path="/api/item/{id}/favorite",
-     *     name="api_favorite_item_toggle",
-     *     methods={"POST"}
-     * )
-     *
-     * @Rest\View(serializerGroups={"favorite_item"})
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return ItemView
-     */
-    public function favoriteToggle(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
-    {
-        //$this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
-
-        $item->setFavorite(!$item->isFavorite());
-        $entityManager->persist($item);
-        $entityManager->flush();
-
-        return $factory->create($item);
-    }
-
-    /**
      * Sort item.
      *
      * @SWG\Tag(name="Item")
@@ -762,42 +674,6 @@ final class ItemController extends AbstractController
         $items = $shareFactoryContext->share($batchCollectionRequest);
 
         return $viewFactory->createList(current($items));
-    }
-
-    /**
-     * Items collection.
-     *
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="Items collection",
-     *     @SWG\Schema(
-     *         type="array",
-     *         @Model(type="App\Model\View\Item\OfferedItemsView", groups={"offered_item"})
-     *     )
-     * )
-     * @Rest\View(serializerGroups={"offered_item"})
-     * @Route("/api/offered_item", methods={"GET"}, name="api_item_offered_list")
-     *
-     * @return OfferedItemsView
-     */
-    public function getOfferedItemsList(TeamRepository $teamRepository, ViewFactoryContext $viewFactoryContext)
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        $offeredItems = DirectoryHelper::extractOfferedItemsByUser($user);
-
-        $personalItems = $viewFactoryContext->viewList($offeredItems);
-        $teams = $teamRepository->findByUser($user);
-        $teamsContainers = OfferedTeamContainer::createMany($teams);
-        $teamsItems = $viewFactoryContext->viewList($teamsContainers);
-
-        $teamsItems = array_filter($teamsItems, function (TeamItemsView $teamItemsView) {
-            return 0 < count($teamItemsView->items);
-        });
-
-        return new OfferedItemsView($personalItems, array_values($teamsItems));
     }
 
     /**

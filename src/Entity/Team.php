@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Utils\DefaultIcon;
+use App\Utils\DirectoryHelper;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
@@ -234,5 +235,25 @@ class Team
     public function removeOwnedItem(Item $item): void
     {
         $this->ownedItems->removeElement($item);
+    }
+
+    public function getOfferedItems(): array
+    {
+        /** @var Directory[] $directories */
+        $directories = $this->getLists()->getChildLists()->toArray();
+        array_push($directories, $this->getTrash());
+
+        $items = [];
+        foreach ($directories as $directory) {
+            if (0 === count($directory->getChildItems())) {
+                continue;
+            }
+
+            foreach ($directory->getChildItems() as $childItem) {
+                $items[] = $childItem;
+            }
+        }
+
+        return array_filter($items, [DirectoryHelper::class, 'filterByOffered']);
     }
 }

@@ -2,22 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Factory\View;
+namespace App\Factory\View\Item;
 
 use App\Entity\Item;
 use App\Entity\ItemUpdate;
 use App\Entity\User;
 use App\Model\View\CredentialsList\ChildItemView;
 use App\Model\View\CredentialsList\InviteItemView;
-use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\UpdateView;
+use App\Model\View\Item\ItemView;
 use App\Services\PermissionManager;
 use App\Utils\ChildItemAwareInterface;
 use Doctrine\Common\Collections\Collection;
 
-/**
- * @deprecated
- */
 class ItemViewFactory
 {
     private PermissionManager $permissionManager;
@@ -27,69 +24,38 @@ class ItemViewFactory
         $this->permissionManager = $permissionManager;
     }
 
-    public function create(Item $item): ItemView
+    public function createSingle(Item $item): ItemView
     {
-        $view = new ItemView();
+        $view = new ItemView($item);
 
-        $view->id = $item->getId()->toString();
-        $view->type = $item->getType();
-        $view->lastUpdated = $item->getLastUpdated();
-        $view->listId = $item->getParentList()->getId()->toString();
-        $view->previousListId = $item->getPreviousList() ? $item->getPreviousList()->getId()->toString() : null;
-
-        $view->secret = $item->getSecret();
-        $view->invited = $this->getInvitesCollection($item);
-        $view->shared = $this->getSharesCollection($item);
-        $view->update = $this->getUpdateView($item->getUpdate());
-        $view->ownerId = $item->getOwner()->getId()->toString();
-        $view->favorite = $item->isFavorite();
-        $view->sort = $item->getSort();
-        $view->originalItemId = $item->getOriginalItem() ? $item->getOriginalItem()->getId()->toString() : null;
-        $view->setItem($item);
+        $view->setId($item->getId()->toString());
+        $view->setType($item->getType());
+        $view->setLastUpdated($item->getLastUpdated());
+        $view->setListId($item->getParentList()->getId()->toString());
+        $view->setPreviousListId($item->getPreviousListId());
+        $view->setSecret($item->getSecret());
+        $view->setInvited($this->getInvitesCollection($item));
+        $view->setShared($this->getSharesCollection($item));
+        $view->setUpdate($this->getUpdateView($item->getUpdate()));
+        $view->setOwnerId($item->getOwner()->getId()->toString());
+        $view->setFavorite($item->isFavorite());
+        $view->setSort($item->getSort());
+        $view->setOriginalItemId($item->getOriginalItemId());
 
         return $view;
     }
 
     /**
-     * @param array|Item[] $items
+     * @param Item[] $items
+     *
+     * @return ItemView[]
      */
-    public function createList(array $items): ItemView
+    public function createCollection(array $items): array
     {
-        $view = new ItemView();
-        $childItems = [];
-        foreach ($items as $item) {
-            $childItem = new ChildItemView();
-            $childItem->id = $item->getId()->toString();
-            $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
-            $childItem->userId = $item->getOwner()->getId()->toString();
-            $childItems[] = $childItem;
-        }
-        $view->items = $childItems;
-
-        return $view;
+        return array_map([$this, 'createSingle'], $items);
     }
 
-    /**
-     * @param array|Item[] $items
-     */
-    public function createSharedItems(string $id, array $items): ItemView
-    {
-        $view = new ItemView();
-        $view->originalItemId = $id;
-        $childItems = [];
-        foreach ($items as $item) {
-            $childItem = new ChildItemView();
-            $childItem->id = $item->getId()->toString();
-            $childItem->lastUpdated = $item->getLastUpdated()->format('Y-m-d H:i:s');
-            $childItem->userId = $item->getSignedOwner()->getId()->toString();
-            $childItem->teamId = $item->getTeam() ? $item->getTeam()->getId()->toString() : null;
-            $childItems[] = $childItem;
-        }
-        $view->items = $childItems;
-
-        return $view;
-    }
-
+    //@todo candidate to refactoring
     private function getInvitesCollection(Item $item): array
     {
         $ownerItem = $item;

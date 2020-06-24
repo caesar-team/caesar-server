@@ -143,6 +143,14 @@ class ItemVoter extends Voter
             return true;
         }
 
+        if (null === $item->getPreviousList()) {
+            return false;
+        }
+
+        if (null === $item->getParentList()) {
+            return false;
+        }
+
         $prevDirectoryTeam = $this->teamRepository->findOneByDirectory($item->getPreviousList());
         $currDirectoryTeam = $this->teamRepository->findOneByDirectory($item->getParentList());
 

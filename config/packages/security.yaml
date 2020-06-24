@@ -93,7 +93,7 @@ security:
         - { path: ^/api/anonymous, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/srp_login_confirm, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/auth, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
-        - { path: ^/api/user/self, roles: [IS_AUTHENTICATED_ANONYMOUSLY], methods: [GET] }
+        - { path: ^/api/users/self, roles: [IS_AUTHENTICATED_ANONYMOUSLY], methods: [GET] }
         - { path: ^/api/doc, roles: [ROLE_SUPER_ADMIN, ROLE_ADMIN]}
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}
