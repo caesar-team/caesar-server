@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Factory\View\Share;
 
 use App\Model\DTO\ShareItemCollection;
-use App\Model\View\Item\SharedChildItemView;
 use App\Model\View\Share\ShareListView;
 
 class ShareListViewFactory
@@ -19,8 +18,6 @@ class ShareListViewFactory
 
     /**
      * @param ShareItemCollection[] $itemsCollection
-     *
-     * @return ShareListView
      */
     public function createSingle(array $itemsCollection): ShareListView
     {
