@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Model\View\Team;
 
 use App\Entity\Directory;
-use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\NodeView;
+use App\Model\View\Item\ItemView;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
 use Swagger\Annotations as SWG;

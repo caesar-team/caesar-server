@@ -4,6 +4,7 @@ namespace App\Tests\Services;
 
 use App\Context\ShareFactoryContext;
 use App\Entity\Item;
+use App\Model\DTO\ShareItemCollection;
 use App\Model\Request\BatchShareRequest;
 use App\Services\ShareManager;
 use App\Tests\UnitTester;
@@ -14,29 +15,40 @@ class ShareManagerTest extends Unit
     protected UnitTester $tester;
 
     /**
-     * @dataProvider shareProvider
+     * @test
      */
-    public function testShare($originalItems, $expectedResult)
+    public function shareEmpty()
     {
         /** @var BatchShareRequest $collectionRequest */
-        $collectionRequest = $this->make(BatchShareRequest::class, ['getOriginalItems' => $originalItems]);
+        $collectionRequest = $this->make(BatchShareRequest::class, ['getOriginalItems' => []]);
 
         $item = $this->makeEmpty(Item::class);
         /** @var ShareFactoryContext $shareFactoryContext */
-        $shareFactoryContext = $this->make(ShareFactoryContext::class, ['share' => [$item]]);
+        $shareFactoryContext = $this->make(ShareFactoryContext::class, ['share' => ['id' => [$item]]]);
 
         $shareManager = new ShareManager($shareFactoryContext);
         $result = $shareManager->share($collectionRequest);
-        $this->assertEquals($expectedResult, $result);
+        $this->assertEquals([], $result);
     }
 
-    public function shareProvider(): array
+    /**
+     * @test
+     */
+    public function share()
     {
-        $item = $this->makeEmpty(Item::class);
+        $origItem = $this->makeEmpty(Item::class);
 
-        return [
-            [[], []],
-            [[$item, $item], [$item, $item]],
-        ];
+        /** @var BatchShareRequest $collectionRequest */
+        $collectionRequest = $this->make(BatchShareRequest::class, ['getOriginalItems' => [$origItem, $origItem]]);
+
+        $item = $this->makeEmpty(Item::class);
+        /** @var ShareFactoryContext $shareFactoryContext */
+        $shareFactoryContext = $this->make(ShareFactoryContext::class, ['share' => ['id' => [$item]]]);
+
+        $shareManager = new ShareManager($shareFactoryContext);
+        $result = $shareManager->share($collectionRequest);
+
+        $this->assertCount(1, $result);
+        $this->assertInstanceOf(ShareItemCollection::class, $result[0]);
     }
 }

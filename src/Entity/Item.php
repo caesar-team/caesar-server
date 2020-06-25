@@ -219,6 +219,32 @@ class Item implements ChildItemAwareInterface
         return null !== $this->originalItem ? $this->originalItem->getId()->toString() : null;
     }
 
+    /**
+     * @return Item[]
+     */
+    public function getOwnerSharedItems(string $cause = Item::CAUSE_INVITE): array
+    {
+        $ownerItem = null !== $this->getOriginalItem() ? $this->getOriginalItem() : $this;
+        $uniqueUsers = [];
+
+        return $ownerItem->getSharedItems()
+            ->filter(function (ChildItemAwareInterface $childItem) use ($cause) {
+                return $cause === $childItem->getCause();
+            })
+            ->filter(static function (ChildItemAwareInterface $childItem) use (&$uniqueUsers) {
+                $userId = $childItem->getSignedOwner()->getId()->toString();
+                if (!in_array($userId, $uniqueUsers)) {
+                    $uniqueUsers[] = $userId;
+
+                    return true;
+                }
+
+                return false;
+            })
+            ->toArray()
+        ;
+    }
+
     public function setOriginalItem(Item $originalItem): void
     {
         $this->originalItem = $originalItem;
@@ -310,6 +336,11 @@ class Item implements ChildItemAwareInterface
         $this->update = $update;
     }
 
+    public function clearUpdate(): void
+    {
+        $this->update = null;
+    }
+
     public function getSort(): int
     {
         return $this->sort;
@@ -387,6 +418,11 @@ class Item implements ChildItemAwareInterface
     public function getTeam(): ?Team
     {
         return $this->team;
+    }
+
+    public function getTeamId(): ?string
+    {
+        return null !== $this->team ? $this->team->getId()->toString() : null;
     }
 
     public function setTeam(?Team $team): void

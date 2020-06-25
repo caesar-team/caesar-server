@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "shares": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "schemas://item/definitions.json#/definitions/child_item"
+            }
+          },
+          "originalItemId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "originalItemId"
+        ]
+      }
+    }
+  },
+  "required": [
+    "shares"
+  ]
+}

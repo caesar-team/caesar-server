@@ -8,19 +8,15 @@ use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\User;
+use App\Factory\View\Item\ItemViewFactory;
 use App\Model\View\CredentialsList\ListView;
 use App\Repository\TeamRepository;
 
 class ListTreeViewFactory
 {
-    /**
-     * @var ItemViewFactory
-     */
-    private $itemViewFactory;
-    /**
-     * @var TeamRepository
-     */
-    private $teamRepository;
+    private ItemViewFactory $itemViewFactory;
+
+    private TeamRepository $teamRepository;
 
     public function __construct(ItemViewFactory $itemViewFactory, TeamRepository $teamRepository)
     {
@@ -92,7 +88,7 @@ class ListTreeViewFactory
     {
         return array_merge(
             array_map([$this, 'createListView'], $directory->getChildLists()->toArray()),
-            array_map([$this->itemViewFactory, 'create'], $directory->getChildItems(Item::STATUS_FINISHED))
+            array_map([$this->itemViewFactory, 'createSingle'], $directory->getChildItems(Item::STATUS_FINISHED))
         );
     }
 }

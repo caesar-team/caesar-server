@@ -4,45 +4,26 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Context\ShareFactoryContext;
 use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
-use App\Entity\User;
-use App\Factory\View\BatchListItemViewFactory;
 use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
-use App\Factory\View\ItemViewFactory;
 use App\Factory\View\ListTreeViewFactory;
-use App\Form\Query\ItemListQueryType;
-use App\Form\Request\BatchShareRequestType;
 use App\Form\Request\CreateItemsType;
 use App\Form\Request\CreateItemType;
-use App\Form\Request\EditItemRequestType;
-use App\Form\Request\Invite\ChildItemCollectionRequestType;
 use App\Form\Request\MoveItemType;
-use App\Form\Request\SortItemType;
-use App\Model\Query\ItemListQuery;
-use App\Model\Request\BatchItemCollectionRequest;
-use App\Model\Request\BatchShareRequest;
-use App\Model\Request\EditItemRequest;
-use App\Model\Request\ItemCollectionRequest;
 use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
-use App\Model\View\CredentialsList\ItemView;
 use App\Model\View\CredentialsList\ListView;
-use App\Model\View\CredentialsList\ShareListView;
 use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
 use App\Security\ItemVoter;
-use App\Services\ChildItemActualizer;
 use App\Services\File\ItemMoveResolver;
-use App\Services\ShareManager;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
@@ -88,62 +69,12 @@ final class ItemController extends AbstractController
 
     /**
      * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="listId",
-     *     in="query",
-     *     description="Id of parent list",
-     *     type="string"
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Item collection",
-     *     @SWG\Schema(
-     *         type="array",
-     *         @Model(type="\App\Model\View\CredentialsList\ItemView")
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of this list"
-     * )
-     *
-     * @Route(
-     *     path="/api/item",
-     *     name="api_user_items",
-     *     methods={"GET"}
-     * )
-     *
-     * @return array<int, ItemView>|FormInterface
-     */
-    public function itemListAction(Request $request, ItemListViewFactory $viewFactory, ItemRepository $repository)
-    {
-        $itemListQuery = new ItemListQuery();
-
-        $form = $this->createForm(ItemListQueryType::class, $itemListQuery);
-        $form->submit($request->query->all());
-
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        $itemCollection = $repository->getByQuery($itemListQuery);
-
-        return $viewFactory->create($itemCollection);
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
      * @SWG\Response(
      *     response=204,
      *     description="Items deleted",
      * )
      * @Route(
-     *     path="/api/item/batch",
+     *     path="/api/items/batch",
      *     name="api_batch_delete_items",
      *     methods={"DELETE"}
      * )
@@ -189,7 +120,7 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/item/batch/delete",
+     *     path="/api/items/batch/delete",
      *     name="api_batch_delete_items_post",
      *     methods={"POST"}
      * )
@@ -216,44 +147,6 @@ final class ItemController extends AbstractController
         $manager->flush();
 
         return null;
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="Item data",
-     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of this item"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="No such item"
-     * )
-     *
-     * @Route(
-     *     path="/api/item/{id}",
-     *     name="api_show_item",
-     *     methods={"GET"}
-     * )
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return ItemView
-     */
-    public function itemShowAction(Item $item, ItemViewFactory $factory)
-    {
-        //$this->denyAccessUnlessGranted(ItemVoter::SHOW_ITEM, $item);
-
-        return $factory->create($item);
     }
 
     /**
@@ -291,7 +184,7 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/item",
+     *     path="/api/items",
      *     name="api_create_item",
      *     methods={"POST"}
      * )
@@ -367,7 +260,7 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/item/{id}/move",
+     *     path="/api/items/{id}/move",
      *     name="api_move_item",
      *     methods={"PATCH"}
      * )
@@ -397,95 +290,6 @@ final class ItemController extends AbstractController
         //$this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
 
         return null;
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=\App\Form\Request\EditItemRequestType::class)
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Success item edited",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="string",
-     *             property="lastUpdated",
-     *             example="Oct 19, 2018 12:08 pm",
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns item edit error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="object",
-     *             property="errors",
-     *             @SWG\Property(
-     *                 type="array",
-     *                 property="secret",
-     *                 @SWG\Items(
-     *                     type="string",
-     *                     example="This value is empty"
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of item"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="No such item"
-     * )
-     *
-     * @Route(
-     *     path="/api/item/{id}",
-     *     name="api_edit_item",
-     *     methods={"PATCH"}
-     * )
-     *
-     * @return array|FormInterface
-     */
-    public function editItem(
-        Item $item,
-        Request $request,
-        EntityManagerInterface $entityManager,
-        SerializerInterface $serializer,
-        ChildItemActualizer $itemHandler
-    ) {
-        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-        /** @var EditItemRequest $itemRequest */
-        $itemRequest = $serializer->deserialize($request->getContent(), EditItemRequest::class, 'json');
-        $item->setSecret($itemRequest->getItem()->getSecret());
-
-        $form = $this->createForm(EditItemRequestType::class, $itemRequest);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        $entityManager->persist($item);
-        if ($itemRequest->getOriginalItem()->getSecret()) {
-            $itemHandler->updateItem($item->getOriginalItem(), $itemRequest->getOriginalItem()->getSecret(), $this->getUser());
-        }
-        $entityManager->flush();
-
-        return [
-            'lastUpdated' => $item->getLastUpdated(),
-        ];
     }
 
     /**
@@ -524,7 +328,7 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/item/{id}",
+     *     path="/api/items/{id}",
      *     name="api_delete_item",
      *     methods={"DELETE"}
      * )
@@ -543,137 +347,6 @@ final class ItemController extends AbstractController
         $manager->flush();
 
         return null;
-    }
-
-    /**
-     * Sort item.
-     *
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=\App\Form\Request\SortItemType::class)
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Item data",
-     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of this item"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="No such item"
-     * )
-     *
-     * @Route(
-     *     path="/api/item/{item}/sort",
-     *     name="api_item_sort",
-     *     methods={"PATCH"}
-     * )
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return ItemView|FormInterface
-     */
-    public function sort(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory, Request $request)
-    {
-        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-
-        $form = $this->createForm(SortItemType::class, $item);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        $entityManager->persist($item);
-        $entityManager->flush();
-
-        return $factory->create($item);
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=App\Form\Request\Invite\ChildItemCollectionRequestType::class)
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Success item shared",
-     *     @Model(type=App\Model\View\CredentialsList\ItemView::class, groups={"child_item"})
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns item share error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="object",
-     *             property="errors",
-     *             @SWG\Property(
-     *                 type="array",
-     *                 property="userId",
-     *                 @SWG\Items(
-     *                     type="string",
-     *                     example="This value is not valid"
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of item"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="No such item"
-     * )
-     * @Rest\View(serializerGroups={"child_item"})
-     *
-     * @Route(
-     *     path="/api/item/{id}/child_item",
-     *     name="api_child_to_item",
-     *     methods={"POST"}
-     * )
-     *
-     * @return ItemView|FormInterface
-     */
-    public function childItemToItem(
-        Item $item,
-        Request $request,
-        ItemViewFactory $viewFactory,
-        ShareFactoryContext $shareFactoryContext
-    ) {
-        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-
-        $itemCollectionRequest = new ItemCollectionRequest($item);
-        $form = $this->createForm(ChildItemCollectionRequestType::class, $itemCollectionRequest);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        $batchCollectionRequest = new BatchItemCollectionRequest();
-        $batchCollectionRequest->setOriginalItem($item);
-        $batchCollectionRequest->setItems($itemCollectionRequest->getItems()->toArray());
-        $items = $shareFactoryContext->share($batchCollectionRequest);
-
-        return $viewFactory->createList(current($items));
     }
 
     /**
@@ -774,100 +447,6 @@ final class ItemController extends AbstractController
     /**
      * @SWG\Tag(name="Item")
      *
-     * @SWG\Response(
-     *     response=200,
-     *     description="Item data",
-     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="No updates for this item"
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of item"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="No such item"
-     * )
-     *
-     * @Route(
-     *     path="/api/item/{id}/accept_update",
-     *     name="api_accept_item_update",
-     *     methods={"POST"}
-     * )
-     */
-    public function acceptItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory): ItemView
-    {
-        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-
-        $update = $item->getUpdate();
-        if (null === $update) {
-            $message = $this->translator->trans('app.exception.item_has_no_update_to_accept');
-            throw new BadRequestHttpException($message);
-        }
-
-        $item->setSecret($update->getSecret());
-        $item->setUpdate(null);
-
-        $entityManager->persist($item);
-        $entityManager->flush();
-
-        return $factory->create($item);
-    }
-
-    /**
-     * Decline an item update.
-     *
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="Item data",
-     *     @Model(type="\App\Model\View\CredentialsList\ItemView")
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of item"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="No such item"
-     * )
-     *
-     * @Route(
-     *     path="/api/item/{id}/decline_update",
-     *     name="api_decline_item_update",
-     *     methods={"POST"}
-     * )
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return ItemView
-     */
-    public function declineItemUpdate(Item $item, EntityManagerInterface $entityManager, ItemViewFactory $factory)
-    {
-        //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
-        $item->setUpdate(null);
-
-        $entityManager->persist($item);
-        $entityManager->flush();
-
-        return $factory->create($item);
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     *
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
@@ -883,14 +462,14 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/item/batch",
+     *     path="/api/items/batch",
      *     name="api_batch_create_items",
      *     methods={"POST"}
      * )
      *
      * @throws NonUniqueResultException
      *
-     * @return ItemView[]|array|FormInterface
+     * @return \App\Model\View\Item\ItemView[]|array|FormInterface
      */
     public function batchCreate(
         Request $request,
@@ -928,7 +507,7 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/api/item/batch/move/list/{directory}",
+     *     path="/api/items/batch/move/list/{directory}",
      *     name="api_batch_move_items",
      *     methods={"PATCH"}
      * )
@@ -957,46 +536,5 @@ final class ItemController extends AbstractController
         $manager->flush();
 
         return null;
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=App\Form\Request\BatchShareRequestType::class)
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Success items shared",
-     *     @Model(type="\App\Model\View\CredentialsList\ShareListView")
-     * )
-     *
-     * @Route(
-     *     path="/api/item/batch/share",
-     *     methods={"POST"}
-     * )
-     * @Rest\View(serializerGroups={"child_item"})
-     *
-     * @throws \Exception
-     *
-     * @return ShareListView|FormInterface
-     */
-    public function batchShare(
-        Request $request,
-        ShareManager $shareManager,
-        BatchListItemViewFactory $listItemViewFactory
-    ) {
-        $collectionRequest = new BatchShareRequest();
-        $form = $this->createForm(BatchShareRequestType::class, $collectionRequest);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        $result = $shareManager->share($collectionRequest);
-
-        return $listItemViewFactory->createList($result);
     }
 }

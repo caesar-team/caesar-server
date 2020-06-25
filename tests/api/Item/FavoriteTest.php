@@ -10,6 +10,7 @@ use Codeception\Module\DataFactory;
 use Codeception\Module\REST;
 use Codeception\Test\Unit;
 use Codeception\Util\HttpCode;
+use OldSound\RabbitMqBundle\RabbitMq\Producer;
 
 class FavoriteTest extends Unit
 {
@@ -17,6 +18,11 @@ class FavoriteTest extends Unit
      * @var ApiTester|REST|DataFactory
      */
     protected ApiTester $tester;
+
+    protected function _before()
+    {
+        $this->tester->mockRabbitMQProducer($this->makeEmpty(Producer::class));
+    }
 
     /** @test */
     public function toggleFavorite()
@@ -54,6 +60,8 @@ class FavoriteTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
+        /** @var User $user */
+        $member = $I->have(User::class);
 
         /** @var Directory $defaultList */
         $defaultList = $user->getLists()->getChildLists()->first();
@@ -74,6 +82,8 @@ class FavoriteTest extends Unit
         ]);
 
         $I->login($user);
+        $I->shareItemToUser($item, $member);
+        $I->shareItemToUser($teamItem, $member, $team);
         $I->sendPOST(sprintf('/items/%s/favorite', $item->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
 
