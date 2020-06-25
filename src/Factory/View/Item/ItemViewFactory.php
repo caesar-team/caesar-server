@@ -41,14 +41,14 @@ class ItemViewFactory
         $view->setPreviousListId($item->getPreviousListId());
         $view->setSecret($item->getSecret());
         $view->setInvited(
-            $this->inviteItemViewFactory->createCollection($item->getOwnerSharedItems())
+            $this->inviteItemViewFactory->createCollection($item->getUniqueOwnerShareItems())
         );
         $view->setOwnerId($item->getOwner()->getId()->toString());
         $view->setFavorite($item->isFavorite());
         $view->setSort($item->getSort());
         $view->setOriginalItemId($item->getOriginalItemId());
 
-        $sharedItems = $item->getOwnerSharedItems(Item::CAUSE_SHARE);
+        $sharedItems = $item->getUniqueOwnerShareItems(Item::CAUSE_SHARE);
         if (!empty($sharedItems) && current($sharedItems) instanceof Item) {
             $sharedItem = current($sharedItems);
             $view->setShared(

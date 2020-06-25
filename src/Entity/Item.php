@@ -225,24 +225,32 @@ class Item implements ChildItemAwareInterface
     public function getOwnerSharedItems(string $cause = Item::CAUSE_INVITE): array
     {
         $ownerItem = null !== $this->getOriginalItem() ? $this->getOriginalItem() : $this;
-        $uniqueUsers = [];
 
         return $ownerItem->getSharedItems()
             ->filter(function (ChildItemAwareInterface $childItem) use ($cause) {
                 return $cause === $childItem->getCause();
             })
-            ->filter(static function (ChildItemAwareInterface $childItem) use (&$uniqueUsers) {
-                $userId = $childItem->getSignedOwner()->getId()->toString();
-                if (!in_array($userId, $uniqueUsers)) {
-                    $uniqueUsers[] = $userId;
-
-                    return true;
-                }
-
-                return false;
-            })
             ->toArray()
         ;
+    }
+
+    /**
+     * @return Item[]
+     */
+    public function getUniqueOwnerShareItems(string $cause = Item::CAUSE_INVITE): array
+    {
+        $uniqueUsers = [];
+
+        return array_values(array_filter($this->getOwnerSharedItems($cause), static function (ChildItemAwareInterface $childItem) use (&$uniqueUsers) {
+            $userId = $childItem->getSignedOwner()->getId()->toString();
+            if (!in_array($userId, $uniqueUsers)) {
+                $uniqueUsers[] = $userId;
+
+                return true;
+            }
+
+            return false;
+        }));
     }
 
     public function setOriginalItem(Item $originalItem): void
