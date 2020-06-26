@@ -1,48 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "definitions": {
-    "item": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "sort": {
-          "type": "integer"
-        },
-        "listId": {
-          "type": "string"
-        },
-        "secret": {
-          "type": "string"
-        },
-        "ownerId": {
-          "type": "string"
-        },
-        "originalItemId": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "id",
-        "type",
-        "sort",
-        "listId",
-        "secret",
-        "ownerId",
-        "originalItemId"
-      ]
-    }
-  },
   "type": "object",
   "properties": {
     "personal": {
       "type": "array",
       "items": {
-        "$ref": "#/definitions/item"
+        "$ref": "schemas://item/definitions.json#/definitions/offered_item"
       }
     },
     "teams": {
@@ -56,7 +19,7 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/definitions/item"
+              "$ref": "schemas://item/definitions.json#/definitions/offered_item"
             }
           }
         },

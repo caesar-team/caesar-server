@@ -34,6 +34,7 @@ class ItemUpdate
      * @var Item
      *
      * @ORM\OneToOne(targetEntity="App\Entity\Item", inversedBy="update")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $item;
 

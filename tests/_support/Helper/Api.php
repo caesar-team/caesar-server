@@ -23,8 +23,13 @@ class Api extends \Codeception\Module
     public function getSchema(string $fileName): string
     {
         $projectRoot = $this->getSymfony()->kernel->getProjectDir();
+        $schemaPath = $projectRoot.self::SCHEMA_FOLDER;
 
-        return file_get_contents($projectRoot.self::SCHEMA_FOLDER.$fileName);
+        return str_replace(
+            'schemas://',
+            sprintf('file://%s', $schemaPath),
+            file_get_contents($schemaPath.$fileName)
+        );
     }
 
     private function getSymfony()

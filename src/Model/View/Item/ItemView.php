@@ -6,9 +6,6 @@ namespace App\Model\View\Item;
 
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
-use App\Model\View\CredentialsList\ChildItemView;
-use App\Model\View\CredentialsList\InviteItemView;
-use App\Model\View\CredentialsList\UpdateView;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -78,21 +75,14 @@ final class ItemView
     private array $invited;
 
     /**
-     * @SWG\Property(@Model(type=ChildItemView::class))
+     * @SWG\Property(@Model(type=SharedChildItemView::class))
      */
-    private ?ChildItemView $shared;
+    private ?SharedChildItemView $shared;
 
     /**
-     * @var ChildItemView[]
-     *
-     * @SWG\Property(type="array", @Model(type=ChildItemView::class))
+     * @SWG\Property(@Model(type=UpdateItemView::class))
      */
-    private array $items;
-
-    /**
-     * @SWG\Property(@Model(type=UpdateView::class))
-     */
-    private ?UpdateView $update;
+    private ?UpdateItemView $update;
 
     /**
      * @SWG\Property(type="string", example="2020-06-24T08:03:12+00:00")
@@ -134,10 +124,11 @@ final class ItemView
     public function __construct(Item $item)
     {
         $this->item = $item;
+        $this->update = null;
+        $this->shared = null;
         $this->sort = 0;
         $this->favorite = false;
         $this->invited = [];
-        $this->items = [];
         $this->tags = [];
     }
 
@@ -207,38 +198,22 @@ final class ItemView
         $this->invited = $invited;
     }
 
-    public function getShared(): ?ChildItemView
+    public function getShared(): ?SharedChildItemView
     {
         return $this->shared;
     }
 
-    public function setShared(?ChildItemView $shared): void
+    public function setShared(?SharedChildItemView $shared): void
     {
         $this->shared = $shared;
     }
 
-    /**
-     * @return ChildItemView[]
-     */
-    public function getItems(): array
-    {
-        return $this->items;
-    }
-
-    /**
-     * @param ChildItemView[] $items
-     */
-    public function setItems(array $items): void
-    {
-        $this->items = $items;
-    }
-
-    public function getUpdate(): ?UpdateView
+    public function getUpdate(): ?UpdateItemView
     {
         return $this->update;
     }
 
-    public function setUpdate(?UpdateView $update): void
+    public function setUpdate(?UpdateItemView $update): void
     {
         $this->update = $update;
     }

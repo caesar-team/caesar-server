@@ -55,7 +55,7 @@ use Swagger\Annotations as SWG;
 class ListView extends NodeView
 {
     /**
-     * @var ItemView[]
+     * @var \App\Model\View\Item\ItemView[]
      */
     public $children;
 

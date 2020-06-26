@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\User;
 
 use App\Controller\AbstractController;
+use App\Entity\User;
 use App\Factory\View\User\SelfUserInfoViewFactory;
 use App\Model\View\User\SelfUserInfoView;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -36,8 +37,11 @@ final class InfoController extends AbstractController
      *     methods={"GET"}
      * )
      */
-    public function userInfo(SelfUserInfoViewFactory $viewFactory): SelfUserInfoView
+    public function userInfo(SelfUserInfoViewFactory $viewFactory): ?SelfUserInfoView
     {
-        return $viewFactory->createSingle($this->getUser());
+        return $this->getUser() instanceof User
+            ? $viewFactory->createSingle($this->getUser())
+            : null
+        ;
     }
 }

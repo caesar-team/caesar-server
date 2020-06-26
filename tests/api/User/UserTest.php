@@ -24,6 +24,9 @@ class UserTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
+        $I->sendGET('/users/self');
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
         $I->login($user);
         $I->sendGET('/users/self');
         $I->seeResponseContains($user->getEmail());

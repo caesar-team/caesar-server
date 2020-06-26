@@ -9,6 +9,7 @@ mail.share.updated_item.message: 'You got update for your secure data. Follow th
 app.exception.update_user_password: 'You must update your password.'
 app.exception.delete_trash_only: 'You can fully delete item only from trash.'
 app.exception.item_has_no_update_to_accept: 'Item has no update to accept it.'
+app.exception.item_has_no_update_to_decline: 'Item has no update to decline it.'
 app.exception.cant_edit_root_list: 'You can`t edit root list.'
 app.exception.cant_delete_root_list: 'You can`t delete root list.'
 app.exception.user_not_found: 'No such user.'

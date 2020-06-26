@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Context\ShareFactoryContext;
-use App\Entity\Item;
+use App\Model\DTO\ShareItemCollection;
 use App\Model\Request\BatchShareRequest;
 
 final class ShareManager
@@ -21,15 +21,18 @@ final class ShareManager
     }
 
     /**
-     * @throws \Exception
-     *
-     * @return array<string, array<int, Item>> string as uid
+     * @return ShareItemCollection[]
      */
     public function share(BatchShareRequest $collectionRequest): array
     {
-        $items = [];
+        $shares = [];
         foreach ($collectionRequest->getOriginalItems() as $originalItem) {
-            $items = array_merge($items, $this->shareFactoryContext->share($originalItem));
+            $shares = array_merge($shares, $this->shareFactoryContext->share($originalItem));
+        }
+
+        $items = [];
+        foreach ($shares as $id => $sharedItems) {
+            $items[] = new ShareItemCollection($id, $sharedItems);
         }
 
         return $items;

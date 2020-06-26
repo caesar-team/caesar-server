@@ -366,6 +366,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->flowStatus = $flowStatus;
     }
 
+    public function isAccepted(): bool
+    {
+        return self::FLOW_STATUS_FINISHED === $this->flowStatus;
+    }
+
     /**
      * Check if it is a valid backup code.
      */

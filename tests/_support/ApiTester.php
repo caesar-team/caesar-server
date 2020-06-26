@@ -49,7 +49,7 @@ class ApiTester extends \Codeception\Actor
             $paramItem['teamId'] = $team->getId()->toString();
         }
 
-        $this->sendPOST('/item/batch/share',
+        $this->sendPOST('/items/batch/share',
             [
                 'originalItems' => [
                     [
