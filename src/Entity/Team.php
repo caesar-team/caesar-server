@@ -116,6 +116,13 @@ class Team
         return $this->userTeams;
     }
 
+    public function getUserTeamsWithoutPretender(): array
+    {
+        return $this->getUserTeams()->filter(static function (UserTeam $userTeam) {
+            return UserTeam::USER_ROLE_PRETENDER !== $userTeam->getUserRole();
+        })->toArray();
+    }
+
     public function getUserTeamByUser(User $user): ?UserTeam
     {
         $criteria = Criteria::create();

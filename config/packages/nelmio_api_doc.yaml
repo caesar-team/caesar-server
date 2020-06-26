@@ -1,5 +1,5 @@
 nelmio_api_doc:
-    models: { use_jms: false }
+    models: { use_jms: true }
     areas:
         path_patterns:
             - ^/api(?!/doc$)
@@ -26,6 +26,8 @@ nelmio_api_doc:
             - name: 'Item / Share'
               description: ''
             - name: 'Item / Favorite'
+              description: ''
+            - name: Team
               description: ''
         paths:
             /connect/google:

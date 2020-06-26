@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Team;
 
-use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
+use App\Factory\View\Team\TeamViewFactory;
 use App\Form\Request\Team\AddMemberType;
 use App\Form\Request\Team\CreateTeamType;
 use App\Form\Request\Team\EditTeamType;
 use App\Form\Request\Team\EditUserTeamType;
 use App\Model\Request\Team\EditUserTeamRequest;
-use App\Model\View\Team\ListView;
 use App\Model\View\Team\MemberView;
 use App\Model\View\Team\TeamView;
 use App\Repository\ItemRepository;
@@ -36,23 +35,23 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route(
- *     path="/api/teams"
- * )
+ * @Route(path="/api/teams")
  */
 class TeamController extends AbstractController
 {
     /**
+     * Create a team.
+     *
      * @SWG\Tag(name="Team")
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\Team\CreateTeamType::class)
+     *     @Model(type=CreateTeamType::class)
      * )
      * @SWG\Response(
      *     response=200,
      *     description="Create a team",
-     *     @Model(type=\App\Model\View\Team\TeamView::class)
+     *     @Model(type=TeamView::class)
      * )
      * @SWG\Response(
      *     response=401,
@@ -64,13 +63,11 @@ class TeamController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @throws \Exception
-     *
      * @return TeamView|FormInterface
      */
     public function create(
         Request $request,
-        ViewFactoryContext $viewFactoryContext,
+        TeamViewFactory $viewFactory,
         EntityManagerInterface $entityManager,
         TeamManager $teamManager
     ) {
@@ -87,18 +84,18 @@ class TeamController extends AbstractController
         $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
         $entityManager->flush();
 
-        $teamView = $viewFactoryContext->view($team);
-
-        return $teamView;
+        return $viewFactory->createSingle($team);
     }
 
     /**
+     * Get a team.
+     *
      * @SWG\Tag(name="Team")
      *
      * @SWG\Response(
      *     response=200,
      *     description="A team view",
-     *     @Model(type=\App\Model\View\Team\TeamView::class)
+     *     @Model(type=TeamView::class)
      * )
      * @SWG\Response(
      *     response=401,
@@ -110,15 +107,12 @@ class TeamController extends AbstractController
      *     name="api_team_view",
      *     methods={"GET"}
      * )
-     *
-     * @return TeamView
      */
-    public function team(Team $team, ViewFactoryContext $viewFactoryContext)
+    public function team(Team $team, TeamViewFactory $viewFactory): TeamView
     {
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
-        $teamView = $viewFactoryContext->view($team);
 
-        return $teamView;
+        return $viewFactory->createSingle($team);
     }
 
     /**
@@ -144,9 +138,8 @@ class TeamController extends AbstractController
      *
      * @return TeamView[]
      */
-    public function teams(ViewFactoryContext $viewFactoryContext, TeamRepository $teamRepository)
+    public function teams(TeamViewFactory $viewFactory, TeamRepository $teamRepository): array
     {
-        /** @var User $user */
         $user = $this->getUser();
         if ($user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_SUPER_ADMIN)) {
             $teams = $teamRepository->findAll();
@@ -154,21 +147,22 @@ class TeamController extends AbstractController
             $teams = $teamRepository->findByUser($user);
         }
 
-        return $viewFactoryContext->viewList($teams);
+        return $viewFactory->createCollection($teams);
     }
 
     /**
-     * @SWG\Tag(name="Team")
+     * Edit a team.
      *
+     * @SWG\Tag(name="Team")
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\Team\CreateTeamType::class)
+     *     @Model(type=CreateTeamType::class)
      * )
      * @SWG\Response(
      *     response=200,
      *     description="Edit a team",
-     *     @Model(type=\App\Model\View\Team\TeamView::class)
+     *     @Model(type=TeamView::class)
      * )
      * @SWG\Response(
      *     response=401,
@@ -180,11 +174,13 @@ class TeamController extends AbstractController
      *     name="api_team_edit",
      *     methods={"PATCH"}
      * )
-     *
-     * @return TeamView
      */
-    public function update(Team $team, Request $request, ViewFactoryContext $viewFactoryContext, EntityManagerInterface $entityManager)
-    {
+    public function update(
+        Team $team,
+        Request $request,
+        TeamViewFactory $viewFactory,
+        EntityManagerInterface $entityManager
+    ): TeamView {
         $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
 
         $form = $this->createForm(EditTeamType::class, $team);
@@ -192,9 +188,8 @@ class TeamController extends AbstractController
         if ($form->isValid()) {
             $entityManager->flush();
         }
-        $teamView = $viewFactoryContext->view($team);
 
-        return $teamView;
+        return $viewFactory->createSingle($team);
     }
 
     /**
@@ -431,35 +426,5 @@ class TeamController extends AbstractController
         $userTeamRepository->save($userTeam);
 
         return MemberView::create($userTeam);
-    }
-
-    /**
-     * @SWG\Tag(name="Team")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="Team lists",
-     *     @SWG\Schema(
-     *         type="array",
-     *         @Model(type="App\Model\View\Team\ListView")
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @Route(
-     *     path="/{team}/lists",
-     *     methods={"GET"}
-     * )
-     *
-     * @return ListView[]
-     */
-    public function lists(Team $team, ViewFactoryContext $viewFactoryContext)
-    {
-        $lists = $viewFactoryContext->viewList($team->getLists()->getChildLists()->toArray());
-        array_push($lists, $viewFactoryContext->view($team->getTrash()));
-
-        return $lists;
     }
 }

@@ -27,3 +27,10 @@ modules:
               dsn: 'pgsql:host=%TEST_DATABASE_HOST%;port=5432;dbname=%TEST_POSTGRES_DB%'
               user: '%TEST_POSTGRES_USER%'
               password: '%TEST_POSTGRES_PASSWORD%'
+              initial_queries:
+                - 'TRUNCATE directory CASCADE;'
+                - 'TRUNCATE fos_user CASCADE;'
+                - 'TRUNCATE item CASCADE;'
+                - 'TRUNCATE groups CASCADE;'
+                - 'TRUNCATE srp CASCADE;'
+                - 'TRUNCATE message_history CASCADE;'
