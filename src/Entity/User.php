@@ -422,11 +422,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     }
 
     /**
-     * @return UserTeam[]|Collection
+     * @return UserTeam[]
      */
-    public function getUserTeams(): Collection
+    public function getUserTeams(): array
     {
-        return $this->userTeams;
+        return $this->userTeams->toArray();
     }
 
     public function addUserTeam(UserTeam $userTeam): void

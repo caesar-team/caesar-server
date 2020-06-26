@@ -170,6 +170,44 @@
         "role"
       ]
     },
+    "team_member": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": ["string", "null"]
+        },
+        "publicKey": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": "string"
+        },
+        "teamIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "avatar",
+        "publicKey",
+        "name",
+        "teamIds",
+        "role"
+      ]
+    },
     "team": {
       "type": "object",
       "properties": {
@@ -198,6 +236,41 @@
         "users",
         "icon",
         "type"
+      ]
+    },
+    "user_team": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": ["string", "null"]
+        },
+        "userRole": {
+          "type": ["string", "null"]
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "icon": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "type",
+        "userRole",
+        "createdAt",
+        "updatedAt",
+        "icon"
       ]
     }
   }
