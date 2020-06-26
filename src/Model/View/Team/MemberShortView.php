@@ -16,7 +16,7 @@ use Swagger\Annotations as SWG;
  *     attributes={"method": "DELETE"},
  *     href=@Hateoas\Route(
  *         "api_team_member_add",
- *         parameters={ "team": "expr(object.teamId)", "user": "expr(object.id)" }
+ *         parameters={ "team": "expr(object.getTeamId())", "user": "expr(object.getId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\UserTeamVoter::USER_TEAM_REMOVE_MEMBER'), object.getTeam()))"
@@ -27,7 +27,7 @@ use Swagger\Annotations as SWG;
  *     attributes={"method": "PATCH"},
  *     href=@Hateoas\Route(
  *         "api_team_member_edit",
- *         parameters={ "team": "expr(object.teamId)", "user": "expr(object.id)" }
+ *         parameters={ "team": "expr(object.getTeamId())", "user": "expr(object.getId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\UserTeamVoter::USER_TEAM_EDIT'), object.getTeam()))"
@@ -37,55 +37,49 @@ use Swagger\Annotations as SWG;
 final class MemberShortView
 {
     /**
-     * @var string
+     * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      */
-    public $id;
+    private string $id;
 
     /**
-     * @var string|null
+     * @SWG\Property(type="string", enum=UserTeam::ROLES)
      */
-    public $role;
+    private string $role;
 
     /**
-     * @var string|null
-     *
      * @Serializer\Exclude
      */
-    public $teamId;
+    private string $teamId;
 
     /**
-     * @var Team|null
-     *
      * @Serializer\Exclude
-     * @SWG\Property(type="string")
      */
-    private $team;
+    private Team $team;
 
-    public static function create(UserTeam $userTeam): self
+    public function __construct(Team $team)
     {
-        $view = new self();
-        $view->id = $userTeam->getUser()->getId()->toString();
-        $view->role = $userTeam->getUserRole();
-        $view->team = $userTeam->getTeam();
-        /** @psalm-suppress InvalidPropertyAssignmentValue */
-        $view->teamId = $userTeam->getTeam() ? $userTeam->getTeam()->getId()->toString() : null;
-
-        return $view;
+        $this->team = $team;
+        $this->teamId = $team->getId()->toString();
     }
 
-    /**
-     * @param UserTeam[] $usersTeams
-     *
-     * @return MemberShortView[]
-     */
-    public static function createMany(array $usersTeams): array
+    public function getId(): string
     {
-        $list = [];
-        foreach ($usersTeams as $usersTeam) {
-            $list[] = MemberShortView::create($usersTeam);
-        }
+        return $this->id;
+    }
 
-        return $list;
+    public function setId(string $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function getRole(): ?string
+    {
+        return $this->role;
+    }
+
+    public function setRole(string $role): void
+    {
+        $this->role = $role;
     }
 
     public function getTeam(): ?Team
@@ -93,8 +87,8 @@ final class MemberShortView
         return $this->team;
     }
 
-    public function setTeam(?Team $team): void
+    public function getTeamId(): string
     {
-        $this->team = $team;
+        return $this->teamId;
     }
 }

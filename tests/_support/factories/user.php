@@ -15,4 +15,5 @@ $fm->define(User::class)->setDefinitions([
     'password' => '$2y$13$lHAN4DQVpsg.qX4SaNyDC.HXh0YFZWfj/PUTeLhXLkBR.fzjmmhWi',
     'srp' => 'entity|'.Srp::class,
     'flow_status' => User::FLOW_STATUS_FINISHED,
+    'roles' => [User::ROLE_USER],
 ]);
