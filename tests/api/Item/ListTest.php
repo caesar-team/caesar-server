@@ -54,7 +54,7 @@ class ListTest extends Unit
                                 'secret' => 'Some secret string, it doesn`t matter for backend',
                                 'access' => AccessEnumType::TYPE_READ,
                                 'cause' => Item::CAUSE_SHARE,
-                            ]
+                            ],
                         ],
                     ],
                 ],
@@ -66,7 +66,6 @@ class ListTest extends Unit
 
         $schema = $I->getSchema('item/lists.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
-
 
         $I->login($member);
 
