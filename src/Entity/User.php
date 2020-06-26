@@ -316,6 +316,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->publicKey = $publicKey;
     }
 
+    public function hasKeys(): bool
+    {
+        return null !== $this->getEncryptedPrivateKey() && null !== $this->getPublicKey();
+    }
+
     public function getSrp(): ?Srp
     {
         return $this->srp;

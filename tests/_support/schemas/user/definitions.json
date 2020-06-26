@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "public_key": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId",
+        "publicKey",
+        "email"
+      ]
+    },
+    "keys": {
+      "type": "object",
+      "properties": {
+        "encryptedPrivateKey": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "encryptedPrivateKey",
+        "publicKey"
+      ]
+    }
+  }
+}
