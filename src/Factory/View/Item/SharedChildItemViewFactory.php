@@ -31,6 +31,7 @@ class SharedChildItemViewFactory
         $view->setLink($item->getLink());
         $view->setIsAccepted($user->isAccepted());
         $view->setPublicKey($user->getPublicKey());
+        $view->setOriginalItemId($item->getOriginalItemId());
 
         return $view;
     }
