@@ -82,4 +82,12 @@ class ApiTester extends \Codeception\Actor
             'user_role' => $role,
         ]);
     }
+
+    public function haveUserWithKeys(): User
+    {
+        return $this->have(User::class, [
+            'encrypted_private_key' => uniqid(),
+            'public_key' => uniqid(),
+        ]);
+    }
 }

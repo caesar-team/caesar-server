@@ -85,6 +85,25 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string[] $emails
+     *
+     * @return User[]
+     */
+    public function getUsersWithKeysByEmails(array $emails): array
+    {
+        $queryBuilder = $this->createQueryBuilder('user');
+
+        return $queryBuilder
+            ->where('LOWER(user.email) IN (:emails)')
+            ->andWhere('user.publicKey IS NOT NULL')
+            ->andWhere('user.encryptedPrivateKey IS NOT NULL')
+            ->setParameter('emails', array_map('mb_strtolower', $emails))
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findOneByEmail(string $email): ?User

@@ -7,32 +7,24 @@ namespace App\Controller\Api;
 use App\Controller\AbstractController;
 use App\Entity\Security\Invitation;
 use App\Entity\Srp;
-use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
 use App\Factory\View\SecurityBootstrapViewFactory;
-use App\Factory\View\UserKeysViewFactory;
 use App\Factory\View\UserSecurityInfoViewFactory;
 use App\Form\Request\CreateInvitedUserType;
-use App\Form\Request\Invite\PublicKeysRequestType;
-use App\Form\Request\SaveKeysType;
 use App\Form\Request\SendInvitesType;
 use App\Form\Request\SendInviteType;
 use App\Mailer\MailRegistry;
 use App\Model\DTO\Message;
-use App\Model\Request\PublicKeysRequest;
 use App\Model\Request\SendInviteRequest;
 use App\Model\Request\SendInviteRequests;
-use App\Model\View\User\UserKeysView;
 use App\Repository\UserRepository;
 use App\Services\InvitationManager;
 use App\Services\Messenger;
 use App\Services\TeamManager;
 use Doctrine\ORM\EntityManagerInterface;
-use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Psr\Log\LoggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -42,126 +34,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 final class UserController extends AbstractController
 {
-    /**
-     * @SWG\Tag(name="Invitation")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="User public key",
-     *     @Model(type="App\Model\View\User\UserKeysView", groups={"public"})
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/key/{email}",
-     *     name="api_user_get_public_key",
-     *     methods={"GET"}
-     * )
-     * @Entity(
-     *     "user",
-     *     expr="repository.findByEmail(email)"
-     * )
-     * @Rest\View(serializerGroups={"public"})
-     */
-    public function publicKey(User $user, UserKeysViewFactory $viewFactory): ?UserKeysView
-    {
-        return $viewFactory->create($user);
-    }
-
-    /**
-     * @SWG\Tag(name="Keys")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="List of user keys",
-     *     @Model(type="\App\Model\View\User\UserKeysView", groups={"key_detail_read"})
-     * )
-     * @SWG\Response(
-     *     response=204,
-     *     description="User has no keys"
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/keys",
-     *     name="api_keys_list",
-     *     methods={"GET"}
-     * )
-     * @Rest\View(serializerGroups={"key_detail_read"})
-     *
-     * @return UserKeysView|null
-     */
-    public function keyList(UserKeysViewFactory $viewFactory)
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        return $viewFactory->create($user);
-    }
-
-    /**
-     * @SWG\Tag(name="Keys")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=\App\Form\Request\SaveKeysType::class)
-     * )
-     * @SWG\Response(
-     *     response=204,
-     *     description="Success keys update",
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/keys",
-     *     name="api_keys_save",
-     *     methods={"POST"}
-     * )
-     *
-     * @throws \Exception
-     *
-     * @return FormInterface|null
-     */
-    public function saveKeys(Request $request, EntityManagerInterface $entityManager, TeamManager $teamManager)
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        $form = $this->createForm(SaveKeysType::class, $user);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        /** @var User $oldUser */
-        $oldUser = $entityManager->getUnitOfWork()->getOriginalEntityData($user);
-        if (!$user->isFullUser()) {
-            $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
-        } else {
-            $this->setFlowStatusByPrivateKeys($oldUser, $user);
-        }
-
-        if ($user->isFullUser()) {
-            $this->removeInvitation($user, $entityManager);
-            $userTeam = $teamManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
-            $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
-        }
-
-        $entityManager->flush();
-
-        return null;
-    }
-
     /**
      * @SWG\Tag(name="Invitation")
      *
@@ -391,47 +263,6 @@ final class UserController extends AbstractController
     }
 
     /**
-     * @SWG\Tag(name="Invitation")
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type="\App\Form\Request\Invite\PublicKeysRequestType")
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/key/batch",
-     *     methods={"POST"}
-     * )
-     * @Rest\View(serializerGroups={"public"})
-     *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     *
-     * @return array|FormInterface
-     */
-    public function batchPublicKeyAction(Request $request, UserKeysViewFactory $viewFactory, UserRepository $userRepository)
-    {
-        $keysRequest = new PublicKeysRequest();
-        $form = $this->createForm(PublicKeysRequestType::class, $keysRequest);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        $view = [];
-        foreach ($keysRequest->getEmails() as $email) {
-            if ($user = $userRepository->findOneWithPublicKeyByEmail($email)) {
-                $view[] = $viewFactory->create($user);
-            }
-        }
-
-        return $view;
-    }
-
-    /**
      * @Route(
      *     path="/api/user/batch",
      *     methods={"POST"}
@@ -472,22 +303,6 @@ final class UserController extends AbstractController
         $entityManager->flush();
 
         return ['users' => $users];
-    }
-
-    private function setFlowStatus(string $currentFlowStatus): string
-    {
-        if (User::FLOW_STATUS_CHANGE_PASSWORD === $currentFlowStatus) {
-            return $currentFlowStatus;
-        }
-
-        return User::FLOW_STATUS_FINISHED;
-    }
-
-    private function setFlowStatusByPrivateKeys($oldUser, User $user)
-    {
-        if ($oldUser['encryptedPrivateKey'] !== $user->getEncryptedPrivateKey()) {
-            $user->setFlowStatus($this->setFlowStatus($user->getFlowStatus()));
-        }
     }
 
     private function removeInvitation(User $user, EntityManagerInterface $entityManager)
