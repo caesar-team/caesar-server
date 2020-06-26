@@ -11,8 +11,8 @@ class MemberShortViewFactory
 {
     public function createSingle(UserTeam $userTeam): MemberShortView
     {
-        if (null === $userTeam->getTeam()) {
-            throw new \BadMethodCallException('UserTeam without team is invalid');
+        if (null === $userTeam->getTeam() || null === $userTeam->getUser()) {
+            throw new \BadMethodCallException('Incomplete UserTeam entity');
         }
 
         $view = new MemberShortView($userTeam->getTeam());

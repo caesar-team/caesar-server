@@ -29,6 +29,8 @@ nelmio_api_doc:
               description: ''
             - name: Team
               description: ''
+            - name: 'Team / Member'
+              description: ''
         paths:
             /connect/google:
                 get:

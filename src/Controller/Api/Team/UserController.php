@@ -4,41 +4,41 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\Team;
 
-use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
 use App\Entity\User;
+use App\Factory\View\Team\UserTeamViewFactory;
 use App\Model\View\Team\UserTeamView;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * @SWG\Response(
+ *     response=401,
+ *     description="Unauthorized"
+ * )
+ */
 final class UserController extends AbstractController
 {
     /**
+     * Teams of user.
+     *
      * @SWG\Tag(name="User Team")
      *
      * @SWG\Response(
      *     response=200,
      *     description="Teams of user",
-     *     @SWG\Schema(
-     *         type="array",
-     *         @Model(type="App\Model\View\Team\UserTeamView")
-     *     )
+     *     @SWG\Schema(type="array", @Model(type=UserTeamView::class))
      * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
+     *
      * @Route(path="/api/user/teams", methods={"GET"})
      *
-     * @return array|UserTeamView[]
+     * @return UserTeamView[]
      */
-    public function teams(ViewFactoryContext $viewFactoryContext): array
+    public function teams(UserTeamViewFactory $viewFactory): array
     {
-        /** @var User $user */
         $user = $this->getUser();
-        $userTeams = $user->getUserTeams();
 
-        return $viewFactoryContext->viewList($userTeams->toArray());
+        return $viewFactory->createCollection($user->getUserTeams());
     }
 }

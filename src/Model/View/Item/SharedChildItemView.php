@@ -7,7 +7,7 @@ namespace App\Model\View\Item;
 use App\DBAL\Types\Enum\AccessEnumType;
 use Swagger\Annotations as SWG;
 
-class SharedChildItemView
+final class SharedChildItemView
 {
     /**
      * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
@@ -17,7 +17,7 @@ class SharedChildItemView
     /**
      * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      */
-    private string $originalItemId;
+    private ?string $originalItemId;
 
     /**
      * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
@@ -74,12 +74,12 @@ class SharedChildItemView
         $this->id = $id;
     }
 
-    public function getOriginalItemId(): string
+    public function getOriginalItemId(): ?string
     {
         return $this->originalItemId;
     }
 
-    public function setOriginalItemId(string $originalItemId): void
+    public function setOriginalItemId(?string $originalItemId): void
     {
         $this->originalItemId = $originalItemId;
     }

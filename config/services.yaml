@@ -21,10 +21,6 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
-    App\Strategy\ViewFactory\:
-        resource: '../src/Strategy/ViewFactory'
-        tags: ['app.view_factory']
-
     App\Strategy\ShareFactory\:
         resource: '../src/Strategy/ShareFactory'
         tags: ['app.share_factory']
