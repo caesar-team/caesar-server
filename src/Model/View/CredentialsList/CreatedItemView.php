@@ -9,14 +9,38 @@ use Swagger\Annotations as SWG;
 class CreatedItemView
 {
     /**
-     * @var string
-     *
-     * @SWG\Property(example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
+     * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      */
-    public $id;
+    private string $id;
 
     /**
-     * @var \DateTime
+     * @SWG\Property(type="string", example="2020-06-24T08:03:12+00:00")
      */
-    public $lastUpdated;
+    private \DateTime $lastUpdated;
+
+    /**
+     * @return string
+     */
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function setId(string $id): void
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getLastUpdated(): ?\DateTime
+    {
+        return $this->lastUpdated;
+    }
+
+    public function setLastUpdated(\DateTime $lastUpdated): void
+    {
+        $this->lastUpdated = $lastUpdated;
+    }
 }

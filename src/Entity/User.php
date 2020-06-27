@@ -490,16 +490,22 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 
     public function getInbox(): Directory
     {
+        $this->inbox->setRole(Directory::LIST_INBOX);
+
         return $this->inbox;
     }
 
     public function getLists(): Directory
     {
+        $this->lists->setRole(Directory::LIST_ROOT_LIST);
+
         return $this->lists;
     }
 
     public function getTrash(): Directory
     {
+        $this->trash->setRole(Directory::LIST_TRASH);
+
         return $this->trash;
     }
 
@@ -520,5 +526,14 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function equals(?User $user): bool
     {
         return null !== $user && $this->getId()->toString() === $user->getId()->toString();
+    }
+
+    public function getUserPersonalLists(): array
+    {
+        $lists = $this->getLists()->getChildLists()->toArray();
+        $lists[] = $this->getInbox();
+        $lists[] = $this->getTrash();
+
+        return $lists;
     }
 }

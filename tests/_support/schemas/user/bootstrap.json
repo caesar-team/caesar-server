@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "twoFactorAuthState": {
+      "type": "string"
+    },
+    "passwordState": {
+      "type": "string"
+    },
+    "masterPasswordState": {
+      "type": "string"
+    },
+    "sharedItemsState": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "twoFactorAuthState",
+    "passwordState",
+    "masterPasswordState",
+    "sharedItemsState"
+  ]
+}

@@ -35,4 +35,36 @@ class UserTest extends Unit
         $schema = $I->getSchema('user/self_user.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
     }
+
+    /** @test */
+    public function bootstrap()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        $I->login($user);
+        $I->sendGET('/user/security/bootstrap');
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $schema = $I->getSchema('user/bootstrap.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
+
+    /** @test */
+    public function getPermissions()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        $I->login($user);
+        $I->sendGET('/user/permissions');
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $schema = $I->getSchema('user/permissions.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
 }

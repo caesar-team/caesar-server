@@ -2,6 +2,7 @@
 
 namespace App\Tests\Item;
 
+use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Tests\ApiTester;
@@ -62,6 +63,28 @@ class ItemTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $schema = $I->getSchema('item/item_list.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
+
+    /** @test */
+    public function createCredItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        $I->login($user);
+        $I->sendPOST('items', [
+            'listId' => $user->getInbox()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_CRED,
+            'secret' => uniqid(),
+            'favorite' => false,
+            'tags' => ['tag'],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $schema = $I->getSchema('item/create_item.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
     }
 }

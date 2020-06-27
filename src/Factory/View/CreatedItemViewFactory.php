@@ -9,12 +9,12 @@ use App\Model\View\CredentialsList\CreatedItemView;
 
 class CreatedItemViewFactory
 {
-    public function create(Item $item): CreatedItemView
+    public function createSingle(Item $item): CreatedItemView
     {
         $view = new CreatedItemView();
 
-        $view->id = $item->getId()->toString();
-        $view->lastUpdated = $item->getLastUpdated();
+        $view->setId($item->getId()->toString());
+        $view->setLastUpdated($item->getLastUpdated());
 
         return $view;
     }
