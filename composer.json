@@ -9,7 +9,7 @@
         "ext-redis": "*",
         "ext-sockets": "*",
         "caesar/security-message-bundle": "*",
-        "doctrine/doctrine-fixtures-bundle": "3.3.0",
+        "doctrine/doctrine-fixtures-bundle": "3.3.1",
         "easycorp/easyadmin-bundle": "2.3.5",
         "fresh/doctrine-enum-bundle": "6.6.2",
         "friendsofsymfony/rest-bundle": "2.7.3",
