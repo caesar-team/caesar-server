@@ -139,44 +139,6 @@ final class MemberController extends AbstractController
     }
 
     /**
-     * Add member to team by member.
-     *
-     * @SWG\Tag(name="Team / Member")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=AddMemberType::class)
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Add team member",
-     *     @Model(type=MemberView::class)
-     * )
-     *
-     * @Route(
-     *     path="/{team}/members/{user}/invite",
-     *     name="api_team_member_invite",
-     *     methods={"POST"}
-     * )
-     *
-     * @return MemberView|FormInterface
-     */
-    public function invite(
-        Team $team,
-        User $user,
-        MemberViewFactory $viewFactory,
-        UserTeamRepository $repository
-    ) {
-        $this->denyAccessUnlessGranted(UserTeamVoter::INVITE, $team->getUserTeamByUser($this->getUser()));
-
-        $userTeam = new UserTeam($user, $team);
-        $repository->save($userTeam);
-
-        return $viewFactory->createSingle($userTeam);
-    }
-
-    /**
      * Remove team member.
      *
      * @SWG\Tag(name="Team / Member")

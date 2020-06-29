@@ -26,7 +26,6 @@ class PermissionTest extends Unit
 
     private const MEMBER_ACCESS = [
         'team_members' => [],
-        'team_member_invite' => [],
     ];
 
     private const USER_TEAM_ACCESS = [
