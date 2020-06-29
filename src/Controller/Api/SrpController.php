@@ -130,12 +130,12 @@ final class SrpController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\Srp\LoginPrepareType::class)
+     *     @Model(type=LoginPrepareType::class)
      * )
      * @SWG\Response(
      *     response=200,
      *     description="Success login prepared",
-     *     @Model(type=\App\Model\View\Srp\PreparedSrpView::class)
+     *     @Model(type=PreparedSrpView::class)
      * )
      *
      * @SWG\Response(
@@ -166,7 +166,7 @@ final class SrpController extends AbstractController
      *
      * @throws Exception
      *
-     * @return PreparedSrpView|FormInterface|JsonResponse
+     * @return PreparedSrpView|FormInterface
      */
     public function prepareLoginAction(
         Request $request,
@@ -202,7 +202,7 @@ final class SrpController extends AbstractController
         $entityManager->persist($srp);
         $entityManager->flush();
 
-        return $viewFactory->create($srp);
+        return $viewFactory->createSingle($srp);
     }
 
     /**

@@ -7,9 +7,11 @@ namespace App\Controller\Api;
 use App\Controller\AbstractController;
 use App\Entity\Directory;
 use App\Entity\User;
+use App\Factory\View\ListViewFactory;
 use App\Form\Request\CreateListType;
 use App\Form\Request\EditListType;
 use App\Form\Request\SortListType;
+use App\Model\View\CredentialsList\ListView;
 use App\Security\ListVoter;
 use App\Services\ItemDisplacer;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,8 +23,57 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * @SWG\Response(
+ *     response=400,
+ *     description="Returns error",
+ *     @SWG\Schema(
+ *         type="object",
+ *         @SWG\Property(
+ *             type="object",
+ *             property="errors",
+ *             @SWG\Property(
+ *                 type="array",
+ *                 property="label",
+ *                 @SWG\Items(
+ *                     type="string",
+ *                     example="List with such label aleady exist"
+ *                 )
+ *             )
+ *         )
+ *     )
+ * )
+ * @SWG\Response(
+ *     response=401,
+ *     description="Unauthorized"
+ * )
+ */
 final class ListController extends AbstractController
 {
+    /**
+     * Get lists by user.
+     *
+     * @SWG\Tag(name="List")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Full list tree with items",
+     *     @SWG\Schema(type="array", @Model(type=ListView::class))
+     * )
+     *
+     * @Route(
+     *     path="/api/list",
+     *     name="api_list_tree",
+     *     methods={"GET"}
+     * )
+     *
+     * @return ListView[]
+     */
+    public function fullList(ListViewFactory $factory): array
+    {
+        return $factory->createCollection($this->getUser()->getUserPersonalLists());
+    }
+
     /**
      * @SWG\Tag(name="List")
      *
@@ -42,29 +93,6 @@ final class ListController extends AbstractController
      *             example="f553f7c5-591a-4aed-9148-2958b7d88ee5",
      *         )
      *     )
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns list creation error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="object",
-     *             property="errors",
-     *             @SWG\Property(
-     *                 type="array",
-     *                 property="label",
-     *                 @SWG\Items(
-     *                     type="string",
-     *                     example="List with such label aleady exist"
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
      * )
      * @SWG\Response(
      *     response=403,
@@ -114,29 +142,6 @@ final class ListController extends AbstractController
      *     description="Success list edited",
      * )
      * @SWG\Response(
-     *     response=400,
-     *     description="Returns list creation error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="object",
-     *             property="errors",
-     *             @SWG\Property(
-     *                 type="array",
-     *                 property="label",
-     *                 @SWG\Items(
-     *                     type="string",
-     *                     example="List with such label already exist"
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
      *     response=403,
      *     description="You are not owner of this list"
      * )
@@ -177,25 +182,6 @@ final class ListController extends AbstractController
      * @SWG\Response(
      *     response=204,
      *     description="Success list deleted"
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns list deletion error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="array",
-     *             property="errors",
-     *             @SWG\Items(
-     *                 type="string",
-     *                 example="You can`t delete root list"
-     *             )
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
      * )
      * @SWG\Response(
      *     response=403,
@@ -244,14 +230,6 @@ final class ListController extends AbstractController
      * @SWG\Response(
      *     response=204,
      *     description="List position changed",
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns list creation error",
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
      * )
      * @SWG\Response(
      *     response=403,

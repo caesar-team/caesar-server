@@ -78,9 +78,15 @@ class Directory
      */
     protected $type = NodeEnumType::TYPE_LIST;
 
+    /**
+     * @todo candidate to refactoring (inbox, trash, etc)
+     */
+    private string $role = NodeEnumType::TYPE_LIST;
+
     public function __construct(string $label = null)
     {
         $this->id = Uuid::uuid4();
+        $this->role = NodeEnumType::TYPE_LIST;
         $this->childLists = new ArrayCollection();
         $this->childItems = new ArrayCollection();
         if (null !== $label) {
@@ -226,5 +232,15 @@ class Directory
         }
 
         return $this->getId()->toString() === $directory->getId()->toString();
+    }
+
+    public function getRole(): string
+    {
+        return $this->role;
+    }
+
+    public function setRole(string $role): void
+    {
+        $this->role = $role;
     }
 }

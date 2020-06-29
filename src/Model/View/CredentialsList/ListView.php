@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Model\View\CredentialsList;
 
+use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
+use App\Model\View\Item\ItemView;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 
 /**
@@ -52,40 +55,120 @@ use Swagger\Annotations as SWG;
  *     )
  * )
  */
-class ListView extends NodeView
+class ListView
 {
     /**
-     * @var \App\Model\View\Item\ItemView[]
+     * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      */
-    public $children;
+    private string $id;
 
     /**
-     * @var string|null
+     * @SWG\Property(type="string", enum=NodeEnumType::AVAILABLE_TYPES)
+     */
+    private string $type;
+
+    /**
+     * @SWG\Property(type="string", example=0)
+     */
+    private int $sort;
+
+    /**
+     * @var ItemView[]
      *
-     * @SWG\Property(example="lists")
+     * @SWG\Property(type="array", @Model(type=ItemView::class))
      */
-    public $label;
+    private array $children;
 
     /**
-     * @var string|null
+     * @SWG\Property(type="string", example="lists")
      */
-    public $teamId;
+    private ?string $label;
 
     /**
-     * @var Directory|null
-     *
+     * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
+     */
+    private ?string $teamId;
+
+    /**
      * @Serializer\Exclude
-     * @SWG\Property(type="string")
      */
-    private $directory;
+    private Directory $directory;
 
-    public function getDirectory(): ?Directory
-    {
-        return $this->directory;
-    }
-
-    public function setDirectory(?Directory $directory): void
+    public function __construct(Directory $directory)
     {
         $this->directory = $directory;
+        $this->sort = 0;
+        $this->children = [];
+    }
+
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    public function setId(string $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): void
+    {
+        $this->type = $type;
+    }
+
+    public function getSort(): int
+    {
+        return $this->sort;
+    }
+
+    public function setSort(int $sort): void
+    {
+        $this->sort = $sort;
+    }
+
+    /**
+     * @return ItemView[]
+     */
+    public function getChildren(): array
+    {
+        return $this->children;
+    }
+
+    /**
+     * @param ItemView[] $children
+     */
+    public function setChildren(array $children): void
+    {
+        $this->children = $children;
+    }
+
+    public function getLabel(): ?string
+    {
+        return $this->label;
+    }
+
+    public function setLabel(?string $label): void
+    {
+        $this->label = $label;
+    }
+
+    public function getTeamId(): ?string
+    {
+        return $this->teamId;
+    }
+
+    public function setTeamId(?string $teamId): void
+    {
+        $this->teamId = $teamId;
+    }
+
+    public function getDirectory(): Directory
+    {
+        return $this->directory;
     }
 }

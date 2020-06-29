@@ -18,6 +18,8 @@ use App\Mailer\MailRegistry;
 use App\Model\DTO\Message;
 use App\Model\Request\SendInviteRequest;
 use App\Model\Request\SendInviteRequests;
+use App\Model\View\User\SecurityBootstrapView;
+use App\Model\View\User\UserSecurityInfoView;
 use App\Repository\UserRepository;
 use App\Services\InvitationManager;
 use App\Services\Messenger;
@@ -27,7 +29,6 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Psr\Log\LoggerInterface;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -111,8 +112,7 @@ final class UserController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="User's permissions",
-     *     @Model(type="\App\Model\View\User\UserSecurityInfoView")
-     * )
+     *     @Model(type=UserSecurityInfoView::class)
      * )
      *
      * @SWG\Response(
@@ -126,12 +126,9 @@ final class UserController extends AbstractController
      *     methods={"GET"}
      * )
      */
-    public function permissions(UserSecurityInfoViewFactory $infoViewFactory): JsonResponse
+    public function permissions(UserSecurityInfoViewFactory $infoViewFactory): UserSecurityInfoView
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        return new JsonResponse($infoViewFactory->create($user));
+        return $infoViewFactory->createSingle($this->getUser());
     }
 
     /**
@@ -140,7 +137,7 @@ final class UserController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="User's security bootstrap",
-     *     @Model(type="\App\Model\View\User\SecurityBootstrapView")
+     *     @Model(type=SecurityBootstrapView::class)
      * )
      *
      * @SWG\Response(
@@ -153,16 +150,10 @@ final class UserController extends AbstractController
      *     name="api_user_security_bootstrap",
      *     methods={"GET"}
      * )
-     *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
      */
-    public function bootstrap(SecurityBootstrapViewFactory $bootstrapViewFactory): JsonResponse
+    public function bootstrap(SecurityBootstrapViewFactory $bootstrapViewFactory): SecurityBootstrapView
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        return new JsonResponse($bootstrapViewFactory->create($user));
+        return $bootstrapViewFactory->createSingle($this->getUser());
     }
 
     /**

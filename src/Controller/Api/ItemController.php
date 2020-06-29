@@ -10,13 +10,11 @@ use App\Entity\Directory;
 use App\Entity\Item;
 use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
-use App\Factory\View\ListTreeViewFactory;
 use App\Form\Request\CreateItemsType;
 use App\Form\Request\CreateItemType;
 use App\Form\Request\MoveItemType;
 use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
-use App\Model\View\CredentialsList\ListView;
 use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
 use App\Security\ItemVoter;
@@ -36,37 +34,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class ItemController extends AbstractController
 {
-    /**
-     * @SWG\Tag(name="List")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="Full list tree with items",
-     *     @SWG\Schema(
-     *         type="array",
-     *         @Model(type="\App\Model\View\CredentialsList\ListView")
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/list",
-     *     name="api_list_tree",
-     *     methods={"GET"}
-     * )
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return ListView[]|array
-     */
-    public function fullListAction(ListTreeViewFactory $viewFactory)
-    {
-        return $viewFactory->create($this->getUser());
-    }
-
     /**
      * @SWG\Tag(name="Item")
      * @SWG\Response(
@@ -155,24 +122,12 @@ final class ItemController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\CreateItemType::class)
+     *     @Model(type=CreateItemType::class)
      * )
      * @SWG\Response(
      *     response=200,
      *     description="Success item created",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="string",
-     *             property="id",
-     *             example="f553f7c5-591a-4aed-9148-2958b7d88ee5",
-     *         ),
-     *         @SWG\Property(
-     *             type="string",
-     *             property="lastUpdated",
-     *             example="Oct 19, 2018 12:08 pm",
-     *         )
-     *     )
+     *     @Model(type=CreatedItemView::class)
      * )
      * @SWG\Response(
      *     response=401,
@@ -188,8 +143,6 @@ final class ItemController extends AbstractController
      *     name="api_create_item",
      *     methods={"POST"}
      * )
-     *
-     * @throws \Exception
      *
      * @return CreatedItemView|FormInterface
      */
@@ -212,7 +165,7 @@ final class ItemController extends AbstractController
 
         $itemRepository->save($item);
 
-        return $viewFactory->create($item);
+        return $viewFactory->createSingle($item);
     }
 
     /**

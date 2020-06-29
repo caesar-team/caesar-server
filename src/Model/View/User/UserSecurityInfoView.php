@@ -9,14 +9,50 @@ use Swagger\Annotations as SWG;
 class UserSecurityInfoView
 {
     /**
-     * @var string[]
      * @SWG\Property(type="string[]", example="['ROLE_USER']")
      */
-    public $roles = [];
+    private array $roles;
 
     /**
-     * @var string[]
      * @SWG\Property(type="string[]", example="['create', 'read', 'update', 'delete']")
      */
-    public $permissions = [];
+    private array $permissions;
+
+    public function __construct()
+    {
+        $this->roles = [];
+        $this->permissions = [];
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getRoles(): array
+    {
+        return $this->roles;
+    }
+
+    /**
+     * @param string[] $roles
+     */
+    public function setRoles(array $roles): void
+    {
+        $this->roles = $roles;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getPermissions(): array
+    {
+        return $this->permissions;
+    }
+
+    /**
+     * @param string[] $permissions
+     */
+    public function setPermissions(array $permissions): void
+    {
+        $this->permissions = $permissions;
+    }
 }
