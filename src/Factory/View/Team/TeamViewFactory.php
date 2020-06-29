@@ -6,19 +6,25 @@ namespace App\Factory\View\Team;
 
 use App\Entity\Team;
 use App\Model\View\Team\TeamView;
+use Symfony\Component\Security\Core\Security;
 
 class TeamViewFactory
 {
     private MemberShortViewFactory $memberShortViewFactory;
 
-    public function __construct(MemberShortViewFactory $memberShortViewFactory)
+    private Security $security;
+
+    public function __construct(Security $security, MemberShortViewFactory $memberShortViewFactory)
     {
         $this->memberShortViewFactory = $memberShortViewFactory;
+        $this->security = $security;
     }
 
     public function createSingle(Team $team): TeamView
     {
-        $view = new TeamView($team);
+        $userTeam = $team->getUserTeamByUser($this->security->getUser());
+
+        $view = new TeamView($team, $userTeam);
         $view->setId($team->getId()->toString());
         $view->setUsers(
             $this->memberShortViewFactory->createCollection(

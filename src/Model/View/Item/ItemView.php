@@ -20,7 +20,7 @@ use Swagger\Annotations as SWG;
  *         parameters={ "id": "expr(object.getId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\ItemVoter::MOVE_ITEM'), object.getItem()))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::MOVE_ITEM'), object.getItem()))"
  *     )
  * )
  * @Hateoas\Relation(

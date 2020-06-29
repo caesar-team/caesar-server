@@ -7,7 +7,9 @@ use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
+use Codeception\PHPUnit\Constraint\JsonContains;
 use Codeception\Util\HttpCode;
+use Codeception\Util\JsonArray;
 use FOS\UserBundle\Model\UserInterface;
 
 /**
@@ -89,5 +91,24 @@ class ApiTester extends \Codeception\Actor
             'encrypted_private_key' => uniqid(),
             'public_key' => uniqid(),
         ]);
+    }
+
+    public function seeResponseByJsonPathContainsJson(string $jsonPath, array $json = []): void
+    {
+        \PHPUnit\Framework\Assert::assertThat(
+            json_encode($this->grabDataFromResponseByJsonPath($jsonPath)[0]),
+            new JsonContains($json)
+        );
+    }
+
+    public function dontSeeResponseByJsonPathContainsJson(string $jsonPath, array $json = []): void
+    {
+        $jsonResponseArray = new JsonArray(json_encode($this->grabDataFromResponseByJsonPath($jsonPath)[0]));
+        \PHPUnit\Framework\Assert::assertFalse(
+            $jsonResponseArray->containsArray($json),
+            "Response JSON contains provided JSON\n"
+            .'- <info>'.var_export($json, true)."</info>\n"
+            .'+ '.var_export($jsonResponseArray->toArray(), true)
+        );
     }
 }

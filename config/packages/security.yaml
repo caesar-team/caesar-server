@@ -4,7 +4,7 @@ security:
         Symfony\Component\Security\Core\User\User: bcrypt
     role_hierarchy:
         ROLE_ADMIN:       ROLE_USER
-        ROLE_SUPER_ADMIN: ROLE_ADMIN
+        ROLE_SUPER_ADMIN: ROLE_USER
     providers:
         fos.user.provider:
             id: fos_user.user_provider.username_email

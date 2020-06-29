@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Model\View\User;
 
+use App\Entity\User;
 use Hateoas\Configuration\Annotation as Hateoas;
+use JMS\Serializer\Annotation as Serializer;
 use Swagger\Annotations as SWG;
 
 /**
@@ -15,7 +17,7 @@ use Swagger\Annotations as SWG;
  *         "api_team_create"
  *     ),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted('ROLE_ADMIN'))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamVoter::CREATE'), object.getUser()))"
  *     )
  * )
  *
@@ -57,14 +59,26 @@ class SelfUserInfoView
      *
      * @SWG\Property(type="string[]", example={"ROLE_USER"})
      */
-    private array $roles = [];
+    private array $roles;
 
     /**
      * @var string[]
      *
      * @SWG\Property(type="string[]", example={"a68833af-ab0f-4db3-acde-fccc47641b9e"})
      */
-    private array $teamIds = [];
+    private array $teamIds;
+
+    /**
+     * @Serializer\Exclude()
+     */
+    private User $user;
+
+    public function __construct(User $user)
+    {
+        $this->user = $user;
+        $this->roles = [];
+        $this->teamIds = [];
+    }
 
     public function getId(): string
     {
@@ -136,5 +150,10 @@ class SelfUserInfoView
     public function setTeamIds(array $teamIds): void
     {
         $this->teamIds = $teamIds;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
     }
 }

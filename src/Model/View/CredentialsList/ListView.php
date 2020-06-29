@@ -21,7 +21,7 @@ use Swagger\Annotations as SWG;
  *         parameters={ "id": "expr(object.getId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\ListVoter::DELETE'), object.getDirectory()))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ListVoter::DELETE'), object.getDirectory()))"
  *     )
  * )
  * @Hateoas\Relation(
@@ -32,7 +32,7 @@ use Swagger\Annotations as SWG;
  *         parameters={ "id": "expr(object.getId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\ListVoter::SORT'), object.getDirectory()))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ListVoter::SORT'), object.getDirectory()))"
  *     )
  * )
  * @Hateoas\Relation(
@@ -43,7 +43,7 @@ use Swagger\Annotations as SWG;
  *         parameters={ "id": "expr(object.getId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\ListVoter::EDIT'), object.getDirectory()))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ListVoter::EDIT'), object.getDirectory()))"
  *     )
  * )
  * @Hateoas\Relation(
@@ -51,7 +51,7 @@ use Swagger\Annotations as SWG;
  *     attributes={"method": "POST"},
  *     href=@Hateoas\Route("api_create_item"),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\ListVoter::CREATE_ITEM'), object.getDirectory()))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ListVoter::CREATE_ITEM'), object.getDirectory()))"
  *     )
  * )
  */

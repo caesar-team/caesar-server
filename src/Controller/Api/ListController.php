@@ -12,7 +12,7 @@ use App\Form\Request\CreateListType;
 use App\Form\Request\EditListType;
 use App\Form\Request\SortListType;
 use App\Model\View\CredentialsList\ListView;
-use App\Security\ListVoter;
+use App\Security\Voter\ListVoter;
 use App\Services\ItemDisplacer;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;

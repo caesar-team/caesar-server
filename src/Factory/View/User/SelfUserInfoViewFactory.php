@@ -11,7 +11,7 @@ class SelfUserInfoViewFactory
 {
     public function createSingle(User $user): SelfUserInfoView
     {
-        $view = new SelfUserInfoView();
+        $view = new SelfUserInfoView($user);
 
         $view->setId($user->getId()->toString());
         $view->setEmail($user->getEmail());

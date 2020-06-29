@@ -60,14 +60,14 @@ class TeamController extends AbstractController
         EntityManagerInterface $entityManager,
         TeamManager $teamManager
     ) {
+        $this->denyAccessUnlessGranted(TeamVoter::CREATE, $this->getUser());
+
         $team = new Team();
         $form = $this->createForm(CreateTeamType::class, $team);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
-
-        $this->denyAccessUnlessGranted(TeamVoter::CREATE, $team);
 
         $entityManager->persist($team);
         $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
@@ -95,7 +95,7 @@ class TeamController extends AbstractController
      */
     public function team(Team $team, TeamViewFactory $viewFactory): TeamView
     {
-        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
+        $this->denyAccessUnlessGranted(UserTeamVoter::VIEW, $team->getUserTeamByUser($this->getUser()));
 
         return $viewFactory->createSingle($team);
     }
@@ -127,7 +127,7 @@ class TeamController extends AbstractController
         TeamViewFactory $viewFactory,
         EntityManagerInterface $entityManager
     ): TeamView {
-        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
+        $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
 
         $form = $this->createForm(EditTeamType::class, $team);
         $form->submit($request->request->all());

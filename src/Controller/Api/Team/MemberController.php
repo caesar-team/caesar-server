@@ -57,7 +57,7 @@ final class MemberController extends AbstractController
     {
         $team = $this->getDefaultTeam();
 
-        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
+        $this->denyAccessUnlessGranted(UserTeamVoter::VIEW, $team->getUserTeamByUser($this->getUser()));
         $usersTeams = $userTeamRepository->findMembers($team);
 
         return $viewFactory->createCollection($usersTeams);
@@ -84,7 +84,7 @@ final class MemberController extends AbstractController
      */
     public function members(Request $request, Team $team, UserTeamRepository $userTeamRepository, MemberViewFactory $viewFactory)
     {
-        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
+        $this->denyAccessUnlessGranted(UserTeamVoter::VIEW, $team->getUserTeamByUser($this->getUser()));
         $ids = $request->query->get('ids', []);
         $usersTeams = $userTeamRepository->findMembers($team, $ids);
 
@@ -122,7 +122,7 @@ final class MemberController extends AbstractController
         MemberViewFactory $viewFactory,
         UserTeamRepository $repository
     ) {
-        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
+        $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
         $userTeam = new UserTeam();
         $form = $this->createForm(AddMemberType::class, $userTeam);
         $form->submit($request->request->all());
@@ -163,12 +163,13 @@ final class MemberController extends AbstractController
             throw new \LogicException('Illegal team');
         }
 
+        $this->denyAccessUnlessGranted(UserTeamVoter::REMOVE, $team->getUserTeamByUser($this->getUser()));
+
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
         if (!$userTeam instanceof UserTeam) {
             throw new NotFoundHttpException('User Team not found');
         }
 
-        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_REMOVE_MEMBER, $team);
         $items = ItemExtractor::getTeamItemsForUser($team, $user);
         foreach ($items as $item) {
             $itemRepository->remove($item);
@@ -214,7 +215,7 @@ final class MemberController extends AbstractController
             throw new \LogicException('Illegal team');
         }
 
-        $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_EDIT, $team);
+        $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
 
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
         if (!$userTeam instanceof UserTeam) {
