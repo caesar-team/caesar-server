@@ -6,7 +6,7 @@
         "bootstrap": "4.4.1",
         "core-js": "3.6.5",
         "js-sha256": "0.9.0",
-        "regenerator-runtime": "0.13.3",
+        "regenerator-runtime": "0.13.5",
         "webpack-notifier": "1.8.0"
     },
     "license": "UNLICENSED",
