@@ -17,7 +17,7 @@ use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
-use App\Security\ItemVoter;
+use App\Security\Voter\ItemVoter;
 use App\Services\File\ItemMoveResolver;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;

@@ -114,4 +114,9 @@ class UserTeam
     {
         return $this->id;
     }
+
+    public function hasRole(string $role): bool
+    {
+        return $role === $this->userRole;
+    }
 }

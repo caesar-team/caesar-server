@@ -7,6 +7,7 @@ namespace App\Entity;
 use App\Security\TwoFactor\BackUpCodesManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use FOS\UserBundle\Model\User as FOSUser;
 use Ramsey\Uuid\Uuid;
@@ -432,6 +433,20 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getUserTeams(): array
     {
         return $this->userTeams->toArray();
+    }
+
+    public function getUserTeamByTeam(Team $team): ?UserTeam
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('team', $team));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $userTeam = $this->userTeams->matching($criteria)->first();
+
+        return $userTeam instanceof UserTeam ? $userTeam : null;
     }
 
     public function addUserTeam(UserTeam $userTeam): void

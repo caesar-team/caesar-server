@@ -10,7 +10,6 @@ use App\Form\Request\Invite\InviteUpdateRequestType;
 use App\Form\Request\Invite\UpdateChildItemsRequestType;
 use App\Model\Request\BatchChildItemsCollectionRequest;
 use App\Model\Request\ItemCollectionRequest;
-use App\Security\ChildItemVoter;
 use App\Services\ChildItemActualizer;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -52,8 +51,6 @@ final class ChildItemController extends AbstractController
      */
     public function revokeChildItemAction(Item $item, EntityManagerInterface $entityManager)
     {
-        $this->denyAccessUnlessGranted(ChildItemVoter::REVOKE_CHILD_ITEM, $item);
-
         $entityManager->remove($item);
         $entityManager->flush();
 
@@ -114,8 +111,6 @@ final class ChildItemController extends AbstractController
      */
     public function updateChildItemAccessAction(Item $item, Request $request, EntityManagerInterface $entityManager)
     {
-        $this->denyAccessUnlessGranted(ChildItemVoter::CHANGE_ACCESS, $item);
-
         $form = $this->createForm(InviteUpdateRequestType::class, $item);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
@@ -164,7 +159,6 @@ final class ChildItemController extends AbstractController
             return $form;
         }
         foreach ($batchChildItemsCollectionRequest->getCollectionItems() as $itemCollectionRequest) {
-            $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $itemCollectionRequest->getOriginalItem());
             /** @psalm-suppress ArgumentTypeCoercion */
             $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
         }
@@ -230,8 +224,6 @@ final class ChildItemController extends AbstractController
      */
     public function updateChildItems(Item $item, Request $request, ChildItemActualizer $childItemHandler)
     {
-        $this->denyAccessUnlessGranted(ChildItemVoter::UPDATE_CHILD_ITEM, $item);
-
         $itemCollectionRequest = new ItemCollectionRequest($item);
         $form = $this->createForm(UpdateChildItemsRequestType::class, $itemCollectionRequest);
         $form->submit($request->request->all());

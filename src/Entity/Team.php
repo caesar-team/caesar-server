@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Class Group.
@@ -123,7 +124,7 @@ class Team
         })->toArray();
     }
 
-    public function getUserTeamByUser(User $user): ?UserTeam
+    public function getUserTeamByUser(?UserInterface $user): ?UserTeam
     {
         $criteria = Criteria::create();
         $criteria->where(Criteria::expr()->eq('user', $user));

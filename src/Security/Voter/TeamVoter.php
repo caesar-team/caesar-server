@@ -13,17 +13,14 @@ class TeamVoter extends Voter
 {
     public const DELETE = 'team_delete';
     public const CREATE = 'team_create';
+    public const EDIT = 'team_edit';
 
     /**
      * {@inheritdoc}
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::CREATE, self::DELETE])) {
-            return false;
-        }
-
-        if (!$subject instanceof Team) {
+        if (!in_array($attribute, [self::CREATE, self::DELETE, self::EDIT])) {
             return false;
         }
 
@@ -35,15 +32,6 @@ class TeamVoter extends Voter
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
-        if (!$subject instanceof Team) {
-            return false;
-        }
-
-        //@todo candidate to refactoring
-        if (Team::DEFAULT_GROUP_ALIAS === $subject->getAlias()) {
-            return false;
-        }
-
         $user = $token->getUser();
         if (!$user instanceof User) {
             return false;
@@ -51,21 +39,30 @@ class TeamVoter extends Voter
 
         switch ($attribute) {
             case self::CREATE:
-                return $this->canCreate($subject, $user);
+                return $subject instanceof User && $this->canCreate($subject);
             case self::DELETE:
-                return $this->canDelete($subject, $user);
+                return $subject instanceof Team && $this->canDelete($subject, $user);
+            case self::EDIT:
+                return $subject instanceof Team && $this->canEdit($subject, $user);
         }
 
         return false;
     }
 
-    private function canCreate(Team $team, User $user): bool
+    private function canCreate(User $user): bool
     {
-        return $user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_SUPER_ADMIN);
+        return $user->hasRole(User::ROLE_ADMIN);
+    }
+
+    private function canEdit(Team $team, User $user): bool
+    {
+        return $user->hasRole(User::ROLE_ADMIN)
+            && Team::DEFAULT_GROUP_ALIAS !== $team->getAlias()
+        ;
     }
 
     private function canDelete(Team $team, User $user): bool
     {
-        return $this->canCreate($team, $user) && Team::DEFAULT_GROUP_ALIAS !== $team->getAlias();
+        return $this->canEdit($team, $user);
     }
 }

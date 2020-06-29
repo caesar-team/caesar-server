@@ -48,12 +48,13 @@ final class FavoriteController extends AbstractController
      */
     public function favorite(ItemViewFactory $viewFactory, ItemRepository $repository, ?Team $team = null): array
     {
+        $user = $this->getUser();
         if (null !== $team) {
-            $this->denyAccessUnlessGranted(UserTeamVoter::USER_TEAM_VIEW, $team);
+            $this->denyAccessUnlessGranted(UserTeamVoter::VIEW, $user->getUserTeamByTeam($team));
         }
 
         return $viewFactory->createCollection(
-            $repository->getFavoritesItems($this->getUser(), $team)
+            $repository->getFavoritesItems($user, $team)
         );
     }
 

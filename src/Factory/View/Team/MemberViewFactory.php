@@ -6,18 +6,27 @@ namespace App\Factory\View\Team;
 
 use App\Entity\UserTeam;
 use App\Model\View\Team\MemberView;
+use Symfony\Component\Security\Core\Security;
 
 class MemberViewFactory
 {
+    private Security $security;
+
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
+    }
+
     public function createSingle(UserTeam $userTeam): MemberView
     {
         if (null === $userTeam->getTeam() || null === $userTeam->getUser()) {
             throw new \BadMethodCallException('Incomplete UserTeam entity');
         }
 
+        $currentUserTeam = $userTeam->getTeam()->getUserTeamByUser($this->security->getUser());
         $user = $userTeam->getUser();
 
-        $view = new MemberView($userTeam->getTeam());
+        $view = new MemberView($currentUserTeam);
         $view->setId($user->getId()->toString());
         $view->setName($user->getUsername());
         $view->setEmail($user->getEmail());
