@@ -28,7 +28,7 @@ use Swagger\Annotations as SWG;
  *         "api_create_list"
  *     ),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted('ROLE_USER'))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ListVoter::CREATE'), object.getUser()))"
  *     )
  * )
  */

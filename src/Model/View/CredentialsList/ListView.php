@@ -51,7 +51,7 @@ use Swagger\Annotations as SWG;
  *     attributes={"method": "POST"},
  *     href=@Hateoas\Route("api_create_item"),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ListVoter::CREATE_ITEM'), object.getDirectory()))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::CREATE'), object.getDirectory()))"
  *     )
  * )
  */

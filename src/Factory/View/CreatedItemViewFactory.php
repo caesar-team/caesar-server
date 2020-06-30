@@ -11,7 +11,7 @@ class CreatedItemViewFactory
 {
     public function createSingle(Item $item): CreatedItemView
     {
-        $view = new CreatedItemView();
+        $view = new CreatedItemView($item);
 
         $view->setId($item->getId()->toString());
         $view->setLastUpdated($item->getLastUpdated());

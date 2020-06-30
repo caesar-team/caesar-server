@@ -4,8 +4,65 @@ declare(strict_types=1);
 
 namespace App\Model\View\CredentialsList;
 
+use App\Entity\Item;
+use Hateoas\Configuration\Annotation as Hateoas;
+use JMS\Serializer\Annotation as Serializer;
 use Swagger\Annotations as SWG;
 
+/**
+ * @Hateoas\Relation(
+ *     "move_item",
+ *     attributes={"method": "PATCH"},
+ *     href=@Hateoas\Route(
+ *         "api_move_item",
+ *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::MOVE'), object.getItem()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "edit_item",
+ *     attributes={"method": "PATCH"},
+ *     href=@Hateoas\Route(
+ *         "api_edit_item",
+ *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::EDIT'), object.getItem()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "delete_item",
+ *     attributes={"method": "DELETE"},
+ *     href=@Hateoas\Route(
+ *         "api_delete_item",
+ *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::DELETE'), object.getItem()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "favorite_item_toggle",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route(
+ *         "api_favorite_item_toggle",
+ *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::FAVORITE'), object.getItem()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "batch_share_item",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route("api_batch_share_item"),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::SHARE'), object.getItem()))"
+ *     )
+ * )
+ */
 class CreatedItemView
 {
     /**
@@ -17,6 +74,16 @@ class CreatedItemView
      * @SWG\Property(type="string", example="2020-06-24T08:03:12+00:00")
      */
     private \DateTime $lastUpdated;
+
+    /**
+     * @Serializer\Exclude()
+     */
+    private Item $item;
+
+    public function __construct(Item $item)
+    {
+        $this->item = $item;
+    }
 
     /**
      * @return string
@@ -42,5 +109,10 @@ class CreatedItemView
     public function setLastUpdated(\DateTime $lastUpdated): void
     {
         $this->lastUpdated = $lastUpdated;
+    }
+
+    public function getItem(): Item
+    {
+        return $this->item;
     }
 }

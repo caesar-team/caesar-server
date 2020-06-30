@@ -32,7 +32,7 @@ class ListTest extends Unit
         $I->seeResponseContains($otherUser->getEmail());
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $schema = $I->getSchema('user/list.json');
+        $schema = $I->getSchema('user/list_user.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
     }
 
@@ -52,7 +52,7 @@ class ListTest extends Unit
         $I->cantSeeResponseContains($otherUser->getEmail());
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $schema = $I->getSchema('user/list.json');
+        $schema = $I->getSchema('user/list_user.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
 
         $I->login($user);
@@ -61,7 +61,48 @@ class ListTest extends Unit
         $I->cantSeeResponseContains($otherUser->getEmail());
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $schema = $I->getSchema('user/list.json');
+        $schema = $I->getSchema('user/list_user.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
+
+    /** @test */
+    public function createList()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+        $I->login($user);
+        $I->sendPOST('list', [
+            'label' => 'New list',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $schema = $I->getSchema('user/directory.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
+
+        $I->sendPOST('list', [
+            'label' => 'New list',
+        ]);
+        $I->seeResponseContains('List with such label already exists');
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+    }
+
+    /** @test */
+    public function createListByGuest()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class, [
+            'roles' => [User::ROLE_ANONYMOUS_USER],
+        ]);
+
+        $I->login($user);
+        $I->sendPOST('list', [
+            'label' => 'New list',
+        ]);
+        $I->seeResponseContains('Unavailable request');
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
     }
 }

@@ -45,6 +45,7 @@ class Directory
      * @var Directory|null
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childLists")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      * @Gedmo\SortableGroup
      */
     protected $parentList;
@@ -164,6 +165,11 @@ class Directory
     public function getChildLists(): Collection
     {
         return $this->childLists;
+    }
+
+    public function hasChildListByDirectory(Directory $directory): bool
+    {
+        return $this->childLists->contains($directory);
     }
 
     public function addChildList(Directory $directory): void

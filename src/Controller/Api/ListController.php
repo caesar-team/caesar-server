@@ -109,8 +109,10 @@ final class ListController extends AbstractController
      *
      * @return FormInterface|JsonResponse
      */
-    public function createListAction(Request $request, EntityManagerInterface $manager)
+    public function createListAction(Request $request, EntityManagerInterface $manager, ListViewFactory $factory)
     {
+        $this->denyAccessUnlessGranted(ListVoter::CREATE);
+
         $list = new Directory();
         $form = $this->createForm(CreateListType::class, $list);
 
@@ -121,12 +123,11 @@ final class ListController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
         $list->setParentList($user->getLists());
-        $this->denyAccessUnlessGranted(ListVoter::EDIT, $list->getParentList());
 
         $manager->persist($list);
         $manager->flush();
 
-        return JsonResponse::create(['id' => $list->getId()->toString()]);
+        return $factory->createSingle($list);
     }
 
     /**
