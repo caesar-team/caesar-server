@@ -51,6 +51,12 @@ class PermissionTest extends Unit
         $user = $I->have(User::class);
         /** @var User $teamAdmin */
         $teamAdmin = $I->have(User::class);
+        /** @var User $guestUser */
+        $guestUser = $I->have(User::class);
+        /** @var User $superAdmin */
+        $superAdmin = $I->have(User::class, [
+            'roles' => [User::ROLE_SUPER_ADMIN],
+        ]);
 
         $team = $I->createTeam($admin);
         $I->addUserToTeam($team, $user);
@@ -84,6 +90,19 @@ class PermissionTest extends Unit
             self::MEMBER_ACCESS
         )]);
         $I->dontSeeResponseByJsonPathContainsJson('$.users[0]', [
+            '_links' => self::USER_TEAM_ACCESS,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->login($guestUser);
+        $I->sendGET('/teams');
+        $I->dontSeeResponseContainsJson(['_links' => self::DOMAIN_ADMIN_ACCESS]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->login($superAdmin);
+        $I->sendGET('/teams');
+        $I->dontSeeResponseContainsJson(['_links' => self::DOMAIN_ADMIN_ACCESS]);
+        $I->dontSeeResponseByJsonPathContainsJson('$[0].users[0]', [
             '_links' => self::USER_TEAM_ACCESS,
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);

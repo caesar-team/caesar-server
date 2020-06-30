@@ -53,12 +53,15 @@ final class MemberShortView
     /**
      * @Serializer\Exclude
      */
-    private UserTeam $userTeam;
+    private ?UserTeam $userTeam;
 
-    public function __construct(UserTeam $currentUserTeam)
+    public function __construct(?UserTeam $currentUserTeam)
     {
         $this->userTeam = $currentUserTeam;
-        $this->teamId = $currentUserTeam->getTeam()->getId()->toString();
+        $this->teamId = '';
+        if (null !== $currentUserTeam) {
+            $this->teamId = $currentUserTeam->getTeam()->getId()->toString();
+        }
     }
 
     public function getId(): string
