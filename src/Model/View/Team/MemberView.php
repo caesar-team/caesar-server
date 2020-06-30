@@ -84,7 +84,7 @@ final class MemberView
     {
         $this->userTeam = $currentUserTeam;
         $this->teamId = '';
-        if (null !== $currentUserTeam ) {
+        if (null !== $currentUserTeam) {
             $this->teamId = $currentUserTeam->getTeam()->getId()->toString();
         }
     }

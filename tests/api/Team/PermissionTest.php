@@ -93,12 +93,12 @@ class PermissionTest extends Unit
             '_links' => self::USER_TEAM_ACCESS,
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-        
+
         $I->login($guestUser);
         $I->sendGET('/teams');
         $I->dontSeeResponseContainsJson(['_links' => self::DOMAIN_ADMIN_ACCESS]);
         $I->seeResponseCodeIs(HttpCode::OK);
-        
+
         $I->login($superAdmin);
         $I->sendGET('/teams');
         $I->dontSeeResponseContainsJson(['_links' => self::DOMAIN_ADMIN_ACCESS]);

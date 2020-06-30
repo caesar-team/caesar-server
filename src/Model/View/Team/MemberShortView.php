@@ -59,7 +59,7 @@ final class MemberShortView
     {
         $this->userTeam = $currentUserTeam;
         $this->teamId = '';
-        if (null !== $currentUserTeam ) {
+        if (null !== $currentUserTeam) {
             $this->teamId = $currentUserTeam->getTeam()->getId()->toString();
         }
     }
