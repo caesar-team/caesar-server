@@ -551,4 +551,17 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 
         return $lists;
     }
+
+    public function isOwnerByDirectory(?Directory $directory): bool
+    {
+        if (null === $directory) {
+            return false;
+        }
+
+        return $this->getInbox()->equals($directory)
+            || $this->getTrash()->equals($directory)
+            || $this->getLists()->equals($directory)
+            || $this->getLists()->hasChildListByDirectory($directory)
+        ;
+    }
 }

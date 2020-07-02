@@ -36,11 +36,12 @@ final class TeamRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    public function findOneByDirectory(Directory $directory): ?Team
+    public function findOneByDirectory(?Directory $directory): ?Team
     {
+        if (null === $directory) {
+            return null;
+        }
+
         $qb = $this->createQueryBuilder('team');
         $qb->where('team.trash =:directory');
         $qb->setParameter('directory', $directory);

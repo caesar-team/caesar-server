@@ -167,6 +167,7 @@ final class ShareController extends AbstractController
      *
      * @Route(
      *     path="/items/batch/share",
+     *     name="api_batch_share_item",
      *     methods={"POST"}
      * )
      *

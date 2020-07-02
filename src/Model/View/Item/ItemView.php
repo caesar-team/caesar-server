@@ -20,7 +20,7 @@ use Swagger\Annotations as SWG;
  *         parameters={ "id": "expr(object.getId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::MOVE_ITEM'), object.getItem()))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::MOVE'), object.getItem()))"
  *     )
  * )
  * @Hateoas\Relation(
@@ -29,6 +29,9 @@ use Swagger\Annotations as SWG;
  *     href=@Hateoas\Route(
  *         "api_edit_item",
  *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::EDIT'), object.getItem()))"
  *     )
  * )
  * @Hateoas\Relation(
@@ -37,6 +40,28 @@ use Swagger\Annotations as SWG;
  *     href=@Hateoas\Route(
  *         "api_delete_item",
  *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::DELETE'), object.getItem()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "favorite_item_toggle",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route(
+ *         "api_favorite_item_toggle",
+ *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::FAVORITE'), object.getItem()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "batch_share_item",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route("api_batch_share_item"),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::SHARE'), object.getItem()))"
  *     )
  * )
  */

@@ -12,30 +12,32 @@ use App\Factory\View\Item\ItemViewFactory;
 use App\Model\View\Item\FavoriteItemView;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
+use App\Security\Voter\ItemVoter;
 use App\Security\Voter\UserTeamVoter;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * @SWG\Response(
+ *     response=401,
+ *     description="Unauthorized"
+ * )
+ * @SWG\Response(
+ *     response=403,
+ *     description="You are not owner of this item"
+ * )
+ */
 final class FavoriteController extends AbstractController
 {
     /**
      * Get list of favourite items.
      *
      * @SWG\Tag(name="Item / Favorite")
-     *
      * @SWG\Response(
      *     response=200,
      *     description="List of favourite items",
      *     @SWG\Schema(type="array", @Model(type=ItemView::class))
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of this item"
      * )
      *
      * @Route(
@@ -68,14 +70,6 @@ final class FavoriteController extends AbstractController
      *     @Model(type=FavoriteItemView::class)
      * )
      * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of this item"
-     * )
-     * @SWG\Response(
      *     response=404,
      *     description="No such item"
      * )
@@ -88,6 +82,8 @@ final class FavoriteController extends AbstractController
      */
     public function toggle(Item $item, ItemRepository $repository, FavoriteItemViewFactory $factory): FavoriteItemView
     {
+        $this->denyAccessUnlessGranted(ItemVoter::FAVORITE, $item);
+
         $item->toggleFavorite();
         $repository->save($item);
 

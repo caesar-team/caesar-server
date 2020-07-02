@@ -1,6 +1,67 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "definitions": {
+    "user": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": ["string", "null"]
+        },
+        "publicKey": {
+          "type": ["string", "null"]
+        },
+        "teamIds": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name",
+        "publicKey",
+        "teamIds"
+      ]
+    },
+    "directory": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "sort": {
+          "type": "integer"
+        },
+        "children": {
+          "type": "array"
+        },
+        "label": {
+          "type": "string"
+        },
+        "teamId": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "sort",
+        "children",
+        "label",
+        "teamId"
+      ]
+    },
     "public_key": {
       "type": "object",
       "properties": {

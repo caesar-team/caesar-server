@@ -6,19 +6,16 @@ namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
-use App\Entity\Directory;
 use App\Entity\Item;
 use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\ItemListViewFactory;
 use App\Form\Request\CreateItemsType;
 use App\Form\Request\CreateItemType;
-use App\Form\Request\MoveItemType;
 use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
 use App\Security\Voter\ItemVoter;
-use App\Services\File\ItemMoveResolver;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -56,7 +53,7 @@ final class ItemController extends AbstractController
         foreach ($itemsCollection->getItems() as $item) {
             $item = $manager->getRepository(Item::class)->find($item);
             if ($item instanceof Item) {
-                //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
+                $this->denyAccessUnlessGranted(ItemVoter::DELETE, $item);
                 if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
                     $message = $this->translator->trans('app.exception.delete_trash_only');
                     throw new BadRequestHttpException($message);
@@ -102,7 +99,7 @@ final class ItemController extends AbstractController
         foreach ($itemsCollection->getItems() as $item) {
             $item = $manager->getRepository(Item::class)->find($item);
             if ($item instanceof Item) {
-                //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
+                $this->denyAccessUnlessGranted(ItemVoter::DELETE, $item);
                 if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
                     $message = $this->translator->trans('app.exception.delete_trash_only');
                     throw new BadRequestHttpException($message);
@@ -159,90 +156,14 @@ final class ItemController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
-        //$this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
+        $this->denyAccessUnlessGranted(ItemVoter::CREATE, $item->getParentList());
+
         $team = $teamRepository->findOneByDirectory($item->getParentList());
         $item->setTeam($team);
 
         $itemRepository->save($item);
 
         return $viewFactory->createSingle($item);
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=\App\Form\Request\MoveItemType::class)
-     * )
-     * @SWG\Response(
-     *     response=204,
-     *     description="Success item moved"
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns item move error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="object",
-     *             property="errors",
-     *             @SWG\Property(
-     *                 type="array",
-     *                 property="listId",
-     *                 @SWG\Items(
-     *                     type="string",
-     *                     example="This value is not valid."
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of list or item"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="No such item"
-     * )
-     *
-     * @Route(
-     *     path="/api/items/{id}/move",
-     *     name="api_move_item",
-     *     methods={"PATCH"}
-     * )
-     *
-     * @throws NonUniqueResultException
-     * @throws \Exception
-     */
-    public function moveItem(
-        Item $item,
-        Request $request,
-        ItemMoveResolver $itemMoveResolver,
-        ItemRepository $itemRepository
-    ): ?FormInterface {
-        $replacedItem = new Item();
-
-        $form = $this->createForm(MoveItemType::class, $replacedItem);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-        $replacedItem->setOwner($item->getOwner());
-
-        $itemMoveResolver->move($item, $replacedItem->getParentList());
-        $this->denyAccessUnlessGranted(ItemVoter::MOVE_ITEM, $item);
-        $itemRepository->flush();
-
-        //$this->denyAccessUnlessGranted(ListVoter::EDIT, $item->getParentList());
-
-        return null;
     }
 
     /**
@@ -290,7 +211,7 @@ final class ItemController extends AbstractController
      */
     public function deleteItem(Item $item, EntityManagerInterface $manager)
     {
-        //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $item);
+        $this->denyAccessUnlessGranted(ItemVoter::DELETE, $item);
         if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
             $message = $this->translator->trans('app.exception.delete_trash_only');
             throw new BadRequestHttpException($message);
@@ -327,7 +248,7 @@ final class ItemController extends AbstractController
             // TODO check and fix $item['id']
             $item = $entityManager->getRepository(Item::class)->find($item['id'] ?? $item);
             if ($item instanceof Item) {
-                //$this->denyAccessUnlessGranted(ItemVoter::EDIT_ITEM, $item);
+                $this->denyAccessUnlessGranted(ItemVoter::EDIT, $item);
                 $item->setStatus(Item::STATUS_FINISHED);
             }
         }
@@ -335,7 +256,7 @@ final class ItemController extends AbstractController
 
         $offeredItems = DirectoryHelper::extractOfferedItemsByUser($this->getUser());
         foreach ($offeredItems as $offeredItem) {
-            //$this->denyAccessUnlessGranted(ItemVoter::DELETE_ITEM, $offeredItem);
+            $this->denyAccessUnlessGranted(ItemVoter::DELETE, $offeredItem);
             $entityManager->remove($offeredItem);
         }
 
@@ -441,7 +362,7 @@ final class ItemController extends AbstractController
 
         /** @var Item $item */
         foreach ($itemsRequest->getItems() as $item) {
-            //$this->denyAccessUnlessGranted(ItemVoter::CREATE_ITEM, $item);
+            $this->denyAccessUnlessGranted(ItemVoter::CREATE, $item->getParentList());
             $item->setOwner($this->getUser());
             $team = $teamRepository->findOneByDirectory($item->getParentList());
             $item->setTeam($team);
@@ -450,44 +371,5 @@ final class ItemController extends AbstractController
         }
 
         return $viewFactory->create($itemsRequest->getItems());
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     * @SWG\Response(
-     *     response=204,
-     *     description="Items moved",
-     * )
-     *
-     * @Route(
-     *     path="/api/items/batch/move/list/{directory}",
-     *     name="api_batch_move_items",
-     *     methods={"PATCH"}
-     * )
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return null
-     */
-    public function batchMove(
-        Request $request,
-        Directory $directory,
-        EntityManagerInterface $manager,
-        SerializerInterface $serializer,
-        ItemMoveResolver $itemMoveResolver
-    ) {
-        /** @var ItemsCollectionRequest $itemsCollection */
-        $itemsCollection = $serializer->deserialize(json_encode($request->request->all()), ItemsCollectionRequest::class, 'json');
-
-        foreach ($itemsCollection->getItems() as $item) {
-            $item = $manager->getRepository(Item::class)->find($item);
-            if ($item instanceof Item) {
-                $itemMoveResolver->move($item, $directory);
-                $this->denyAccessUnlessGranted(ItemVoter::MOVE_ITEM, $item);
-            }
-        }
-        $manager->flush();
-
-        return null;
     }
 }
