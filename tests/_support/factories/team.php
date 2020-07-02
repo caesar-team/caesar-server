@@ -9,6 +9,20 @@ use League\FactoryMuffin\Faker\Facade as Faker;
 $fm->define(Team::class)->setDefinitions([
     'alias' => null,
     'title' => Faker::text(20),
-    'list' => 'entity|'.Directory::class,
+    'lists' => 'entity|'.Directory::class,
     'trash' => 'entity|'.Directory::class,
-]);
+])->setCallback(function ($object, $saved) {
+    if (!$object instanceof Team) {
+        return;
+    }
+
+    $lists = $object->getLists();
+    $lists->setTeam($object);
+
+    $defaultList = Directory::createDefaultList();
+    $defaultList->setTeam($object);
+
+    $lists->addChildList($defaultList);
+
+    $object->getTrash()->setTeam($object);
+});

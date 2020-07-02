@@ -35,6 +35,28 @@ use Swagger\Annotations as SWG;
  *     )
  * )
  * @Hateoas\Relation(
+ *     "team_create_list",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route(
+ *         "api_team_create_list",
+ *         parameters={ "team": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamListVoter::CREATE'), object.getTeam()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "team_get_lists",
+ *     attributes={"method": "GET"},
+ *     href=@Hateoas\Route(
+ *         "api_team_get_lists",
+ *         parameters={ "team": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamListVoter::SHOW'), object.getTeam()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
  *     "team_members",
  *     attributes={"method": "GET"},
  *     href=@Hateoas\Route(

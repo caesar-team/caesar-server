@@ -2,6 +2,8 @@
 
 namespace App\Tests\Team;
 
+use App\Entity\Directory;
+use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
 use App\Tests\ApiTester;
@@ -12,20 +14,27 @@ use Codeception\Util\HttpCode;
 
 class PermissionTest extends Unit
 {
+    private const DEFAULT_LIST_NAME = 'New list';
+
     private const DOMAIN_ADMIN_ACCESS = [
         'team_delete' => [],
         'team_edit' => [],
         'team_members' => [],
         'team_member_add' => [],
+        'team_create_list' => [],
+        'team_get_lists' => [],
     ];
 
     private const TEAM_ADMIN_ACCESS = [
         'team_members' => [],
         'team_member_add' => [],
+        'team_create_list' => [],
+        'team_get_lists' => [],
     ];
 
     private const MEMBER_ACCESS = [
         'team_members' => [],
+        'team_get_lists' => [],
     ];
 
     private const USER_TEAM_ACCESS = [
@@ -105,6 +114,95 @@ class PermissionTest extends Unit
         $I->dontSeeResponseByJsonPathContainsJson('$[0].users[0]', [
             '_links' => self::USER_TEAM_ACCESS,
         ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+    }
+
+    /** @test */
+    public function teamListsPermissions()
+    {
+        $I = $this->tester;
+
+        /** @var User $domainAdmin */
+        $domainAdmin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
+        /** @var User $teamAdmin */
+        $teamAdmin = $I->have(User::class);
+        /** @var User $member */
+        $member = $I->have(User::class);
+
+        /** @var Team $team */
+        $team = $I->createTeam($teamAdmin);
+        $I->addUserToTeam($team, $member);
+
+        $I->have(Directory::class, [
+            'label' => Directory::LIST_DEFAULT,
+            'team' => $team,
+            'parent_list' => $team->getLists(),
+        ]);
+        $I->have(Directory::class, [
+            'label' => self::DEFAULT_LIST_NAME,
+            'team' => $team,
+            'parent_list' => $team->getLists(),
+        ]);
+
+        $this->canAccessToList($domainAdmin, $team);
+        $this->canAccessToList($teamAdmin, $team);
+        $this->dontAccessToList($member, $team);
+    }
+
+    private function canAccessToList(User $user, Team $team)
+    {
+        $I = $this->tester;
+
+        $I->login($user);
+        $I->sendGET(sprintf('/teams/%s/lists', $team->getId()));
+
+        [$trash] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', Directory::LIST_TRASH));
+        self::assertTrue(!isset($trash['_links']));
+
+        $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
+            'team_create_item' => [],
+        ]]);
+        $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
+            'team_edit_list' => [],
+            'team_delete_list' => [],
+            'team_sort_list' => [],
+        ]]);
+        $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', self::DEFAULT_LIST_NAME), ['_links' => [
+            'team_edit_list' => [],
+            'team_delete_list' => [],
+            'team_sort_list' => [],
+            'team_create_item' => [],
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+    }
+
+    private function dontAccessToList(User $user, Team $team)
+    {
+        $I = $this->tester;
+
+        $I->login($user);
+        $I->sendGET(sprintf('/teams/%s/lists', $team->getId()));
+
+        [$trash] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', Directory::LIST_TRASH));
+        self::assertTrue(!isset($trash['_links']));
+
+        $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
+            'team_create_item' => [],
+        ]]);
+        $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
+            'team_edit_list' => [],
+            'team_delete_list' => [],
+            'team_sort_list' => [],
+        ]]);
+
+        $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', self::DEFAULT_LIST_NAME), ['_links' => [
+            'team_create_item' => [],
+        ]]);
+        $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', self::DEFAULT_LIST_NAME), ['_links' => [
+            'team_edit_list' => [],
+            'team_delete_list' => [],
+            'team_sort_list' => [],
+        ]]);
         $I->seeResponseCodeIs(HttpCode::OK);
     }
 }

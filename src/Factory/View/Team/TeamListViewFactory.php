@@ -26,7 +26,7 @@ class TeamListViewFactory
         $view = new TeamListView($directory);
         $view->setId($directory->getId()->toString());
         $view->setLabel($directory->getLabel());
-        $view->setType($directory->getType());
+        $view->setType($directory->getTeamRole());
         $view->setSort($directory->getSort());
         $view->setChildren(
             $this->itemListViewFactory->create($directory->getChildItems())

@@ -80,6 +80,12 @@ class Directory
     protected $type = NodeEnumType::TYPE_LIST;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Team", inversedBy="directories")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+    private ?Team $team;
+
+    /**
      * @todo candidate to refactoring (inbox, trash, etc)
      */
     private string $role = NodeEnumType::TYPE_LIST;
@@ -87,6 +93,7 @@ class Directory
     public function __construct(string $label = null)
     {
         $this->id = Uuid::uuid4();
+        $this->team = null;
         $this->role = NodeEnumType::TYPE_LIST;
         $this->childLists = new ArrayCollection();
         $this->childItems = new ArrayCollection();
@@ -248,5 +255,47 @@ class Directory
     public function setRole(string $role): void
     {
         $this->role = $role;
+    }
+
+    public function getTeam(): ?Team
+    {
+        return $this->team;
+    }
+
+    public function setTeam(?Team $team): void
+    {
+        $this->team = $team;
+        $team->addDirectory($this);
+    }
+
+    public function isTeamTrashDirectory(): bool
+    {
+        $team = $this->getTeam();
+        if (null === $team) {
+            return false;
+        }
+
+        return $this->equals($team->getTrash());
+    }
+
+    public function isTeamDefaultDirectory(): bool
+    {
+        $team = $this->getTeam();
+        if (null === $team) {
+            return false;
+        }
+
+        return $this->equals($team->getDefaultDirectory());
+    }
+
+    public function getTeamRole(): string
+    {
+        if ($this->isTeamTrashDirectory()) {
+            return self::LIST_TRASH;
+        } elseif ($this->isTeamDefaultDirectory()) {
+            return self::LIST_DEFAULT;
+        }
+
+        return $this->getType();
     }
 }

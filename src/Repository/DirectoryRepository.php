@@ -45,4 +45,16 @@ class DirectoryRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
+
+    public function save(Directory $directory): void
+    {
+        $this->_em->persist($directory);
+        $this->_em->flush();
+    }
+
+    public function remove(Directory $directory): void
+    {
+        $this->_em->remove($directory);
+        $this->_em->flush();
+    }
 }
