@@ -13,12 +13,12 @@ use App\Form\Request\EditListType;
 use App\Form\Request\SortListType;
 use App\Model\View\CredentialsList\ListView;
 use App\Security\Voter\ListVoter;
+use App\Security\Voter\TeamListVoter;
 use App\Services\ItemDisplacer;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -105,9 +105,7 @@ final class ListController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     *
-     * @return FormInterface|JsonResponse
+     * @return FormInterface|ListView
      */
     public function createListAction(Request $request, EntityManagerInterface $manager, ListViewFactory $factory)
     {
@@ -249,7 +247,12 @@ final class ListController extends AbstractController
      */
     public function sortList(Directory $list, Request $request, EntityManagerInterface $manager): ?FormInterface
     {
-        $this->denyAccessUnlessGranted(ListVoter::SORT, $list);
+        if (null === $list->getTeam()) {
+            $this->denyAccessUnlessGranted(ListVoter::SORT, $list);
+        } else {
+            $this->denyAccessUnlessGranted(TeamListVoter::SORT, $list);
+        }
+
         if (null === $list->getParentList()) { //root list
             $message = $this->translator->trans('app.exception.cant_edit_root_list');
             throw new BadRequestHttpException($message);

@@ -14,7 +14,7 @@ use Swagger\Annotations as SWG;
 
 /**
  * @Hateoas\Relation(
- *     "sort_list",
+ *     "team_sort_list",
  *     attributes={"method": "PATCH"},
  *     href=@Hateoas\Route(
  *         "api_sort_list",
@@ -25,11 +25,33 @@ use Swagger\Annotations as SWG;
  *     )
  * )
  * @Hateoas\Relation(
- *     "create_item",
+ *     "team_create_item",
  *     attributes={"method": "POST"},
  *     href=@Hateoas\Route("api_create_item"),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamListVoter::CREATE_ITEM'), object.getDirectory()))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::CREATE'), object.getDirectory()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "team_edit_list",
+ *     attributes={"method": "PATCH"},
+ *     href=@Hateoas\Route(
+ *         "api_team_edit_list",
+ *         parameters={ "team": "expr(object.getTeamId())", "list": "expr(object.getDirectoryId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamListVoter::EDIT'), object.getDirectory()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "team_delete_list",
+ *     attributes={"method": "DELETE"},
+ *     href=@Hateoas\Route(
+ *         "api_team_edit_list",
+ *         parameters={ "team": "expr(object.getTeamId())", "list": "expr(object.getDirectoryId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamListVoter::DELETE'), object.getDirectory()))"
  *     )
  * )
  */
@@ -153,5 +175,10 @@ final class TeamListView
     public function setDirectory(Directory $directory): void
     {
         $this->directory = $directory;
+    }
+
+    public function getDirectoryId(): ?string
+    {
+        return $this->directory->getId()->toString();
     }
 }

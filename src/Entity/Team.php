@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Utils\DefaultIcon;
 use App\Utils\DirectoryHelper;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -94,6 +93,14 @@ class Team
     private $ownedItems;
 
     /**
+     * @var Collection|Directory[]
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="team")
+     * @ORM\OrderBy({"sort": "ASC"})
+     */
+    protected $directories;
+
+    /**
      * Group constructor.
      *
      * @throws \Exception
@@ -102,11 +109,8 @@ class Team
     {
         $this->id = Uuid::uuid4();
         $this->userTeams = new ArrayCollection();
-        $this->lists = Directory::createRootList();
-        $this->lists->addChildList(Directory::createDefaultList());
-        $this->trash = Directory::createTrash();
-        $this->icon = DefaultIcon::getDefaultIcon();
         $this->ownedItems = new ArrayCollection();
+        $this->directories = new ArrayCollection();
     }
 
     /**
@@ -204,6 +208,11 @@ class Team
         );
     }
 
+    public function setLists(Directory $lists): void
+    {
+        $this->lists = $lists;
+    }
+
     public function getLists(): Directory
     {
         return $this->lists;
@@ -263,5 +272,43 @@ class Team
         }
 
         return array_filter($items, [DirectoryHelper::class, 'filterByOffered']);
+    }
+
+    /**
+     * @return Directory[]
+     */
+    public function getDirectories(): array
+    {
+        return $this->directories->toArray();
+    }
+
+    public function getDirectoryByLabel(?string $label): ?Directory
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('label', $label));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $directory = $this->directories->matching($criteria)->first();
+
+        return $directory instanceof Directory ? $directory : null;
+    }
+
+    /**
+     * @param Directory[]|Collection $directories
+     */
+    public function setDirectories(Collection $directories): void
+    {
+        $this->directories = $directories;
+    }
+
+    public function addDirectory(Directory $directory): void
+    {
+        if (!$this->directories->contains($directory)) {
+            $this->directories->add($directory);
+            $directory->setTeam($this);
+        }
     }
 }

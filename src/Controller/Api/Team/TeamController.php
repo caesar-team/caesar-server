@@ -6,11 +6,14 @@ namespace App\Controller\Api\Team;
 
 use App\Controller\AbstractController;
 use App\Entity\Team;
+use App\Entity\User;
 use App\Entity\UserTeam;
+use App\Factory\Entity\TeamFactory;
 use App\Factory\View\Team\TeamViewFactory;
 use App\Form\Request\Team\CreateTeamType;
 use App\Form\Request\Team\EditTeamType;
 use App\Model\View\Team\TeamView;
+use App\Repository\TeamRepository;
 use App\Security\Voter\TeamVoter;
 use App\Security\Voter\UserTeamVoter;
 use App\Services\TeamManager;
@@ -58,11 +61,12 @@ class TeamController extends AbstractController
         Request $request,
         TeamViewFactory $viewFactory,
         EntityManagerInterface $entityManager,
+        TeamFactory $teamFactory,
         TeamManager $teamManager
     ) {
         $this->denyAccessUnlessGranted(TeamVoter::CREATE, $this->getUser());
 
-        $team = new Team();
+        $team = $teamFactory->create();
         $form = $this->createForm(CreateTeamType::class, $team);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
@@ -161,5 +165,35 @@ class TeamController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * List of teams.
+     *
+     * @SWG\Tag(name="Team")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="List of teams",
+     *     @SWG\Schema(type="array", @Model(type=TeamView::class))
+     * )
+     *
+     * @Route(
+     *     name="api_team_list",
+     *     methods={"GET"}
+     * )
+     *
+     * @return TeamView[]
+     */
+    public function teams(TeamViewFactory $viewFactory, TeamRepository $teamRepository): array
+    {
+        $user = $this->getUser();
+        if ($user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_SUPER_ADMIN)) {
+            $teams = $teamRepository->findAll();
+        } else {
+            $teams = $teamRepository->findByUser($user);
+        }
+
+        return $viewFactory->createCollection($teams);
     }
 }

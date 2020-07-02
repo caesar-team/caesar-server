@@ -2,6 +2,7 @@
 
 namespace App\Tests\Team;
 
+use App\Entity\Item;
 use App\Entity\User;
 use App\Tests\ApiTester;
 use Codeception\Module\DataFactory;
@@ -83,6 +84,30 @@ class TeamTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $schema = $I->getSchema('team/teams.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
+
+    /** @test */
+    public function getListsOfTeam()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        $team = $I->createTeam($user);
+        /** @var Item $item */
+        $item = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $team->getDefaultDirectory(),
+        ]);
+
+        $I->login($user);
+        $I->sendGET(sprintf('/teams/%s/lists', $team->getId()->toString()));
+        $I->canSeeResponseContains($item->getId()->toString());
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $schema = $I->getSchema('team/team_lists.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
     }
 
