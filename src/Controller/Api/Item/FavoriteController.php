@@ -13,6 +13,7 @@ use App\Model\View\Item\FavoriteItemView;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
 use App\Security\Voter\ItemVoter;
+use App\Security\Voter\TeamItemVoter;
 use App\Security\Voter\UserTeamVoter;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -82,7 +83,7 @@ final class FavoriteController extends AbstractController
      */
     public function toggle(Item $item, ItemRepository $repository, FavoriteItemViewFactory $factory): FavoriteItemView
     {
-        $this->denyAccessUnlessGranted(ItemVoter::FAVORITE, $item);
+        $this->denyAccessUnlessGranted([ItemVoter::FAVORITE, TeamItemVoter::FAVORITE], $item);
 
         $item->toggleFavorite();
         $repository->save($item);

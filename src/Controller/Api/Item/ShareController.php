@@ -26,6 +26,7 @@ use App\Utils\DirectoryHelper;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -189,5 +190,26 @@ final class ShareController extends AbstractController
         return $viewFactory->createSingle(
             $shareManager->share($collectionRequest)
         );
+    }
+
+    /**
+     * Check share item.
+     *
+     * @SWG\Tag(name="Item / Share")
+     * @SWG\Response(
+     *     response=200,
+     *     description="Item check"
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="Shared item not found or expired"
+     * )
+     * @Route("/anonymous/share/{item}/check", methods={"GET"}, name="api_item_check_shared_item")
+     *
+     * @return JsonResponse
+     */
+    public function checkSharedItem(Item $item)
+    {
+        return new JsonResponse(['id' => $item->getId()->toString()]);
     }
 }

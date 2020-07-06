@@ -74,7 +74,7 @@ class FavoriteTest extends Unit
 
         $team = $I->createTeam($user);
 
-        /** @var Item $item */
+        /** @var Item $teamItem */
         $teamItem = $this->tester->have(Item::class, [
             'owner' => $user,
             'team' => $team,

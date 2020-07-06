@@ -81,6 +81,15 @@ class ItemTest extends Unit
 
         $I->login($user);
         $I->sendPOST('items', [
+            'listId' => 'invalid-uuid',
+            'type' => NodeEnumType::TYPE_CRED,
+            'secret' => uniqid(),
+            'favorite' => false,
+            'tags' => ['tag'],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+
+        $I->sendPOST('items', [
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
@@ -149,6 +158,7 @@ class ItemTest extends Unit
         $I->sendPATCH(sprintf('/items/%s/move', $item->getId()), [
             'listId' => $user->getTrash()->getId()->toString(),
         ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
 
         $I->sendDELETE(sprintf('/items/%s', $item->getId()));
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);

@@ -7,18 +7,13 @@ namespace App\Controller\Api;
 use App\Controller\AbstractController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
-use App\Factory\View\CreatedItemViewFactory;
-use App\Factory\View\ItemListViewFactory;
-use App\Form\Request\CreateItemsType;
-use App\Form\Request\CreateItemType;
 use App\Model\Request\ItemsCollectionRequest;
-use App\Model\View\CredentialsList\CreatedItemView;
 use App\Repository\ItemRepository;
 use App\Repository\TeamRepository;
 use App\Security\Voter\ItemVoter;
+use App\Security\Voter\TeamItemVoter;
 use App\Utils\DirectoryHelper;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\NonUniqueResultException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
@@ -116,59 +111,6 @@ final class ItemController extends AbstractController
     /**
      * @SWG\Tag(name="Item")
      *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=CreateItemType::class)
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Success item created",
-     *     @Model(type=CreatedItemView::class)
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not owner of this list"
-     * )
-     *
-     * @Route(
-     *     path="/api/items",
-     *     name="api_create_item",
-     *     methods={"POST"}
-     * )
-     *
-     * @return CreatedItemView|FormInterface
-     */
-    public function createItem(
-        Request $request,
-        CreatedItemViewFactory $viewFactory,
-        ItemRepository $itemRepository,
-        TeamRepository $teamRepository
-    ) {
-        $item = new Item($this->getUser());
-        $form = $this->createForm(CreateItemType::class, $item);
-
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-        $this->denyAccessUnlessGranted(ItemVoter::CREATE, $item->getParentList());
-
-        $team = $teamRepository->findOneByDirectory($item->getParentList());
-        $item->setTeam($team);
-
-        $itemRepository->save($item);
-
-        return $viewFactory->createSingle($item);
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     *
      * @SWG\Response(
      *     response=204,
      *     description="Success item deleted"
@@ -211,7 +153,7 @@ final class ItemController extends AbstractController
      */
     public function deleteItem(Item $item, EntityManagerInterface $manager)
     {
-        $this->denyAccessUnlessGranted(ItemVoter::DELETE, $item);
+        $this->denyAccessUnlessGranted([ItemVoter::DELETE, TeamItemVoter::DELETE], $item);
         if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
             $message = $this->translator->trans('app.exception.delete_trash_only');
             throw new BadRequestHttpException($message);
@@ -290,86 +232,5 @@ final class ItemController extends AbstractController
         }
 
         return new JsonResponse(['success' => true], Response::HTTP_NO_CONTENT);
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="itemId",
-     *     in="query",
-     *     description="Id of item",
-     *     type="string"
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Item check"
-     * )
-     * @SWG\Response(
-     *     response=404,
-     *     description="Shared item not found or expired"
-     * )
-     * @Route("api/anonymous/share/{item}/check", methods={"GET"}, name="api_item_check_shared_item")
-     *
-     * @return JsonResponse
-     */
-    public function checkSharedItem(Item $item)
-    {
-        return new JsonResponse(['id' => $item->getId()->toString()]);
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=\App\Form\Request\CreateItemsType::class)
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Success items created"
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/items/batch",
-     *     name="api_batch_create_items",
-     *     methods={"POST"}
-     * )
-     *
-     * @throws NonUniqueResultException
-     *
-     * @return \App\Model\View\Item\ItemView[]|array|FormInterface
-     */
-    public function batchCreate(
-        Request $request,
-        ItemListViewFactory $viewFactory,
-        ItemRepository $itemRepository,
-        TeamRepository $teamRepository
-    ) {
-        $itemsRequest = new ItemsCollectionRequest();
-
-        $form = $this->createForm(CreateItemsType::class, $itemsRequest);
-
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        /** @var Item $item */
-        foreach ($itemsRequest->getItems() as $item) {
-            $this->denyAccessUnlessGranted(ItemVoter::CREATE, $item->getParentList());
-            $item->setOwner($this->getUser());
-            $team = $teamRepository->findOneByDirectory($item->getParentList());
-            $item->setTeam($team);
-
-            $itemRepository->save($item);
-        }
-
-        return $viewFactory->create($itemsRequest->getItems());
     }
 }

@@ -40,6 +40,10 @@ class MoveItemType extends AbstractType
                 'constraints' => [
                     new NotBlank(),
                     new Callback(function (Directory $object, ExecutionContextInterface $context) use ($user) {
+                        if (null !== $object->getTeam()) {
+                            return;
+                        }
+
                         if (!$user->isOwnerByDirectory($object)) {
                             $context->buildViolation('item.move.invalid_list')
                                 ->atPath('listId')

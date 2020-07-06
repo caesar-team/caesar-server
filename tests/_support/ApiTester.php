@@ -3,6 +3,7 @@
 namespace App\Tests;
 
 use App\DBAL\Types\Enum\AccessEnumType;
+use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
@@ -68,21 +69,56 @@ class ApiTester extends \Codeception\Actor
     {
         /** @var Team $team */
         $team = $this->have(Team::class);
-        $this->have(UserTeam::class, [
+        $userTeam = $this->have(UserTeam::class, [
             'user' => $user,
             'team' => $team,
         ]);
+
+        $team->addUserTeam($userTeam);
 
         return $team;
     }
 
+    public function createTeamItem(Team $team, User $user): Item
+    {
+        /** @var Item $item */
+        $item = $this->have(Item::class, [
+            'parent_list' => $team->getDefaultDirectory(),
+            'owner' => $user,
+            'team' => $team,
+        ]);
+
+        foreach ($team->getUserTeams() as $userTeam) {
+            if ($userTeam->getUser()->equals($user)) {
+                continue;
+            }
+
+            $this->have(Item::class, [
+                'parent_list' => $team->getDefaultDirectory(),
+                'owner' => $userTeam->getUser(),
+                'team' => $team,
+                'original_item' => $item,
+                'access' => AccessEnumType::TYPE_READ,
+                'cause' => Item::CAUSE_INVITE,
+            ]);
+        }
+
+        return $item;
+    }
+
+    public function moveItem(Item $item, Directory $list): void
+    {
+    }
+
     public function addUserToTeam(Team $team, User $user, string $role = UserTeam::USER_ROLE_MEMBER): void
     {
-        $this->have(UserTeam::class, [
+        $userTeam = $this->have(UserTeam::class, [
             'user' => $user,
             'team' => $team,
             'user_role' => $role,
         ]);
+
+        $team->addUserTeam($userTeam);
     }
 
     public function haveUserWithKeys(): User

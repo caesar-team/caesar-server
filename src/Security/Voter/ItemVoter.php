@@ -31,9 +31,12 @@ class ItemVoter extends Voter
 
     private UserRepository $userRepository;
 
-    public function __construct(UserRepository $userRepository)
+    private TeamItemVoter $teamItemVoter;
+
+    public function __construct(UserRepository $userRepository, TeamItemVoter $teamItemVoter)
     {
         $this->userRepository = $userRepository;
+        $this->teamItemVoter = $teamItemVoter;
     }
 
     /**
@@ -55,6 +58,14 @@ class ItemVoter extends Voter
     {
         $user = $token->getUser();
         if (!$user instanceof User) {
+            return false;
+        }
+
+        if ($subject instanceof Directory && null !== $subject->getTeam()) {
+            return false;
+        }
+
+        if ($subject instanceof Item && null !== $subject->getTeam()) {
             return false;
         }
 
@@ -92,7 +103,7 @@ class ItemVoter extends Voter
 
     private function canEdit(Item $item, User $user): bool
     {
-        return $user->equals($item->getOwner()) || $user->equals($item->getSignedOwner());
+        return $user->equals($item->getSignedOwner());
     }
 
     private function canDelete(Item $item, User $user): bool

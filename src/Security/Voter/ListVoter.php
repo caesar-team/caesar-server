@@ -16,9 +16,10 @@ class ListVoter extends Voter
     public const EDIT = 'edit_list';
     public const SORT = 'sort_list';
     public const DELETE = 'delete_list';
+    public const MOVABLE = 'movable_list';
 
     public const AVAILABLE_ATTRIBUTES = [
-        self::CREATE, self::EDIT, self::DELETE, self::SORT,
+        self::CREATE, self::EDIT, self::DELETE, self::SORT, self::MOVABLE,
     ];
 
     private UserRepository $userRepository;
@@ -49,7 +50,10 @@ class ListVoter extends Voter
         if (!$user instanceof User) {
             return false;
         }
-        if ($subject instanceof Directory && ($subject->equals($user->getInbox()) || $subject->equals($user->getTrash()))) {
+        if (self::MOVABLE !== $attribute
+            && $subject instanceof Directory
+            && ($subject->equals($user->getInbox()) || $subject->equals($user->getTrash()))
+        ) {
             return false;
         }
 
@@ -62,6 +66,8 @@ class ListVoter extends Voter
                 return $subject instanceof Directory && $this->canDelete($subject, $user);
             case self::SORT:
                 return $subject instanceof Directory && $this->canSort($subject, $user);
+            case self::MOVABLE:
+                return $subject instanceof Directory && $this->isMovable($subject, $user);
         }
 
         return false;
@@ -87,5 +93,10 @@ class ListVoter extends Voter
         $itemOwner = $this->userRepository->getByList($subject);
 
         return $user->equals($itemOwner);
+    }
+
+    private function isMovable(Directory $subject, User $user): bool
+    {
+        return $this->canSort($subject, $user);
     }
 }

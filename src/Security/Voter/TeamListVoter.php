@@ -20,6 +20,7 @@ class TeamListVoter extends Voter
     public const EDIT = 'team_edit_list';
     public const DELETE = 'team_delete_list';
     public const SORT = 'team_sort_list';
+    public const MOVABLE = 'team_movable_list';
 
     private const ATTRIBUTES = [
         self::SHOW,
@@ -27,6 +28,7 @@ class TeamListVoter extends Voter
         self::EDIT,
         self::DELETE,
         self::SORT,
+        self::MOVABLE,
     ];
 
     private UserRepository $userRepository;
@@ -63,7 +65,7 @@ class TeamListVoter extends Voter
             return false;
         }
 
-        if ($subject instanceof Directory
+        if (self::MOVABLE !== $attribute && $subject instanceof Directory
             && ($subject->isTeamTrashDirectory() || $subject->isTeamDefaultDirectory())
         ) {
             return false;
@@ -84,6 +86,8 @@ class TeamListVoter extends Voter
                 return $subject instanceof Directory && $this->canDelete($subject, $user);
             case self::SORT:
                 return $subject instanceof Directory && $this->canSort($subject, $user);
+            case self::MOVABLE:
+                return $subject instanceof Directory && $this->isMovable($subject, $user);
         }
 
         return false;
@@ -129,5 +133,21 @@ class TeamListVoter extends Voter
     private function canSort(Directory $subject, User $user): bool
     {
         return $this->canEdit($subject, $user);
+    }
+
+    private function isMovable(Directory $subject, User $user): bool
+    {
+        if (null === $subject->getTeam()) {
+            return false;
+        }
+
+        $userTeam = $subject->getTeam()->getUserTeamByUser($user);
+        if (null === $userTeam) {
+            return false;
+        }
+
+        return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN)
+            || $userTeam->hasRole(UserTeam::USER_ROLE_MEMBER)
+        ;
     }
 }
