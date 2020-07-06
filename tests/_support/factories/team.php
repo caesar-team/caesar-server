@@ -1,5 +1,6 @@
 <?php
 
+use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Team;
 use League\FactoryMuffin\FactoryMuffin;
@@ -25,4 +26,5 @@ $fm->define(Team::class)->setDefinitions([
     $lists->addChildList($defaultList);
 
     $object->getTrash()->setTeam($object);
+    $object->getTrash()->setType(NodeEnumType::TYPE_TRASH);
 });

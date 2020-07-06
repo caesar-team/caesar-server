@@ -149,6 +149,30 @@ class PermissionTest extends Unit
         $this->dontAccessToList($member, $team);
     }
 
+    /** @test */
+    public function teamItemPermissions()
+    {
+        $I = $this->tester;
+
+        /** @var User $teamAdmin */
+        $teamAdmin = $I->have(User::class);
+        /** @var User $member */
+        $member = $I->have(User::class);
+        /** @var User $guestUser */
+        $member2 = $I->have(User::class);
+
+        /** @var Team $team */
+        $team = $I->createTeam($teamAdmin);
+        $I->addUserToTeam($team, $member);
+        $I->addUserToTeam($team, $member2);
+
+        $item = $I->createTeamItem($team, $member);
+
+        $this->canAccessToEditItem($teamAdmin, $team->getDefaultDirectory());
+        $this->canAccessToEditItem($member, $team->getDefaultDirectory());
+        $this->dontAccessToEditItem($member2, $team->getDefaultDirectory());
+    }
+
     private function canAccessToList(User $user, Team $team)
     {
         $I = $this->tester;
@@ -202,6 +226,36 @@ class PermissionTest extends Unit
             'team_edit_list' => [],
             'team_delete_list' => [],
             'team_sort_list' => [],
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+    }
+
+    private function canAccessToEditItem(User $user, Directory $list)
+    {
+        $I = $this->tester;
+
+        $I->login($user);
+        $I->sendGET(sprintf('items?listId=%s', $list->getId()->toString()));
+        $I->canSeeResponseContainsJson(['_links' => [
+            'team_edit_item' => [],
+            'team_delete_item' => [],
+            'team_move_item' => [],
+            'team_batch_share_item' => [],
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+    }
+
+    private function dontAccessToEditItem(User $user, Directory $list)
+    {
+        $I = $this->tester;
+
+        $I->login($user);
+        $I->sendGET(sprintf('items?listId=%s', $list->getId()->toString()));
+        $I->dontSeeResponseContainsJson(['_links' => [
+            'team_edit_item' => [],
+            'team_delete_item' => [],
+            'team_move_item' => [],
+            'team_batch_share_item' => [],
         ]]);
         $I->seeResponseCodeIs(HttpCode::OK);
     }

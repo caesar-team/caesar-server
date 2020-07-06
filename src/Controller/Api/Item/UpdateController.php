@@ -12,6 +12,7 @@ use App\Model\Request\EditItemRequest;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
 use App\Security\Voter\ItemVoter;
+use App\Security\Voter\TeamItemVoter;
 use App\Services\ChildItemActualizer;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -96,7 +97,7 @@ final class UpdateController extends AbstractController
         SerializerInterface $serializer,
         ChildItemActualizer $itemHandler
     ) {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT, $item);
+        $this->denyAccessUnlessGranted([ItemVoter::EDIT, TeamItemVoter::EDIT], $item);
 
         /** @var EditItemRequest $itemRequest */
         $itemRequest = $serializer->deserialize($request->getContent(), EditItemRequest::class, 'json');

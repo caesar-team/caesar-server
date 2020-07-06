@@ -12,6 +12,8 @@ use App\Model\Request\ItemsCollectionRequest;
 use App\Repository\ItemRepository;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\ListVoter;
+use App\Security\Voter\TeamItemVoter;
+use App\Security\Voter\TeamListVoter;
 use App\Services\File\ItemMoveResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -87,7 +89,7 @@ final class MoveController extends AbstractController
         ItemMoveResolver $itemMoveResolver,
         ItemRepository $itemRepository
     ): ?FormInterface {
-        $this->denyAccessUnlessGranted(ItemVoter::MOVE, $item);
+        $this->denyAccessUnlessGranted([ItemVoter::MOVE, TeamItemVoter::MOVE], $item);
 
         $replacedItem = new Item();
 
@@ -96,6 +98,9 @@ final class MoveController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
+
+        $this->denyAccessUnlessGranted([ListVoter::MOVABLE, TeamListVoter::MOVABLE], $replacedItem->getParentList());
+
         $replacedItem->setOwner($item->getOwner());
 
         $itemMoveResolver->move($item, $replacedItem->getParentList());
@@ -128,7 +133,7 @@ final class MoveController extends AbstractController
         SerializerInterface $serializer,
         ItemMoveResolver $itemMoveResolver
     ): void {
-        $this->denyAccessUnlessGranted(ListVoter::EDIT, $directory);
+        $this->denyAccessUnlessGranted([ListVoter::MOVABLE, TeamListVoter::MOVABLE], $directory);
 
         /** @var ItemsCollectionRequest $itemsCollection */
         $itemsCollection = $serializer->deserialize(json_encode($request->request->all()), ItemsCollectionRequest::class, 'json');
@@ -136,7 +141,7 @@ final class MoveController extends AbstractController
         foreach ($itemsCollection->getItems() as $item) {
             $item = $manager->getRepository(Item::class)->find($item);
             if ($item instanceof Item) {
-                $this->denyAccessUnlessGranted(ItemVoter::MOVE, $item);
+                $this->denyAccessUnlessGranted([ItemVoter::MOVE, TeamItemVoter::MOVE], $item);
                 $itemMoveResolver->move($item, $directory);
             }
         }
