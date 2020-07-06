@@ -39,7 +39,11 @@ class MoveItemType extends AbstractType
                 'property_path' => 'parentList',
                 'constraints' => [
                     new NotBlank(),
-                    new Callback(function (Directory $object, ExecutionContextInterface $context) use ($user) {
+                    new Callback(function ($object, ExecutionContextInterface $context) use ($user) {
+                        if (!$object instanceof Directory) {
+                            return;
+                        }
+
                         if (null !== $object->getTeam()) {
                             return;
                         }
