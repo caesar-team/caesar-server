@@ -38,7 +38,10 @@ class KeysTest extends Unit
         $I->seeResponseIsValidOnJsonSchemaString($schema);
 
         $I->sendGET(sprintf('/key/%s', $userWithoutKeys->getEmail()));
-        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $schema = $I->getSchema('user/public_key.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
     }
 
     /** @test */
@@ -104,5 +107,31 @@ class KeysTest extends Unit
             'publicKey' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+    }
+
+    /** @test */
+    public function updateKeys()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var User $userWithoutKeys */
+        $userWithoutKeys = $I->have(User::class);
+
+        $I->login($user);
+        $I->sendPOST(sprintf('/keys/%s', $userWithoutKeys->getEmail()), [
+            'encryptedPrivateKey' => uniqid(),
+            'publicKey' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
+        $I->sendPOST(sprintf('/keys/%s', $userWithoutKeys->getEmail()), [
+            'encryptedPrivateKey' => uniqid(),
+            'publicKey' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 }

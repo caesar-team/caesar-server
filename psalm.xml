@@ -35,6 +35,7 @@
         <MoreSpecificReturnType errorLevel="suppress"/>
         <PropertyNotSetInConstructor errorLevel="suppress"/>
         <PossiblyInvalidMethodCall errorLevel="suppress"/>
+        <MissingClosureParamType errorLevel="suppress"/>
         <ForbiddenCode errorLevel="suppress"/>
         <PossiblyNullArgument errorLevel="info"/>
         <PossiblyNullReference errorLevel="info"/>

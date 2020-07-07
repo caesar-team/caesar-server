@@ -16,6 +16,7 @@ easy_admin:
           - email
           - lastLogin
           - domain
+          - flowStatus
           - enabled
           - srp.id
       show:

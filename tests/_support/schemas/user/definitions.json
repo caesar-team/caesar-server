@@ -69,7 +69,7 @@
           "type": "string"
         },
         "publicKey": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "email": {
           "type": "string"

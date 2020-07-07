@@ -131,7 +131,7 @@ class TeamController extends AbstractController
         TeamViewFactory $viewFactory,
         EntityManagerInterface $entityManager
     ): TeamView {
-        $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
+        $this->denyAccessUnlessGranted(TeamVoter::EDIT, $team);
 
         $form = $this->createForm(EditTeamType::class, $team);
         $form->submit($request->request->all());

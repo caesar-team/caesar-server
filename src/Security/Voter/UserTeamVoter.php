@@ -37,10 +37,6 @@ final class UserTeamVoter extends Voter
             return false;
         }
 
-        if (!$subject instanceof UserTeam) {
-            return false;
-        }
-
         return true;
     }
 
@@ -53,6 +49,11 @@ final class UserTeamVoter extends Voter
         if (!$user instanceof User) {
             return false;
         }
+
+        if ($user->hasRole(User::ROLE_ADMIN)) {
+            return true;
+        }
+
         if (!$subject instanceof UserTeam) {
             return false;
         }
@@ -73,7 +74,7 @@ final class UserTeamVoter extends Voter
 
     private function canEdit(UserTeam $userTeam, User $user): bool
     {
-        return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole()
+        return  $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN)
             || $user->hasRole(User::ROLE_ADMIN)
         ;
     }
