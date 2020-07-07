@@ -565,16 +565,17 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         ;
     }
 
-    public function getDefaultDirectory(): Directory
+    public function getDefaultDirectory(): ?Directory
     {
-        return array_reduce($this->getLists()->getChildLists()->toArray(),
-            function (?Directory $prevDir, Directory $currDir) {
-                if (is_null($prevDir)) {
-                    return $currDir;
-                }
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('label', Directory::LIST_DEFAULT));
 
-                return Directory::LIST_DEFAULT === $prevDir->getLabel() ? $prevDir : $currDir;
-            }
-        );
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $directory = $this->getLists()->getChildLists()->matching($criteria)->first();
+
+        return $directory instanceof Directory ? $directory : null;
     }
 }
