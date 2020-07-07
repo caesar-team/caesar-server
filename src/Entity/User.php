@@ -564,4 +564,17 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
             || $this->getLists()->hasChildListByDirectory($directory)
         ;
     }
+
+    public function getDefaultDirectory(): Directory
+    {
+        return array_reduce($this->getLists()->getChildLists()->toArray(),
+            function (?Directory $prevDir, Directory $currDir) {
+                if (is_null($prevDir)) {
+                    return $currDir;
+                }
+
+                return Directory::LIST_DEFAULT === $prevDir->getLabel() ? $prevDir : $currDir;
+            }
+        );
+    }
 }

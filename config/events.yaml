@@ -12,11 +12,6 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
 
-    app.event.item_revoke_subscriber:
-        class: App\Event\EventSubscriber\ItemRevokeSubscriber
-        tags:
-            - { name: doctrine.event_subscriber, connection: default }
-
     app.event.migration_subscriber:
         class: App\Event\EventSubscriber\MigrationEventSubscriber
         tags:
