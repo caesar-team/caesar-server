@@ -82,13 +82,18 @@ class MemberTest extends Unit
     {
         $I = $this->tester;
 
-        /** @var User $admin */
-        $admin = $I->have(User::class, [
+        $domainAdmin = $I->have(User::class, [
             'roles' => [User::ROLE_ADMIN],
         ]);
 
+        /** @var User $admin */
+        $admin = $I->have(User::class);
+
         /** @var User $user */
         $user = $I->have(User::class);
+
+        /** @var User $member */
+        $member = $I->have(User::class);
 
         /** @var User $otherUser */
         $otherUser = $I->have(User::class);
@@ -105,6 +110,15 @@ class MemberTest extends Unit
 
         $I->login($admin);
         $I->sendPOST(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
+            'userRole' => UserTeam::USER_ROLE_ADMIN,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $schema = $I->getSchema('team/member.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
+
+        $I->login($domainAdmin);
+        $I->sendPOST(sprintf('teams/%s/members/%s', $team->getId()->toString(), $member->getId()->toString()), [
             'userRole' => UserTeam::USER_ROLE_ADMIN,
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);

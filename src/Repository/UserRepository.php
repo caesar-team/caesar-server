@@ -160,8 +160,11 @@ class UserRepository extends ServiceEntityRepository
         $queryBuilder
             ->where('LOWER(user.email) LIKE :email')
             ->andWhere('LOWER(user.roles) NOT LIKE :role')
+            ->andWhere('user.flowStatus != :status')
+            ->andWhere('user.enabled = true')
             ->setParameter('email', '%'.mb_strtolower($partOfEmail).'%')
             ->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%')
+            ->setParameter('status', User::FLOW_STATUS_INCOMPLETE)
         ;
 
         return $queryBuilder->getQuery()->getResult();
