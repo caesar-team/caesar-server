@@ -152,7 +152,7 @@ class UserTest extends Unit
         [$anonymousShareItemId] = $I->grabDataFromResponseByJsonPath('$.shares[0].items[1].id');
 
         $I->sendPOST('/teams', [
-            'title' => 'My test team',
+            'title' => uniqid(),
             'icon' => null,
         ]);
         [$teamId] = $I->grabDataFromResponseByJsonPath('$.id');
