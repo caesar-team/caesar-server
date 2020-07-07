@@ -16,6 +16,7 @@ use App\Model\Request\PublicKeysRequest;
 use App\Model\View\User\PublicUserKeyView;
 use App\Model\View\User\UserKeysView;
 use App\Repository\UserRepository;
+use App\Security\Voter\UserVoter;
 use App\Services\InvitationManager;
 use App\Services\TeamManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -52,13 +53,8 @@ final class KeysController extends AbstractController
      * )
      * @Entity("user", expr="repository.findOneByEmail(email)")
      */
-    public function publicKey(User $user, PublicUserKeyViewFactory $viewFactory): ?PublicUserKeyView
+    public function publicKey(User $user, PublicUserKeyViewFactory $viewFactory): PublicUserKeyView
     {
-        //@todo @frontend candidate to refactoring, always return View
-        if (!$user->hasKeys()) {
-            return null;
-        }
-
         return $viewFactory->createSingle($user);
     }
 
@@ -177,6 +173,39 @@ final class KeysController extends AbstractController
             $userTeam = $teamManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
             $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
         }
+
+        $entityManager->flush();
+
+        return null;
+    }
+
+    /**
+     * Update keys for user without keys.
+     *
+     * @SWG\Tag(name="Keys")
+     * @SWG\Response(
+     *     response=204,
+     *     description="Success keys update",
+     * )
+     *
+     * @Route(
+     *     path="/keys/{email}",
+     *     name="api_user_update_keys",
+     *     methods={"POST"}
+     * )
+     * @Entity("user", expr="repository.findOneByEmail(email)")
+     */
+    public function updateKeys(Request $request, EntityManagerInterface $entityManager, User $user): ?FormInterface
+    {
+        $this->denyAccessUnlessGranted(UserVoter::UPDATE_KEY, $user);
+
+        $form = $this->createForm(SaveKeysType::class, $user);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            return $form;
+        }
+
+        $user->setFlowStatus(User::FLOW_STATUS_CHANGE_PASSWORD);
 
         $entityManager->flush();
 
