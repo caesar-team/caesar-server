@@ -227,7 +227,9 @@ final class UserController extends AbstractController
         if ($user->isFullUser()) {
             $this->removeInvitation($user, $entityManager);
             $userTeam = $teamManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
-            $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
+            if (null !== $userTeam) {
+                $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
+            }
         }
 
         $entityManager->flush();
