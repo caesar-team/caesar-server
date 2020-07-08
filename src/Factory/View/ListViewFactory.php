@@ -37,6 +37,7 @@ class ListViewFactory
         );
         $view->setSort($directory->getSort());
         $view->setTeamId($team ? $team->getId()->toString() : null);
+        $view->setCreatedAt($directory->getCreatedAt());
 
         return $view;
     }

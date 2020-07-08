@@ -85,6 +85,11 @@ class ListView
     private ?string $label;
 
     /**
+     * @SWG\Property(type="string", example="2020-06-24T08:03:12+00:00")
+     */
+    private ?\DateTimeImmutable $createdAt;
+
+    /**
      * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      */
     private ?string $teamId;
@@ -170,5 +175,15 @@ class ListView
     public function getDirectory(): Directory
     {
         return $this->directory;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(?\DateTimeImmutable $createdAt): void
+    {
+        $this->createdAt = $createdAt;
     }
 }
