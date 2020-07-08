@@ -66,27 +66,18 @@ class TwoFactorAuthStateVoter extends Voter
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
-        /** @var User $user */
         $user = $token->getUser();
+        if (!$user instanceof User) {
+            return false;
+        }
+
         switch ($attribute) {
             case self::SKIP:
-                if ($user->hasRole(User::ROLE_ANONYMOUS_USER) || !$user->isFullUser()) {
-                    return true;
-                }
-
-                return  $this->isCompleteJwt($user);
+                return $this->canSkip($user);
             case self::CREATE:
                 return !$user->isGoogleAuthenticatorEnabled();
             case self::CHECK:
-                if (
-                    $user->hasRole(User::ROLE_ANONYMOUS_USER)
-                    || !$user->isFullUser()
-                    || $this->fingerprintManager->hasValidFingerPrint($user)
-                ) {
-                    return false;
-                }
-
-                return true;
+                return $this->canCheck($user);
             default:
                 return false;
         }
@@ -106,5 +97,30 @@ class TwoFactorAuthStateVoter extends Voter
         }
 
         return false;
+    }
+
+    private function canSkip(User $user): bool
+    {
+        if ($user->hasRole(User::ROLE_ANONYMOUS_USER) || !$user->isFullUser()) {
+            return true;
+        }
+
+        if (!$user->isGoogleAuthenticatorEnabled()) {
+            return false;
+        }
+
+        return $this->isCompleteJwt($user);
+    }
+
+    private function canCheck(User $user): bool
+    {
+        if ($user->hasRole(User::ROLE_ANONYMOUS_USER)
+            || !$user->isFullUser()
+            || $this->fingerprintManager->hasValidFingerPrint($user)
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -120,12 +120,12 @@ class ApiTester extends \Codeception\Actor
         $team->addUserTeam($userTeam);
     }
 
-    public function haveUserWithKeys(): User
+    public function haveUserWithKeys(array $params = []): User
     {
-        return $this->have(User::class, [
+        return $this->have(User::class, array_merge([
             'encrypted_private_key' => uniqid(),
             'public_key' => uniqid(),
-        ]);
+        ], $params));
     }
 
     public function seeResponseByJsonPathContainsJson(string $jsonPath, array $json = []): void
