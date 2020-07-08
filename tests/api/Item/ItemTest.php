@@ -68,6 +68,66 @@ class ItemTest extends Unit
     }
 
     /** @test */
+    public function sortItemList()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var Item $thirdItem */
+        $thirdItem = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getDefaultDirectory(),
+        ]);
+        sleep(1);
+        /** @var Item $secondItem */
+        $secondItem = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getDefaultDirectory(),
+        ]);
+        sleep(1);
+        /** @var Item $firstItem */
+        $firstItem = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getDefaultDirectory(),
+        ]);
+
+        $I->login($user);
+
+        $I->sendGET(sprintf('/items?listId=%s', $user->getDefaultDirectory()->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        self::assertEquals(
+            [$firstItem->getId()->toString()],
+            $I->grabDataFromResponseByJsonPath('$.[0].id')
+        );
+        self::assertEquals(
+            [$secondItem->getId()->toString()],
+            $I->grabDataFromResponseByJsonPath('$.[1].id')
+        );
+        self::assertEquals(
+            [$thirdItem->getId()->toString()],
+            $I->grabDataFromResponseByJsonPath('$.[2].id')
+        );
+
+        $I->updateInDatabase('item', ['last_updated' => (new \DateTimeImmutable('+10 minute'))->format('Y-m-d H:i:s')], ['id' => $thirdItem->getId()->toString()]);
+        $I->sendGET(sprintf('/items?listId=%s', $user->getDefaultDirectory()->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        self::assertEquals(
+            [$firstItem->getId()->toString()],
+            $I->grabDataFromResponseByJsonPath('$.[1].id')
+        );
+        self::assertEquals(
+            [$secondItem->getId()->toString()],
+            $I->grabDataFromResponseByJsonPath('$.[2].id')
+        );
+        self::assertEquals(
+            [$thirdItem->getId()->toString()],
+            $I->grabDataFromResponseByJsonPath('$.[0].id')
+        );
+    }
+
+    /** @test */
     public function createCredItem()
     {
         $I = $this->tester;
