@@ -54,7 +54,7 @@ class Directory
      * @var Collection|Item[]
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="parentList", cascade={"remove"})
-     * @ORM\OrderBy({"sort": "ASC", "lastUpdated": "DESC"})
+     * @ORM\OrderBy({"lastUpdated": "DESC"})
      */
     protected $childItems;
 

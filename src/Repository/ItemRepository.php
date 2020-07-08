@@ -35,6 +35,7 @@ class ItemRepository extends ServiceEntityRepository
             ->andWhere('item.status =:status')
             ->setParameter('list', $query->list)
             ->setParameter('status', Item::STATUS_FINISHED)
+            ->orderBy('item.lastUpdated', 'DESC')
             ->getQuery()
             ->getResult();
     }
