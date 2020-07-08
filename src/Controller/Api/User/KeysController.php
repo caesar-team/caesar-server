@@ -171,7 +171,9 @@ final class KeysController extends AbstractController
         if ($user->isFullUser()) {
             InvitationManager::removeInvitation($user, $entityManager);
             $userTeam = $teamManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
-            $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
+            if (null !== $userTeam) {
+                $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
+            }
         }
 
         $entityManager->flush();
