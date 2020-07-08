@@ -83,4 +83,41 @@ class ListTest extends Unit
         $schema = $I->getSchema('item/lists.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
     }
+
+    /** @test */
+    public function sortList()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        $I->login($user);
+        $I->sendPOST('list', ['label' => '4']);
+        [$fourthDirectory] = $I->grabDataFromResponseByJsonPath('$.id');
+        $I->sendPOST('list', ['label' => '3']);
+        [$thirdDirectory] = $I->grabDataFromResponseByJsonPath('$.id');
+        $I->sendPOST('list', ['label' => '2']);
+        [$secondDirectory] = $I->grabDataFromResponseByJsonPath('$.id');
+        $I->sendPOST('list', ['label' => '1']);
+        [$firstDirectory] = $I->grabDataFromResponseByJsonPath('$.id');
+
+        $I->sendGET('/list');
+        self::assertEquals(
+            [$firstDirectory],
+            $I->grabDataFromResponseByJsonPath('$.[0].id')
+        );
+        self::assertEquals(
+            [$secondDirectory],
+            $I->grabDataFromResponseByJsonPath('$.[1].id')
+        );
+        self::assertEquals(
+            [$thirdDirectory],
+            $I->grabDataFromResponseByJsonPath('$.[2].id')
+        );
+        self::assertEquals(
+            [$fourthDirectory],
+            $I->grabDataFromResponseByJsonPath('$.[3].id')
+        );
+    }
 }

@@ -75,6 +75,7 @@ class ListTest extends Unit
         $I->login($user);
         $I->sendPOST('list', [
             'label' => 'New list',
+            'sort' => 0,
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
