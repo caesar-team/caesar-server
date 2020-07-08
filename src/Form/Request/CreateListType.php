@@ -6,6 +6,7 @@ namespace App\Form\Request;
 
 use App\Entity\Directory;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -21,7 +22,11 @@ class CreateListType extends AbstractType
                 'constraints' => [
                     new NotBlank(),
                 ],
-            ]);
+            ])
+            ->add('sort', IntegerType::class, [
+                'required' => false,
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver)

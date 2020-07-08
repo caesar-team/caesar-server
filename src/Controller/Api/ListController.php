@@ -114,7 +114,7 @@ final class ListController extends AbstractController
         $list = new Directory();
         $form = $this->createForm(CreateListType::class, $list);
 
-        $form->submit($request->request->all());
+        $form->submit($request->request->all(), false);
         if (!$form->isValid()) {
             return $form;
         }

@@ -37,7 +37,7 @@ class Directory
      * @var Collection|Directory[]
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList", cascade={"remove", "persist"})
-     * @ORM\OrderBy({"sort": "ASC"})
+     * @ORM\OrderBy({"sort": "ASC", "createdAt": "DESC"})
      */
     protected $childLists;
 
@@ -86,6 +86,13 @@ class Directory
     private ?Team $team;
 
     /**
+     * @var \DateTimeImmutable
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $createdAt;
+
+    /**
      * @todo candidate to refactoring (inbox, trash, etc)
      */
     private string $role = NodeEnumType::TYPE_LIST;
@@ -100,6 +107,7 @@ class Directory
         if (null !== $label) {
             $this->label = $label;
         }
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public static function createTrash(): self
@@ -297,5 +305,15 @@ class Directory
         }
 
         return $this->getType();
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): void
+    {
+        $this->createdAt = $createdAt;
     }
 }
