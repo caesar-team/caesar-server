@@ -19,7 +19,7 @@
         "hwi/oauth-bundle": "0.6.3",
         "lexik/jwt-authentication-bundle": "2.6.5",
         "nelmio/api-doc-bundle": "3.6.1",
-        "nelmio/cors-bundle": "1.5.6",
+        "nelmio/cors-bundle": "2.0.1",
         "pear/math_biginteger": "1.0.3",
         "php-amqplib/rabbitmq-bundle": "1.14.4",
         "php-http/guzzle6-adapter": "1.1.1",
