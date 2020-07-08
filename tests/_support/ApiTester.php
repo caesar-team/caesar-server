@@ -3,7 +3,6 @@
 namespace App\Tests;
 
 use App\DBAL\Types\Enum\AccessEnumType;
-use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
@@ -11,6 +10,7 @@ use App\Entity\UserTeam;
 use Codeception\PHPUnit\Constraint\JsonContains;
 use Codeception\Util\HttpCode;
 use Codeception\Util\JsonArray;
+use Doctrine\Common\Collections\ArrayCollection;
 use FOS\UserBundle\Model\UserInterface;
 
 /**
@@ -88,12 +88,13 @@ class ApiTester extends \Codeception\Actor
             'team' => $team,
         ]);
 
+        $sharedItems = [];
         foreach ($team->getUserTeams() as $userTeam) {
             if ($userTeam->getUser()->equals($user)) {
                 continue;
             }
 
-            $this->have(Item::class, [
+            $sharedItems[] = $this->have(Item::class, [
                 'parent_list' => $team->getDefaultDirectory(),
                 'owner' => $userTeam->getUser(),
                 'team' => $team,
@@ -103,11 +104,9 @@ class ApiTester extends \Codeception\Actor
             ]);
         }
 
-        return $item;
-    }
+        $item->setSharedItems(new ArrayCollection($sharedItems));
 
-    public function moveItem(Item $item, Directory $list): void
-    {
+        return $item;
     }
 
     public function addUserToTeam(Team $team, User $user, string $role = UserTeam::USER_ROLE_MEMBER): void
