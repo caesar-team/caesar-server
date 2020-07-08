@@ -71,7 +71,7 @@ RUN bash init_db.sh postgres & wait-for-it.sh 127.0.0.1:5432 -- echo "postgres i
     && vendor/bin/codecept run api
 
 ## ---- Webpack Encore ----
-FROM node:8-alpine AS yarn-enc
+FROM node:10-alpine AS yarn-enc
 COPY . .
 RUN yarn install && yarn encore production
 ## ---- Dependencies ----
