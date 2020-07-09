@@ -85,6 +85,11 @@ class UserTest extends Unit
     {
         $I = $this->tester;
 
+        /** @var User $domainAdmin */
+        $domainAdmin = $I->have(User::class, [
+            'roles' => [User::ROLE_ADMIN],
+        ]);
+
         /** @var User $user */
         $user = $I->have(User::class, [
             'roles' => [User::ROLE_ADMIN],
@@ -125,32 +130,27 @@ class UserTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
         [$defaultItemId] = $I->grabDataFromResponseByJsonPath('$.id');
 
-        //@todo investigate, rabbitmq mock does not work
-//        $I->sendPOST('/items/batch/share', [
-//            'originalItems' => [
-//                [
-//                    'originalItem' => $itemId,
-//                    'items' => [
-//                        [
-//                            'userId' => $member->getId()->toString(),
-//                            'secret' => 'some secret',
-//                            'cause' => Item::CAUSE_SHARE,
-//                            'link' => '',
-//                            'access' => AccessEnumType::TYPE_READ,
-//                        ],
-//                        [
-//                            'userId' => $anonymous->getId()->toString(),
-//                            'secret' => 'some secret2',
-//                            'cause' => Item::CAUSE_SHARE,
-//                            'link' => '',
-//                            'access' => AccessEnumType::TYPE_READ,
-//                        ],
-//                    ],
-//                ],
-//            ],
-//        ]);
-//        [$shareItemId] = $I->grabDataFromResponseByJsonPath('$.shares[0].items[0].id');
-//        [$anonymousShareItemId] = $I->grabDataFromResponseByJsonPath('$.shares[0].items[1].id');
+        /** @var Item $personalItem */
+        $personalItem = $I->have(Item::class, [
+            'parent_list' => $user->getDefaultDirectory(),
+            'owner' => $user,
+        ]);
+        /** @var Item $shareItem */
+        $shareItem = $I->have(Item::class, [
+            'parent_list' => $member->getDefaultDirectory(),
+            'owner' => $member,
+            'original_item' => $personalItem,
+            'access' => AccessEnumType::TYPE_READ,
+            'cause' => Item::CAUSE_SHARE,
+        ]);
+        /** @var Item $anonymousShareItem */
+        $anonymousShareItem = $I->have(Item::class, [
+            'parent_list' => $anonymous->getDefaultDirectory(),
+            'owner' => $anonymous,
+            'original_item' => $personalItem,
+            'access' => AccessEnumType::TYPE_READ,
+            'cause' => Item::CAUSE_SHARE,
+        ]);
 
         $I->sendPOST('/teams', [
             'title' => uniqid(),
@@ -171,20 +171,27 @@ class UserTest extends Unit
         $team = $I->createTeam($user);
         $I->addUserToTeam($team, $member);
 
-        $item = $I->createTeamItem($team, $user);
+        $teamItem = $I->createTeamItem($team, $user);
         /** @var Item $child */
-        $child = $item->getSharedItems()->first();
+        $child = $teamItem->getSharedItems()->first();
 
-        $I->deleteFromDatabase($user);
+        $I->symfonyAuth($domainAdmin);
+        $I->symfonyRequest(
+            'DELETE',
+            sprintf('/admin/?action=delete&entity=User&id=%s', $user->getId()->toString()),
+            ['_method' => 'DELETE', 'delete_form' => ['_easyadmin_delete_flag' => 1]]
+        );
 
         $I->dontSeeInDatabase('item', ['id' => $itemId]);
         $I->dontSeeInDatabase('item', ['id' => $defaultItemId]);
+        $I->dontSeeInDatabase('item', ['id' => $personalItem->getId()->toString()]);
+        $I->dontSeeInDatabase('item', ['id' => $shareItem->getId()->toString()]);
+        $I->dontSeeInDatabase('item', ['id' => $anonymousShareItem->getId()->toString()]);
         $I->dontSeeInDatabase('directory', ['id' => $directoryId]);
         $I->dontSeeInDatabase('directory', ['id' => $user->getDefaultDirectory()->getId()->toString()]);
-//        $I->dontSeeInDatabase('item', ['id' => $anonymousShareItemId]);
-//        $I->dontSeeInDatabase('item', ['id' => $shareItemId]);
-        $I->dontSeeInDatabase('item', ['id' => $child->getId()->toString()]);
 
+        $I->seeInDatabase('item', ['id' => $teamItem->getId()->toString(), 'owner_id' => null]);
+        $I->seeInDatabase('item', ['id' => $child->getId()->toString()]);
         $I->seeInDatabase('groups', ['id' => $teamId]);
         $I->seeInDatabase('directory', ['id' => $listTeamId]);
         $I->seeInDatabase('fos_user', ['id' => $anonymous->getId()->toString()]);

@@ -2,7 +2,12 @@
 
 namespace App\Tests\Helper;
 
+use App\Entity\User;
+use Codeception\Module\Symfony;
 use FOS\UserBundle\Model\UserInterface;
+use Symfony\Component\BrowserKit\Cookie;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class Api extends \Codeception\Module
 {
@@ -20,6 +25,27 @@ class Api extends \Codeception\Module
         $this->getSymfony()->kernel->getContainer()->set('old_sound_rabbit_mq.send_message_producer', $mockProducer);
     }
 
+    public function symfonyAuth(User $user): void
+    {
+        $symfony = $this->getSymfony();
+
+        $token = new UsernamePasswordToken($user, null, 'main', $user->getRoles());
+        $symfony->grabService('security.token_storage')->setToken($token);
+
+        /** @var Session $session */
+        $session = $symfony->grabService('session');
+        $session->set('_security_main', serialize($token));
+        $session->save();
+
+        $cookie = new Cookie($session->getName(), $session->getId());
+        $symfony->client->getCookieJar()->set($cookie);
+    }
+
+    public function symfonyRequest(string $method, string $url, array $params = [])
+    {
+        return $this->getSymfony()->_request($method, $url, $params);
+    }
+
     public function getSchema(string $fileName): string
     {
         $projectRoot = $this->getSymfony()->kernel->getProjectDir();
@@ -32,6 +58,9 @@ class Api extends \Codeception\Module
         );
     }
 
+    /**
+     * @return Symfony
+     */
     private function getSymfony()
     {
         return $this->getModule('Symfony');
