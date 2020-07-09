@@ -70,6 +70,9 @@ class PermissionTest extends Unit
         $team = $I->createTeam($admin);
         $I->addUserToTeam($team, $user);
         $I->addUserToTeam($team, $teamAdmin, UserTeam::USER_ROLE_ADMIN);
+        
+        $adminTeam = $I->createTeam($admin);
+        $I->addUserToTeam($adminTeam, $superAdmin);
 
         $I->login($admin);
         $I->sendGET(sprintf('/teams/%s', $team->getId()->toString()));
@@ -110,6 +113,8 @@ class PermissionTest extends Unit
 
         $I->login($superAdmin);
         $I->sendGET('/teams');
+        $I->seeResponseContains($adminTeam->getId()->toString());
+        $I->dontSeeResponseContains($team->getId()->toString());
         $I->dontSeeResponseContainsJson(['_links' => self::DOMAIN_ADMIN_ACCESS]);
         $I->dontSeeResponseByJsonPathContainsJson('$[0].users[0]', [
             '_links' => self::USER_TEAM_ACCESS,
