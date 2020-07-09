@@ -66,7 +66,10 @@ class CreateUserCommand extends BaseCreateUserCommand
         $user->setEmail($email);
         $user->setPlainPassword($password);
         $user->setEnabled((bool) !$inactive);
-        $user->setSuperAdmin((bool) $superadmin);
+        if ($superadmin) {
+            $user->addRole(User::ROLE_SUPER_ADMIN);
+            $user->addRole(User::ROLE_ADMIN);
+        }
         $seed = $this->srpHandler->getRandomSeed();
         $user->getSrp()->setSeed($seed);
         $x = $this->srpHandler->generateX($seed, $username, $password);

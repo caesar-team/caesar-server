@@ -49,6 +49,10 @@ final class TeamsToCreatedAdminSubscriber implements EventSubscriber
             $teams = $this->teamRepository->findAll();
 
             foreach ($teams as $team) {
+                if (null !== $user->getUserTeamByTeam($team)) {
+                    continue;
+                }
+
                 $userTeam = new UserTeam($user, $team, UserTeam::USER_ROLE_ADMIN);
                 $user->addUserTeam($userTeam);
             }

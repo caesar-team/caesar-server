@@ -36,6 +36,7 @@ class TeamManager
         $team = $team ?: $this->findDefaultTeam();
 
         $userTeam = new UserTeam($user, $team, $role);
+        $user->addUserTeam($userTeam);
         $this->entityManager->persist($userTeam);
     }
 
