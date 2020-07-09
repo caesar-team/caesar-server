@@ -9,7 +9,7 @@ Caesar
 * PHP 7.4
 * PostgreSQL 9
 * RabbitMQ 3
-* Redis 
+* Redis 5
 
 ## Installation
 
