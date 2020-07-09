@@ -70,7 +70,7 @@ class PermissionTest extends Unit
         $team = $I->createTeam($admin);
         $I->addUserToTeam($team, $user);
         $I->addUserToTeam($team, $teamAdmin, UserTeam::USER_ROLE_ADMIN);
-        
+
         $adminTeam = $I->createTeam($admin);
         $I->addUserToTeam($adminTeam, $superAdmin);
 
