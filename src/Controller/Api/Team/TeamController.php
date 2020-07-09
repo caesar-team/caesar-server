@@ -188,7 +188,7 @@ class TeamController extends AbstractController
     public function teams(TeamViewFactory $viewFactory, TeamRepository $teamRepository): array
     {
         $user = $this->getUser();
-        if ($user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_SUPER_ADMIN)) {
+        if ($user->hasRole(User::ROLE_ADMIN)) {
             $teams = $teamRepository->findAll();
         } else {
             $teams = $teamRepository->findByUser($user);
