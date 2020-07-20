@@ -8,10 +8,13 @@ use App\Controller\AbstractController;
 use App\Entity\Directory;
 use App\Entity\User;
 use App\Factory\View\ListViewFactory;
+use App\Factory\View\ShortListViewFactory;
 use App\Form\Request\CreateListType;
 use App\Form\Request\EditListType;
 use App\Form\Request\SortListType;
 use App\Model\View\CredentialsList\ListView;
+use App\Model\View\CredentialsList\ShortListView;
+use App\Repository\DirectoryRepository;
 use App\Security\Voter\ListVoter;
 use App\Security\Voter\TeamListVoter;
 use App\Services\ItemDisplacer;
@@ -268,5 +271,29 @@ final class ListController extends AbstractController
         $manager->flush();
 
         return null;
+    }
+
+    /**
+     * Get available to move lists.
+     *
+     * @SWG\Tag(name="List")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Full list",
+     *     @SWG\Schema(type="array", @Model(type=ShortListView::class))
+     * )
+     *
+     * @Route(
+     *     path="/api/lists/movable",
+     *     name="api_list_movable",
+     *     methods={"GET"}
+     * )
+     *
+     * @return ShortListView[]
+     */
+    public function availableMoveLists(ShortListViewFactory $factory, DirectoryRepository $repository): array
+    {
+        return $factory->createCollection($repository->getMovableListsByUser($this->getUser()));
     }
 }
