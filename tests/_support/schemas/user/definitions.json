@@ -62,6 +62,29 @@
         "teamId"
       ]
     },
+    "short_directory": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "teamId": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "label",
+        "teamId"
+      ]
+    },
     "public_key": {
       "type": "object",
       "properties": {

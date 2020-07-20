@@ -2,6 +2,7 @@
 
 namespace App\Tests\User;
 
+use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\User;
 use App\Tests\ApiTester;
 use Codeception\Module\DataFactory;
@@ -105,5 +106,25 @@ class ListTest extends Unit
         ]);
         $I->seeResponseContains('Unavailable request');
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+    }
+
+    /** @test */
+    public function getMovableLists()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        $I->createTeam($user);
+
+        $I->login($user);
+        $I->sendGET('/lists/movable');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->dontSeeResponseContainsJson(['type' => NodeEnumType::TYPE_TRASH]);
+        $I->dontSeeResponseContainsJson(['type' => NodeEnumType::TYPE_INBOX]);
+
+        $schema = $I->getSchema('user/short_directory_list.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
     }
 }
