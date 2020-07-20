@@ -32,7 +32,7 @@ class DirectoryHelper
         $listsItems = DirectoryHelper::getListsItems([$lists], $lists->getChildItems());
         $items = $inboxItems + $listsItems;
 
-        return $items;
+        return array_values($items);
     }
 
     /**

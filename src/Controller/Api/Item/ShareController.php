@@ -55,9 +55,9 @@ final class ShareController extends AbstractController
         $user = $this->getUser();
 
         $teams = $teamRepository->findByUser($user);
-        $teams = array_filter($teams, static function (Team $team) {
+        $teams = array_values(array_filter($teams, static function (Team $team) {
             return !empty($team->getOfferedItems());
-        });
+        }));
 
         return new OfferedItemsView(
             $itemViewFactory->createCollection(
