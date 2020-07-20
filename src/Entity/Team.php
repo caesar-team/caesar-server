@@ -271,7 +271,7 @@ class Team
             }
         }
 
-        return array_filter($items, [DirectoryHelper::class, 'filterByOffered']);
+        return array_values(array_filter($items, [DirectoryHelper::class, 'filterByOffered']));
     }
 
     /**
