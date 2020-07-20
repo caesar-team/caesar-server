@@ -46,7 +46,7 @@ class DirectoryHelper
             return $user === $item->getSignedOwner();
         });
 
-        return $items;
+        return array_values($items);
     }
 
     public static function filterByOffered(Item $item): bool
@@ -68,6 +68,6 @@ class DirectoryHelper
             }
         }
 
-        return array_filter($items, [DirectoryHelper::class, 'filterByOffered']);
+        return array_values(array_filter($items, [DirectoryHelper::class, 'filterByOffered']));
     }
 }
