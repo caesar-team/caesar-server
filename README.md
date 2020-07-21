@@ -19,6 +19,7 @@ Caesar
 cp .env.dist .env
 ```
 - Fill required values by instruction inside .env
+- Set DOMAIN_ADMIN_EMAIL this email used for registration domain admin
 
 ### 2. Generate the RSA keys for JWT: 
 ```bash

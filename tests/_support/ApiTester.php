@@ -12,6 +12,7 @@ use Codeception\Util\HttpCode;
 use Codeception\Util\JsonArray;
 use Doctrine\Common\Collections\ArrayCollection;
 use FOS\UserBundle\Model\UserInterface;
+use League\FactoryMuffin\Faker\Facade as Faker;
 
 /**
  * Inherited Methods.
@@ -63,6 +64,25 @@ class ApiTester extends \Codeception\Actor
             ]
         );
         $this->seeResponseCodeIs(HttpCode::OK);
+    }
+
+    public function createDefaultTeam(): Team
+    {
+        return $this->have(Team::class, [
+            'alias' => Team::DEFAULT_GROUP_ALIAS,
+            'title' => Team::DEFAULT_GROUP_ALIAS,
+        ]);
+    }
+
+    public function releaseUsername(string $username): void
+    {
+        $clearEmail = Faker::email()();
+        $this->updateInDatabase('fos_user', [
+            'username' => $clearEmail,
+            'username_canonical' => $clearEmail,
+            'email' => $clearEmail,
+            'email_canonical' => $clearEmail,
+        ], ['username' => $username]);
     }
 
     public function createTeam(User $user): Team

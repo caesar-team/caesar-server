@@ -22,7 +22,7 @@ use Swagger\Annotations as SWG;
  * )
  *
  * @Hateoas\Relation(
- *     "list_create",
+ *     "create_list",
  *     attributes={"method": "POST"},
  *     href=@Hateoas\Route(
  *         "api_create_list"

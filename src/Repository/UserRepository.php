@@ -32,6 +32,12 @@ class UserRepository extends ServiceEntityRepository
         $this->directoryRepository = $directoryRepository;
     }
 
+    public function save(User $user): void
+    {
+        $this->_em->persist($user);
+        $this->_em->flush($user);
+    }
+
     /**
      * @throws \Doctrine\ORM\NonUniqueResultException
      */

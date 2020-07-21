@@ -83,7 +83,7 @@ class PermissionTest extends Unit
         $I->sendGET('/users/self');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson(['_links' => [
-            'list_create' => [],
+            'create_list' => [],
         ]]);
         $I->dontSeeResponseContainsJson(['_links' => [
             'team_create' => [],
@@ -93,7 +93,7 @@ class PermissionTest extends Unit
         $I->sendGET('/users/self');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson(['_links' => [
-            'list_create' => [],
+            'create_list' => [],
             'team_create' => [],
         ]]);
 
@@ -101,7 +101,7 @@ class PermissionTest extends Unit
         $I->sendGET('/users/self');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson(['_links' => [
-            'list_create' => [],
+            'create_list' => [],
         ]]);
         $I->dontSeeResponseContainsJson(['_links' => [
             'team_create' => [],
@@ -111,7 +111,7 @@ class PermissionTest extends Unit
         $I->sendGET('/users/self');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->dontSeeResponseContainsJson(['_links' => [
-            'list_create' => [],
+            'create_list' => [],
             'team_create' => [],
         ]]);
     }

@@ -34,6 +34,9 @@ class TeamManager
     public function addTeamToUser(User $user, string $role = UserTeam::DEFAULT_USER_ROLE, Team $team = null)
     {
         $team = $team ?: $this->findDefaultTeam();
+        if (null !== $user->getUserTeamByTeam($team)) {
+            return;
+        }
 
         $userTeam = new UserTeam($user, $team, $role);
         $user->addUserTeam($userTeam);

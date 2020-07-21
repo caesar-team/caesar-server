@@ -4,47 +4,39 @@ namespace App\Command;
 
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Event\User\RegistrationCompletedEvent;
 use App\Services\SrpHandler;
-use App\Services\TeamManager;
 use FOS\UserBundle\Command\CreateUserCommand as BaseCreateUserCommand;
 use FOS\UserBundle\Model\UserManagerInterface;
 use FOS\UserBundle\Util\UserManipulator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class CreateUserCommand extends BaseCreateUserCommand
 {
     protected static $defaultName = 'app:user:create';
 
-    /**
-     * @var UserManipulator
-     */
-    private $userManipulator;
-    /**
-     * @var UserManagerInterface
-     */
-    private $userManager;
-    /**
-     * @var TeamManager
-     */
-    private $teamManager;
-    /**
-     * @var SrpHandler
-     */
-    private $srpHandler;
+    private UserManipulator $userManipulator;
+
+    private UserManagerInterface $userManager;
+
+    private SrpHandler $srpHandler;
+
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         UserManipulator $userManipulator,
         UserManagerInterface $userManager,
-        TeamManager $teamManager,
-        SrpHandler $srpHandler
+        SrpHandler $srpHandler,
+        EventDispatcherInterface $eventDispatcher
     ) {
         parent::__construct($userManipulator);
 
         $this->userManipulator = $userManipulator;
         $this->userManager = $userManager;
-        $this->teamManager = $teamManager;
         $this->srpHandler = $srpHandler;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -75,8 +67,9 @@ class CreateUserCommand extends BaseCreateUserCommand
         $x = $this->srpHandler->generateX($seed, $username, $password);
         $verifier = $this->srpHandler->generateVerifier($x);
         $user->getSrp()->setVerifier($verifier);
-        $this->teamManager->addTeamToUser($user);
         $this->userManager->updateUser($user);
+
+        $this->eventDispatcher->dispatch(new RegistrationCompletedEvent($user));
 
         $output->writeln(sprintf('Created user <comment>%s</comment>', $username));
 

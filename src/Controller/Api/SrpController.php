@@ -7,6 +7,7 @@ namespace App\Controller\Api;
 use App\Controller\AbstractController;
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Event\User\RegistrationCompletedEvent;
 use App\Exception\ApiException;
 use App\Factory\View\Srp\SrpPrepareViewFactory;
 use App\Form\Request\Srp\LoginPrepareType;
@@ -20,7 +21,6 @@ use App\Security\Authentication\SrppAuthenticator;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
-use App\Services\TeamManager;
 use App\Utils\ErrorMessageFormatter;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -92,10 +92,10 @@ final class SrpController extends AbstractController
     public function registerAction(
         Request $request,
         UserManagerInterface $userManager,
-        TeamManager $teamManager,
         TranslatorInterface $translator,
         AuthorizationManager $authorizationManager,
-        ErrorMessageFormatter $errorMessageFormatter
+        ErrorMessageFormatter $errorMessageFormatter,
+        EventDispatcherInterface $eventDispatcher
     ): ?FormInterface {
         $email = $request->request->get('email');
         $user = $userManager->findUserByEmail($email);
@@ -115,11 +115,8 @@ final class SrpController extends AbstractController
             return $form;
         }
 
-        if ($user->isFullUser()) {
-            $teamManager->addTeamToUser($user);
-        }
-
         $userManager->updateUser($user);
+        $eventDispatcher->dispatch(new RegistrationCompletedEvent($user));
 
         return null;
     }
