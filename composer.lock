@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ebfe90eee75cf64c61cc6d233ed5b865",
+    "content-hash": "67f31ffd41d2aa7edc0783e024f0e9a8",
     "packages": [
         {
             "name": "behat/transliterator",
@@ -53,16 +53,16 @@
         },
         {
             "name": "caesar/security-message-bundle",
-            "version": "0.1.2",
+            "version": "0.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/caesar-team/CaesarSecureMessageBundle.git",
-                "reference": "e9b7f8454a2e13f161eca0f6123d70dff9d983b1"
+                "reference": "944b01288d92c964b407ea7b81ca872fd90bc108"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/caesar-team/CaesarSecureMessageBundle/zipball/e9b7f8454a2e13f161eca0f6123d70dff9d983b1",
-                "reference": "e9b7f8454a2e13f161eca0f6123d70dff9d983b1",
+                "url": "https://api.github.com/repos/caesar-team/CaesarSecureMessageBundle/zipball/944b01288d92c964b407ea7b81ca872fd90bc108",
+                "reference": "944b01288d92c964b407ea7b81ca872fd90bc108",
                 "shasum": ""
             },
             "require": {
@@ -113,10 +113,10 @@
             ],
             "description": "Security Message Bundle",
             "support": {
-                "source": "https://github.com/caesar-team/CaesarSecureMessageBundle/tree/0.1.2",
+                "source": "https://github.com/caesar-team/CaesarSecureMessageBundle/tree/0.1.3",
                 "issues": "https://github.com/caesar-team/CaesarSecureMessageBundle/issues"
             },
-            "time": "2020-05-06T20:11:15+00:00"
+            "time": "2020-07-21T10:49:23+00:00"
         },
         {
             "name": "clue/stream-filter",

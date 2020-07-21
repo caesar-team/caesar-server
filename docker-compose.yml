@@ -1,7 +1,7 @@
 version: '3.2'
 
 services:
-    php:
+    web:
         build:
             context: .
             dockerfile: Dockerfile.dev
@@ -18,7 +18,9 @@ services:
         volumes:
             - .:/var/www/html
         expose:
-            - 9000
+            - 8080
+        ports:
+            - "${SERVER_HTTP_PORT}:8080"
         environment:
             - PARENT_USER_ID
             - APP_ENV
@@ -31,15 +33,6 @@ services:
             - rabbitmq
         entrypoint:
             - "./entrypoint.sh"
-    nginx:
-        image: 4xxi/nginx:flex
-        depends_on:
-            - php
-        ports:
-            - "${SERVER_HTTP_PORT}:${SERVER_HTTP_PORT}"
-        volumes:
-            - .:/var/www/html
-            - ./var/log:/var/log/nginx
     db:
         image: "postgres:9"
         ports:
@@ -62,7 +55,7 @@ services:
             - POSTGRES_USER=${TEST_POSTGRES_USER}
             - POSTGRES_PASSWORD=${TEST_POSTGRES_PASSWORD}
     redis:
-        image: 'redis:5-alpine'
+        image: 'redis:6-alpine'
         environment:
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL

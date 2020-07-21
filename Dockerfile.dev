@@ -1,8 +1,7 @@
 # ---- Base Image ----
-FROM php:7.4-fpm-alpine AS base
-RUN mkdir -p /var/www/html /var/www/html/public/static /var/www/html/var/cache /var/www/html/var/logs /var/www/html/var/sessions && chown -R www-data /var/www/html
-# Set working directory
-WORKDIR /var/www/html
+FROM caesarteam/php74x:latest AS base
+RUN mkdir -p /var/www/html /var/www/html/public/static /var/www/html/var/cache /var/www/html/var/logs /var/www/html/var/sessions /var/www/html/var/jwt && chown -R nobody /var/www/html
+USER root
 
 RUN apk --update add \
     build-base \
@@ -27,6 +26,8 @@ RUN docker-php-ext-install \
 RUN pecl install gnupg redis \
     && docker-php-ext-enable redis
 
+# Set working directory
+WORKDIR /var/www/html
 # Composer part
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_MEMORY_LIMIT -1
@@ -38,8 +39,6 @@ ENV APP_ENV=prod
 # Copy project file
 COPY composer.json .
 COPY composer.lock .
-
-
 
 ARG XDEBUG_REMOTE_HOST=172.17.0.1
 ARG XDEBUG_REMOTE_ENABLE=1
@@ -65,7 +64,8 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS coreutils \
    && echo "xdebug.max_nesting_level=9999" >> /usr/local/etc/php/conf.d/xdebug.ini \
    && apk del .build-deps
 
-FROM node:10-alpine AS yarn-enc
+## ---- Webpack Encore ----
+FROM node:lts-alpine AS yarn-enc
 COPY . .
 RUN yarn install && yarn encore production
 # ---- Dependencies ----
