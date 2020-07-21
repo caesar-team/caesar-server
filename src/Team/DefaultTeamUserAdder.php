@@ -21,7 +21,7 @@ class DefaultTeamUserAdder
         $this->userTeamRepository = $userTeamRepository;
     }
 
-    public function addUser(User $user, string $role = UserTeam::DEFAULT_USER_ROLE)
+    public function addUser(User $user, string $role = UserTeam::DEFAULT_USER_ROLE): void
     {
         $team = $this->teamRepository->getDefaultTeam();
         if (null === $team) {

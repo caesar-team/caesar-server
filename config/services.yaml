@@ -84,3 +84,7 @@ services:
         class: App\Services\SecurityMessage\Client
         arguments:
             - '@snc_redis.default'
+
+    App\Event\EventSubscriber\PromoteAdminSubscriber:
+        arguments:
+            $domainAdminEmail: '%env(resolve:DOMAIN_ADMIN_EMAIL)%'

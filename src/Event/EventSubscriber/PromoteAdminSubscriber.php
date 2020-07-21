@@ -17,10 +17,13 @@ class PromoteAdminSubscriber implements EventSubscriberInterface
 
     private UserRepository $repository;
 
-    public function __construct(DefaultTeamUserAdder $teamUserAdder, UserRepository $repository)
+    private string $domainAdminEmail;
+
+    public function __construct(DefaultTeamUserAdder $teamUserAdder, UserRepository $repository, string $domainAdminEmail = '')
     {
         $this->teamUserAdder = $teamUserAdder;
         $this->repository = $repository;
+        $this->domainAdminEmail = $domainAdminEmail;
     }
 
     /**
@@ -36,7 +39,7 @@ class PromoteAdminSubscriber implements EventSubscriberInterface
     public function onRegistrationCompleted(RegistrationCompletedEvent $event): void
     {
         $user = $event->getUser();
-        if (getenv('DOMAIN_ADMIN_EMAIL') !== $user->getEmail()) {
+        if ($this->domainAdminEmail !== $user->getEmail()) {
             return;
         }
 
