@@ -95,7 +95,7 @@ class Team
     /**
      * @var Collection|Directory[]
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="team")
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="team", cascade={"persist"})
      * @ORM\OrderBy({"sort": "ASC"})
      */
     protected $directories;

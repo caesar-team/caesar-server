@@ -3,6 +3,7 @@
 namespace App\Tests\User;
 
 use App\DBAL\Types\Enum\NodeEnumType;
+use App\Entity\Directory;
 use App\Entity\User;
 use App\Tests\ApiTester;
 use Codeception\Module\DataFactory;
@@ -123,6 +124,8 @@ class ListTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->dontSeeResponseContainsJson(['type' => NodeEnumType::TYPE_TRASH]);
         $I->dontSeeResponseContainsJson(['type' => NodeEnumType::TYPE_INBOX]);
+        $I->dontSeeResponseContainsJson(['label' => Directory::LIST_TRASH]);
+        $I->dontSeeResponseContainsJson(['label' => Directory::LIST_ROOT_LIST]);
 
         $schema = $I->getSchema('user/short_directory_list.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
