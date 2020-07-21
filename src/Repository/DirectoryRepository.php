@@ -68,6 +68,7 @@ class DirectoryRepository extends ServiceEntityRepository
             ->where('list.team IS NOT NULL')
             ->andWhere('user_teams.user = :user')
             ->andWhere('user_teams.userRole IN (:roles)')
+            ->andWhere('list.parentList IS NOT NULL')
             ->setParameter('user', $user)
             ->setParameter('roles', [UserTeam::USER_ROLE_MEMBER, UserTeam::USER_ROLE_ADMIN])
         ;

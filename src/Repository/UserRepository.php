@@ -35,6 +35,7 @@ class UserRepository extends ServiceEntityRepository
     public function save(User $user): void
     {
         $this->_em->persist($user);
+        /** @psalm-suppress TooManyArguments */
         $this->_em->flush($user);
     }
 
