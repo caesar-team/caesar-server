@@ -159,10 +159,6 @@ final class MemberController extends AbstractController
         UserTeamRepository $userTeamRepository,
         ItemRepository $itemRepository
     ): JsonResponse {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
-        }
-
         $this->denyAccessUnlessGranted(UserTeamVoter::REMOVE, $team->getUserTeamByUser($this->getUser()));
 
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
@@ -211,10 +207,6 @@ final class MemberController extends AbstractController
         MemberViewFactory $viewFactory,
         UserTeamRepository $userTeamRepository)
     {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            throw new \LogicException('Illegal team');
-        }
-
         $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
 
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
