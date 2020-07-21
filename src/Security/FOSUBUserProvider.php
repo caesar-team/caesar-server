@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Security;
 
 use App\Entity\User;
+use App\Event\User\RegistrationCompletedEvent;
 use App\Model\Event\AppEvents;
 use App\Repository\UserRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
@@ -85,9 +86,10 @@ class FOSUBUserProvider extends BaseUserProvider
                 $user->setUsername($response->getEmail());
                 $user->setEnabled(true);
                 if ($user instanceof User) {
-                    $this->groupManager->addTeamToUser($user);
                     $avatar = $this->downloader->createAvatarFromLink($response->getProfilePicture());
                     $user->setAvatar($avatar);
+
+                    $this->eventDispatcher->dispatch(new RegistrationCompletedEvent($user));
                 }
 
                 $this->userManager->updateCanonicalFields($user);

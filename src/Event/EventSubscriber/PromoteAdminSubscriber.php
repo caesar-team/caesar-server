@@ -4,107 +4,45 @@ declare(strict_types=1);
 
 namespace App\Event\EventSubscriber;
 
-use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
-use App\Repository\TeamRepository;
-use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Event\OnFlushEventArgs;
-use Doctrine\ORM\Events;
-use Doctrine\ORM\UnitOfWork;
+use App\Event\User\RegistrationCompletedEvent;
+use App\Repository\UserRepository;
+use App\Team\DefaultTeamUserAdder;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class PromoteAdminSubscriber implements EventSubscriber
+class PromoteAdminSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var TeamRepository
-     */
-    private $teamRepository;
+    private DefaultTeamUserAdder $teamUserAdder;
 
-    public function __construct(TeamRepository $teamRepository)
+    private UserRepository $repository;
+
+    public function __construct(DefaultTeamUserAdder $teamUserAdder, UserRepository $repository)
     {
-        $this->teamRepository = $teamRepository;
+        $this->teamUserAdder = $teamUserAdder;
+        $this->repository = $repository;
     }
 
     /**
-     * Returns an array of events this subscriber wants to listen to.
-     *
-     * @return string[]
+     * {@inheritdoc}
      */
-    public function getSubscribedEvents()
+    public static function getSubscribedEvents()
     {
         return [
-            Events::onFlush,
+            RegistrationCompletedEvent::class => 'onRegistrationCompleted',
         ];
     }
 
-    /**
-     * @throws \Exception
-     */
-    public function onFlush(OnFlushEventArgs $args): void
+    public function onRegistrationCompleted(RegistrationCompletedEvent $event): void
     {
-        $em = $args->getEntityManager();
-        $uow = $em->getUnitOfWork();
-
-        foreach ($uow->getScheduledEntityUpdates() as $keyEntity => $userUpdate) {
-            if ($userUpdate instanceof User) {
-                $memberships = $userUpdate->getTeams();
-                $teams = $this->teamRepository->findAllExcept($memberships);
-
-                if ($this->canAssignTeams($uow, $userUpdate)) {
-                    $this->assignTeams($em, $uow, $userUpdate, $teams);
-                }
-            }
+        $user = $event->getUser();
+        if (getenv('DOMAIN_ADMIN_EMAIL') !== $user->getEmail()) {
+            return;
         }
 
-        foreach ($uow->getScheduledEntityInsertions() as $keyEntity => $userInsert) {
-            if ($userInsert instanceof User) {
-                $memberships = $userInsert->getTeams();
-                $teams = $this->teamRepository->findAllExcept($memberships);
+        $this->teamUserAdder->addUser($user, UserTeam::USER_ROLE_ADMIN);
 
-                if (getenv('DOMAIN_ADMIN_EMAIL') === $userInsert->getEmail()) {
-                    $this->addAdminRole($em, $uow, $userInsert);
-                    $this->assignTeams($em, $uow, $userInsert, $teams);
-                }
-            }
-        }
-    }
-
-    private function containsAdminRoles(array $field): bool
-    {
-        return in_array(User::ROLE_ADMIN, $field[1]) || in_array(User::ROLE_SUPER_ADMIN, $field[1]);
-    }
-
-    /**
-     * @param array|Team[] $teams
-     *
-     * @throws \Exception
-     */
-    private function assignTeams(EntityManagerInterface $em, UnitOfWork $uow, User $user, array $teams): void
-    {
-        foreach ($teams as $team) {
-            $userTeam = new UserTeam($user, $team, UserTeam::USER_ROLE_ADMIN);
-            $em->persist($userTeam);
-            $classMetadata = $em->getClassMetadata('App\Entity\UserTeam');
-            $uow->computeChangeSet($classMetadata, $userTeam);
-        }
-    }
-
-    private function canAssignTeams(UnitOfWork $uow, User $user): bool
-    {
-        foreach ($uow->getEntityChangeSet($user) as $keyField => $field) {
-            if ('roles' === $keyField && $this->containsAdminRoles($field)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function addAdminRole(EntityManagerInterface $em, UnitOfWork $uow, User $user): void
-    {
-        $classMetadata = $em->getClassMetadata('App\Entity\User');
-        $user->addRole(User::ROLE_SUPER_ADMIN);
-        $uow->recomputeSingleEntityChangeSet($classMetadata, $user);
+        $user->addRole(User::ROLE_ADMIN);
+        $this->repository->save($user);
     }
 }

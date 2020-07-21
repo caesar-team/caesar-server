@@ -8,7 +8,6 @@ use App\Controller\AbstractController;
 use App\Entity\Security\Invitation;
 use App\Entity\Srp;
 use App\Entity\User;
-use App\Entity\UserTeam;
 use App\Factory\View\SecurityBootstrapViewFactory;
 use App\Factory\View\UserSecurityInfoViewFactory;
 use App\Form\Request\CreateInvitedUserType;
@@ -23,7 +22,6 @@ use App\Model\View\User\UserSecurityInfoView;
 use App\Repository\UserRepository;
 use App\Services\InvitationManager;
 use App\Services\Messenger;
-use App\Services\TeamManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Psr\Log\LoggerInterface;
@@ -73,8 +71,7 @@ final class UserController extends AbstractController
     public function createUser(
         Request $request,
         UserRepository $userRepository,
-        EntityManagerInterface $entityManager,
-        TeamManager $teamManager
+        EntityManagerInterface $entityManager
     ) {
         $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
         if (null === $user) {
@@ -91,7 +88,6 @@ final class UserController extends AbstractController
         }
 
         if ($user->isFullUser()) {
-            $teamManager->addTeamToUser($user, UserTeam::USER_ROLE_PRETENDER);
             $this->removeInvitation($user, $entityManager);
             $invitation = new Invitation();
             $invitation->setHash($user->getEmail());
@@ -265,8 +261,7 @@ final class UserController extends AbstractController
      */
     public function batchCreateUser(
         Request $request,
-        EntityManagerInterface $entityManager,
-        TeamManager $groupManager
+        EntityManagerInterface $entityManager
     ) {
         $requestUsers = $request->request->get('users');
         $users = [];
@@ -280,7 +275,6 @@ final class UserController extends AbstractController
             }
 
             if ($user->isFullUser()) {
-                $groupManager->addTeamToUser($user, UserTeam::USER_ROLE_PRETENDER);
                 $this->removeInvitation($user, $entityManager);
                 $invitation = new Invitation();
                 $invitation->setHash($user->getEmail());
