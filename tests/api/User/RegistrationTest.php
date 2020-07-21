@@ -65,7 +65,7 @@ class RegistrationTest extends Unit
         $I->releaseUsername($email);
     }
 
-    /** @test */
+    /** @todo investigate stty: standard input: Not a tty */
     public function registrationByCommand()
     {
         $I = $this->tester;
@@ -79,7 +79,7 @@ class RegistrationTest extends Unit
         $I->dontSeeInDatabase('user_group', ['group_id' => $team->getId()->toString(), 'user_id' => $userId]);
     }
 
-    /** @test */
+    /** @todo investigate stty: standard input: Not a tty */
     public function registrationAdminByCommand()
     {
         $I = $this->tester;
