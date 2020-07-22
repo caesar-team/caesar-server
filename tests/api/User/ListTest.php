@@ -89,6 +89,19 @@ class ListTest extends Unit
         ]);
         $I->seeResponseContains('List with such label already exists');
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+
+        $team = $I->createTeam($user);
+
+        $I->sendPOST(sprintf('teams/%s/lists', $team->getId()->toString()), [
+            'label' => 'New list',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->sendPOST(sprintf('teams/%s/lists', $team->getId()->toString()), [
+            'label' => 'New list',
+        ]);
+        $I->seeResponseContains('List with such label already exists');
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
     }
 
     /** @test */
