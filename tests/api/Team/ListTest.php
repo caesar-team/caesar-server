@@ -157,7 +157,7 @@ class ListTest extends Unit
         $I->sendPOST(sprintf('teams/%s/lists', $team->getId()->toString()), [
             'label' => uniqid(),
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
@@ -223,7 +223,7 @@ class ListTest extends Unit
         $I->sendPATCH(sprintf('teams/%s/lists/%s', $list->getTeam()->getId()->toString(), $list->getId()->toString()), [
             'label' => uniqid(),
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
@@ -242,7 +242,7 @@ class ListTest extends Unit
 
         $I->login($user);
         $I->sendDELETE(sprintf('teams/%s/lists/%s', $list->getTeam()->getId()->toString(), $list->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 }

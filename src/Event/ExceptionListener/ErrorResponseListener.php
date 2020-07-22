@@ -10,6 +10,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 class ErrorResponseListener
@@ -64,6 +65,16 @@ class ErrorResponseListener
 
         $data = $this->errorMessageFormatter->errorFormat($exception);
 
-        return new ApiException($data, Response::HTTP_BAD_REQUEST);
+        return new ApiException($data, $this->getCodeByException($exception));
+    }
+
+    private function getCodeByException(Throwable $exception): int
+    {
+        switch (true) {
+            case $exception instanceof HttpExceptionInterface:
+                return $exception->getStatusCode();
+        }
+
+        return Response::HTTP_BAD_REQUEST;
     }
 }

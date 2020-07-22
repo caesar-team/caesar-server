@@ -192,7 +192,7 @@ class ItemTest extends Unit
 
         $I->login($user);
         $I->sendDELETE(sprintf('items/%s', $item->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
@@ -224,7 +224,7 @@ class ItemTest extends Unit
                 'secret' => 'secret-edit',
             ],
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
@@ -258,7 +258,7 @@ class ItemTest extends Unit
             'favorite' => false,
             'tags' => ['tag'],
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 }
