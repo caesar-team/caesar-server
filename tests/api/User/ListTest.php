@@ -91,7 +91,7 @@ class ListTest extends Unit
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
 
         $team = $I->createTeam($user);
-        
+
         $I->sendPOST(sprintf('teams/%s/lists', $team->getId()->toString()), [
             'label' => 'New list',
         ]);
