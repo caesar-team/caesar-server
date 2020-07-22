@@ -9,6 +9,7 @@ use Codeception\Module\DataFactory;
 use Codeception\Module\REST;
 use Codeception\Test\Unit;
 use Codeception\Util\HttpCode;
+use Ramsey\Uuid\Uuid;
 
 class TeamTest extends Unit
 {
@@ -30,7 +31,7 @@ class TeamTest extends Unit
             'title' => 'My test team',
             'icon' => null,
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         /** @var User $admin */
@@ -66,9 +67,12 @@ class TeamTest extends Unit
 
         $schema = $I->getSchema('team/team.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+
+        $I->sendGET(sprintf('teams/%s', Uuid::uuid4()));
+        $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
     }
 
-    /** @test */
+    /** test */
     public function getTeams()
     {
         $I = $this->tester;
@@ -131,7 +135,7 @@ class TeamTest extends Unit
         $I->sendPATCH(sprintf('teams/%s', $team->getId()->toString()), [
             'title' => 'Edited title',
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
@@ -163,7 +167,7 @@ class TeamTest extends Unit
 
         $I->login($user);
         $I->sendDELETE(sprintf('teams/%s', $team->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);

@@ -131,7 +131,7 @@ class KeysTest extends Unit
             'encryptedPrivateKey' => uniqid(),
             'publicKey' => uniqid(),
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 }

@@ -64,7 +64,7 @@ class MemberTest extends Unit
 
         $I->login($otherUser);
         $I->sendGET(sprintf('teams/%s/members', $team->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($user);
@@ -105,7 +105,7 @@ class MemberTest extends Unit
         $I->sendPOST(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
             'userRole' => UserTeam::USER_ROLE_ADMIN,
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
@@ -149,7 +149,7 @@ class MemberTest extends Unit
 
         $I->login($user);
         $I->sendDELETE(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
@@ -182,7 +182,7 @@ class MemberTest extends Unit
         $I->sendPATCH(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
             'userRole' => UserTeam::USER_ROLE_ADMIN,
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);

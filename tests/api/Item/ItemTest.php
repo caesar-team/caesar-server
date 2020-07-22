@@ -190,7 +190,7 @@ class ItemTest extends Unit
                 'secret' => 'secret-edit',
             ],
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
@@ -224,7 +224,7 @@ class ItemTest extends Unit
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
 
         $I->sendDELETE(sprintf('/items/%s', $otherItem->getId()));
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
@@ -276,7 +276,7 @@ class ItemTest extends Unit
         $I->sendPATCH(sprintf('/items/%s/move', $otherItem->getId()), [
             'listId' => $moveDirectory->getId()->toString(),
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
@@ -311,7 +311,7 @@ class ItemTest extends Unit
         $I->sendPATCH(sprintf('/items/batch/move/list/%s', $otherDirectory->getId()->toString()), [
             'items' => [$item->getId()->toString()],
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->haveHttpHeader('Content-Type', 'application/json');
@@ -327,7 +327,7 @@ class ItemTest extends Unit
                 $otherItem->getId()->toString(),
             ],
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 }
