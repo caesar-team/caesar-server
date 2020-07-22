@@ -17,7 +17,13 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 /**
  * @ORM\Table
  * @ORM\Entity(repositoryClass="App\Repository\DirectoryRepository")
- * @UniqueEntity(fields={"label"}, errorPath="label", message="list.create.label.already_exists", groups={"unique_label"})
+ * @UniqueEntity(
+ *     fields={"label", "team"},
+ *     ignoreNull=false,
+ *     errorPath="label",
+ *     message="list.create.label.already_exists",
+ *     groups={"unique_label"}
+ * )
  */
 class Directory
 {
