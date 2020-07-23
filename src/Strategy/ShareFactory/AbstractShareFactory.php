@@ -7,9 +7,9 @@ namespace App\Strategy\ShareFactory;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Mailer\MailRegistry;
-use App\Model\DTO\Message;
 use App\Model\Request\ChildItem;
-use App\Services\Messenger;
+use App\Notification\MessengerInterface;
+use App\Notification\Model\Message;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
@@ -30,7 +30,7 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
      */
     protected $router;
     /**
-     * @var Messenger
+     * @var MessengerInterface
      */
     protected $messenger;
     /**
@@ -53,7 +53,7 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
         EntityManagerInterface $entityManager,
         SenderInterface $sender,
         RouterInterface $router,
-        Messenger $messenger,
+        MessengerInterface $messenger,
         LoggerInterface $logger
     ) {
         $this->entityManager = $entityManager;
@@ -73,13 +73,13 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
             return;
         }
 
-        $options = [
-            'url' => $this->absoluteUrl,
-            'event' => $event,
-            'isNotFinishedStatusFlow' => User::FLOW_STATUS_FINISHED !== $childItem->getUser()->getFlowStatus(),
-        ];
-        $message = new Message($childItem->getUser()->getId()->toString(), $childItem->getUser()->getEmail(), MailRegistry::NEW_ITEM_MESSAGE, $options);
-        $this->messenger->send($childItem->getUser(), $message);
+        $this->messenger->send(
+            Message::createDeferredFromUser(
+                $childItem->getUser(),
+                MailRegistry::SHARE_ITEM,
+                ['url' => $this->absoluteUrl, 'share_count' => 1]
+            ),
+        );
 
         $this->logger->debug('Registered in ChildItemHandler');
     }

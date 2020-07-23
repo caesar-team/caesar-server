@@ -8,9 +8,10 @@ use App\Entity\Item;
 use App\Entity\ItemUpdate;
 use App\Entity\User;
 use App\Mailer\MailRegistry;
-use App\Model\DTO\Message;
 use App\Model\Request\ChildItem;
 use App\Model\Request\ItemCollectionRequest;
+use App\Notification\MessengerInterface;
+use App\Notification\Model\Message;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Psr\Log\LoggerInterface;
@@ -37,7 +38,7 @@ class ChildItemActualizer
      */
     protected $router;
     /**
-     * @var Messenger
+     * @var MessengerInterface
      */
     private $messenger;
     /**
@@ -56,7 +57,7 @@ class ChildItemActualizer
         EntityManagerInterface $entityManager,
         SenderInterface $sender,
         RouterInterface $router,
-        Messenger $messenger,
+        MessengerInterface $messenger,
         LoggerInterface $logger
     ) {
         $this->entityManager = $entityManager;
@@ -91,7 +92,7 @@ class ChildItemActualizer
 
             $this->entityManager->persist($item);
             if ($currentOwner !== $user) {
-                $this->sendItemMessage($childItem, self::EVENT_UPDATED_ITEM);
+                $this->sendItemMessage($childItem);
             }
         }
 
@@ -105,19 +106,19 @@ class ChildItemActualizer
         $this->entityManager->persist($update);
     }
 
-    private function sendItemMessage(ChildItem $childItem, string $event = self::EVENT_NEW_ITEM): void
+    private function sendItemMessage(ChildItem $childItem): void
     {
         if ($childItem->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)) {
             return;
         }
 
-        $options = [
-            'url' => $this->absoluteUrl,
-            'event' => $event,
-            'isNotFinishedStatusFlow' => User::FLOW_STATUS_FINISHED !== $childItem->getUser()->getFlowStatus(),
-        ];
-        $message = new Message($childItem->getUser()->getId()->toString(), $childItem->getUser()->getEmail(), MailRegistry::NEW_ITEM_MESSAGE, $options);
-        $this->messenger->send($childItem->getUser(), $message);
+        $this->messenger->send(
+            Message::createDeferredFromUser(
+                $childItem->getUser(),
+                MailRegistry::UPDATE_ITEM,
+                ['url' => $this->absoluteUrl, 'update_count' => 1]
+            )
+        );
 
         $this->logger->debug('Registered in ChildItemHandler');
     }

@@ -14,14 +14,14 @@ use App\Form\Request\CreateInvitedUserType;
 use App\Form\Request\SendInvitesType;
 use App\Form\Request\SendInviteType;
 use App\Mailer\MailRegistry;
-use App\Model\DTO\Message;
 use App\Model\Request\SendInviteRequest;
 use App\Model\Request\SendInviteRequests;
 use App\Model\View\User\SecurityBootstrapView;
 use App\Model\View\User\UserSecurityInfoView;
+use App\Notification\MessengerInterface;
+use App\Notification\Model\Message;
 use App\Repository\UserRepository;
 use App\Services\InvitationManager;
-use App\Services\Messenger;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Psr\Log\LoggerInterface;
@@ -181,7 +181,7 @@ final class UserController extends AbstractController
      *
      * @throws \Exception
      */
-    public function sendInvitation(Request $request, Messenger $messenger, LoggerInterface $logger): ?FormInterface
+    public function sendInvitation(Request $request, MessengerInterface $messenger, LoggerInterface $logger): ?FormInterface
     {
         $sendRequest = new SendInviteRequest();
 
@@ -191,10 +191,11 @@ final class UserController extends AbstractController
             return $form;
         }
 
-        $message = new Message($sendRequest->getUser()->getId()->toString(), $sendRequest->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
-            'url' => $sendRequest->getUrl(),
-        ]);
-        $messenger->send($sendRequest->getUser(), $message);
+        $messenger->send(Message::createFromUser(
+            $sendRequest->getUser(),
+            MailRegistry::INVITE_SEND_MESSAGE,
+            ['url' => $sendRequest->getUrl()]
+        ));
 
         $logger->debug('Registered in UserController::sendInvitation');
         $logger->debug(sprintf('Username: %s', $sendRequest->getUser()->getUsername()));
@@ -229,7 +230,7 @@ final class UserController extends AbstractController
      *
      * @return FormInterface|null
      */
-    public function sendInvitations(Request $request, Messenger $messenger)
+    public function sendInvitations(Request $request, MessengerInterface $messenger)
     {
         $sendRequests = new SendInviteRequests();
 
@@ -240,10 +241,11 @@ final class UserController extends AbstractController
         }
 
         foreach ($sendRequests->getMessages() as $requestMessage) {
-            $message = new Message($requestMessage->getUser()->getId()->toString(), $requestMessage->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
-                'url' => $requestMessage->getUrl(),
-            ]);
-            $messenger->send($requestMessage->getUser(), $message);
+            $messenger->send(Message::createFromUser(
+                $requestMessage->getUser(),
+                MailRegistry::INVITE_SEND_MESSAGE,
+                ['url' => $requestMessage->getUrl()]
+            ));
         }
 
         return null;

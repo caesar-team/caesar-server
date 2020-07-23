@@ -88,3 +88,24 @@ services:
     App\Event\EventSubscriber\PromoteAdminSubscriber:
         arguments:
             $domainAdminEmail: '%env(resolve:DOMAIN_ADMIN_EMAIL)%'
+
+    App\Notification\EmailSpoolMessenger:
+        arguments:
+            $producer: '@old_sound_rabbit_mq.send_message_producer'
+
+    App\Notification\CompositeMessenger:
+        arguments:
+            - '@App\Notification\EmailSpoolMessenger'
+            - '@App\Notification\DatabaseMessenger'
+
+    App\Notification\MessengerInterface: '@App\Notification\CompositeMessenger'
+
+    App\Notification\MessageGrouper\MessageGrouperInterface: '@App\Notification\MessageGrouper\CompositeMessageGrouper'
+
+    App\Notification\MessageGrouper\CompositeMessageGrouper:
+        arguments:
+            - '@App\Notification\MessageGrouper\ShareMessageGrouper'
+            - '@App\Notification\MessageGrouper\UpdateMessageGrouper'
+            - '@App\Notification\MessageGrouper\ShareAndUpdateMessageGrouper'
+            - '@App\Notification\MessageGrouper\NewRegistrationMessageGrouper'
+            - '@App\Notification\MessageGrouper\DefaultMessageGrouper'
