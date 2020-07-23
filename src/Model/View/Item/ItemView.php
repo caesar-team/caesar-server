@@ -106,6 +106,17 @@ use Swagger\Annotations as SWG;
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::SHARE'), object.getItem()))"
  *     )
  * )
+ * @Hateoas\Relation(
+ *     "team_favorite_item_toggle",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route(
+ *         "api_favorite_item_toggle",
+ *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::FAVORITE'), object.getItem()))"
+ *     )
+ * )
  */
 final class ItemView
 {

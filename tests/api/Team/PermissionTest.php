@@ -246,6 +246,7 @@ class PermissionTest extends Unit
             'team_delete_item' => [],
             'team_move_item' => [],
             'team_batch_share_item' => [],
+            'team_favorite_item_toggle' => [],
         ]]);
         $I->seeResponseCodeIs(HttpCode::OK);
     }
