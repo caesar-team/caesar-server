@@ -11,8 +11,11 @@ use App\Entity\UserTeam;
 use App\Factory\View\Team\MemberViewFactory;
 use App\Form\Request\Team\AddMemberType;
 use App\Form\Request\Team\EditUserTeamType;
+use App\Mailer\MailRegistry;
 use App\Model\Request\Team\EditUserTeamRequest;
 use App\Model\View\Team\MemberView;
+use App\Notification\MessengerInterface;
+use App\Notification\Model\Message;
 use App\Repository\ItemRepository;
 use App\Repository\UserTeamRepository;
 use App\Security\Voter\UserTeamVoter;
@@ -25,6 +28,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  * @Route(path="/api/teams")
@@ -120,7 +124,8 @@ final class MemberController extends AbstractController
         Team $team,
         User $user,
         MemberViewFactory $viewFactory,
-        UserTeamRepository $repository
+        UserTeamRepository $repository,
+        MessengerInterface $messenger
     ) {
         $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
         $userTeam = new UserTeam();
@@ -134,6 +139,15 @@ final class MemberController extends AbstractController
         $userTeam->setUser($user);
         $userTeam->setTeam($team);
         $repository->save($userTeam);
+
+        $messenger->send(Message::createFromUser(
+            $user,
+            MailRegistry::ADD_TO_TEAM,
+            [
+                'team_name' => $team->getTitle(),
+                'url' => $this->generateUrl('root', [], RouterInterface::ABSOLUTE_URL),
+            ]
+        ));
 
         return $viewFactory->createSingle($userTeam);
     }

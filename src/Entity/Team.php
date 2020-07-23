@@ -128,6 +128,16 @@ class Team
         })->toArray();
     }
 
+    /**
+     * @return UserTeam[]
+     */
+    public function getAdminUserTeams(): array
+    {
+        return $this->getUserTeams()->filter(static function (UserTeam $userTeam) {
+            return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole();
+        })->toArray();
+    }
+
     public function getUserTeamByUser(?UserInterface $user): ?UserTeam
     {
         $criteria = Criteria::create();

@@ -4,31 +4,23 @@ declare(strict_types=1);
 
 namespace App\Consumer;
 
-use App\Mailer\Sender\MailSender;
-use App\Model\DTO\Message;
-use Doctrine\ORM\EntityManagerInterface;
-use Exception;
+use App\Notification\Model\Message;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
+use Psr\Log\LoggerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
 use Throwable;
 
 class SendMessageConsumer implements ConsumerInterface
 {
-    /**
-     * @var SenderInterface|MailSender
-     */
-    private $sender;
+    private SenderInterface $sender;
 
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
+    private LoggerInterface $logger;
 
-    public function __construct(SenderInterface $sender, EntityManagerInterface $entityManager)
+    public function __construct(SenderInterface $sender, LoggerInterface $logger)
     {
         $this->sender = $sender;
-        $this->entityManager = $entityManager;
+        $this->logger = $logger;
     }
 
     public function execute(AMQPMessage $msg): void
@@ -38,16 +30,15 @@ class SendMessageConsumer implements ConsumerInterface
             return;
         }
 
-        $email = $message->email;
-        $options = $message->options;
-        $code = $message->code;
+        $email = $message->getEmail();
+        $options = $message->getOptions();
+        $code = $message->getCode();
 
         try {
             $this->sender->send($code, [$email], $options);
-        } catch (Exception $exception) {
+        } catch (Throwable $exception) {
+            $this->logger->critical(sprintf('[Consumer] Error: %s, Trace: %s', $exception->getMessage(), $exception->getTraceAsString()));
             echo $exception->getMessage();
-        } catch (Throwable $error) {
-            echo $error->getMessage();
         }
     }
 }

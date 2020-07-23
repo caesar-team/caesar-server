@@ -1,0 +1,5 @@
+{% extends 'email/layout.html.twig' %}
+
+{% block subject %}{{ 'mail.new_registration.subject'|trans|raw }}{% endblock %}
+
+{% block body %}{{ 'mail.new_registration.body'|trans({'%email%': email, '%app_name%': app_name})|raw }}{% endblock %}
