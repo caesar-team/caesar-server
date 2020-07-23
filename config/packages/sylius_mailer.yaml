@@ -6,6 +6,22 @@ sylius_mailer:
         !php/const App\Mailer\MailRegistry::INVITE_SEND_MESSAGE:
             subject: 'Shared access with you'
             template: email/invite_message.html.twig
+        !php/const App\Mailer\MailRegistry::SHARE_ITEM:
+            subject: 'New %env(APP_NAME)% secrets are shared with you'
+            template: email/share_item.html.twig
+        !php/const App\Mailer\MailRegistry::UPDATE_ITEM:
+            subject: 'You have updates on the %env(APP_NAME)% secrets'
+            template: email/update_item.html.twig
+        !php/const App\Mailer\MailRegistry::SHARE_AND_UPDATE_ITEM:
+            subject: 'You have updates on the %env(APP_NAME)% secrets'
+            template: email/share_and_update_item.html.twig
+        !php/const App\Mailer\MailRegistry::NEW_REGISTRATION:
+            subject: 'New users are registered!'
+            template: email/new_registration.html.twig
+        !php/const App\Mailer\MailRegistry::ADD_TO_TEAM:
+            subject: 'You have been added to a team'
+            template: email/add_user_to_team.html.twig
+
         !php/const App\Mailer\MailRegistry::SHARE_SEND_MESSAGE:
             subject: 'Shared access with you'
             template: email/share_message.html.twig

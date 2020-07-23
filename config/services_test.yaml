@@ -10,3 +10,5 @@ services:
             - '@kernel'
             - ['@test.client.history']
     Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface: '@lexik_jwt_authentication.jwt_manager'
+
+    App\Notification\MessengerInterface: '@App\Notification\DatabaseMessenger'

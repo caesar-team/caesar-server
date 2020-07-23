@@ -10,6 +10,7 @@ use Codeception\Module\REST;
 use Codeception\Test\Unit;
 use Codeception\Util\HttpCode;
 use League\FactoryMuffin\Faker\Facade as Faker;
+use OldSound\RabbitMqBundle\RabbitMq\Producer;
 
 class RegistrationTest extends Unit
 {
@@ -20,6 +21,11 @@ class RegistrationTest extends Unit
      * @var ApiTester|REST|DataFactory|Doctrine
      */
     protected ApiTester $tester;
+
+    protected function _before()
+    {
+        $this->tester->mockRabbitMQProducer($this->makeEmpty(Producer::class));
+    }
 
     /** @test */
     public function canRegistration()

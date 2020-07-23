@@ -1,0 +1,5 @@
+{% extends 'email/layout.html.twig' %}
+
+{% block subject %}{{ 'mail.add_user_to_team.subject'|trans|raw }}{% endblock %}
+
+{% block body %}{{ 'mail.add_user_to_team.body'|trans({'%team_name%': team_name, '%url%': url})|raw }}{% endblock %}

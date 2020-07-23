@@ -1,0 +1,5 @@
+{% extends 'email/layout.html.twig' %}
+
+{% block subject %}{{ 'mail.update.subject'|trans({'%app_name%': app_name})|raw }}{% endblock %}
+
+{% block body %}{{ 'mail.update.body'|trans({'%update_count%': update_count, '%url%': url, '%app_name%': app_name})|raw }}{% endblock %}
