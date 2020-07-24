@@ -33,6 +33,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
     public const ROLE_READ_ONLY_USER = 'ROLE_READ_ONLY_USER';
     public const ROLE_ANONYMOUS_USER = 'ROLE_ANONYMOUS_USER';
+    public const ROLE_SYSTEM_USER = 'ROLE_SYSTEM_USER';
     public const AVAILABLE_ROLES = [
         self::ROLE_USER => self::ROLE_USER,
         self::ROLE_READ_ONLY_USER => self::ROLE_READ_ONLY_USER,

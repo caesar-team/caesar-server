@@ -5,11 +5,14 @@ security:
     role_hierarchy:
         ROLE_ADMIN:       ROLE_USER
         ROLE_SUPER_ADMIN: ROLE_USER
+        ROLE_SYSTEM_USER: ROLE_USER
     providers:
         fos.user.provider:
             id: fos_user.user_provider.username_email
         hwi_oauth.user.provider:
             id: hwi_oauth.user.provider
+        cache_user_provider:
+            id: App\Security\Provider\SystemUserProvider
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -66,6 +69,13 @@ security:
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
+        json_rpc:
+            pattern: ^/json-rpc
+            stateless: true
+            provider: cache_user_provider
+            guard:
+                authenticators:
+                    - App\Security\Authentication\TokenAuthenticator
         main:
             pattern: ^/
             form_login:
@@ -87,6 +97,7 @@ security:
                 failure_handler: App\Security\Authentication\OAuthFailureHandler
                 success_handler: App\Security\JwtRedirectHandler
     access_control:
+        - { path: ^/json-rpc, roles: [ROLE_SYSTEM_USER]}
         - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/message, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
