@@ -951,6 +951,12 @@
     "willdurand/negotiation": {
         "version": "v2.3.1"
     },
+    "yoanm/jsonrpc-server-sdk": {
+        "version": "v3.1.2"
+    },
+    "yoanm/symfony-jsonrpc-http-server": {
+        "version": "v3.0.1"
+    },
     "zendframework/zend-code": {
         "version": "3.3.1"
     },

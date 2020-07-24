@@ -109,3 +109,19 @@ services:
             - '@App\Notification\MessageGrouper\ShareAndUpdateMessageGrouper'
             - '@App\Notification\MessageGrouper\NewRegistrationMessageGrouper'
             - '@App\Notification\MessageGrouper\DefaultMessageGrouper'
+
+    App\Security\Authentication\TokenAuthenticator:
+        arguments:
+            $secret: '%env(JSON_RPC_SECRET)%'
+
+    App\JsonRpc\MappingCollector:
+        tags:
+            - { name: 'json_rpc_http_server.method_aware' }
+
+    App\JsonRpc\Method\ChangeUserKeysMethod:
+        tags:
+            - { method: 'changed-user-keys', name: 'json_rpc_http_server.jsonrpc_method' }
+
+    App\JsonRpc\Method\UpdateUserKeysMethod:
+        tags:
+            - { method: 'updated-user-keys', name: 'json_rpc_http_server.jsonrpc_method' }
