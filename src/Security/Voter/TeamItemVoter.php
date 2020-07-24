@@ -103,15 +103,17 @@ class TeamItemVoter extends Voter
 
     private function canEdit(Item $subject, User $user): bool
     {
+        if ($user->hasRole(User::ROLE_ADMIN)) {
+            return true;
+        }
+
         $userTeam = $subject->getTeam()->getUserTeamByUser($user);
         if (null === $userTeam) {
             return false;
         }
 
         return $subject->getOwner()->equals($user)
-            || ($subject->getSignedOwner()->equals($user)
-                && $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN)
-            )
+            || $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN)
         ;
     }
 
@@ -141,6 +143,13 @@ class TeamItemVoter extends Voter
 
     private function canFavorite(Item $subject, User $user): bool
     {
-        return $this->canDelete($subject, $user);
+        $userTeam = $subject->getTeam()->getUserTeamByUser($user);
+        if (null === $userTeam) {
+            return false;
+        }
+
+        return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN)
+            || $userTeam->hasRole(UserTeam::USER_ROLE_MEMBER)
+        ;
     }
 }

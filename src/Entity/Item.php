@@ -94,6 +94,13 @@ class Item implements ChildItemAwareInterface
     protected $favorite = false;
 
     /**
+     * @var array
+     *
+     * @ORM\Column(type="array", nullable=true)
+     */
+    protected $teamFavorite = [];
+
+    /**
      * @var Tag[]|Collection
      *
      * @ORM\ManyToMany(targetEntity="App\Entity\Tag", cascade={"persist"})
@@ -431,5 +438,32 @@ class Item implements ChildItemAwareInterface
     public function setTeam(?Team $team): void
     {
         $this->team = $team;
+    }
+
+    public function getTeamFavorite(): array
+    {
+        return $this->teamFavorite;
+    }
+
+    public function setTeamFavorite(array $teamFavorite): void
+    {
+        $this->teamFavorite = $teamFavorite;
+    }
+
+    public function toggleTeamFavorite(User $user): void
+    {
+        $teamFavorite = $this->getTeamFavorite();
+        if ($this->isTeamFavorite($user)) {
+            unset($teamFavorite[$user->getId()->toString()]);
+        } else {
+            $teamFavorite[$user->getId()->toString()] = $user->getId()->toString();
+        }
+
+        $this->setTeamFavorite($teamFavorite);
+    }
+
+    public function isTeamFavorite(User $user): bool
+    {
+        return in_array($user->getId()->toString(), $this->getTeamFavorite());
     }
 }
