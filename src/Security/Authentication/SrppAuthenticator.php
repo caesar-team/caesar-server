@@ -42,7 +42,12 @@ class SrppAuthenticator extends AbstractGuardAuthenticator
 
     public function supports(Request $request): bool
     {
-        return 'srp_login_confirm' === $request->attributes->get('_route') && $request->isMethod('POST');
+        $parsedRequest = json_decode($request->getContent(), true);
+
+        return isset($parsedRequest[self::CLIENT_SESSION_KEY_FIELD])
+            && isset($parsedRequest[self::EMAIL_FIELD])
+            && $request->isMethod('POST')
+        ;
     }
 
     public function getCredentials(Request $request): array

@@ -24,11 +24,19 @@ security:
             pattern: ^/api/anonymous
             anonymous: true
         doc:
-            pattern: ^/(api/doc|admin|api/srp_login_confirm)
+            pattern: ^/(api/doc|admin|api/srp_login_confirm|2fa_check)
             logout: true
             stateless: false
             anonymous: false
             context: main
+            two_factor:
+                provider: fos.user.provider
+                auth_form_path: 2fa_login
+                check_path: 2fa_login_check
+                prepare_on_login: true
+                auth_code_parameter_name: authCode
+                success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
+                failure_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
             guard:
                 provider: fos.user.provider
                 authenticators:
@@ -56,12 +64,14 @@ security:
             anonymous: true
         api:
             pattern: ^/api
+            logout: true
             provider: fos.user.provider
             stateless: false
             anonymous: ~
             two_factor:
                 check_path: /api/auth/2fa
                 provider: fos.user.provider
+                prepare_on_login: true
                 auth_code_parameter_name: authCode
                 success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
                 failure_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
@@ -78,8 +88,6 @@ security:
                     - App\Security\Authentication\TokenAuthenticator
         main:
             pattern: ^/
-            form_login:
-                provider: fos.user.provider
             logout: true
             stateless: false
             anonymous: true
