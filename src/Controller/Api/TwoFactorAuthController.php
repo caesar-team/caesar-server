@@ -7,6 +7,7 @@ namespace App\Controller\Api;
 use App\Controller\AbstractController;
 use App\Entity\User;
 use App\Form\Request\TwoFactoryAuthEnableType;
+use App\Security\TwoFactor\GoogleAuthenticator;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use RuntimeException;
@@ -133,8 +134,15 @@ final class TwoFactorAuthController extends AbstractController
         $user = $this->getUser();
         $user->setGoogleAuthenticatorSecret($twoFactor->generateSecret());
 
+        if ($twoFactor instanceof GoogleAuthenticator) {
+            return new JsonResponse([
+                'qr' => $twoFactor->getUrl($user),
+                'code' => $user->getGoogleAuthenticatorSecret(),
+            ]);
+        }
+
         return new JsonResponse([
-            'qr' => $twoFactor->getUrl($user),
+            'qr' => $twoFactor->getQRContent($user),
             'code' => $user->getGoogleAuthenticatorSecret(),
         ]);
     }

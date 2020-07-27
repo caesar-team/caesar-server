@@ -67,7 +67,7 @@ services:
 
     App\Security\TwoFactor\GoogleAuthenticator:
         arguments:
-            - "@scheb_two_factor.security.google"
+            - "@scheb_two_factor.security.google_authenticator"
             - "%scheb_two_factor.google.server_name%"
             - "%scheb_two_factor.google.issuer%"
     app.fos_user_mailer:

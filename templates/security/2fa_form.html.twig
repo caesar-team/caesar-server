@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Caesar Admin Panel</title>
+    {{ encore_entry_link_tags('app') }}
+</head>
+<body>
+<div class="text-center" style="width: 100%">
+    <h2 class="login-title">Two Factor Authentication</h2>
+    <div class="login-subtitle">Enter the code</div>
+
+    <div class="login-info">
+        <div class="login-info__image">
+            <img src="data:image/png;base64,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">
+        </div>
+        <div class="login-info__description">
+            Please open <a target="_blank" href="https://authy.com/" class="sc-enfXDO jGYjSi">Authy</a>
+            or <a target="_blank" href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" class="sc-enfXDO jGYjSi">Google Authenticator</a>
+            app on your phone device and enter the code in the field below.
+        </div>
+    </div>
+
+    {# Authentication errors #}
+    {% if authenticationError %}
+        <p class="login-error">{{ authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') }}</p>
+    {% endif %}
+
+    <form class="form" action="{{ checkPathUrl ? checkPathUrl: path(checkPathRoute) }}" method="post">
+        <input
+            id="_auth_code"
+            type="text"
+            name="{{ authCodeParameterName }}"
+            autocomplete="one-time-code"
+            autofocus
+            inputmode="numeric"
+            pattern="[0-9]*"
+        />
+        {% if displayTrustedOption %}
+            <p class="widget"><label for="_trusted"><input id="_trusted" type="checkbox" name="{{ trustedParameterName }}" /> {{ "trusted"|trans({}, 'SchebTwoFactorBundle') }}</label></p>
+        {% endif %}
+        {% if isCsrfProtectionEnabled %}
+            <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
+        {% endif %}
+
+        <button type="submit" color="black" class="login-button">Continue</button>
+    </form>
+</div>
+</body>
+</html>
