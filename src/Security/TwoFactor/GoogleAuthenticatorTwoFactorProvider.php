@@ -12,6 +12,7 @@ use Scheb\TwoFactorBundle\Security\TwoFactor\AuthenticationContextInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorTwoFactorProvider as BaseGoogleAuthenticatorTwoFactorProvider;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\TwoFactorFormRendererInterface;
+use Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken;
 
 class GoogleAuthenticatorTwoFactorProvider extends BaseGoogleAuthenticatorTwoFactorProvider
 {
@@ -40,6 +41,13 @@ class GoogleAuthenticatorTwoFactorProvider extends BaseGoogleAuthenticatorTwoFac
 
             return isset($data[TwoFactorInProgressVoter::CHECK_KEY_NAME])
                 && $user instanceof TwoFactorInterface
+                && $user->isGoogleAuthenticatorEnabled()
+                && $user->getGoogleAuthenticatorSecret()
+            ;
+        }
+
+        if ($token instanceof PostAuthenticationGuardToken) {
+            return $user instanceof TwoFactorInterface
                 && $user->isGoogleAuthenticatorEnabled()
                 && $user->getGoogleAuthenticatorSecret()
             ;
