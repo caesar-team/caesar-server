@@ -6,10 +6,12 @@ namespace App\Controller\Api\User;
 
 use App\Controller\AbstractController;
 use App\Factory\View\User\SearchUserViewFactory;
+use App\Model\Request\FilterRequest;
 use App\Model\View\User\SearchUserView;
 use App\Repository\UserRepository;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -32,15 +34,17 @@ final class SearchController extends AbstractController
      *     description="Unauthorized"
      * )
      *
-     * @Route(path="/search/{partOfEmail}", methods={"GET"})
+     * @Route(path="/search", methods={"GET"})
      *
      * @return SearchUserView[]
      */
     public function search(
-        string $partOfEmail,
+        Request $request,
         UserRepository $userRepository,
         SearchUserViewFactory $viewFactory
     ): array {
-        return $viewFactory->createCollection($userRepository->findByPartOfEmail($partOfEmail));
+        $filter = FilterRequest::createFromRequest($request);
+
+        return $viewFactory->createCollection($userRepository->findByPartOfEmail($filter->getEmail()));
     }
 }
