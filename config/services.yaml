@@ -65,9 +65,12 @@ services:
 
     Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface: '@App\Security\TwoFactor\GoogleAuthenticator'
 
+    Sonata\GoogleAuthenticator\GoogleAuthenticator:
+        class: Sonata\GoogleAuthenticator\GoogleAuthenticator
+
     App\Security\TwoFactor\GoogleAuthenticator:
         arguments:
-            - "@scheb_two_factor.security.google_authenticator"
+            - '@Sonata\GoogleAuthenticator\GoogleAuthenticator'
             - "%scheb_two_factor.google.server_name%"
             - "%scheb_two_factor.google.issuer%"
     app.fos_user_mailer:
