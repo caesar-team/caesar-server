@@ -62,6 +62,58 @@ use Swagger\Annotations as SWG;
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::SHARE'), object.getItem()))"
  *     )
  * )
+ * @Hateoas\Relation(
+ *     "team_edit_item",
+ *     attributes={"method": "PATCH"},
+ *     href=@Hateoas\Route(
+ *         "api_edit_item",
+ *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::EDIT'), object.getItem()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "team_delete_item",
+ *     attributes={"method": "DELETE"},
+ *     href=@Hateoas\Route(
+ *         "api_delete_item",
+ *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::DELETE'), object.getItem()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "team_move_item",
+ *     attributes={"method": "DELETE"},
+ *     href=@Hateoas\Route(
+ *         "api_delete_item",
+ *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::MOVE'), object.getItem()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "team_batch_share_item",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route("api_batch_share_item"),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::SHARE'), object.getItem()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "team_favorite_item_toggle",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route(
+ *         "api_favorite_item_toggle",
+ *         parameters={ "id": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::FAVORITE'), object.getItem()))"
+ *     )
+ * )
  */
 class CreatedItemView
 {

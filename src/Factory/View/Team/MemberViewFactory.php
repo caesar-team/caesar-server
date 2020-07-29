@@ -26,7 +26,7 @@ class MemberViewFactory
         $currentUserTeam = $userTeam->getTeam()->getUserTeamByUser($this->security->getUser());
         $user = $userTeam->getUser();
 
-        $view = new MemberView($currentUserTeam);
+        $view = new MemberView($currentUserTeam, $userTeam->getTeam());
         $view->setId($user->getId()->toString());
         $view->setName($user->getUsername());
         $view->setEmail($user->getEmail());

@@ -182,4 +182,16 @@ class UserRepository extends ServiceEntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    public function getCountActiveUsers(): int
+    {
+        $queryBuilder = $this->createQueryBuilder('user');
+        $queryBuilder
+            ->select('COUNT(1)')
+            ->andWhere('LOWER(user.roles) NOT LIKE :role')
+            ->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%')
+        ;
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }
