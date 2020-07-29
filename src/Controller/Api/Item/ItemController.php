@@ -11,7 +11,7 @@ use App\Factory\View\Item\ItemViewFactory;
 use App\Form\Request\CreateItemsType;
 use App\Form\Request\CreateItemType;
 use App\Limiter\Inspector\ItemCountInspector;
-use App\Limiter\Limiter;
+use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
 use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
@@ -92,7 +92,7 @@ final class ItemController extends AbstractController
         Request $request,
         CreatedItemViewFactory $viewFactory,
         ItemRepository $itemRepository,
-        Limiter $limiter
+        LimiterInterface $limiter
     ) {
         $item = new Item($this->getUser());
         $form = $this->createForm(CreateItemType::class, $item);
@@ -139,7 +139,7 @@ final class ItemController extends AbstractController
         Request $request,
         ItemViewFactory $viewFactory,
         ItemRepository $itemRepository,
-        Limiter $limiter
+        LimiterInterface $limiter
     ) {
         $itemsRequest = new ItemsCollectionRequest();
 

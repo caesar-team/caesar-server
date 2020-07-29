@@ -21,7 +21,12 @@ class SystemLimitRepository extends ServiceEntityRepository
         parent::__construct($registry, SystemLimit::class);
     }
 
-    public function getLimitsWithIndexAlias(string $aliases): array
+    /**
+     * @param string[] $aliases
+     *
+     * @return SystemLimit[]
+     */
+    public function getLimitsWithIndexAlias(array $aliases): array
     {
         $group = [];
         foreach ($this->findBy(['inspector' => $aliases]) as $limit) {
@@ -31,9 +36,9 @@ class SystemLimitRepository extends ServiceEntityRepository
         return $group;
     }
 
-    public function getLimit(string $alias): ?SystemLimit
+    public function getLimit(string $inspector): ?SystemLimit
     {
-        return $this->findOneBy(['inspector' => $alias]);
+        return $this->findOneBy(['inspector' => $inspector]);
     }
 
     public function save(SystemLimit $limit): void

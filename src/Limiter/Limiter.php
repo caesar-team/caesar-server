@@ -9,7 +9,7 @@ use App\Limiter\Model\LimitCheck;
 use App\Repository\SystemLimitRepository;
 use Psr\Log\LoggerInterface;
 
-class Limiter
+class Limiter implements LimiterInterface
 {
     private SystemLimitRepository $repository;
 
@@ -37,6 +37,12 @@ class Limiter
     public function check(array $checkers): void
     {
         foreach ($checkers as $check) {
+            /** @psalm-suppress DocblockTypeContradiction */
+            if (!$check instanceof LimitCheck) {
+                $this->logger->error(sprintf('[Limiter] $check is not implemented `%s` class', LimitCheck::class));
+                continue;
+            }
+
             try {
                 $inspector = $this->registry->getInspector($check->getInspectorClass());
             } catch (\Exception $exception) {
@@ -45,7 +51,7 @@ class Limiter
             }
             $limit = $this->repository->getLimit($check->getInspectorClass());
             if (null === $limit) {
-                $limit = $this->factory->createFromInspector($inspector);
+                $limit = $this->factory->createFromInspector($check->getInspectorClass());
                 $this->repository->save($limit);
             }
 

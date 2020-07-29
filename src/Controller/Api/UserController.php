@@ -14,7 +14,7 @@ use App\Form\Request\CreateInvitedUserType;
 use App\Form\Request\SendInvitesType;
 use App\Form\Request\SendInviteType;
 use App\Limiter\Inspector\UserCountInspector;
-use App\Limiter\Limiter;
+use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
 use App\Mailer\MailRegistry;
 use App\Model\Request\SendInviteRequest;
@@ -75,7 +75,7 @@ final class UserController extends AbstractController
         Request $request,
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,
-        Limiter $limiter
+        LimiterInterface $limiter
     ) {
         $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
         if (null === $user) {
@@ -273,7 +273,7 @@ final class UserController extends AbstractController
     public function batchCreateUser(
         Request $request,
         EntityManagerInterface $entityManager,
-        Limiter $limiter
+        LimiterInterface $limiter
     ) {
         $requestUsers = $request->request->get('users');
 

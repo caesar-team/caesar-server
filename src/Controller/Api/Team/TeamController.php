@@ -13,7 +13,7 @@ use App\Factory\View\Team\TeamViewFactory;
 use App\Form\Request\Team\CreateTeamType;
 use App\Form\Request\Team\EditTeamType;
 use App\Limiter\Inspector\TeamCountInspector;
-use App\Limiter\Limiter;
+use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
 use App\Model\View\Team\TeamView;
 use App\Repository\TeamRepository;
@@ -66,7 +66,7 @@ class TeamController extends AbstractController
         EntityManagerInterface $entityManager,
         TeamFactory $teamFactory,
         TeamManager $teamManager,
-        Limiter $limiter
+        LimiterInterface $limiter
     ) {
         $this->denyAccessUnlessGranted(TeamVoter::CREATE, $this->getUser());
 
