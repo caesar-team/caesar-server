@@ -17,6 +17,11 @@ class LimiterTest extends Unit
      */
     protected ApiTester $tester;
 
+    protected function _before()
+    {
+        $this->tester->executeQuery('TRUNCATE groups CASCADE;');
+    }
+
     /** @test */
     public function limitCreateTeam()
     {
