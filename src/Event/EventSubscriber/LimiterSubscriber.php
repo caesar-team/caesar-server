@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Event\EventSubscriber;
 
 use App\Limiter\Inspector\DatabaseSizeInspector;
-use App\Limiter\Limiter;
+use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -28,9 +28,9 @@ class LimiterSubscriber implements EventSubscriberInterface
         'api_user_batch_create',
     ];
 
-    private Limiter $limiter;
+    private LimiterInterface $limiter;
 
-    public function __construct(Limiter $limiter)
+    public function __construct(LimiterInterface $limiter)
     {
         $this->limiter = $limiter;
     }

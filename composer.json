@@ -51,7 +51,8 @@
         "symfony/webpack-encore-bundle": "1.7.3",
         "symfony/yaml": "4.4.7",
         "willdurand/hateoas-bundle": "^2.1",
-        "yoanm/symfony-jsonrpc-http-server": "^3.0"
+        "yoanm/symfony-jsonrpc-http-server": "^3.0",
+        "yoanm/symfony-jsonrpc-params-validator": "^2.0"
     },
     "require-dev": {
         "codeception/codeception": "^4.1",

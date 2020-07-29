@@ -139,3 +139,10 @@ services:
     App\JsonRpc\Method\UpdateUserKeysMethod:
         tags:
             - { method: 'updated-user-keys', name: 'json_rpc_http_server.jsonrpc_method' }
+
+    App\JsonRpc\Method\UpdateSystemLimitMethod:
+        tags:
+            - { method: 'update-system-limit', name: 'json_rpc_http_server.jsonrpc_method' }
+    App\JsonRpc\Method\SystemLimitMethod:
+        tags:
+            - { method: 'system-limits', name: 'json_rpc_http_server.jsonrpc_method' }

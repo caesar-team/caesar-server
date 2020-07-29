@@ -77,4 +77,13 @@ class SystemLimit
     {
         return -1 === $this->getLimitSize();
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId()->toString(),
+            'inspector' => $this->getInspector(),
+            'limit' => $this->getLimitSize(),
+        ];
+    }
 }

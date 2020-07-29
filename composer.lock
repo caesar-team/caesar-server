@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "30cff8fff56f2fec51aabf952afeb13c",
+    "content-hash": "5f593ad66bc3021cc3c3fda7821b482d",
     "packages": [
         {
             "name": "beberlei/assert",
@@ -11603,6 +11603,56 @@
             "time": "2017-05-14T17:21:12+00:00"
         },
         {
+            "name": "yoanm/jsonrpc-params-symfony-validator-sdk",
+            "version": "v2.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yoanm/php-jsonrpc-params-symfony-validator-sdk.git",
+                "reference": "f417a0c62195bfceee6556c3d88fe7a27bf045bb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/yoanm/php-jsonrpc-params-symfony-validator-sdk/zipball/f417a0c62195bfceee6556c3d88fe7a27bf045bb",
+                "reference": "f417a0c62195bfceee6556c3d88fe7a27bf045bb",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2",
+                "symfony/validator": "^4.0 || ^5.0",
+                "yoanm/jsonrpc-server-sdk": "^3.0"
+            },
+            "require-dev": {
+                "behat/behat": "~3.0",
+                "phpunit/phpunit": "^7.0 || ^8.0",
+                "squizlabs/php_codesniffer": "3.*",
+                "yoanm/php-unit-extended": "^1.0"
+            },
+            "suggest": {
+                "yoanm/jsonrpc-params-symfony-constraint-doc-sdk": "To generate payload documentation from validation constraints",
+                "yoanm/symfony-jsonrpc-http-server": "Symfony Bundle to convert an HTTP json-rpc request into HTTP json-rpc response",
+                "yoanm/symfony-jsonrpc-params-validator": "Symfony bundle for easy JSON-RPC params validation"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Yoanm\\JsonRpcParamsSymfonyValidator\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Yoanm",
+                    "email": "yoanm@users.noreply.github.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Simple JSON-RPC params validator that use Symfony validator component",
+            "time": "2020-07-09T04:42:09+00:00"
+        },
+        {
             "name": "yoanm/jsonrpc-server-sdk",
             "version": "v3.1.2",
             "source": {
@@ -11711,6 +11761,64 @@
             ],
             "description": "Symfony Bundle to convert an HTTP json-rpc request into HTTP json-rpc response",
             "time": "2020-07-09T05:46:14+00:00"
+        },
+        {
+            "name": "yoanm/symfony-jsonrpc-params-validator",
+            "version": "v2.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yoanm/symfony-jsonrpc-params-validator.git",
+                "reference": "4ed9d1facaeb19e651a2a0528e3977c5585b55f8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/yoanm/symfony-jsonrpc-params-validator/zipball/4ed9d1facaeb19e651a2a0528e3977c5585b55f8",
+                "reference": "4ed9d1facaeb19e651a2a0528e3977c5585b55f8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2",
+                "symfony/config": "^4.0 || ^5.0",
+                "symfony/dependency-injection": "^4.0 || ^5.0",
+                "symfony/http-kernel": "^4.0 || ^5.0",
+                "yoanm/jsonrpc-params-symfony-validator-sdk": "^2.0",
+                "yoanm/jsonrpc-server-sdk": "^3.0",
+                "yoanm/symfony-jsonrpc-http-server": "^3.0"
+            },
+            "require-dev": {
+                "behat/behat": "~3.0",
+                "ext-json": "*",
+                "matthiasnoback/symfony-config-test": "^3.0 || ^4.0",
+                "matthiasnoback/symfony-dependency-injection-test": "^3.0 || ^4.0",
+                "phpunit/phpunit": "^7.0 || ^8.0",
+                "squizlabs/php_codesniffer": "3.*",
+                "symfony/framework-bundle": "^4.0 || ^5.0",
+                "symfony/routing": "^4.0 || ^5.0",
+                "yoanm/php-unit-extended": "~1.0"
+            },
+            "suggest": {
+                "yoanm/symfony-jsonrpc-http-server": "Symfony Bundle to convert an HTTP json-rpc request into HTTP json-rpc response",
+                "yoanm/symfony-jsonrpc-params-sf-constraints-doc": "To generate payload documentation from validation constraints"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Yoanm\\SymfonyJsonRpcParamsValidator\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Yoanm",
+                    "email": "yoanm@users.noreply.github.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Symfony bundle for easy JSON-RPC params validation",
+            "time": "2020-07-09T11:44:27+00:00"
         },
         {
             "name": "zircote/swagger-php",
