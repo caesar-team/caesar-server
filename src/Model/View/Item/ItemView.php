@@ -100,7 +100,7 @@ use Swagger\Annotations as SWG;
  * )
  * @Hateoas\Relation(
  *     "team_batch_share_item",
- *     attributes={"method": "DELETE"},
+ *     attributes={"method": "POST"},
  *     href=@Hateoas\Route("api_batch_share_item"),
  *     exclusion=@Hateoas\Exclusion(
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::SHARE'), object.getItem()))"
@@ -111,7 +111,7 @@ use Swagger\Annotations as SWG;
  *     attributes={"method": "POST"},
  *     href=@Hateoas\Route(
  *         "api_favorite_item_toggle",
- *         parameters={ "id": "expr(object.getId())" }
+ *         parameters={ "id": "expr(object.getOriginalId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::FAVORITE'), object.getItem()))"

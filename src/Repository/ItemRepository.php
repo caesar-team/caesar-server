@@ -114,4 +114,15 @@ class ItemRepository extends ServiceEntityRepository
 
         $queryBuilder->getQuery()->execute();
     }
+
+    public function getCountOriginalItems(): int
+    {
+        $queryBuilder = $this->createQueryBuilder('item');
+        $queryBuilder
+            ->select('COUNT(1)')
+            ->where('item.originalItem IS NULL')
+        ;
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

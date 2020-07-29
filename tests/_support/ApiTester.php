@@ -12,6 +12,7 @@ use Codeception\Util\HttpCode;
 use Codeception\Util\JsonArray;
 use FOS\UserBundle\Model\UserInterface;
 use League\FactoryMuffin\Faker\Facade as Faker;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Inherited Methods.
@@ -82,6 +83,12 @@ class ApiTester extends \Codeception\Actor
             'email' => $clearEmail,
             'email_canonical' => $clearEmail,
         ], ['username' => $username]);
+    }
+
+    public function setLimiterSize(string $inspector, int $size): void
+    {
+        $this->executeQuery('DELETE FROM system_limit WHERE inspector = ?', [$inspector]);
+        $this->haveInDatabase('system_limit', ['id' => Uuid::uuid4()->toString(), 'limit_size' => $size, 'inspector' => $inspector]);
     }
 
     public function createTeam(User $user): Team

@@ -20,6 +20,12 @@ app.exception.user_already_exists: 'User already exists.'
 app.exception.unavailable_request: 'Unavailable request: %route%.'
 mail.share.incomplete_authorization.message: "You may not have authorized by link yet"
 item.invite.user.already_invited: User already invited to this item
+limiter:
+  exception:
+    database_size: Free space in the database is reached. Contact your Administrator to expand it
+    item_count: Maximum number of items is reached. Contact your Administrator
+    team_count: Maximum number of teams is reached. Contact your Administrator
+    user_count: Maximum number of users is reached. Contact your Administrator
 admin:
   help:
     available_roles: 'Available roles: ROLE_USER, ROLE_ADMIN, ROLE_READ_ONLY_USER, ROLE_SUPER_ADMIN'
