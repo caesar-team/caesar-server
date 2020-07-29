@@ -10,6 +10,9 @@ use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\Item\ItemViewFactory;
 use App\Form\Request\CreateItemsType;
 use App\Form\Request\CreateItemType;
+use App\Limiter\Inspector\ItemCountInspector;
+use App\Limiter\Limiter;
+use App\Limiter\Model\LimitCheck;
 use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\Item\ItemView;
@@ -88,7 +91,8 @@ final class ItemController extends AbstractController
     public function create(
         Request $request,
         CreatedItemViewFactory $viewFactory,
-        ItemRepository $itemRepository
+        ItemRepository $itemRepository,
+        Limiter $limiter
     ) {
         $item = new Item($this->getUser());
         $form = $this->createForm(CreateItemType::class, $item);
@@ -97,6 +101,11 @@ final class ItemController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
+
+        $limiter->check([
+            new LimitCheck(ItemCountInspector::class, 1),
+        ]);
+
         $this->denyAccessUnlessGranted([TeamItemVoter::CREATE, ItemVoter::CREATE], $item->getParentList());
         $item->setTeam($item->getParentList()->getTeam());
 
@@ -129,7 +138,8 @@ final class ItemController extends AbstractController
     public function batchCreate(
         Request $request,
         ItemViewFactory $viewFactory,
-        ItemRepository $itemRepository
+        ItemRepository $itemRepository,
+        Limiter $limiter
     ) {
         $itemsRequest = new ItemsCollectionRequest();
 
@@ -139,6 +149,10 @@ final class ItemController extends AbstractController
         if (!$form->isValid()) {
             return $form;
         }
+
+        $limiter->check([
+            new LimitCheck(ItemCountInspector::class, count($itemsRequest->getItems())),
+        ]);
 
         /** @var Item $item */
         foreach ($itemsRequest->getItems() as $item) {

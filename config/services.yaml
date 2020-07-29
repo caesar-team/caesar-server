@@ -113,6 +113,17 @@ services:
             - '@App\Notification\MessageGrouper\NewRegistrationMessageGrouper'
             - '@App\Notification\MessageGrouper\DefaultMessageGrouper'
 
+    App\Limiter\Inspector\DatabaseSizeInspector:
+        arguments:
+            $databaseName: '%env(POSTGRES_DB)%'
+
+    App\Limiter\LimiterInspectorRegistry:
+        arguments:
+            - '@App\Limiter\Inspector\DatabaseSizeInspector'
+            - '@App\Limiter\Inspector\ItemCountInspector'
+            - '@App\Limiter\Inspector\TeamCountInspector'
+            - '@App\Limiter\Inspector\UserCountInspector'
+
     App\Security\Authentication\TokenAuthenticator:
         arguments:
             $secret: '%env(JSON_RPC_SECRET)%'
