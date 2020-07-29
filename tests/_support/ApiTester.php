@@ -85,6 +85,11 @@ class ApiTester extends \Codeception\Actor
         ], ['username' => $username]);
     }
 
+    public function setLimiterSize(string $inspector, int $size): void
+    {
+        $this->updateInDatabase('system_limit', ['limit_size' => $size], ['inspector' => $inspector]);
+    }
+
     public function createTeam(User $user): Team
     {
         /** @var Team $team */

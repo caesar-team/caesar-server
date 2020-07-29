@@ -13,6 +13,9 @@ use App\Factory\View\UserSecurityInfoViewFactory;
 use App\Form\Request\CreateInvitedUserType;
 use App\Form\Request\SendInvitesType;
 use App\Form\Request\SendInviteType;
+use App\Limiter\Inspector\UserCountInspector;
+use App\Limiter\Limiter;
+use App\Limiter\Model\LimitCheck;
 use App\Mailer\MailRegistry;
 use App\Model\Request\SendInviteRequest;
 use App\Model\Request\SendInviteRequests;
@@ -71,7 +74,8 @@ final class UserController extends AbstractController
     public function createUser(
         Request $request,
         UserRepository $userRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        Limiter $limiter
     ) {
         $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
         if (null === $user) {
@@ -88,6 +92,10 @@ final class UserController extends AbstractController
         }
 
         if ($user->isFullUser()) {
+            $limiter->check([
+                new LimitCheck(UserCountInspector::class, 1),
+            ]);
+
             $this->removeInvitation($user, $entityManager);
             $invitation = new Invitation();
             $invitation->setHash($user->getEmail());
@@ -254,7 +262,8 @@ final class UserController extends AbstractController
     /**
      * @Route(
      *     path="/api/user/batch",
-     *     methods={"POST"}
+     *     methods={"POST"},
+     *     name="api_user_batch_create"
      * )
      *
      * @throws \Exception
@@ -263,19 +272,32 @@ final class UserController extends AbstractController
      */
     public function batchCreateUser(
         Request $request,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        Limiter $limiter
     ) {
         $requestUsers = $request->request->get('users');
-        $users = [];
+
+        $newUsers = [];
         foreach ($requestUsers as $requestUser) {
             $user = new User(new Srp());
             $form = $this->createForm(CreateInvitedUserType::class, $user);
             $form->submit($requestUser);
-
             if (!$form->isValid()) {
                 return $form;
             }
+            $newUsers[] = $user;
+        }
 
+        $fullUsers = array_filter($newUsers, static function (User $user) {
+            return !$user->hasRole(User::ROLE_ANONYMOUS_USER);
+        });
+
+        $limiter->check([
+            new LimitCheck(UserCountInspector::class, count($fullUsers)),
+        ]);
+
+        $users = [];
+        foreach ($newUsers as $user) {
             if ($user->isFullUser()) {
                 $this->removeInvitation($user, $entityManager);
                 $invitation = new Invitation();

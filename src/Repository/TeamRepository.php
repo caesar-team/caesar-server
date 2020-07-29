@@ -72,4 +72,16 @@ class TeamRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
     }
+
+    public function getCountTeams(): int
+    {
+        $queryBuilder = $this
+            ->createQueryBuilder('team')
+            ->select('COUNT(team.id)')
+            ->where('team.alias != :alias OR team.alias IS NULL')
+            ->setParameter('alias', Team::DEFAULT_GROUP_ALIAS)
+        ;
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

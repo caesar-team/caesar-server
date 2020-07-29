@@ -14,4 +14,9 @@ class Doctrine extends \Codeception\Module
         $entityManager->remove($object);
         $entityManager->flush();
     }
+
+    public function executeQuery($query, array $params = [])
+    {
+        return $this->getModule('Db')->_getDriver()->executeQuery($query, $params);
+    }
 }
