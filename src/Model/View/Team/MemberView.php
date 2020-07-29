@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Model\View\Team;
 
+use App\Entity\Team;
 use App\Entity\UserTeam;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
@@ -80,13 +81,10 @@ final class MemberView
      */
     private ?UserTeam $userTeam;
 
-    public function __construct(?UserTeam $currentUserTeam)
+    public function __construct(?UserTeam $currentUserTeam, Team $team)
     {
         $this->userTeam = $currentUserTeam;
-        $this->teamId = '';
-        if (null !== $currentUserTeam) {
-            $this->teamId = $currentUserTeam->getTeam()->getId()->toString();
-        }
+        $this->teamId = $team->getId()->toString();
     }
 
     public function getId(): string
