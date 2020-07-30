@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Model\View\Team;
 
+use App\Entity\Team;
 use App\Entity\UserTeam;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
