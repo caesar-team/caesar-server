@@ -55,13 +55,10 @@ final class MemberShortView
      */
     private ?UserTeam $userTeam;
 
-    public function __construct(?UserTeam $currentUserTeam)
+    public function __construct(?UserTeam $currentUserTeam, Team $team)
     {
         $this->userTeam = $currentUserTeam;
-        $this->teamId = '';
-        if (null !== $currentUserTeam) {
-            $this->teamId = $currentUserTeam->getTeam()->getId()->toString();
-        }
+        $this->teamId = $team->getId()->toString();
     }
 
     public function getId(): string
