@@ -195,11 +195,11 @@ class PermissionTest extends Unit
 
         $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
             'team_create_item' => [],
+            'team_sort_list' => [],
         ]]);
         $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
             'team_edit_list' => [],
             'team_delete_list' => [],
-            'team_sort_list' => [],
         ]]);
         $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', self::DEFAULT_LIST_NAME), ['_links' => [
             'team_edit_list' => [],
