@@ -77,7 +77,7 @@ final class ItemController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="Success item created",
-     *     @Model(type=CreatedItemView::class)
+     *     @Model(type=ItemView::class)
      * )
      *
      * @Route(
@@ -86,11 +86,11 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @return CreatedItemView|FormInterface
+     * @return ItemView|FormInterface
      */
     public function create(
         Request $request,
-        CreatedItemViewFactory $viewFactory,
+        ItemViewFactory $viewFactory,
         ItemRepository $itemRepository,
         LimiterInterface $limiter
     ) {
