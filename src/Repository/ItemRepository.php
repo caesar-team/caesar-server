@@ -94,7 +94,7 @@ class ItemRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    public function resetOwnerTeamItems(User $oldOwner): void
+    public function resetOwnerTeamItems(Team $team, User $oldOwner, User $newOwner): void
     {
         $queryBuilder = $this->createQueryBuilder('item');
 
@@ -102,9 +102,11 @@ class ItemRepository extends ServiceEntityRepository
             ->update()
             ->set('item.owner', ':owner')
             ->where('item.owner = :user')
-            ->andWhere('item.team IS NOT NULL')
+            ->andWhere('item.team = :team')
+            ->andWhere('item.originalItem IS NULL')
             ->setParameter('user', $oldOwner)
-            ->setParameter('owner', null)
+            ->setParameter('team', $team)
+            ->setParameter('owner', $newOwner)
         ;
 
         $queryBuilder->getQuery()->execute();

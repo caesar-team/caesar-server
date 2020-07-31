@@ -131,10 +131,22 @@ class Team
     /**
      * @return UserTeam[]
      */
-    public function getAdminUserTeams(): array
+    public function getAdminUserTeams(array $excludes = []): array
+    {
+        return $this->getUserTeams()->filter(static function (UserTeam $userTeam) use ($excludes) {
+            return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole()
+                && !in_array($userTeam->getUser()->getId()->toString(), $excludes)
+            ;
+        })->toArray();
+    }
+
+    /**
+     * @return UserTeam[]
+     */
+    public function getMemberUserTeams(): array
     {
         return $this->getUserTeams()->filter(static function (UserTeam $userTeam) {
-            return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole();
+            return UserTeam::USER_ROLE_MEMBER === $userTeam->getUserRole();
         })->toArray();
     }
 
