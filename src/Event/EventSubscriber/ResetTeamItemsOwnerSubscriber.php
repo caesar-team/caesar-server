@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Event\EventSubscriber;
 
 use App\Entity\User;
-use App\Entity\UserTeam;
 use App\Repository\ItemRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Event\EasyAdminEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -37,12 +36,13 @@ final class ResetTeamItemsOwnerSubscriber implements EventSubscriberInterface
         foreach ($user->getUserTeams() as $userTeam) {
             $team = $userTeam->getTeam();
             $admins = $userTeam->getTeam()->getAdminUserTeams([$user->getId()->toString()]);
-            if (0 === count($admins)) {
-                /** @var UserTeam $nextUserTeam */
-                $nextUserTeam = $team->getUserTeams()->first();
-                if (!$nextUserTeam instanceof UserTeam) {
+            if (0 == count($admins)) {
+                $members = $team->getMemberUserTeams();
+                if (0 === count($members)) {
                     continue;
                 }
+
+                $nextUserTeam = current($members);
             } else {
                 $nextUserTeam = current($admins);
             }

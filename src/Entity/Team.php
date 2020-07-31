@@ -140,6 +140,16 @@ class Team
         })->toArray();
     }
 
+    /**
+     * @return UserTeam[]
+     */
+    public function getMemberUserTeams(): array
+    {
+        return $this->getUserTeams()->filter(static function (UserTeam $userTeam) {
+            return UserTeam::USER_ROLE_MEMBER === $userTeam->getUserRole();
+        })->toArray();
+    }
+
     public function getUserTeamByUser(?UserInterface $user): ?UserTeam
     {
         $criteria = Criteria::create();
