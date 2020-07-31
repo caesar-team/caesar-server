@@ -262,6 +262,9 @@ class PermissionTest extends Unit
 
         $I->login($user);
         $I->sendGET(sprintf('items?listId=%s', $list->getId()->toString()));
+        $I->canSeeResponseContainsJson(['_links' => [
+            'team_favorite_item_toggle' => [],
+        ]]);
         $I->dontSeeResponseContainsJson(['_links' => [
             'team_edit_item' => [],
             'team_delete_item' => [],
