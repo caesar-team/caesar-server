@@ -81,6 +81,38 @@ class UserTest extends Unit
     }
 
     /** @test */
+    public function removeShareUser()
+    {
+        $I = $this->tester;
+
+        /** @var User $domainAdmin */
+        $domainAdmin = $I->have(User::class, [
+            'roles' => [User::ROLE_ADMIN],
+        ]);
+
+        /** @var User $user */
+        $user = $I->have(User::class, [
+            'roles' => [User::ROLE_ADMIN],
+        ]);
+
+        $team = $I->createTeam($domainAdmin);
+        $I->addUserToTeam($team, $user);
+
+        $item = $I->createTeamItem($team, $domainAdmin);
+
+        $I->symfonyAuth($domainAdmin);
+        $I->symfonyRequest(
+            'DELETE',
+            sprintf('/admin/?action=delete&entity=User&id=%s', $user->getId()->toString()),
+            ['_method' => 'DELETE', 'delete_form' => ['_easyadmin_delete_flag' => 1]]
+        );
+
+        foreach ($item->getSharedItems() as $item) {
+            $I->dontSeeInDatabase('item', ['id' => $item->getId()->toString()]);
+        }
+    }
+
+    /** @test */
     public function removeUser()
     {
         $I = $this->tester;
@@ -190,7 +222,7 @@ class UserTest extends Unit
         $I->dontSeeInDatabase('directory', ['id' => $directoryId]);
         $I->dontSeeInDatabase('directory', ['id' => $user->getDefaultDirectory()->getId()->toString()]);
 
-        $I->seeInDatabase('item', ['id' => $teamItem->getId()->toString(), 'owner_id' => null]);
+        $I->seeInDatabase('item', ['id' => $teamItem->getId()->toString(), 'owner_id' => $member->getId()->toString()]);
         $I->seeInDatabase('item', ['id' => $child->getId()->toString()]);
         $I->seeInDatabase('groups', ['id' => $teamId]);
         $I->seeInDatabase('directory', ['id' => $listTeamId]);
