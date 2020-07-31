@@ -143,6 +143,10 @@ class TeamItemVoter extends Voter
 
     private function canFavorite(Item $subject, User $user): bool
     {
+        if ($user->hasRole(User::ROLE_ADMIN)) {
+            return true;
+        }
+
         $userTeam = $subject->getTeam()->getUserTeamByUser($user);
         if (null === $userTeam) {
             return false;

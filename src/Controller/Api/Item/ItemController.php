@@ -6,7 +6,6 @@ namespace App\Controller\Api\Item;
 
 use App\Controller\AbstractController;
 use App\Entity\Item;
-use App\Factory\View\CreatedItemViewFactory;
 use App\Factory\View\Item\ItemViewFactory;
 use App\Form\Request\CreateItemsType;
 use App\Form\Request\CreateItemType;
@@ -14,7 +13,6 @@ use App\Limiter\Inspector\ItemCountInspector;
 use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
 use App\Model\Request\ItemsCollectionRequest;
-use App\Model\View\CredentialsList\CreatedItemView;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
 use App\Security\Voter\ItemVoter;
@@ -77,7 +75,7 @@ final class ItemController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="Success item created",
-     *     @Model(type=CreatedItemView::class)
+     *     @Model(type=ItemView::class)
      * )
      *
      * @Route(
@@ -86,11 +84,11 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @return CreatedItemView|FormInterface
+     * @return ItemView|FormInterface
      */
     public function create(
         Request $request,
-        CreatedItemViewFactory $viewFactory,
+        ItemViewFactory $viewFactory,
         ItemRepository $itemRepository,
         LimiterInterface $limiter
     ) {
