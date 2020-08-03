@@ -300,7 +300,7 @@ class Item implements ChildItemAwareInterface
 
     public function isSystemType(): bool
     {
-        return $this->type === NodeEnumType::TYPE_SYSTEM;
+        return NodeEnumType::TYPE_SYSTEM === $this->type;
     }
 
     /**

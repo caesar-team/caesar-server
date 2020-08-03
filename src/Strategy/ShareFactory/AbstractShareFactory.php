@@ -7,7 +7,6 @@ namespace App\Strategy\ShareFactory;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Mailer\MailRegistry;
-use App\Model\Request\ChildItem;
 use App\Notification\MessengerInterface;
 use App\Notification\Model\Message;
 use Doctrine\ORM\EntityManagerInterface;
@@ -74,7 +73,7 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
         ) {
             return;
         }
-        
+
         $this->messenger->send(
             Message::createDeferredFromUser(
                 $item->getSignedOwner(),
