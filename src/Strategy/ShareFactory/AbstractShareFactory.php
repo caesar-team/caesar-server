@@ -67,15 +67,17 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
     /**
      * @throws \Exception
      */
-    final protected function sendItemMessage(ChildItem $childItem, string $event = self::EVENT_NEW_ITEM): void
+    final protected function sendItemMessage(Item $item): void
     {
-        if ($childItem->getUser()->hasRole(User::ROLE_ANONYMOUS_USER)) {
+        if ($item->getSignedOwner()->hasRole(User::ROLE_ANONYMOUS_USER)
+            || $item->getOriginalItem()->isSystemType()
+        ) {
             return;
         }
-
+        
         $this->messenger->send(
             Message::createDeferredFromUser(
-                $childItem->getUser(),
+                $item->getSignedOwner(),
                 MailRegistry::SHARE_ITEM,
                 ['url' => $this->absoluteUrl, 'share_count' => 1]
             ),

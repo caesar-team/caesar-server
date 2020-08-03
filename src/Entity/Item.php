@@ -298,6 +298,11 @@ class Item implements ChildItemAwareInterface
         $this->type = $type;
     }
 
+    public function isSystemType(): bool
+    {
+        return $this->type === NodeEnumType::TYPE_SYSTEM;
+    }
+
     /**
      * @return Collection|Tag[]
      */
