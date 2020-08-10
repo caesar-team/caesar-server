@@ -48,16 +48,21 @@ class ItemRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('item');
         $queryBuilder
             ->innerJoin('item.parentList', 'list')
-            ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list OR user = item.owner')
-            ->where('user.id = :user')
-            ->andWhere('item.favorite = true')
-            ->setParameter('user', $user->getId());
+        ;
 
         if (null === $team) {
-            $queryBuilder->andWhere('item.team IS NULL');
+            $queryBuilder
+                ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list OR user = item.owner')
+                ->where('user.id = :user')
+                ->andWhere('item.team IS NULL')
+                ->andWhere('item.favorite = true')
+                ->setParameter('user', $user->getId())
+            ;
         } else {
             $queryBuilder
                 ->andWhere('item.team = :team')
+                ->andWhere('item.teamFavorite LIKE :user_like')
+                ->setParameter('user_like', '%'.$user->getId()->toString().'%')
                 ->setParameter('team', $team)
             ;
         }
@@ -94,7 +99,7 @@ class ItemRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    public function resetOwnerTeamItems(User $oldOwner): void
+    public function resetOwnerTeamItems(Team $team, User $oldOwner, User $newOwner): void
     {
         $queryBuilder = $this->createQueryBuilder('item');
 
@@ -102,9 +107,11 @@ class ItemRepository extends ServiceEntityRepository
             ->update()
             ->set('item.owner', ':owner')
             ->where('item.owner = :user')
-            ->andWhere('item.team IS NOT NULL')
+            ->andWhere('item.team = :team')
+            ->andWhere('item.originalItem IS NULL')
             ->setParameter('user', $oldOwner)
-            ->setParameter('owner', null)
+            ->setParameter('team', $team)
+            ->setParameter('owner', $newOwner)
         ;
 
         $queryBuilder->getQuery()->execute();

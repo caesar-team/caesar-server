@@ -38,7 +38,7 @@ final class OriginalItemShareFactory extends AbstractShareFactory
             $item->setStatus($this->getStatusByCause($childItem->getCause()));
 
             $this->entityManager->persist($item);
-            $this->sendItemMessage($childItem);
+            $this->sendItemMessage($item);
             $items[$itemCollectionRequest->getOriginalItem()->getId()->toString()][] = $item;
         }
         $this->entityManager->flush();

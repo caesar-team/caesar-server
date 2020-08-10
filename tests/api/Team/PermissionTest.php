@@ -195,11 +195,11 @@ class PermissionTest extends Unit
 
         $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
             'team_create_item' => [],
+            'team_sort_list' => [],
         ]]);
         $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
             'team_edit_list' => [],
             'team_delete_list' => [],
-            'team_sort_list' => [],
         ]]);
         $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', self::DEFAULT_LIST_NAME), ['_links' => [
             'team_edit_list' => [],
@@ -262,6 +262,9 @@ class PermissionTest extends Unit
 
         $I->login($user);
         $I->sendGET(sprintf('items?listId=%s', $list->getId()->toString()));
+        $I->canSeeResponseContainsJson(['_links' => [
+            'team_favorite_item_toggle' => [],
+        ]]);
         $I->dontSeeResponseContainsJson(['_links' => [
             'team_edit_item' => [],
             'team_delete_item' => [],

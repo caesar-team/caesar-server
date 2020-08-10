@@ -25,7 +25,7 @@ class MemberShortViewFactory
 
         $currentUserTeam = $userTeam->getTeam()->getUserTeamByUser($this->security->getUser());
 
-        $view = new MemberShortView($currentUserTeam);
+        $view = new MemberShortView($currentUserTeam, $userTeam->getTeam());
         $view->setId($userTeam->getUser()->getId()->toString());
         $view->setRole($userTeam->getUserRole());
 

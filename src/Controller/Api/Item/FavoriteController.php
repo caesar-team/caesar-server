@@ -85,7 +85,11 @@ final class FavoriteController extends AbstractController
     {
         $this->denyAccessUnlessGranted([ItemVoter::FAVORITE, TeamItemVoter::FAVORITE], $item);
 
-        $item->toggleFavorite();
+        if (null !== $item->getTeam()) {
+            $item->toggleTeamFavorite($this->getUser());
+        } else {
+            $item->toggleFavorite();
+        }
         $repository->save($item);
 
         return $factory->createSingle($item);

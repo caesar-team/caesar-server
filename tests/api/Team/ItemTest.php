@@ -75,14 +75,14 @@ class ItemTest extends Unit
         $I->login($teamAdmin);
         $I->sendGET(sprintf('items?listId=%s', $team->getDefaultDirectory()->getId()->toString()));
         $I->canSeeResponseContainsJson([
-            'originalItemId' => $item->getId()->toString(),
+            'id' => $item->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->login($member2);
         $I->sendGET(sprintf('items?listId=%s', $team->getDefaultDirectory()->getId()->toString()));
         $I->canSeeResponseContainsJson([
-            'originalItemId' => $item->getId()->toString(),
+            'id' => $item->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
     }
@@ -115,9 +115,10 @@ class ItemTest extends Unit
         $item = $I->createTeamItem($team, $member);
 
         $this->dontEditTeamItem($superAdmin, $item);
-        $this->dontEditTeamItem($domainAdmin, $item);
-        $this->dontEditTeamItem($teamAdmin, $item);
+        $this->dontEditTeamItem($member2, $item);
 
+        $this->canEditTeamItem($domainAdmin, $item);
+        $this->canEditTeamItem($teamAdmin, $item);
         $this->canEditTeamItem($member, $item);
     }
 

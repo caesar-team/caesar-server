@@ -1,16 +1,4 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "id": {
-      "type": "string"
-    },
-    "lastUpdated": {
-      "type": "string"
-    }
-  },
-  "required": [
-    "id",
-    "lastUpdated"
-  ]
+  "$ref": "schemas://item/definitions.json#/definitions/item"
 }

@@ -65,8 +65,16 @@ class TeamListVoter extends Voter
             return false;
         }
 
-        if (self::MOVABLE !== $attribute && $subject instanceof Directory
-            && ($subject->isTeamTrashDirectory() || $subject->isTeamDefaultDirectory())
+        if (self::MOVABLE !== $attribute
+            && $subject instanceof Directory
+            && $subject->isTeamTrashDirectory()
+        ) {
+            return false;
+        }
+
+        if (!in_array($attribute, [self::MOVABLE, self::SORT])
+            && $subject instanceof Directory
+            && $subject->isTeamDefaultDirectory()
         ) {
             return false;
         }

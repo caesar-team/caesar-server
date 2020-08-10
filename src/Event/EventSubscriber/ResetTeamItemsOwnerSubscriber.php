@@ -33,6 +33,21 @@ final class ResetTeamItemsOwnerSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->repository->resetOwnerTeamItems($user);
+        foreach ($user->getUserTeams() as $userTeam) {
+            $team = $userTeam->getTeam();
+            $admins = $userTeam->getTeam()->getAdminUserTeams([$user->getId()->toString()]);
+            if (0 == count($admins)) {
+                $members = $team->getMemberUserTeams();
+                if (0 === count($members)) {
+                    continue;
+                }
+
+                $nextUserTeam = current($members);
+            } else {
+                $nextUserTeam = current($admins);
+            }
+
+            $this->repository->resetOwnerTeamItems($team, $user, $nextUserTeam->getUser());
+        }
     }
 }
