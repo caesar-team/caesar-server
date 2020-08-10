@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Factory\View\Item;
 
 use App\Entity\Item;
+use App\Entity\User;
 use App\Model\View\Item\ItemView;
-use App\Services\PermissionManager;
+use Symfony\Component\Security\Core\Security;
 
 class ItemViewFactory
 {
-    private PermissionManager $permissionManager;
+    private Security $security;
 
     private InviteItemViewFactory $inviteItemViewFactory;
 
@@ -19,12 +20,12 @@ class ItemViewFactory
     private SharedChildItemViewFactory $sharedChildItemViewFactory;
 
     public function __construct(
-        PermissionManager $permissionManager,
+        Security $security,
         InviteItemViewFactory $inviteItemViewFactory,
         UpdateItemViewFactory $updateItemViewFactory,
         SharedChildItemViewFactory $sharedChildItemViewFactory
     ) {
-        $this->permissionManager = $permissionManager;
+        $this->security = $security;
         $this->inviteItemViewFactory = $inviteItemViewFactory;
         $this->updateItemViewFactory = $updateItemViewFactory;
         $this->sharedChildItemViewFactory = $sharedChildItemViewFactory;
@@ -44,7 +45,14 @@ class ItemViewFactory
             $this->inviteItemViewFactory->createCollection($item->getUniqueOwnerShareItems())
         );
         $view->setOwnerId($item->getOwner()->getId()->toString());
-        $view->setFavorite($item->isFavorite());
+        if (null === $item->getTeam()) {
+            $view->setFavorite($item->isFavorite());
+        } else {
+            $user = $this->security->getUser();
+            if ($user instanceof User) {
+                $view->setFavorite($item->isTeamFavorite($user));
+            }
+        }
         $view->setSort($item->getSort());
         $view->setOriginalItemId($item->getOriginalItemId());
 

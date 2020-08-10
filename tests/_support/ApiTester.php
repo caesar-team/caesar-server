@@ -10,7 +10,6 @@ use App\Entity\UserTeam;
 use Codeception\PHPUnit\Constraint\JsonContains;
 use Codeception\Util\HttpCode;
 use Codeception\Util\JsonArray;
-use Doctrine\Common\Collections\ArrayCollection;
 use FOS\UserBundle\Model\UserInterface;
 use League\FactoryMuffin\Faker\Facade as Faker;
 use Ramsey\Uuid\Uuid;
@@ -108,32 +107,11 @@ class ApiTester extends \Codeception\Actor
 
     public function createTeamItem(Team $team, User $user): Item
     {
-        /** @var Item $item */
-        $item = $this->have(Item::class, [
+        return $this->have(Item::class, [
             'parent_list' => $team->getDefaultDirectory(),
             'owner' => $user,
             'team' => $team,
         ]);
-
-        $sharedItems = [];
-        foreach ($team->getUserTeams() as $userTeam) {
-            if ($userTeam->getUser()->equals($user)) {
-                continue;
-            }
-
-            $sharedItems[] = $this->have(Item::class, [
-                'parent_list' => $team->getDefaultDirectory(),
-                'owner' => $userTeam->getUser(),
-                'team' => $team,
-                'original_item' => $item,
-                'access' => AccessEnumType::TYPE_READ,
-                'cause' => Item::CAUSE_INVITE,
-            ]);
-        }
-
-        $item->setSharedItems(new ArrayCollection($sharedItems));
-
-        return $item;
     }
 
     public function addUserToTeam(Team $team, User $user, string $role = UserTeam::USER_ROLE_MEMBER): void

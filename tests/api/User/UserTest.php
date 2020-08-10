@@ -204,8 +204,6 @@ class UserTest extends Unit
         $I->addUserToTeam($team, $member);
 
         $teamItem = $I->createTeamItem($team, $user);
-        /** @var Item $child */
-        $child = $teamItem->getSharedItems()->first();
 
         $I->symfonyAuth($domainAdmin);
         $I->symfonyRequest(
@@ -223,7 +221,6 @@ class UserTest extends Unit
         $I->dontSeeInDatabase('directory', ['id' => $user->getDefaultDirectory()->getId()->toString()]);
 
         $I->seeInDatabase('item', ['id' => $teamItem->getId()->toString(), 'owner_id' => $member->getId()->toString()]);
-        $I->seeInDatabase('item', ['id' => $child->getId()->toString()]);
         $I->seeInDatabase('groups', ['id' => $teamId]);
         $I->seeInDatabase('directory', ['id' => $listTeamId]);
         $I->seeInDatabase('fos_user', ['id' => $anonymous->getId()->toString()]);

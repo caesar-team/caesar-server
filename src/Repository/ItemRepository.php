@@ -48,16 +48,21 @@ class ItemRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('item');
         $queryBuilder
             ->innerJoin('item.parentList', 'list')
-            ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list OR user = item.owner')
-            ->where('user.id = :user')
-            ->andWhere('item.favorite = true')
-            ->setParameter('user', $user->getId());
+        ;
 
         if (null === $team) {
-            $queryBuilder->andWhere('item.team IS NULL');
+            $queryBuilder
+                ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list OR user = item.owner')
+                ->where('user.id = :user')
+                ->andWhere('item.team IS NULL')
+                ->andWhere('item.favorite = true')
+                ->setParameter('user', $user->getId())
+            ;
         } else {
             $queryBuilder
                 ->andWhere('item.team = :team')
+                ->andWhere('item.teamFavorite LIKE :user_like')
+                ->setParameter('user_like', '%'.$user->getId()->toString().'%')
                 ->setParameter('team', $team)
             ;
         }

@@ -35,7 +35,7 @@ class ItemListViewFactory
     {
         $viewCollection = [];
         foreach ($itemCollection as $item) {
-            if (!$item->getSignedOwner()->equals($this->currentUser)) {
+            if (!$item->getSignedOwner()->equals($this->currentUser) && null === $item->getTeam()) {
                 continue;
             }
 

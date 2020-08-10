@@ -46,6 +46,7 @@ class CreateItemType extends AbstractType
                 'choices' => [
                     NodeEnumType::TYPE_CRED,
                     NodeEnumType::TYPE_DOCUMENT,
+                    NodeEnumType::TYPE_SYSTEM,
                 ],
             ])
             ->add('secret', TextType::class, [
