@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Mailer\MailRegistry;
 use App\Notification\MessengerInterface;
 use App\Notification\Model\Message;
+use App\Security\AuthorizationManager\AuthorizationManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
@@ -44,16 +45,18 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
      * @var EntityManagerInterface
      */
     protected $entityManager;
-
     /**
-     * InviteHandler constructor.
+     * @var AuthorizationManager
      */
+    private AuthorizationManager $authorizationManager;
+
     public function __construct(
         EntityManagerInterface $entityManager,
         SenderInterface $sender,
         RouterInterface $router,
         MessengerInterface $messenger,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        AuthorizationManager $authorizationManager
     ) {
         $this->entityManager = $entityManager;
         $this->sender = $sender;
@@ -61,6 +64,7 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
         $this->messenger = $messenger;
         $this->absoluteUrl = $this->router->generate(self::URL_ROOT, [], RouterInterface::ABSOLUTE_URL);
         $this->logger = $logger;
+        $this->authorizationManager = $authorizationManager;
     }
 
     /**
@@ -68,8 +72,10 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
      */
     final protected function sendItemMessage(Item $item): void
     {
-        if ($item->getSignedOwner()->hasRole(User::ROLE_ANONYMOUS_USER)
+        $owner = $item->getSignedOwner();
+        if ($owner->hasRole(User::ROLE_ANONYMOUS_USER)
             || $item->getOriginalItem()->isSystemType()
+            || $this->authorizationManager->hasInvitation($owner)
         ) {
             return;
         }

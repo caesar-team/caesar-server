@@ -51,6 +51,11 @@ final class ChildItemController extends AbstractController
      */
     public function revokeChildItemAction(Item $item, EntityManagerInterface $entityManager)
     {
+        $user = $item->getSignedOwner();
+        if ($user->isAnonymous()) {
+            $entityManager->remove($user);
+        }
+
         $entityManager->remove($item);
         $entityManager->flush();
 

@@ -447,6 +447,10 @@ class Item implements ChildItemAwareInterface
 
     public function getTeamFavorite(): array
     {
+        /**
+         * @psalm-suppress RedundantConditionGivenDocblockType
+         * @psalm-suppress DocblockTypeContradiction
+         */
         return null !== $this->teamFavorite ? $this->teamFavorite : [];
     }
 
