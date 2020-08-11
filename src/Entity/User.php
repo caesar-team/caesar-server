@@ -473,6 +473,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return !$this->hasRole(self::ROLE_ANONYMOUS_USER) && !$this->hasRole(self::ROLE_READ_ONLY_USER);
     }
 
+    public function isAnonymous(): bool
+    {
+        return $this->hasRole(self::ROLE_ANONYMOUS_USER);
+    }
+
     /**
      * @return Item[]
      */
@@ -578,5 +583,10 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $directory = $this->getLists()->getChildLists()->matching($criteria)->first();
 
         return $directory instanceof Directory ? $directory : null;
+    }
+
+    public function isIncomplete(): bool
+    {
+        return self::FLOW_STATUS_INCOMPLETE === $this->flowStatus;
     }
 }
