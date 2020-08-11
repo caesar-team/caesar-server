@@ -8,6 +8,7 @@ use App\Security\Fingerprint\FingerprintStasher;
 use App\Security\Voter\TwoFactorInProgressVoter;
 use InvalidArgumentException;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Response\JWTAuthenticationFailureResponse;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
 use Scheb\TwoFactorBundle\Security\Http\Authentication\AuthenticationRequiredHandlerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -107,7 +108,7 @@ final class TwoFactorAuthenticationHandler implements AuthenticationSuccessHandl
             return new RedirectResponse($this->router->generate('2fa_login', [], UrlGeneratorInterface::ABSOLUTE_URL));
         }
 
-        throw new AuthenticationException($exception->getMessage(), Response::HTTP_BAD_REQUEST);
+        return new JWTAuthenticationFailureResponse($exception->getMessage(), Response::HTTP_BAD_REQUEST);
     }
 
     /**
