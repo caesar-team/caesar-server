@@ -447,7 +447,7 @@ class Item implements ChildItemAwareInterface
 
     public function getTeamFavorite(): array
     {
-        return $this->teamFavorite !== null ? $this->teamFavorite : [];
+        return null !== $this->teamFavorite ? $this->teamFavorite : [];
     }
 
     public function setTeamFavorite(array $teamFavorite): void
