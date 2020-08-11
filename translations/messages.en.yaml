@@ -50,7 +50,7 @@ mail:
       <p>Hi!<br/>
       You have %share_count% new secrets that have been shared with you.</p>
       <p>If you do not want to see the secrets, you can reject them when you log into %app_name%.<br/>
-      After you log into %app_name%you will see accepted secrets in your Inbox.</p>
+      After you log into %app_name% you will see accepted secrets in your Inbox.</p>
 
       <p><a href="%url%" target="_blank">See what's new!</a></p>
   update:
