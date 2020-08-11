@@ -45,9 +45,7 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
      * @var EntityManagerInterface
      */
     protected $entityManager;
-    /**
-     * @var AuthorizationManager
-     */
+
     private AuthorizationManager $authorizationManager;
 
     public function __construct(
