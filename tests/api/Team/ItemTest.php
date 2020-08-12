@@ -217,10 +217,10 @@ class ItemTest extends Unit
 
         $this->dontBatchDeleteTeamItem($superAdmin, $item, $item2);
         $this->canBatchDeleteTeamItem($teamAdmin, $item, $item2);
-        
+
         $item = $I->createTeamItem($team, $member);
         $item2 = $I->createTeamItem($team, $member);
-        
+
         $I->login($member);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
