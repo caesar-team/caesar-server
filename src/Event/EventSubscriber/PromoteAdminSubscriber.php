@@ -42,10 +42,10 @@ class PromoteAdminSubscriber implements EventSubscriberInterface
         if ($this->domainAdminEmail !== $user->getEmail()) {
             return;
         }
-
-        $this->teamUserAdder->addUser($user, UserTeam::USER_ROLE_ADMIN);
-
+        
         $user->addRole(User::ROLE_ADMIN);
         $this->repository->save($user);
+
+        $this->teamUserAdder->addUser($user, UserTeam::USER_ROLE_ADMIN);
     }
 }
