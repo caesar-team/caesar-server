@@ -9,6 +9,7 @@ use App\Utils\ChildItemAwareInterface;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -163,6 +164,21 @@ class Item implements ChildItemAwareInterface
     protected $team;
 
     /**
+     * @var Item|null
+     *
+     * @ORM\ManyToOne(targetEntity="App\Entity\Item", inversedBy="systemItems", cascade={"persist"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+    protected $relatedItem;
+
+    /**
+     * @var Item[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="relatedItem")
+     */
+    protected $systemItems;
+
+    /**
      * Item constructor.
      *
      * @throws \Exception
@@ -173,6 +189,7 @@ class Item implements ChildItemAwareInterface
         $this->originalItem = null;
         $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedItems = new ArrayCollection();
+        $this->systemItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
         $this->owner = $user;
     }
@@ -474,5 +491,42 @@ class Item implements ChildItemAwareInterface
     public function isTeamFavorite(User $user): bool
     {
         return in_array($user->getId()->toString(), $this->getTeamFavorite());
+    }
+
+    public function getRelatedItem(): ?Item
+    {
+        return $this->relatedItem;
+    }
+
+    public function setRelatedItem(?Item $relatedItem): void
+    {
+        $this->relatedItem = $relatedItem;
+    }
+
+    /**
+     * @return Item[]
+     */
+    public function getSystemItems(): array
+    {
+        return $this->systemItems->toArray();
+    }
+
+    public function setSystemItems(Collection $sharedItems): void
+    {
+        $this->systemItems = $sharedItems;
+    }
+
+    public function getSystemItemByUser(User $user): ?Item
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('owner', $user));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $systemItem = $this->systemItems->matching($criteria)->first();
+
+        return $systemItem instanceof Item ? $systemItem : null;
     }
 }
