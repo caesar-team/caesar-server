@@ -20,7 +20,7 @@ class UserTeamViewFactory
         $view = new UserTeamView($team);
         $view->setId($team->getId()->toString());
         $view->setTitle($team->getTitle());
-        $view->setType($team->getAlias());
+        $view->setType($team->getAlias()?: 'other');
         $view->setCreatedAt($userTeam->getCreatedAt());
         $view->setUpdatedAt($userTeam->getUpdatedAt());
         $view->setUserRole($userTeam->getUserRole());
