@@ -48,53 +48,7 @@ final class ItemController extends AbstractController
         foreach ($itemsCollection->getItems() as $item) {
             $item = $manager->getRepository(Item::class)->find($item);
             if ($item instanceof Item) {
-                $this->denyAccessUnlessGranted(ItemVoter::DELETE, $item);
-                if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
-                    $message = $this->translator->trans('app.exception.delete_trash_only');
-                    throw new BadRequestHttpException($message);
-                }
-
-                $manager->remove($item);
-            }
-        }
-        $manager->flush();
-
-        return null;
-    }
-
-    /**
-     * @SWG\Tag(name="Item")
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=\App\Model\Request\ItemsCollectionRequest::class)
-     * )
-     * @SWG\Response(
-     *     response=204,
-     *     description="Batch items delete"
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/items/batch/delete",
-     *     name="api_batch_delete_items_post",
-     *     methods={"POST"}
-     * )
-     *
-     * @return null
-     */
-    public function postBatchDelete(Request $request, EntityManagerInterface $manager, SerializerInterface $serializer)
-    {
-        /** @var ItemsCollectionRequest $itemsCollection */
-        $itemsCollection = $serializer->deserialize(json_encode($request->getContent()), ItemsCollectionRequest::class, 'json');
-
-        foreach ($itemsCollection->getItems() as $item) {
-            $item = $manager->getRepository(Item::class)->find($item);
-            if ($item instanceof Item) {
-                $this->denyAccessUnlessGranted(ItemVoter::DELETE, $item);
+                $this->denyAccessUnlessGranted([ItemVoter::DELETE, TeamItemVoter::DELETE], $item);
                 if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
                     $message = $this->translator->trans('app.exception.delete_trash_only');
                     throw new BadRequestHttpException($message);

@@ -178,6 +178,74 @@ class ItemTest extends Unit
         $this->canDeleteTeamItem($member, $item);
     }
 
+    /** @test */
+    public function batchDeleteTeamItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $superAdmin */
+        $superAdmin = $I->have(User::class, [
+            'roles' => [User::ROLE_SUPER_ADMIN],
+        ]);
+        /** @var User $domainAdmin */
+        $domainAdmin = $I->have(User::class, [
+            'roles' => [User::ROLE_ADMIN],
+        ]);
+        /** @var User $teamAdmin */
+        $teamAdmin = $I->have(User::class);
+        /** @var User $member */
+        $member = $I->have(User::class);
+        /** @var User $guestUser */
+        $member2 = $I->have(User::class);
+
+        /** @var Team $team */
+        $team = $I->createTeam($teamAdmin);
+        $I->addUserToTeam($team, $member);
+        $I->addUserToTeam($team, $member2);
+
+        $item = $I->createTeamItem($team, $member);
+        $item2 = $I->createTeamItem($team, $member);
+
+        $I->login($member);
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
+            'listId' => $team->getTrash()->getId()->toString(),
+        ]);
+        $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()->toString()), [
+            'listId' => $team->getTrash()->getId()->toString(),
+        ]);
+
+        $this->dontBatchDeleteTeamItem($superAdmin, $item, $item2);
+        $this->canBatchDeleteTeamItem($teamAdmin, $item, $item2);
+
+        $item = $I->createTeamItem($team, $member);
+        $item2 = $I->createTeamItem($team, $member);
+
+        $I->login($member);
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
+            'listId' => $team->getTrash()->getId()->toString(),
+        ]);
+        $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()->toString()), [
+            'listId' => $team->getTrash()->getId()->toString(),
+        ]);
+
+        $this->canDeleteTeamItem($domainAdmin, $item, $item2);
+
+        $item = $I->createTeamItem($team, $member);
+        $item2 = $I->createTeamItem($team, $member);
+
+        $I->login($member);
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
+            'listId' => $team->getTrash()->getId()->toString(),
+        ]);
+        $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()->toString()), [
+            'listId' => $team->getTrash()->getId()->toString(),
+        ]);
+        $this->canDeleteTeamItem($member, $item, $item2);
+    }
+
     private function canDeleteTeamItem(User $user, Item $item)
     {
         $I = $this->tester;
@@ -193,6 +261,33 @@ class ItemTest extends Unit
 
         $I->login($user);
         $I->sendDELETE(sprintf('items/%s', $item->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
+        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
+    }
+
+    private function canBatchDeleteTeamItem(User $user, Item ...$items)
+    {
+        $I = $this->tester;
+
+        $itemsQuery = array_map(static function (Item $item) {
+            return sprintf('items[]=%s', $item->getId()->toString());
+        }, $items);
+
+        $I->login($user);
+        $I->sendDELETE(sprintf('items/batch?%s', implode('&', $itemsQuery)));
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+    }
+
+    private function dontBatchDeleteTeamItem(User $user, Item ...$items)
+    {
+        $I = $this->tester;
+
+        $itemsQuery = array_map(static function (Item $item) {
+            return sprintf('items[]=%s', $item->getId()->toString());
+        }, $items);
+
+        $I->login($user);
+        $I->sendDELETE(sprintf('items/batch?%s', implode('&', $itemsQuery)));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
