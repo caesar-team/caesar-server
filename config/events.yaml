@@ -28,11 +28,6 @@ services:
         tags:
             - { name: doctrine.event_subscriber, connection: default }
 
-    app.event.team_to_created_admin_subscriber:
-        class: App\Event\EventSubscriber\TeamsToCreatedAdminSubscriber
-        tags:
-            - { name: doctrine.event_subscriber, connection: default }
-
     app.event.remove_deleted_user_directories_subscriber:
         class: App\Event\EventSubscriber\RemoveDirectoriesDeletedUserSubscriber
         tags:
