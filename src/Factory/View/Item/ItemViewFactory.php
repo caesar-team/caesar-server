@@ -55,6 +55,11 @@ class ItemViewFactory
         }
         $view->setSort($item->getSort());
         $view->setOriginalItemId($item->getOriginalItemId());
+        if ($item->getRelatedItem()) {
+            $view->setRelatedItem(
+                $this->createSingle($item->getRelatedItem())
+            );
+        }
 
         $sharedItems = $item->getUniqueOwnerShareItems(Item::CAUSE_SHARE);
         if (!empty($sharedItems) && current($sharedItems) instanceof Item) {

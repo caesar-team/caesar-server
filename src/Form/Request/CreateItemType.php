@@ -62,6 +62,12 @@ class CreateItemType extends AbstractType
                 'allow_delete' => true,
                 'mapped' => false,
             ])
+            ->add('relatedItem', EntityType::class, [
+                'class' => Item::class,
+                'choice_value' => 'id',
+                'property_path' => 'relatedItem',
+                'required' => false,
+            ])
         ;
 
         if ($this->injectTagListener) {
