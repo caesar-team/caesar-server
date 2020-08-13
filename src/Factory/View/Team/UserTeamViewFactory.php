@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Factory\View\Team;
 
+use App\Entity\Team;
 use App\Entity\UserTeam;
 use App\Model\View\Team\UserTeamView;
 
@@ -20,7 +21,7 @@ class UserTeamViewFactory
         $view = new UserTeamView($team);
         $view->setId($team->getId()->toString());
         $view->setTitle($team->getTitle());
-        $view->setType($team->getAlias());
+        $view->setType($team->getAlias() ?: Team::OTHER_TYPE);
         $view->setCreatedAt($userTeam->getCreatedAt());
         $view->setUpdatedAt($userTeam->getUpdatedAt());
         $view->setUserRole($userTeam->getUserRole());

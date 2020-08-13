@@ -31,6 +31,7 @@ class Team
 {
     public const DEFAULT_GROUP_ALIAS = 'default';
     public const DEFAULT_GROUP_TITLE = 'Default';
+    public const OTHER_TYPE = 'other';
 
     /**
      * @var UuidInterface
