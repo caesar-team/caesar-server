@@ -20,11 +20,14 @@ class NewRegistrationMessageGrouper implements MessageGrouperInterface
         /** @var MessageLog $message */
         $message = current($events[MailRegistry::NEW_REGISTRATION]);
         $emails = [];
+        $url = '';
         foreach ($events[MailRegistry::NEW_REGISTRATION] as $message) {
             $emails[] = $message->getOptions()['email'] ?? null;
+            $url = $message->getOptions()['url'] ?? '';
         }
 
         $options = [
+            'url' => $url,
             'email' => '<li>'.implode('</li><li>', array_filter($emails)).'</li>',
         ];
 
