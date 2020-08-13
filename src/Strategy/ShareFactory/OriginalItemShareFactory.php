@@ -26,20 +26,23 @@ final class OriginalItemShareFactory extends AbstractShareFactory
                 continue;
             }
 
+            $originalItem = $itemCollectionRequest->getOriginalItem();
+
             $item = new Item($childItem->getUser());
             $item->setTeam($childItem->getTeam());
             $directory = $this->getSuggestedDirectory($childItem);
             $item->setParentList($directory);
-            $item->setOriginalItem($itemCollectionRequest->getOriginalItem());
+            $item->setOriginalItem($originalItem);
             $item->setSecret($childItem->getSecret());
             $item->setAccess($childItem->getAccess());
-            $item->setType($itemCollectionRequest->getOriginalItem()->getType());
+            $item->setType($originalItem->getType());
             $item->setCause($childItem->getCause());
             $item->setStatus($this->getStatusByCause($childItem->getCause()));
+            $item->setRelatedItem($originalItem->getRelatedItem());
 
             $this->entityManager->persist($item);
             $this->sendItemMessage($item);
-            $items[$itemCollectionRequest->getOriginalItem()->getId()->toString()][] = $item;
+            $items[$originalItem->getId()->toString()][] = $item;
         }
         $this->entityManager->flush();
 
