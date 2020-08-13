@@ -13,7 +13,6 @@ use Symfony\Component\Templating\EngineInterface;
 
 class FosUserMailer extends Mailer implements MailerInterface
 {
-    public const RESETTING_TEMPLATE = ':email:password_resetting.email.html.twig';
     public const FROM_EMAIL = 'no-reply@caesar.team';
 
     /**
@@ -41,5 +40,30 @@ class FosUserMailer extends Mailer implements MailerInterface
 
         $senderAddress = getenv('SENDER_ADDRESS') ?: self::FROM_EMAIL;
         $this->sendEmailMessage($rendered, $senderAddress, (string) $user->getEmail());
+    }
+
+    /**
+     * @param string       $renderedTemplate
+     * @param array|string $fromEmail
+     * @param array|string $toEmail
+     */
+    protected function sendEmailMessage($renderedTemplate, $fromEmail, $toEmail)
+    {
+        $renderedLines = explode("\n", trim($renderedTemplate));
+        $subject = array_shift($renderedLines);
+        $body = implode("\n", $renderedLines);
+
+        $message = (new \Swift_Message())
+            ->setSubject($subject)
+            ->setFrom($fromEmail)
+            ->setTo($toEmail)
+            ->setBody($body, 'text/html');
+
+        if (!$this->mailer->getTransport()->ping()) {
+            $this->mailer->getTransport()->stop();
+            $this->mailer->getTransport()->start();
+        }
+
+        $this->mailer->send($message);
     }
 }

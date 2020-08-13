@@ -10,6 +10,8 @@ use App\Notification\MessengerInterface;
 use App\Notification\Model\Message;
 use App\Repository\TeamRepository;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RouterInterface;
 
 class SendMessengerSubscriber implements EventSubscriberInterface
 {
@@ -17,10 +19,13 @@ class SendMessengerSubscriber implements EventSubscriberInterface
 
     private TeamRepository $repository;
 
-    public function __construct(MessengerInterface $messenger, TeamRepository $repository)
+    private RouterInterface $router;
+
+    public function __construct(MessengerInterface $messenger, TeamRepository $repository, RouterInterface $router)
     {
         $this->messenger = $messenger;
         $this->repository = $repository;
+        $this->router = $router;
     }
 
     /**
@@ -41,6 +46,7 @@ class SendMessengerSubscriber implements EventSubscriberInterface
             return;
         }
 
+        $teamSettingLink = $this->router->generate('front_setting_team', ['team' => $defaultTeam->getId()->toString()], UrlGeneratorInterface::ABSOLUTE_URL);
         foreach ($defaultTeam->getAdminUserTeams() as $admin) {
             if (null === $admin->getUser()) {
                 continue;
@@ -49,7 +55,10 @@ class SendMessengerSubscriber implements EventSubscriberInterface
             $message = Message::createDeferredFromUser(
                 $admin->getUser(),
                 MailRegistry::NEW_REGISTRATION,
-                ['email' => $user->getEmail()],
+                [
+                    'email' => $user->getEmail(),
+                    'url' => $teamSettingLink,
+                ],
             );
 
             $this->messenger->send($message);

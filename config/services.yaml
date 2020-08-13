@@ -56,12 +56,13 @@ services:
 
     App\Mailer\Sender\MailSender:
         arguments:
-            - "@sylius.email_renderer.adapter"
-            - "@sylius.email_sender.adapter"
-            - "@sylius.email_provider"
-            - "@sylius.mailer.default_settings_provider"
+            - '@sylius.email_renderer.adapter'
+            - '@Sylius\Component\Mailer\Sender\Adapter\AdapterInterface'
+            - '@sylius.email_provider'
+            - '@sylius.mailer.default_settings_provider'
 
     Sylius\Component\Mailer\Sender\SenderInterface: '@App\Mailer\Sender\MailSender'
+    Sylius\Component\Mailer\Sender\Adapter\AdapterInterface: '@App\Mailer\Sender\Adapter\SwiftMailerAdapter'
 
     Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface: '@App\Security\TwoFactor\GoogleAuthenticator'
 

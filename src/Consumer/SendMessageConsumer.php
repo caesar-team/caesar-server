@@ -27,6 +27,8 @@ class SendMessageConsumer implements ConsumerInterface
     {
         $message = unserialize($msg->getBody());
         if (!$message instanceof Message) {
+            $this->logger->critical('[Consumer] $message is not instance of Message');
+
             return;
         }
 
