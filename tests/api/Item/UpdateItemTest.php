@@ -25,9 +25,8 @@ class UpdateItemTest extends Unit
 
     /**
      * @test
-     * @dataProvider updateItemDataProvider
      */
-    public function updateItem(string $acceptRoute)
+    public function updateItem()
     {
         $I = $this->tester;
 
@@ -62,23 +61,5 @@ class UpdateItemTest extends Unit
 
         $schema = $I->getSchema('item/share_item_update.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
-
-        $I->login($user);
-        $I->sendPOST(sprintf($acceptRoute, $originalItem->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('item/item.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
-
-        $I->sendPOST(sprintf($acceptRoute, $originalItem->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
-    }
-
-    public function updateItemDataProvider(): array
-    {
-        return [
-            ['/items/%s/accept_update'],
-            ['/items/%s/decline_update'],
-        ];
     }
 }

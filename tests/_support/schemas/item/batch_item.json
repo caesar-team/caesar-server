@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "personal": {
+      "type": "array",
+      "items": {
+        "$ref": "schemas://item/definitions.json#/definitions/item"
+      }
+    },
+    "teams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "schemas://item/definitions.json#/definitions/item"
+            }
+          },
+          "icon": {
+            "type": ["string", "null"]
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "items",
+          "icon",
+          "type"
+        ]
+      }
+    }
+  },
+  "required": [
+    "personal",
+    "teams"
+  ]
+}

@@ -6,6 +6,7 @@ namespace App\Controller\Api\Item;
 
 use App\Controller\AbstractController;
 use App\Entity\Item;
+use App\Factory\View\Item\BatchItemViewFactory;
 use App\Factory\View\Item\ItemViewFactory;
 use App\Form\Request\CreateItemsType;
 use App\Form\Request\CreateItemType;
@@ -13,6 +14,7 @@ use App\Limiter\Inspector\ItemCountInspector;
 use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
 use App\Model\Request\ItemsCollectionRequest;
+use App\Model\View\Item\BatchItemsView;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
 use App\Security\Voter\ItemVoter;
@@ -36,6 +38,32 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 final class ItemController extends AbstractController
 {
+    /**
+     * Get batch items information.
+     *
+     * @SWG\Tag(name="Item")
+     * @SWG\Response(
+     *     response=200,
+     *     description="Items data",
+     *     @Model(type=BatchItemsView::class)
+     * )
+     *
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such item"
+     * )
+     *
+     * @Route(
+     *     path="/batch",
+     *     name="api_get_item_batch",
+     *     methods={"GET"}
+     * )
+     */
+    public function items(BatchItemViewFactory $factory): BatchItemsView
+    {
+        return $factory->createSingle($this->getUser());
+    }
+
     /**
      * Get single item information.
      *
