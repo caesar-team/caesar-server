@@ -147,3 +147,6 @@ services:
     App\JsonRpc\Method\SystemLimitMethod:
         tags:
             - { method: 'system-limits', name: 'json_rpc_http_server.jsonrpc_method' }
+    App\JsonRpc\Method\AddSystemLimitMethod:
+        tags:
+            - { method: 'add-system-limit', name: 'json_rpc_http_server.jsonrpc_method' }
