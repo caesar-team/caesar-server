@@ -486,6 +486,22 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->ownedItems->toArray();
     }
 
+    /**
+     * @return Item[]
+     */
+    public function getPersonalItems(): array
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->isNull('team'));
+        $criteria->orderBy(['sort' => Criteria::ASC]);
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        return $this->ownedItems->matching($criteria)->toArray();
+    }
+
     public function addOwnedItem(Item $item): void
     {
         if (!$this->ownedItems->contains($item)) {

@@ -2,6 +2,7 @@
 
 namespace App\Tests\Item;
 
+use App\DBAL\Types\Enum\AccessEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
@@ -39,6 +40,66 @@ class ItemTest extends Unit
 
         $schema = $I->getSchema('item/item.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
+
+    /** @test */
+    public function getBatchItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var User $member */
+        $member = $I->have(User::class);
+
+        /** @var Item $item */
+        $item = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getLists(),
+        ]);
+
+        $team = $I->createTeam($user);
+        $I->addUserToTeam($team, $member);
+        $teamItem = $I->createTeamItem($team, $user);
+
+        $I->login($user);
+        $I->sendGET('/items/batch');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.personal', ['id' => $item->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.personal', ['id' => $teamItem->getId()->toString()]);
+
+        $I->seeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $teamItem->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $item->getId()->toString()]);
+
+        $schema = $I->getSchema('item/batch_item.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
+
+        $I->sendPOST('items', [
+            'listId' => $user->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
+            'relatedItem' => $item->getId()->toString(),
+            'secret' => uniqid(),
+        ]);
+        [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');
+
+        $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [
+            'items' => [
+                [
+                    'userId' => $member->getId()->toString(),
+                    'secret' => 'Some secret',
+                    'cause' => Item::CAUSE_SHARE,
+                    'access' => AccessEnumType::TYPE_READ,
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->login($member);
+        $I->sendGET('/items/batch');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.personal.0.relatedItem', ['id' => $item->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $teamItem->getId()->toString()]);
     }
 
     /** @test */
