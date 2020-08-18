@@ -68,6 +68,16 @@ class SystemLimit
         $this->limitSize = $limitSize;
     }
 
+    public function addLimitSize(int $limitSize): void
+    {
+        // for unlimited size
+        if (0 > $this->limitSize) {
+            $this->limitSize = 0;
+        }
+
+        $this->limitSize += $limitSize;
+    }
+
     public function isRestricted(int $used): bool
     {
         return $this->getLimitSize() < $used && !$this->isUnlimited();
