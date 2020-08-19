@@ -49,7 +49,7 @@
         "symfony/swiftmailer-bundle": "3.4.0",
         "symfony/twig-bundle": "4.4.7",
         "symfony/webpack-encore-bundle": "1.7.3",
-        "symfony/yaml": "4.4.7",
+        "symfony/yaml": "4.4.11",
         "willdurand/hateoas-bundle": "^2.1",
         "yoanm/symfony-jsonrpc-http-server": "^3.0",
         "yoanm/symfony-jsonrpc-params-validator": "^2.0"
