@@ -37,7 +37,7 @@
         "stof/doctrine-extensions-bundle": "1.4.0",
         "sylius/mailer-bundle": "1.5.1",
         "symfony/asset": "4.4.7",
-        "symfony/console": "4.4.7",
+        "symfony/console": "4.4.11",
         "symfony/dotenv": "4.4.7",
         "symfony/expression-language": "4.4.7",
         "symfony/flex": "1.6.2",
