@@ -150,3 +150,16 @@ services:
     App\JsonRpc\Method\AddSystemLimitMethod:
         tags:
             - { method: 'add-system-limit', name: 'json_rpc_http_server.jsonrpc_method' }
+
+    # Override provider because we can't use session if we use Authorization header
+    # Ignore TwoFactorProviderPreparationRecorder for google,
+    # because \Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorTwoFactorProvider::prepareAuthentication is not use
+    App\Security\Authentication\Provider\TwoFactorAuthenticationProvider:
+        arguments:
+            - ~
+            - ~
+            - '@scheb_two_factor.provider_registry'
+            - '@scheb_two_factor.backup_code_manager'
+            - '@scheb_two_factor.provider_preparation_recorder'
+
+    scheb_two_factor.security.authentication.provider: '@App\Security\Authentication\Provider\TwoFactorAuthenticationProvider'
