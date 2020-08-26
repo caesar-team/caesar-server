@@ -1,5 +1,9 @@
-Caesar
+Caesar.Team server appliction
 ===========
+Here you can find all information needed to istall and run the Caesar.Team server appliction on your own.
+
+Feel free to visit our [Homepage](https://github.com/caesar-team/caesar.team)
+
 ## Requirements
 
 * [Docker and Docker Compose](https://docs.docker.com/engine/installation)
