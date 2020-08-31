@@ -6,7 +6,7 @@ namespace App\Event\EventSubscriber;
 
 use App\Entity\User;
 use App\Repository\ItemRepository;
-use EasyCorp\Bundle\EasyAdminBundle\Event\EasyAdminEvents;
+use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityDeletedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
@@ -22,7 +22,7 @@ final class ResetTeamItemsOwnerSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            EasyAdminEvents::PRE_REMOVE => ['preRemove'],
+            AfterEntityDeletedEvent::class => ['preRemove'],
         ];
     }
 

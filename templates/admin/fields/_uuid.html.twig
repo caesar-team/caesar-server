@@ -1,0 +1,5 @@
+{% if field.value -%}
+    <span style="white-space:nowrap"><a href="javascript:" data-clipboard data-clipboard-text="{{ field.value }}" class="uuid_copy" data-toggle="tooltip" data-placement="top" title="Скопировать"><i class="fa fa-copy"></i></a>&nbsp;<span title="{{ field.value }}">{{ field.value|slice(0, 8) }}</span></span>
+{%- else -%}
+    <span class="badge badge-secondary">Null</span>
+{%- endif %}

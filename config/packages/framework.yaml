@@ -10,7 +10,7 @@ framework:
         cookie_httponly: true
     templating:
         engines: ['twig']
-    csrf_protection: false
+    csrf_protection: true
     #esi: true
     #fragments: true
     php_errors:

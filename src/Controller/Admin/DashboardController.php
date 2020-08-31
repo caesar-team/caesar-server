@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Controller\Admin;
+
+use App\Entity\Directory;
+use App\Entity\Team;
+use App\Entity\User;
+use App\Entity\UserTeam;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
+use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
+use EasyCorp\Bundle\EasyAdminBundle\Router\CrudUrlGenerator;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+class DashboardController extends AbstractDashboardController
+{
+    /**
+     * @Route("/admin", name="admin")
+     */
+    public function index(): Response
+    {
+        $routeBuilder = $this->get(CrudUrlGenerator::class)->build();
+
+        return $this->redirect(
+            $routeBuilder->setController(UserCrudController::class)->generateUrl()
+        );
+    }
+
+    public function configureDashboard(): Dashboard
+    {
+        return Dashboard::new()
+            ->setTitle('Caesar App')
+        ;
+    }
+
+    public function configureCrud(): Crud
+    {
+        return Crud::new()
+            ->overrideTemplate('crud/field/id', 'admin/fields/_uuid.html.twig')
+        ;
+    }
+
+    public function configureMenuItems(): iterable
+    {
+        yield MenuItem::linkToCrud('Users', 'fas fa-user', User::class);
+        yield MenuItem::linkToCrud('Users Teams', 'far fa-address-book', UserTeam::class);
+        yield MenuItem::linkToCrud('Teams', 'fas fa-users', Team::class);
+        yield MenuItem::linkToCrud('Lists', 'fas fa-folder', Directory::class);
+    }
+}
