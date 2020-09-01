@@ -9,7 +9,6 @@ phpunit.xml.dist
 Dockerfile
 docker-compose.yml
 README.md
-.env.*
 .env
 vendor/*
 var/cache/*
