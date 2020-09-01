@@ -99,6 +99,27 @@ class Directory
     private $createdAt;
 
     /**
+     * @var User|null
+     *
+     * @ORM\OneToOne(targetEntity="App\Entity\User", mappedBy="inbox")
+     */
+    private $userInbox;
+
+    /**
+     * @var User|null
+     *
+     * @ORM\OneToOne(targetEntity="App\Entity\User", mappedBy="lists")
+     */
+    private $userLists;
+
+    /**
+     * @var User|null
+     *
+     * @ORM\OneToOne(targetEntity="App\Entity\User", mappedBy="trash")
+     */
+    private $userTrash;
+
+    /**
      * @todo candidate to refactoring (inbox, trash, etc)
      */
     private string $role = NodeEnumType::TYPE_LIST;
@@ -321,5 +342,47 @@ class Directory
     public function setCreatedAt(\DateTimeImmutable $createdAt): void
     {
         $this->createdAt = $createdAt;
+    }
+
+    public function getUserInbox(): ?User
+    {
+        return $this->userInbox;
+    }
+
+    public function setUserInbox(?User $userInbox): void
+    {
+        $this->userInbox = $userInbox;
+    }
+
+    public function getUserLists(): ?User
+    {
+        return $this->userLists;
+    }
+
+    public function setUserLists(?User $userLists): void
+    {
+        $this->userLists = $userLists;
+    }
+
+    public function getUserTrash(): ?User
+    {
+        return $this->userTrash;
+    }
+
+    public function setUserTrash(?User $userTrash): void
+    {
+        $this->userTrash = $userTrash;
+    }
+
+    public function getUser(): ?User
+    {
+        if (null !== $this->getParentList()) {
+            return $this->getParentList()->getUser();
+        }
+
+        return $this->userTrash
+            ?: $this->userLists
+            ?: $this->userInbox
+        ;
     }
 }

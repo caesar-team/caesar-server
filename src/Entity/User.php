@@ -152,30 +152,24 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @var Directory
      *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist"}
-     * )
+     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userInbox", cascade={"persist"})
+     * @ORM\JoinColumn
      */
     protected $inbox;
 
     /**
      * @var Directory
      *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist"}
-     * )
+     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userLists", cascade={"persist"})
+     * @ORM\JoinColumn
      */
     protected $lists;
 
     /**
      * @var Directory
      *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist"}
-     * )
+     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userTrash", cascade={"persist"})
+     * @ORM\JoinColumn
      */
     protected $trash;
 
