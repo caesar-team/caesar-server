@@ -24,6 +24,7 @@ final class EditUserTeamType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => EditUserTeamRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

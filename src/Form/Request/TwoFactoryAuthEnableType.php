@@ -55,6 +55,7 @@ class TwoFactoryAuthEnableType extends AbstractType
         parent::configureOptions($resolver);
         $resolver->setDefaults([
             'data_class' => User::class,
+            'csrf_protection' => false,
         ]);
     }
 }

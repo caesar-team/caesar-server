@@ -23,6 +23,7 @@ class EditListType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => EditListRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

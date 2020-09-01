@@ -23,6 +23,7 @@ class CreateListType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => CreateListRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

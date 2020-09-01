@@ -2,6 +2,7 @@
 
 namespace App\Tests\User;
 
+use App\Controller\Admin\UserCrudController;
 use App\DBAL\Types\Enum\AccessEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
@@ -206,10 +207,12 @@ class UserTest extends Unit
         $teamItem = $I->createTeamItem($team, $user);
 
         $I->symfonyAuth($domainAdmin);
+        $crudId = substr(sha1(getenv('APP_SECRET').UserCrudController::class), 0, 7);
+
         $I->symfonyRequest(
             'DELETE',
-            sprintf('/admin/?action=delete&entity=User&id=%s', $user->getId()->toString()),
-            ['_method' => 'DELETE', 'delete_form' => ['_easyadmin_delete_flag' => 1]]
+            sprintf('/admin?crudAction=delete&entityId=%s&crudId=%s', $user->getId()->toString(), $crudId),
+            ['_method' => 'DELETE', 'delete_form' => ['_easyadmin_delete_flag' => 1], 'token' => $I->generateCsrf('ea-delete')]
         );
 
         $I->dontSeeInDatabase('item', ['id' => $itemId]);

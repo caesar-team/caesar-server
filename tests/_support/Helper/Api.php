@@ -8,6 +8,7 @@ use FOS\UserBundle\Model\UserInterface;
 use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class Api extends \Codeception\Module
 {
@@ -23,6 +24,20 @@ class Api extends \Codeception\Module
     public function mockRabbitMQProducer($mockProducer)
     {
         $this->getSymfony()->kernel->getContainer()->set('old_sound_rabbit_mq.send_message_producer', $mockProducer);
+    }
+
+    public function generateCsrf(string $tokenId)
+    {
+        /** @var CsrfTokenManagerInterface $tokenManager */
+        $tokenManager = $this->getSymfony()->grabService('security.csrf.token_manager');
+
+        $token = $tokenManager->getToken($tokenId)->getValue();
+
+        /** @var Session $session */
+        $session = $this->getSymfony()->grabService('session');
+        $session->save();
+
+        return $token;
     }
 
     public function symfonyAuth(User $user): void

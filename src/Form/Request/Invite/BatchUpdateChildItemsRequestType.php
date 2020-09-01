@@ -30,6 +30,7 @@ class BatchUpdateChildItemsRequestType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => BatchChildItemsCollectionRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

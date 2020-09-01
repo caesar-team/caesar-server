@@ -35,10 +35,6 @@ services:
         arguments:
             $validUriCollection: '%frontend_uris%'
 
-    App\Controller\Admin\UserController:
-        arguments:
-            $userManager: '@fos_user.user_manager'
-
     App\Security\Voter\TwoFactorInProgressVoter:
         tags:
             - {name: security.voter, priority: 249 }

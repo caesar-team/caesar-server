@@ -23,6 +23,7 @@ final class PublicKeysRequestType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => PublicKeysRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

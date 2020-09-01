@@ -2,155 +2,133 @@
 
 namespace App\Controller\Admin;
 
+use App\Controller\AbstractController;
+use App\Entity\User;
 use App\Mailer\FosUserMailer;
-use App\Repository\UserRepository;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\EasyAdminController as BaseController;
-use FOS\UserBundle\Doctrine\UserManager;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Router\CrudUrlGenerator;
 use FOS\UserBundle\Event\GetResponseNullableUserEvent;
 use FOS\UserBundle\Event\GetResponseUserEvent;
 use FOS\UserBundle\FOSUserEvents;
-use FOS\UserBundle\Model\UserInterface;
+use FOS\UserBundle\Model\UserManagerInterface;
 use FOS\UserBundle\Util\TokenGeneratorInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * Class AdminController.
- */
-class UserController extends BaseController
+class UserController extends AbstractController
 {
     /**
-     * @var UserManager
+     * @var SessionInterface|Session
      */
-    private $userManager;
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
-    /**
-     * @var TokenGeneratorInterface
-     */
-    private $tokenGenerator;
-    /**
-     * @var FosUserMailer
-     */
-    private $fosUserMailer;
+    private SessionInterface $session;
 
-    private UserRepository $userRepository;
+    private CrudUrlGenerator $crudUrlGenerator;
 
     public function __construct(
-        UserManager $userManager,
-        EventDispatcherInterface $eventDispatcher,
-        TokenGeneratorInterface $tokenGenerator,
-        FosUserMailer $fosUserMailer,
-        UserRepository $userRepository
+        SessionInterface $session,
+        CrudUrlGenerator $crudUrlGenerator
     ) {
-        $this->userManager = $userManager;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->tokenGenerator = $tokenGenerator;
-        $this->fosUserMailer = $fosUserMailer;
-        $this->userRepository = $userRepository;
-    }
-
-    public function createNewUserEntity(): UserInterface
-    {
-        $user = $this->userManager->createUser();
-        $user->setPlainPassword(md5(uniqid('', true)));
-
-        return $user;
+        $this->session = $session;
+        $this->crudUrlGenerator = $crudUrlGenerator;
     }
 
     /**
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @Route("/admin/users/{user}/reset-2fa", name="admin_user_reset_2fa", methods={"GET"})
      */
-    public function reset_2faAction()
+    public function reset2fa(User $user, UserManagerInterface $userManager)
     {
-        $id = $this->request->query->get('id');
-        $user = $this->userRepository->find($id);
-        $this->em->flush();
-
         $user->setGoogleAuthenticatorSecret(null);
-        $this->userManager->updateUser($user);
+        $userManager->updateUser($user);
 
-        return $this->redirectToRoute('easyadmin', [
-            'action' => 'list',
-            'entity' => $this->request->query->get('entity'),
-        ]);
+        $this->session->getFlashBag()->set('info', 'Success resetting 2FA');
+
+        return $this->buildRedirectResponse();
     }
 
     /**
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @Route("/admin/users/{user}/reset-password", name="admin_user_reset_password", methods={"GET"})
      */
-    public function resetPasswordAction()
-    {
-        $id = $this->request->query->get('id');
-        $user = $this->userRepository->find($id);
-        $this->em->flush();
-
+    public function resetPassword(
+        Request $request,
+        User $user,
+        FosUserMailer $fosUserMailer,
+        UserManagerInterface $userManager,
+        TokenGeneratorInterface $tokenGenerator,
+        EventDispatcherInterface $dispatcher
+    ) {
         if ($user && is_null($user->getSrp())) {
-            return $this->redirectToRoute('easyadmin', [
-                'action' => 'list',
-                'errors' => ['resetPassword' => 'Invalid Srp'],
-                'entity' => $this->request->query->get('entity'),
-            ]);
+            $this->session->getFlashBag()->set('danger', 'Invalid Srp');
+
+            return $this->buildRedirectResponse();
         }
 
-        $event = new GetResponseNullableUserEvent($user, $this->request);
+        $event = new GetResponseNullableUserEvent($user, $request);
         /**
          * @phpstan-ignore-next-line
          * @psalm-suppress InvalidArgument
          * @psalm-suppress TooManyArguments
          */
-        $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_INITIALIZE, $event);
+        $dispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_INITIALIZE, $event);
 
         if (null !== $event->getResponse()) {
             return $event->getResponse();
         }
 
         if (null !== $user) {
-            $event = new GetResponseUserEvent($user, $this->request);
+            $event = new GetResponseUserEvent($user, $request);
             /**
              * @phpstan-ignore-next-line
              * @psalm-suppress InvalidArgument
              * @psalm-suppress TooManyArguments
              */
-            $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_RESET_REQUEST, $event);
+            $dispatcher->dispatch(FOSUserEvents::RESETTING_RESET_REQUEST, $event);
             if (null !== $event->getResponse()) {
                 return $event->getResponse();
             }
 
-            $user->setConfirmationToken($this->tokenGenerator->generateToken());
+            $user->setConfirmationToken($tokenGenerator->generateToken());
             $user->setEnabled(false);
 
-            $event = new GetResponseUserEvent($user, $this->request);
+            $event = new GetResponseUserEvent($user, $request);
             /**
              * @phpstan-ignore-next-line
              * @psalm-suppress InvalidArgument
              * @psalm-suppress TooManyArguments
              */
-            $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_CONFIRM, $event);
+            $dispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_CONFIRM, $event);
             if (null !== $event->getResponse()) {
                 return $event->getResponse();
             }
-            $this->fosUserMailer->sendResettingEmailMessage($user);
+            $fosUserMailer->sendResettingEmailMessage($user);
             $user->setPasswordRequestedAt(new \DateTime());
-            $this->userManager->updateUser($user);
-            $event = new GetResponseUserEvent($user, $this->request);
+            $userManager->updateUser($user);
+            $event = new GetResponseUserEvent($user, $request);
             /**
              * @phpstan-ignore-next-line
              * @psalm-suppress InvalidArgument
              * @psalm-suppress TooManyArguments
              */
-            $this->eventDispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_COMPLETED, $event);
+            $dispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_COMPLETED, $event);
             if (null !== $event->getResponse()) {
                 return $event->getResponse();
             }
         }
 
-        return $this->redirectToRoute('easyadmin', [
-            'action' => 'list',
-            'entity' => $this->request->query->get('entity'),
-        ]);
+        $this->session->getFlashBag()->set('info', 'Success resetting password');
+
+        return $this->buildRedirectResponse();
+    }
+
+    private function buildRedirectResponse(): RedirectResponse
+    {
+        return new RedirectResponse($this->crudUrlGenerator
+            ->build()
+            ->setController(UserCrudController::class)
+            ->setAction(Action::INDEX)
+        );
     }
 }
