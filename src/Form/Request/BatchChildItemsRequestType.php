@@ -48,6 +48,7 @@ class BatchChildItemsRequestType extends AbstractType
         $resolver->setDefaults([
             'data_class' => BatchItemCollectionRequest::class,
             'er',
+            'csrf_protection' => false,
         ]);
     }
 }

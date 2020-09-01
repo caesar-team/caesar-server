@@ -31,6 +31,7 @@ class ChildItemCollectionRequestType extends AbstractType
         parent::configureOptions($resolver);
         $resolver->setDefaults([
             'data_class' => ItemCollectionRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

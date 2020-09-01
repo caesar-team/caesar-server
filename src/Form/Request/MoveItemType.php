@@ -64,6 +64,7 @@ class MoveItemType extends AbstractType
         parent::configureOptions($resolver);
         $resolver->setDefaults([
             'data_class' => Item::class,
+            'csrf_protection' => false,
         ]);
     }
 }

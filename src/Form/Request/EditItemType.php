@@ -48,6 +48,7 @@ class EditItemType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Item::class,
+            'csrf_protection' => false,
         ]);
     }
 }

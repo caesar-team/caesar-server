@@ -30,6 +30,7 @@ class SendInvitesType extends AbstractType
 
         $resolver->setDefaults([
             'data_class' => SendInviteRequests::class,
+            'csrf_protection' => false,
         ]);
     }
 }

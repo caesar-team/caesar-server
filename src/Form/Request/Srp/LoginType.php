@@ -39,6 +39,7 @@ class LoginType extends AbstractType
         parent::configureOptions($resolver);
         $resolver->setDefaults([
             'data_class' => LoginRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

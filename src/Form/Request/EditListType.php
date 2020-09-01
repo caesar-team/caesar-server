@@ -33,6 +33,7 @@ class EditListType extends AbstractType
             'validation_groups' => [
                 'Default', 'unique_label',
             ],
+            'csrf_protection' => false,
         ]);
     }
 }

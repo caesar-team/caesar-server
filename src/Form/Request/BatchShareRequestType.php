@@ -26,6 +26,7 @@ class BatchShareRequestType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => BatchShareRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

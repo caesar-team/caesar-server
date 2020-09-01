@@ -6,9 +6,8 @@ namespace App\Event\EventSubscriber;
 
 use App\Entity\User;
 use App\Repository\ItemRepository;
-use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityDeletedEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityDeletedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\EventDispatcher\GenericEvent;
 
 final class ResetTeamItemsOwnerSubscriber implements EventSubscriberInterface
 {
@@ -22,13 +21,13 @@ final class ResetTeamItemsOwnerSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            AfterEntityDeletedEvent::class => ['preRemove'],
+            BeforeEntityDeletedEvent::class => ['preRemove'],
         ];
     }
 
-    public function preRemove(GenericEvent $event): void
+    public function preRemove(BeforeEntityDeletedEvent $event): void
     {
-        $user = $event->getSubject();
+        $user = $event->getEntityInstance();
         if (!$user instanceof User) {
             return;
         }

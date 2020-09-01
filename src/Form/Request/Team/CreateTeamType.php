@@ -29,6 +29,7 @@ class CreateTeamType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Team::class,
+            'csrf_protection' => false,
         ]);
     }
 }

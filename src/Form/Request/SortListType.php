@@ -30,6 +30,7 @@ class SortListType extends AbstractType
         parent::configureOptions($resolver);
         $resolver->setDefaults([
             'data_class' => Directory::class,
+            'csrf_protection' => false,
         ]);
     }
 }

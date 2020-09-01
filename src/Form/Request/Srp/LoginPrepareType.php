@@ -37,6 +37,7 @@ class LoginPrepareType extends AbstractType
         parent::configureOptions($resolver);
         $resolver->setDefaults([
             'data_class' => Srp::class,
+            'csrf_protection' => false,
         ]);
     }
 }

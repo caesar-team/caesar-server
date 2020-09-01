@@ -23,6 +23,7 @@ class EditItemRequestType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => EditItemRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }
