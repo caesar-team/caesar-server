@@ -47,6 +47,9 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Users', 'fas fa-user', User::class);
         yield MenuItem::linkToCrud('Users Teams', 'far fa-address-book', UserTeam::class);
         yield MenuItem::linkToCrud('Teams', 'fas fa-users', Team::class);
-        yield MenuItem::linkToCrud('Lists', 'fas fa-folder', Directory::class);
+        yield MenuItem::linkToCrud('Personal lists', 'fas fa-folder', Directory::class)
+            ->setController(PersonalListCrudController::class);
+        yield MenuItem::linkToCrud('Team lists', 'fas fa-folder', Directory::class)
+            ->setController(TeamListCrudController::class);
     }
 }
