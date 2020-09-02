@@ -6,11 +6,11 @@ google_connect:
     path: /connect/google
 
 2fa_login:
-    path: /2fa
+    path: /_2fa
     defaults:
         _controller: "scheb_two_factor.form_controller:form"
 2fa_login_check:
-    path: /2fa_check
+    path: /_2fa_check
 
 _security_logout:
     path: /logout
