@@ -48,7 +48,7 @@ class ShareTest extends Unit
         $I->sendPOST('items', [
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_SYSTEM,
-            'relatedItem' => $item->getId()->toString(),
+            'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
         ]);
         [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');

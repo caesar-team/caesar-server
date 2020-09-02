@@ -62,7 +62,7 @@ class CreateItemType extends AbstractType
                 'allow_delete' => true,
                 'mapped' => false,
             ])
-            ->add('relatedItem', EntityType::class, [
+            ->add('relatedItemId', EntityType::class, [
                 'class' => Item::class,
                 'choice_value' => 'id',
                 'property_path' => 'relatedItem',
