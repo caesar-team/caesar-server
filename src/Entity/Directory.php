@@ -268,11 +268,6 @@ class Directory
         $this->sort = $sort;
     }
 
-    public function __toString()
-    {
-        return $this->id->toString();
-    }
-
     public function equals(?Directory $directory): bool
     {
         if (null === $directory) {
@@ -384,5 +379,15 @@ class Directory
             ?: $this->userLists
             ?: $this->userInbox
         ;
+    }
+
+    public function __toString(): string
+    {
+        $type = 'personal';
+        if ($this->getTeam()) {
+            $type = 'team';
+        }
+
+        return sprintf('%s (%s)', $this->getLabel(), $type);
     }
 }
