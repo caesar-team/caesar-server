@@ -4,15 +4,23 @@ namespace App\Controller\Admin;
 
 use App\Entity\UserTeam;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 class UserTeamCrudController extends AbstractCrudController
 {
+    private const AVAILABLE_USER_ROLE = [
+        'member' => UserTeam::USER_ROLE_MEMBER,
+        'admin' => UserTeam::USER_ROLE_ADMIN,
+    ];
+
     public static function getEntityFqcn(): string
     {
         return UserTeam::class;
@@ -33,10 +41,7 @@ class UserTeamCrudController extends AbstractCrudController
             TextField::new('userRole')
                 ->setFormType(ChoiceType::class)
                 ->setFormTypeOptions([
-                    'choices' => [
-                        'member' => UserTeam::USER_ROLE_MEMBER,
-                        'admin' => UserTeam::USER_ROLE_ADMIN,
-                    ],
+                    'choices' => self::AVAILABLE_USER_ROLE,
                 ]),
         ];
     }
@@ -44,5 +49,23 @@ class UserTeamCrudController extends AbstractCrudController
     public function configureCrud(Crud $crud): Crud
     {
         return $crud->setPageTitle(Crud::PAGE_INDEX, 'User teams');
+    }
+
+    public function configureFilters(Filters $filters): Filters
+    {
+        $multipleOptions = [
+            'value_type_options' => [
+                'multiple' => true,
+                'attr' => [
+                    'data-widget' => 'select2',
+                ],
+            ],
+        ];
+
+        return $filters
+            ->add(EntityFilter::new('user')->setFormTypeOptions($multipleOptions))
+            ->add(EntityFilter::new('team')->setFormTypeOptions($multipleOptions))
+            ->add(ChoiceFilter::new('userRole')->setChoices(self::AVAILABLE_USER_ROLE))
+        ;
     }
 }
