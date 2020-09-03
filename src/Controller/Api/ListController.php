@@ -124,6 +124,7 @@ final class ListController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
         $list->setParentList($user->getLists());
+        $list->setUser($user);
 
         $manager->persist($list);
         $manager->flush();

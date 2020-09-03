@@ -96,7 +96,10 @@ class UserCrudController extends AbstractCrudController
 
     public function configureCrud(Crud $crud): Crud
     {
-        return $crud->setDefaultSort(['id' => 'DESC']);
+        return $crud
+            ->setPageTitle(Crud::PAGE_INDEX, 'Users')
+            ->setDefaultSort(['id' => 'DESC'])
+        ;
     }
 
     public function configureFilters(Filters $filters): Filters

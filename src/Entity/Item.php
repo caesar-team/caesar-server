@@ -39,7 +39,7 @@ class Item implements ChildItemAwareInterface
      * @var Directory
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childItems", cascade={"persist"}, fetch="EAGER")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     protected $parentList;
 

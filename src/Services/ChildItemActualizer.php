@@ -140,9 +140,11 @@ class ChildItemActualizer
         throw new LogicException('No Such user in original invite '.$user->getId()->toString());
     }
 
+    /** @psalm-suppress InvalidNullableReturnType */
     public function extractUpdate(Item $item, User $user): ItemUpdate
     {
-        if ($item->getUpdate()) {
+        if (null !== $item->getUpdate()) {
+            /** @psalm-suppress NullableReturnStatement */
             return $item->getUpdate();
         }
 

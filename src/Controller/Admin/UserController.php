@@ -44,6 +44,10 @@ class UserController extends AbstractController
         $user->setGoogleAuthenticatorSecret(null);
         $userManager->updateUser($user);
 
+        /**
+         * @phpstan-ignore-next-line
+         * @psalm-suppress PossiblyUndefinedMethod
+         */
         $this->session->getFlashBag()->set('info', 'Success resetting 2FA');
 
         return $this->buildRedirectResponse();
@@ -60,7 +64,11 @@ class UserController extends AbstractController
         TokenGeneratorInterface $tokenGenerator,
         EventDispatcherInterface $dispatcher
     ) {
-        if ($user && is_null($user->getSrp())) {
+        if (is_null($user->getSrp())) {
+            /**
+             * @phpstan-ignore-next-line
+             * @psalm-suppress PossiblyUndefinedMethod
+             */
             $this->session->getFlashBag()->set('danger', 'Invalid Srp');
 
             return $this->buildRedirectResponse();
@@ -78,46 +86,48 @@ class UserController extends AbstractController
             return $event->getResponse();
         }
 
-        if (null !== $user) {
-            $event = new GetResponseUserEvent($user, $request);
-            /**
-             * @phpstan-ignore-next-line
-             * @psalm-suppress InvalidArgument
-             * @psalm-suppress TooManyArguments
-             */
-            $dispatcher->dispatch(FOSUserEvents::RESETTING_RESET_REQUEST, $event);
-            if (null !== $event->getResponse()) {
-                return $event->getResponse();
-            }
-
-            $user->setConfirmationToken($tokenGenerator->generateToken());
-            $user->setEnabled(false);
-
-            $event = new GetResponseUserEvent($user, $request);
-            /**
-             * @phpstan-ignore-next-line
-             * @psalm-suppress InvalidArgument
-             * @psalm-suppress TooManyArguments
-             */
-            $dispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_CONFIRM, $event);
-            if (null !== $event->getResponse()) {
-                return $event->getResponse();
-            }
-            $fosUserMailer->sendResettingEmailMessage($user);
-            $user->setPasswordRequestedAt(new \DateTime());
-            $userManager->updateUser($user);
-            $event = new GetResponseUserEvent($user, $request);
-            /**
-             * @phpstan-ignore-next-line
-             * @psalm-suppress InvalidArgument
-             * @psalm-suppress TooManyArguments
-             */
-            $dispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_COMPLETED, $event);
-            if (null !== $event->getResponse()) {
-                return $event->getResponse();
-            }
+        $event = new GetResponseUserEvent($user, $request);
+        /**
+         * @phpstan-ignore-next-line
+         * @psalm-suppress InvalidArgument
+         * @psalm-suppress TooManyArguments
+         */
+        $dispatcher->dispatch(FOSUserEvents::RESETTING_RESET_REQUEST, $event);
+        if (null !== $event->getResponse()) {
+            return $event->getResponse();
         }
 
+        $user->setConfirmationToken($tokenGenerator->generateToken());
+        $user->setEnabled(false);
+
+        $event = new GetResponseUserEvent($user, $request);
+        /**
+         * @phpstan-ignore-next-line
+         * @psalm-suppress InvalidArgument
+         * @psalm-suppress TooManyArguments
+         */
+        $dispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_CONFIRM, $event);
+        if (null !== $event->getResponse()) {
+            return $event->getResponse();
+        }
+        $fosUserMailer->sendResettingEmailMessage($user);
+        $user->setPasswordRequestedAt(new \DateTime());
+        $userManager->updateUser($user);
+        $event = new GetResponseUserEvent($user, $request);
+        /**
+         * @phpstan-ignore-next-line
+         * @psalm-suppress InvalidArgument
+         * @psalm-suppress TooManyArguments
+         */
+        $dispatcher->dispatch(FOSUserEvents::RESETTING_SEND_EMAIL_COMPLETED, $event);
+        if (null !== $event->getResponse()) {
+            return $event->getResponse();
+        }
+
+        /**
+         * @phpstan-ignore-next-line
+         * @psalm-suppress PossiblyUndefinedMethod
+         */
         $this->session->getFlashBag()->set('info', 'Success resetting password');
 
         return $this->buildRedirectResponse();
@@ -129,6 +139,7 @@ class UserController extends AbstractController
             ->build()
             ->setController(UserCrudController::class)
             ->setAction(Action::INDEX)
+            ->generateUrl()
         );
     }
 }

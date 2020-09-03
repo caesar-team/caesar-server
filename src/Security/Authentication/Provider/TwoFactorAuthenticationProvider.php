@@ -76,7 +76,11 @@ class TwoFactorAuthenticationProvider implements AuthenticationProviderInterface
             return $token;
         }
 
-        /** @var TwoFactorTokenInterface $token */
+        /**
+         * @phpstan-ignore-next-line
+         *
+         * @var TwoFactorTokenInterface $token
+         */
         $providerName = $token->getCurrentTwoFactorProvider();
         if (!$providerName) {
             throw new AuthenticationException('There is no active two-factor provider.');

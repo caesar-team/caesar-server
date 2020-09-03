@@ -153,7 +153,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * @var Directory
      *
      * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userInbox", cascade={"persist"})
-     * @ORM\JoinColumn
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $inbox;
 
@@ -161,7 +161,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * @var Directory
      *
      * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userLists", cascade={"persist"})
-     * @ORM\JoinColumn
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $lists;
 
@@ -169,9 +169,17 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * @var Directory
      *
      * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userTrash", cascade={"persist"})
-     * @ORM\JoinColumn
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $trash;
+
+    /**
+     * @var Collection|Directory[]
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="user")
+     * @ORM\OrderBy({"sort": "ASC"})
+     */
+    protected $directories;
 
     /**
      * User constructor.
@@ -186,6 +194,10 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->lists = Directory::createRootList();
         $this->lists->addChildList(Directory::createDefaultList());
         $this->trash = Directory::createTrash();
+
+        $this->inbox->setUser($this);
+        $this->trash->setUser($this);
+        $this->lists->setUser($this);
         $this->userTeams = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
         $this->ownedItems = new ArrayCollection();
@@ -194,6 +206,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }
         $this->flowStatus = self::FLOW_STATUS_INCOMPLETE;
         BackUpCodesManager::generate($this);
+        $this->directories = new ArrayCollection();
     }
 
     public function getId(): UuidInterface
@@ -598,5 +611,29 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function isIncomplete(): bool
     {
         return self::FLOW_STATUS_INCOMPLETE === $this->flowStatus;
+    }
+
+    /**
+     * @return Directory[]
+     */
+    public function getDirectories(): array
+    {
+        return $this->directories->toArray();
+    }
+
+    /**
+     * @param Directory[]|Collection $directories
+     */
+    public function setDirectories(Collection $directories): void
+    {
+        $this->directories = $directories;
+    }
+
+    public function addDirectory(Directory $directory): void
+    {
+        if (!$this->directories->contains($directory)) {
+            $this->directories->add($directory);
+            $directory->setUser($this);
+        }
     }
 }

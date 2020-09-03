@@ -3,17 +3,20 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Directory;
-use App\Entity\User;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 
 class PersonalListCrudController extends AbstractCrudController
 {
@@ -27,9 +30,8 @@ class PersonalListCrudController extends AbstractCrudController
         $queryBuilder = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
         $queryBuilder
             ->leftJoin('entity.parentList', 'parent_list')
-            ->leftJoin(User::class, 'userLists', Join::WITH, 'userLists.lists = parent_list.id')
-            ->leftJoin(User::class, 'user', Join::WITH, 'user.inbox = entity.id OR user.trash = entity.id')
-            ->andWhere('userLists.id IS NOT NULL OR user.id IS NOT NULL')
+            ->leftJoin('entity.user', 'user')
+            ->andWhere('user.id IS NOT NULL')
         ;
 
         return $queryBuilder;
@@ -48,5 +50,33 @@ class PersonalListCrudController extends AbstractCrudController
                 ->hideOnForm(),
             IntegerField::new('sort'),
         ];
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud->setPageTitle(Crud::PAGE_INDEX, 'Personal lists');
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        return $actions
+            ->remove(Crud::PAGE_INDEX, Action::NEW)
+            ;
+    }
+
+    public function configureFilters(Filters $filters): Filters
+    {
+        $multipleOptions = [
+            'value_type_options' => [
+                'multiple' => true,
+                'attr' => [
+                    'data-widget' => 'select2',
+                ],
+            ],
+        ];
+
+        return $filters
+            ->add(EntityFilter::new('user')->setFormTypeOptions($multipleOptions))
+        ;
     }
 }
