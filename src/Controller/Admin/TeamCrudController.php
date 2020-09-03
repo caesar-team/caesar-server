@@ -2,12 +2,11 @@
 
 namespace App\Controller\Admin;
 
+use App\Admin\Field\AssociationFieldWithSort;
 use App\Entity\Team;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
@@ -26,9 +25,11 @@ class TeamCrudController extends AbstractCrudController
             TextField::new('alias')
                 ->hideOnForm(),
             TextField::new('title'),
-            AssociationField::new('lists')
+            AssociationFieldWithSort::new('lists')
+                ->setSortField('label')
                 ->hideOnForm(),
-            AssociationField::new('trash')
+            AssociationFieldWithSort::new('trash')
+                ->setSortField('label')
                 ->hideOnForm(),
         ];
     }
