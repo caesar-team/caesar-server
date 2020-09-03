@@ -92,6 +92,12 @@ class Directory
     private ?Team $team;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="directories")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+    private ?User $user;
+
+    /**
      * @var \DateTimeImmutable
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
@@ -128,6 +134,7 @@ class Directory
     {
         $this->id = Uuid::uuid4();
         $this->team = null;
+        $this->user = null;
         $this->role = NodeEnumType::TYPE_LIST;
         $this->childLists = new ArrayCollection();
         $this->childItems = new ArrayCollection();
@@ -219,6 +226,7 @@ class Directory
         if (false === $this->childLists->contains($directory)) {
             $this->childLists->add($directory);
             $directory->setParentList($this);
+            $directory->setUser($this->getUser());
         }
     }
 
@@ -369,18 +377,6 @@ class Directory
         $this->userTrash = $userTrash;
     }
 
-    public function getUser(): ?User
-    {
-        if (null !== $this->getParentList()) {
-            return $this->getParentList()->getUser();
-        }
-
-        return $this->userTrash
-            ?: $this->userLists
-            ?: $this->userInbox
-        ;
-    }
-
     public function __toString(): string
     {
         $type = 'personal';
@@ -389,5 +385,15 @@ class Directory
         }
 
         return sprintf('%s (%s)', $this->getLabel(), $type);
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): void
+    {
+        $this->user = $user;
     }
 }

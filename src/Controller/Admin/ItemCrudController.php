@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -12,6 +13,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 
 class ItemCrudController extends AbstractCrudController
@@ -26,9 +28,11 @@ class ItemCrudController extends AbstractCrudController
         return [
             IdField::new('id'),
             TextField::new('type'),
-            AssociationField::new('parentList'),
+            AssociationField::new('parentList')
+                ->setLabel('List'),
             AssociationField::new('team'),
             TextField::new('signedOwner')
+                ->setLabel('Owner')
                 ->setTemplatePath('admin/fields/_user.html.twig'),
             DateTimeField::new('lastUpdated')
                 ->setFormat('yyyy-MM-dd H:mm:s')
@@ -59,6 +63,11 @@ class ItemCrudController extends AbstractCrudController
             ->add(EntityFilter::new('team')->setFormTypeOptions($multipleOptions))
             ->add(EntityFilter::new('owner')->setFormTypeOptions($multipleOptions))
             ->add(EntityFilter::new('parentList')->setFormTypeOptions($multipleOptions))
+            ->add(ChoiceFilter::new('type')->setChoices([
+                'credentials' => NodeEnumType::TYPE_CRED,
+                'document' => NodeEnumType::TYPE_DOCUMENT,
+                'system' => NodeEnumType::TYPE_SYSTEM,
+            ])->canSelectMultiple(true))
         ;
     }
 }

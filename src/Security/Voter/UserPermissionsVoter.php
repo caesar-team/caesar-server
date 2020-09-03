@@ -35,21 +35,21 @@ class UserPermissionsVoter extends Voter
         return true;
     }
 
-    protected function voteOnAttribute($attribute, $user, TokenInterface $token)
+    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
-        if (!$user instanceof User) {
+        if (!$subject instanceof User) {
             return false;
         }
 
         switch ($attribute) {
             case self::CREATE:
-                return $this->canCreate($user);
+                return $this->canCreate($subject);
             case self::READ:
                 return $this->canRead();
             case self::UPDATE:
-                return $this->canUpdate($user);
+                return $this->canUpdate($subject);
             case self::DELETE:
-                return $this->canDelete($user);
+                return $this->canDelete($subject);
         }
 
         throw new LogicException('This code should not be reached!');
