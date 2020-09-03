@@ -2,14 +2,13 @@
 
 namespace App\Controller\Admin;
 
+use App\Admin\Field\AssociationFieldWithSort;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -28,9 +27,11 @@ class ItemCrudController extends AbstractCrudController
         return [
             IdField::new('id'),
             TextField::new('type'),
-            AssociationField::new('parentList')
+            AssociationFieldWithSort::new('parentList')
+                ->setSortField('label')
                 ->setLabel('List'),
-            AssociationField::new('team'),
+            AssociationFieldWithSort::new('team')
+                ->setSortField('title'),
             TextField::new('signedOwner')
                 ->setLabel('Owner')
                 ->setTemplatePath('admin/fields/_user.html.twig'),

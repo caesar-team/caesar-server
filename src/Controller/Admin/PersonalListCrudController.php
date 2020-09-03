@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Admin\Field\AssociationFieldWithSort;
 use App\Entity\Directory;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -10,7 +11,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
@@ -29,9 +29,8 @@ class PersonalListCrudController extends AbstractCrudController
     {
         $queryBuilder = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
         $queryBuilder
-            ->leftJoin('entity.parentList', 'parent_list')
-            ->leftJoin('entity.user', 'user')
-            ->andWhere('user.id IS NOT NULL')
+            ->leftJoin('entity.user', '_user')
+            ->andWhere('_user.id IS NOT NULL')
         ;
 
         return $queryBuilder;
@@ -45,8 +44,8 @@ class PersonalListCrudController extends AbstractCrudController
             TextField::new('label'),
             TextField::new('type')
                 ->hideOnForm(),
-            TextField::new('user')
-                ->setTemplatePath('admin/fields/_user.html.twig')
+            AssociationFieldWithSort::new('user')
+                ->setSortField('email')
                 ->hideOnForm(),
             IntegerField::new('sort'),
         ];
