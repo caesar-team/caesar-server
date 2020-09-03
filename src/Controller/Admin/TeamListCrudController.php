@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Admin\Field\AssociationFieldWithSort;
 use App\Entity\Directory;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -10,10 +11,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -44,7 +43,8 @@ class TeamListCrudController extends AbstractCrudController
             TextField::new('label'),
             TextField::new('type')
                 ->hideOnForm(),
-            AssociationField::new('team')
+            AssociationFieldWithSort::new('team')
+                ->setSortField('title')
                 ->hideOnForm(),
             IntegerField::new('sort'),
         ];
