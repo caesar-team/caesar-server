@@ -50,6 +50,11 @@ class TeamListCrudController extends AbstractCrudController
         ];
     }
 
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud->setPageTitle(Crud::PAGE_INDEX, 'Team lists');
+    }
+
     public function configureActions(Actions $actions): Actions
     {
         return $actions

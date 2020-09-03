@@ -40,6 +40,11 @@ class ItemCrudController extends AbstractCrudController
         ];
     }
 
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud->setPageTitle(Crud::PAGE_INDEX, 'Items');
+    }
+
     public function configureActions(Actions $actions): Actions
     {
         return $actions

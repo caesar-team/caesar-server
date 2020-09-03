@@ -50,7 +50,7 @@ class UserTeamCrudController extends AbstractCrudController
 
     public function configureCrud(Crud $crud): Crud
     {
-        return $crud->setPageTitle(Crud::PAGE_INDEX, 'User teams');
+        return $crud->setPageTitle(Crud::PAGE_INDEX, 'Users teams');
     }
 
     public function configureActions(Actions $actions): Actions

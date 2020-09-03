@@ -39,4 +39,9 @@ class TeamCrudController extends AbstractCrudController
             ->remove(Crud::PAGE_INDEX, Action::NEW)
         ;
     }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud->setPageTitle(Crud::PAGE_INDEX, 'Teams');
+    }
 }
