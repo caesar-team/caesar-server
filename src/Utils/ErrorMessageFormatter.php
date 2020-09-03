@@ -57,7 +57,7 @@ class ErrorMessageFormatter
         if ($exception instanceof HttpExceptionInterface) {
             $message = $exception->getMessage();
         }
-        
+
         return $this->translator->trans($message);
     }
 }
