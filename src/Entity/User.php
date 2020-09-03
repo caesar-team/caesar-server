@@ -15,12 +15,14 @@ use Ramsey\Uuid\UuidInterface;
 use Scheb\TwoFactorBundle\Model\BackupCodeInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * User.
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
+ * @UniqueEntity(fields={"email"}, message="Wrong email")
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface, BackupCodeInterface
 {

@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
@@ -26,6 +27,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
  *         columns={"title"}),
  *     }
  * )
+ * @UniqueEntity(fields={"title"}, message="You already have a team with the same name. Choose another name.")
  */
 class Team
 {

@@ -26,8 +26,7 @@ class ErrorMessageFormatter
 
         return [
             'error' => [
-                'message' => $this->translator->trans($exception->getMessage()),
-                'type' => get_class($exception),
+                'message' => $this->getMessage($exception),
                 'code' => $code,
             ],
         ];
@@ -50,5 +49,15 @@ class ErrorMessageFormatter
         }
 
         return $code;
+    }
+
+    private function getMessage(Throwable $exception)
+    {
+        $message = 'Internal server error';
+        if ($exception instanceof HttpExceptionInterface) {
+            $message = $exception->getMessage();
+        }
+        
+        return $this->translator->trans($message);
     }
 }
