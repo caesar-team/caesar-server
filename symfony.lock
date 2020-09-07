@@ -18,7 +18,7 @@
         "version": "0.3.1"
     },
     "clue/stream-filter": {
-        "version": "v1.4.0"
+        "version": "v1.4.1"
     },
     "codeception/codeception": {
         "version": "2.3",
@@ -384,43 +384,40 @@
         "version": "1.6.0"
     },
     "php-http/client-common": {
-        "version": "1.8.1"
+        "version": "2.3.0"
     },
     "php-http/discovery": {
-        "version": "1.4.0"
+        "version": "1.10.0"
     },
     "php-http/guzzle6-adapter": {
-        "version": "v1.1.1"
+        "version": "v2.0.1"
     },
     "php-http/httplug": {
-        "version": "v1.1.0"
+        "version": "2.2.0"
     },
     "php-http/httplug-bundle": {
         "version": "1.6",
         "recipe": {
-            "repo": "github.com/symfony/recipes",
+            "repo": "github.com/symfony/recipes-contrib",
             "branch": "master",
             "version": "1.6",
-            "ref": "4655962c64e2de96c418caf576c57215711c7877"
-        },
-        "files": [
-            "config/packages/httplug.yaml"
-        ]
+            "ref": "87b3d491d593d2c6e3b90bf0689ac69a188bfa5f"
+        }
     },
     "php-http/logger-plugin": {
-        "version": "1.1.0"
+        "version": "1.2.0"
     },
     "php-http/message": {
-        "version": "1.7.0"
+        "version": "1.9.0"
     },
     "php-http/message-factory": {
         "version": "v1.0.2"
     },
     "php-http/promise": {
-        "version": "v1.0.0"
+        "version": "1.1.0"
     },
     "php-http/stopwatch-plugin": {
-        "version": "1.2.0"
+        "version": "1.3.0"
     },
     "phpdocumentor/reflection-common": {
         "version": "1.0.1"
@@ -452,14 +449,14 @@
     "phpunit/php-file-iterator": {
         "version": "2.0.1"
     },
+    "phpunit/php-invoker": {
+        "version": "3.1.0"
+    },
     "phpunit/php-text-template": {
         "version": "1.2.1"
     },
     "phpunit/php-timer": {
         "version": "2.0.0"
-    },
-    "phpunit/php-token-stream": {
-        "version": "3.0.0"
     },
     "phpunit/phpunit": {
         "version": "4.7",
@@ -481,6 +478,12 @@
     },
     "psr/container": {
         "version": "1.0.0"
+    },
+    "psr/http-client": {
+        "version": "1.0.1"
+    },
+    "psr/http-factory": {
+        "version": "1.0.1"
     },
     "psr/http-message": {
         "version": "1.0.1"
@@ -515,11 +518,20 @@
             "ref": "b5789cd9710e2ee555bf361079b991068a0f640b"
         }
     },
+    "sebastian/cli-parser": {
+        "version": "1.0.0"
+    },
+    "sebastian/code-unit": {
+        "version": "1.0.5"
+    },
     "sebastian/code-unit-reverse-lookup": {
         "version": "1.0.1"
     },
     "sebastian/comparator": {
         "version": "3.0.2"
+    },
+    "sebastian/complexity": {
+        "version": "2.0.0"
     },
     "sebastian/diff": {
         "version": "3.0.1"
@@ -532,6 +544,9 @@
     },
     "sebastian/global-state": {
         "version": "2.0.0"
+    },
+    "sebastian/lines-of-code": {
+        "version": "1.0.0"
     },
     "sebastian/object-enumerator": {
         "version": "3.0.3"
@@ -646,6 +661,9 @@
     },
     "symfony/dependency-injection": {
         "version": "v4.1.1"
+    },
+    "symfony/deprecation-contracts": {
+        "version": "v2.1.3"
     },
     "symfony/doctrine-bridge": {
         "version": "v4.1.1"
