@@ -106,7 +106,7 @@ final class UpdateController extends AbstractController
         }
 
         $entityManager->persist($item);
-        if ($itemRequest->getOriginalItem()->getSecret()) {
+        if ($itemRequest->getOriginalItem()->getSecret() && $item->getOriginalItem()) {
             $itemHandler->updateItem($item->getOriginalItem(), $itemRequest->getOriginalItem()->getSecret(), $this->getUser());
         }
         $entityManager->flush();

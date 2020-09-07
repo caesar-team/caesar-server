@@ -7,6 +7,7 @@ use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
+use App\Security\TwoFactor\BackUpCodesManager;
 use Codeception\PHPUnit\Constraint\JsonContains;
 use Codeception\Util\HttpCode;
 use Codeception\Util\JsonArray;
@@ -38,6 +39,13 @@ class ApiTester extends \Codeception\Actor
     {
         $token = $this->getToken($user);
         $this->setCookie('token', $token);
+    }
+
+    public function get2FAHashCode(string $code): string
+    {
+        $encoder = BackUpCodesManager::initEncoder();
+
+        return $encoder->encode($code);
     }
 
     public function shareItemToUser(Item $item, User $user, ?Team $team = null): void

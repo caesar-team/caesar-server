@@ -15,12 +15,14 @@ use Ramsey\Uuid\UuidInterface;
 use Scheb\TwoFactorBundle\Model\BackupCodeInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * User.
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
+ * @UniqueEntity(fields={"email"}, message="Wrong email")
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface, BackupCodeInterface
 {
@@ -153,7 +155,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * @var Directory
      *
      * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userInbox", cascade={"persist"})
-     * @ORM\JoinColumn
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $inbox;
 
@@ -161,7 +163,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * @var Directory
      *
      * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userLists", cascade={"persist"})
-     * @ORM\JoinColumn
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $lists;
 
@@ -169,9 +171,17 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      * @var Directory
      *
      * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userTrash", cascade={"persist"})
-     * @ORM\JoinColumn
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $trash;
+
+    /**
+     * @var Collection|Directory[]
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="user")
+     * @ORM\OrderBy({"sort": "ASC"})
+     */
+    protected $directories;
 
     /**
      * User constructor.
@@ -186,6 +196,10 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->lists = Directory::createRootList();
         $this->lists->addChildList(Directory::createDefaultList());
         $this->trash = Directory::createTrash();
+
+        $this->inbox->setUser($this);
+        $this->trash->setUser($this);
+        $this->lists->setUser($this);
         $this->userTeams = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
         $this->ownedItems = new ArrayCollection();
@@ -194,6 +208,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }
         $this->flowStatus = self::FLOW_STATUS_INCOMPLETE;
         BackUpCodesManager::generate($this);
+        $this->directories = new ArrayCollection();
     }
 
     public function getId(): UuidInterface
@@ -346,6 +361,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     {
         if (false === $this->fingerprints->contains($fingerprint)) {
             $this->fingerprints->add($fingerprint);
+            $fingerprint->setUser($this);
         }
     }
 
@@ -355,6 +371,17 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getFingerprints(): array
     {
         return $this->fingerprints->toArray();
+    }
+
+    public function invalidateFingerprints(): void
+    {
+        foreach ($this->getFingerprints() as $fingerprint) {
+            if ($fingerprint->isValidExpired()) {
+                continue;
+            }
+
+            $this->removeFingerprint($fingerprint);
+        }
     }
 
     public function getFlowStatus(): string
@@ -598,5 +625,29 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function isIncomplete(): bool
     {
         return self::FLOW_STATUS_INCOMPLETE === $this->flowStatus;
+    }
+
+    /**
+     * @return Directory[]
+     */
+    public function getDirectories(): array
+    {
+        return $this->directories->toArray();
+    }
+
+    /**
+     * @param Directory[]|Collection $directories
+     */
+    public function setDirectories(Collection $directories): void
+    {
+        $this->directories = $directories;
+    }
+
+    public function addDirectory(Directory $directory): void
+    {
+        if (!$this->directories->contains($directory)) {
+            $this->directories->add($directory);
+            $directory->setUser($this);
+        }
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Security\Voter;
 
 use App\Entity\User;
-use App\Security\Fingerprint\FingerprintManager;
+use App\Security\Fingerprint\FingerprintCheckerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
@@ -24,25 +24,19 @@ class TwoFactorAuthStateVoter extends Voter
         self::CREATE,
         self::CHECK,
     ];
-    /**
-     * @var FingerprintManager
-     */
-    private $fingerprintManager;
-    /**
-     * @var Security
-     */
-    private $security;
-    /**
-     * @var JWTEncoderInterface
-     */
-    private $encoder;
+
+    private FingerprintCheckerInterface $fingerprintChecker;
+
+    private Security $security;
+
+    private JWTEncoderInterface $encoder;
 
     public function __construct(
-        FingerprintManager $fingerprintManager,
+        FingerprintCheckerInterface $fingerprintChecker,
         Security $security,
         JWTEncoderInterface $encoder
     ) {
-        $this->fingerprintManager = $fingerprintManager;
+        $this->fingerprintChecker = $fingerprintChecker;
         $this->security = $security;
         $this->encoder = $encoder;
     }
@@ -116,7 +110,7 @@ class TwoFactorAuthStateVoter extends Voter
     {
         if ($user->hasRole(User::ROLE_ANONYMOUS_USER)
             || !$user->isFullUser()
-            || $this->fingerprintManager->hasValidFingerPrint($user)
+            || $this->fingerprintChecker->hasValidFingerprint($user)
         ) {
             return false;
         }

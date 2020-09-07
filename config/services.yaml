@@ -1,3 +1,5 @@
+parameters:
+    'env(FINGERPRINT_LIFETIME)': 86400
 imports:
     - { resource: events.yaml }
 services:
@@ -159,3 +161,15 @@ services:
             - '@scheb_two_factor.provider_preparation_recorder'
 
     scheb_two_factor.security.authentication.provider: '@App\Security\Authentication\Provider\TwoFactorAuthenticationProvider'
+
+    App\Security\Fingerprint\FingerprintExtractorInterface: '@App\Security\Fingerprint\Extractor\CompositeExtractor'
+
+    App\Security\Fingerprint\Extractor\CompositeExtractor:
+        arguments:
+            - '@App\Security\Fingerprint\Extractor\HeaderExtractor'
+            - '@App\Security\Fingerprint\Extractor\QueryExtractor'
+            - '@App\Security\Fingerprint\Extractor\SessionExtractor'
+
+    App\Factory\Entity\FingerprintFactory:
+        arguments:
+            $lifetime: '%env(int:FINGERPRINT_LIFETIME)%'

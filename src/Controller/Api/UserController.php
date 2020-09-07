@@ -24,6 +24,7 @@ use App\Model\View\User\UserSecurityInfoView;
 use App\Notification\MessengerInterface;
 use App\Notification\Model\Message;
 use App\Repository\UserRepository;
+use App\Security\Fingerprint\FingerprintRepositoryInterface;
 use App\Services\InvitationManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -36,6 +37,27 @@ use Symfony\Component\Routing\Annotation\Route;
 
 final class UserController extends AbstractController
 {
+    /**
+     * @SWG\Tag(name="User")
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success user logout"
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     * @Route(
+     *     path="/api/logout",
+     *     name="api_user_logout",
+     *     methods={"POST"}
+     * )
+     */
+    public function logout(FingerprintRepositoryInterface $repository)
+    {
+        $repository->removeFingerprints($this->getUser());
+    }
+
     /**
      * @SWG\Tag(name="Invitation")
      *
