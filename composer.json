@@ -63,7 +63,7 @@
         "codeception/module-phpbrowser": "^1.0",
         "codeception/module-rest": "^1.2",
         "codeception/module-symfony": "^1.1",
-        "friendsofphp/php-cs-fixer": "2.16.3",
+        "friendsofphp/php-cs-fixer": "2.16.4",
         "phpstan/phpstan": "^0.12.29",
         "phpstan/phpstan-doctrine": "^0.12.16",
         "phpstan/phpstan-symfony": "^0.12.6",
