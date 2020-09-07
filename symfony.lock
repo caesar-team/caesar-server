@@ -14,6 +14,9 @@
     "behat/transliterator": {
         "version": "v1.2.0"
     },
+    "brick/math": {
+        "version": "0.9.1"
+    },
     "caesar/security-message-bundle": {
         "version": "0.3.1"
     },
@@ -496,6 +499,9 @@
     },
     "ralouphie/getallheaders": {
         "version": "2.0.5"
+    },
+    "ramsey/collection": {
+        "version": "1.1.0"
     },
     "ramsey/uuid": {
         "version": "3.8.0"
