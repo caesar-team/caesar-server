@@ -19,7 +19,7 @@
         "hashids/hashids": "3.0.0",
         "hwi/oauth-bundle": "0.6.3",
         "lexik/jwt-authentication-bundle": "^2.8.0",
-        "nelmio/api-doc-bundle": "3.6.1",
+        "nelmio/api-doc-bundle": "3.7.0",
         "nelmio/cors-bundle": "^2.0.1",
         "pear/math_biginteger": "1.0.3",
         "php-amqplib/rabbitmq-bundle": "1.14.4",
