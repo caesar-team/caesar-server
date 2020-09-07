@@ -361,6 +361,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     {
         if (false === $this->fingerprints->contains($fingerprint)) {
             $this->fingerprints->add($fingerprint);
+            $fingerprint->setUser($this);
         }
     }
 
@@ -370,6 +371,17 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getFingerprints(): array
     {
         return $this->fingerprints->toArray();
+    }
+
+    public function invalidateFingerprints(): void
+    {
+        foreach ($this->getFingerprints() as $fingerprint) {
+            if ($fingerprint->isValidExpired()) {
+                continue;
+            }
+
+            $this->removeFingerprint($fingerprint);
+        }
     }
 
     public function getFlowStatus(): string
