@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d053b4b636c935eaa0e15b5fbc68bf4a",
+    "content-hash": "76a00d4f0b94b8816546462f5d118162",
     "packages": [
         {
             "name": "beberlei/assert",
@@ -2135,21 +2135,21 @@
         },
         {
             "name": "fresh/doctrine-enum-bundle",
-            "version": "v6.6.2",
+            "version": "v6.6.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fre5h/DoctrineEnumBundle.git",
-                "reference": "0ca57c8ba1f710a4823ed8535493049347a8d85a"
+                "reference": "7560f78839cdd5f70754a76e0da69037517a236e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fre5h/DoctrineEnumBundle/zipball/0ca57c8ba1f710a4823ed8535493049347a8d85a",
-                "reference": "0ca57c8ba1f710a4823ed8535493049347a8d85a",
+                "url": "https://api.github.com/repos/fre5h/DoctrineEnumBundle/zipball/7560f78839cdd5f70754a76e0da69037517a236e",
+                "reference": "7560f78839cdd5f70754a76e0da69037517a236e",
                 "shasum": ""
             },
             "require": {
                 "doctrine/common": "~2.8",
-                "doctrine/doctrine-bundle": "~1.11 || ^2.0",
+                "doctrine/doctrine-bundle": "^2.0",
                 "doctrine/orm": "~2.6",
                 "php": ">=7.1.3",
                 "symfony/config": "^4.3",
@@ -2215,7 +2215,13 @@
                 "symfony",
                 "type"
             ],
-            "time": "2019-12-04T10:38:28+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/fre5h",
+                    "type": "github"
+                }
+            ],
+            "time": "2020-08-25T11:59:35+00:00"
         },
         {
             "name": "friendsofsymfony/rest-bundle",
