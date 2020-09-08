@@ -28,6 +28,18 @@ final class ItemController extends AbstractController
 {
     /**
      * @SWG\Tag(name="Item")
+     * @SWG\Parameter(
+     *     name="items",
+     *     in="body",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="array",
+     *             property="items",
+     *             @SWG\Items(type="string")
+     *         )
+     *     )
+     * )
      * @SWG\Response(
      *     response=204,
      *     description="Items deleted",
@@ -42,8 +54,13 @@ final class ItemController extends AbstractController
      */
     public function batchDelete(Request $request, EntityManagerInterface $manager, SerializerInterface $serializer)
     {
+        $query = $request->query->all();
+        if (empty($query)) {
+            $query = $request->request->all();
+        }
+
         /** @var ItemsCollectionRequest $itemsCollection */
-        $itemsCollection = $serializer->deserialize(json_encode($request->query->all()), ItemsCollectionRequest::class, 'json');
+        $itemsCollection = $serializer->deserialize(json_encode($query), ItemsCollectionRequest::class, 'json');
 
         foreach ($itemsCollection->getItems() as $item) {
             $item = $manager->getRepository(Item::class)->find($item);

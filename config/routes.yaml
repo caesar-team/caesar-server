@@ -10,7 +10,7 @@ google_connect:
     defaults:
         _controller: "scheb_two_factor.form_controller:form"
 2fa_login_check:
-    path: /_2fa_check
+    path: /2fa_check
 
 _security_logout:
     path: /logout
