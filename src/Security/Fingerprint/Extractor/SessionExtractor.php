@@ -13,6 +13,10 @@ final class SessionExtractor implements FingerprintExtractorInterface
 
     public function extract(Request $request): ?string
     {
+        if (null === $request->getSession()) {
+            return null;
+        }
+
         return $request->getSession()->get(self::NAME_PARAM);
     }
 }
