@@ -86,6 +86,9 @@
     "composer/ca-bundle": {
         "version": "1.1.1"
     },
+    "composer/package-versions-deprecated": {
+        "version": "1.11.99"
+    },
     "composer/semver": {
         "version": "1.4.2"
     },
@@ -727,15 +730,6 @@
     },
     "symfony/intl": {
         "version": "v4.1.1"
-    },
-    "symfony/maker-bundle": {
-        "version": "1.0",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "1.0",
-            "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
-        }
     },
     "symfony/mime": {
         "version": "v4.3.3"
