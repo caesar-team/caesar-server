@@ -25,7 +25,7 @@
         "php-amqplib/rabbitmq-bundle": "1.14.4",
         "php-http/guzzle6-adapter": "2.0.1",
         "php-http/httplug-bundle": "1.18.0",
-        "predis/predis": "1.1.1",
+        "predis/predis": "1.1.4",
         "psr/simple-cache": "1.0.1",
         "ramsey/uuid": "4.1.1",
         "ramsey/uuid-doctrine": "1.6.0",
