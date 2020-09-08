@@ -21,11 +21,6 @@ class Api extends \Codeception\Module
         return $jwtManager->create($user);
     }
 
-    public function mockRabbitMQProducer($mockProducer)
-    {
-        $this->getSymfony()->kernel->getContainer()->set('old_sound_rabbit_mq.send_message_producer', $mockProducer);
-    }
-
     public function generateCsrf(string $tokenId)
     {
         /** @var CsrfTokenManagerInterface $tokenManager */

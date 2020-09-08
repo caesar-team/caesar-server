@@ -12,7 +12,6 @@ use Codeception\Module\DataFactory;
 use Codeception\Module\REST;
 use Codeception\Test\Unit;
 use Codeception\Util\HttpCode;
-use OldSound\RabbitMqBundle\RabbitMq\Producer;
 
 class ShareTest extends Unit
 {
@@ -20,11 +19,6 @@ class ShareTest extends Unit
      * @var ApiTester|REST|DataFactory
      */
     protected ApiTester $tester;
-
-    protected function _before()
-    {
-        $this->tester->mockRabbitMQProducer($this->makeEmpty(Producer::class));
-    }
 
     /** @test */
     public function newShareItem()

@@ -371,18 +371,6 @@
     "php": {
         "version": "7.4"
     },
-    "php-amqplib/php-amqplib": {
-        "version": "v2.8.0"
-    },
-    "php-amqplib/rabbitmq-bundle": {
-        "version": "1.12",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "1.12",
-            "ref": "ce3ca2e4577270c4f518539aa6b9e878998fcfef"
-        }
-    },
     "php-cs-fixer/diff": {
         "version": "v1.3.0"
     },
@@ -433,9 +421,6 @@
     },
     "phpdocumentor/type-resolver": {
         "version": "0.4.0"
-    },
-    "phpseclib/phpseclib": {
-        "version": "2.0.27"
     },
     "phpspec/prophecy": {
         "version": "1.7.6"
@@ -730,6 +715,18 @@
     },
     "symfony/intl": {
         "version": "v4.1.1"
+    },
+    "symfony/messenger": {
+        "version": "4.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "4.3",
+            "ref": "8a2675c061737658bed85102e9241c752620e575"
+        },
+        "files": [
+            "config/packages/messenger.yaml"
+        ]
     },
     "symfony/mime": {
         "version": "v4.3.3"

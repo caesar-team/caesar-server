@@ -47,11 +47,6 @@ services:
             $authenticator: "@scheb_two_factor.security.google_authenticator"
             $formRenderer: "@scheb_two_factor.security.google.form_renderer"
 
-    mailer.rabbit_sender_adapter:
-        class: App\Mailer\RabbitMqMailerAdapter
-        arguments:
-            $producer: '@old_sound_rabbit_mq.send_message_producer'
-
     App\Mailer\Sender\MailSender:
         arguments:
             - '@sylius.email_renderer.adapter'
@@ -76,9 +71,6 @@ services:
         class: App\Mailer\FosUserMailer
     app.send_message_consumer:
         class: App\Consumer\SendMessageConsumer
-    App\Services\Messenger:
-        arguments:
-            $producer: '@old_sound_rabbit_mq.send_message_producer'
 
     FOS\UserBundle\Util\UserManipulator: ~
 
@@ -90,10 +82,6 @@ services:
     App\Event\EventSubscriber\PromoteAdminSubscriber:
         arguments:
             $domainAdminEmail: '%env(resolve:DOMAIN_ADMIN_EMAIL)%'
-
-    App\Notification\EmailSpoolMessenger:
-        arguments:
-            $producer: '@old_sound_rabbit_mq.send_message_producer'
 
     App\Notification\CompositeMessenger:
         arguments:
