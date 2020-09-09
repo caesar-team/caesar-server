@@ -36,7 +36,7 @@ class Item implements ChildItemAwareInterface
     protected $id;
 
     /**
-     * @var Directory
+     * @var Directory|null
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childItems", cascade={"persist"}, fetch="EAGER")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
@@ -192,6 +192,9 @@ class Item implements ChildItemAwareInterface
         $this->systemItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
         $this->owner = $user;
+        if (null !== $user) {
+            $this->parentList = $user->getDefaultDirectory();
+        }
     }
 
     public function getId(): UuidInterface
@@ -204,7 +207,7 @@ class Item implements ChildItemAwareInterface
         return $this->parentList;
     }
 
-    public function setParentList(Directory $parentList)
+    public function setParentList(?Directory $parentList)
     {
         $this->parentList = $parentList;
     }

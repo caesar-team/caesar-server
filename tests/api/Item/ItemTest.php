@@ -224,6 +224,36 @@ class ItemTest extends Unit
     }
 
     /** @test */
+    public function createItemWithoutList()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+        $team = $I->createTeam($user);
+
+        $I->login($user);
+        $I->sendPOST('items', [
+            'type' => NodeEnumType::TYPE_CRED,
+            'secret' => uniqid(),
+            'favorite' => false,
+            'tags' => ['tag'],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([$user->getDefaultDirectory()->getId()->toString()], $I->grabDataFromResponseByJsonPath('$.listId'));
+
+        $I->sendPOST('items', [
+            'listId' => $team->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_CRED,
+            'secret' => uniqid(),
+            'favorite' => false,
+            'tags' => ['tag'],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([$team->getDefaultDirectory()->getId()->toString()], $I->grabDataFromResponseByJsonPath('$.listId'));
+    }
+
+    /** @test */
     public function editItem()
     {
         $I = $this->tester;

@@ -29,7 +29,7 @@ class MessageHandler implements MessageHandlerInterface
 
         try {
             $this->sender->send($code, [$email], $options);
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->logger->critical(sprintf('[Consumer] Error: %s, Trace: %s', $exception->getMessage(), $exception->getTraceAsString()));
             echo $exception->getMessage();
         }

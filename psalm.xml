@@ -42,11 +42,6 @@
         <DeprecatedClass errorLevel="info"/>
         <DeprecatedInterface errorLevel="info"/>
         <MixedArrayOffset errorLevel="info"/>
-        <RedundantCondition>
-            <errorLevel type="suppress">
-                <file name="src/Services/Messenger.php"/>
-            </errorLevel>
-        </RedundantCondition>
         <LessSpecificImplementedReturnType errorLevel="suppress"/>
         <UndefinedClass>
             <errorLevel type="suppress">
