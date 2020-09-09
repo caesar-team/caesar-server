@@ -34,9 +34,7 @@ class ErrorResponseListener
     public function onKernelException(ExceptionEvent $event)
     {
         $exception = $event->getThrowable();
-        if ('dev' === getenv('APP_ENV')) {
-            $this->logError($exception);
-        }
+        $this->logError($exception);
 
         $event->setThrowable($this->createException($exception));
         /** @var ApiException $newException */
@@ -49,6 +47,10 @@ class ErrorResponseListener
 
     private function logError(Throwable $exception)
     {
+        if ($exception instanceof HttpExceptionInterface) {
+            return;
+        }
+
         $context = [
             'code' => $exception->getCode(),
             'file' => $exception->getFile(),
