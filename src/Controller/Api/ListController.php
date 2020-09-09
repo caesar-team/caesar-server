@@ -115,16 +115,16 @@ final class ListController extends AbstractController
         $this->denyAccessUnlessGranted(ListVoter::CREATE);
 
         $list = new Directory();
+        /** @var User $user */
+        $user = $this->getUser();
+        $list->setUser($user);
         $form = $this->createForm(CreateListType::class, $list);
 
         $form->submit($request->request->all(), false);
         if (!$form->isValid()) {
             return $form;
         }
-        /** @var User $user */
-        $user = $this->getUser();
         $list->setParentList($user->getLists());
-        $list->setUser($user);
 
         $manager->persist($list);
         $manager->flush();
