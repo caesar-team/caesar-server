@@ -18,6 +18,9 @@ use Psr\Log\LoggerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
 use Symfony\Component\Routing\RouterInterface;
 
+/**
+ * @deprecated
+ */
 class ChildItemActualizer
 {
     public const URL_ROOT = 'root';
@@ -97,13 +100,6 @@ class ChildItemActualizer
         }
 
         $this->entityManager->flush();
-    }
-
-    public function updateItem(Item $item, string $secret, User $currentOwner): void
-    {
-        $update = $this->extractUpdate($item, $currentOwner);
-        $update->setSecret($secret);
-        $this->entityManager->persist($update);
     }
 
     private function sendItemMessage(ChildItem $childItem): void
