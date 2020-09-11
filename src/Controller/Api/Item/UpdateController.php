@@ -6,18 +6,17 @@ namespace App\Controller\Api\Item;
 
 use App\Controller\AbstractController;
 use App\Entity\Item;
-use App\Form\Request\EditItemRequestType;
-use App\Model\Request\EditItemRequest;
+use App\Factory\View\Item\ItemViewFactory;
+use App\Form\Request\EditItemType;
+use App\Model\View\Item\ItemView;
+use App\Repository\ItemRepository;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\TeamItemVoter;
-use App\Services\ChildItemActualizer;
-use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @Route(path="/api/items")
@@ -32,19 +31,12 @@ final class UpdateController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\EditItemRequestType::class)
+     *     @Model(type=EditItemType::class)
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Success item edited",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="string",
-     *             property="lastUpdated",
-     *             example="Oct 19, 2018 12:08 pm",
-     *         )
-     *     )
+     *     description="Success item updated",
+     *     @Model(type=ItemView::class)
      * )
      * @SWG\Response(
      *     response=400,
@@ -84,35 +76,24 @@ final class UpdateController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @return array|FormInterface
+     * @return ItemView|FormInterface
      */
     public function edit(
         Item $item,
         Request $request,
-        EntityManagerInterface $entityManager,
-        SerializerInterface $serializer,
-        ChildItemActualizer $itemHandler
+        ItemRepository $repository,
+        ItemViewFactory $factory
     ) {
         $this->denyAccessUnlessGranted([ItemVoter::EDIT, TeamItemVoter::EDIT], $item);
 
-        /** @var EditItemRequest $itemRequest */
-        $itemRequest = $serializer->deserialize($request->getContent(), EditItemRequest::class, 'json');
-        $item->setSecret($itemRequest->getItem()->getSecret());
-
-        $form = $this->createForm(EditItemRequestType::class, $itemRequest);
+        $form = $this->createForm(EditItemType::class, $item);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
 
-        $entityManager->persist($item);
-        if ($itemRequest->getOriginalItem()->getSecret() && $item->getOriginalItem()) {
-            $itemHandler->updateItem($item->getOriginalItem(), $itemRequest->getOriginalItem()->getSecret(), $this->getUser());
-        }
-        $entityManager->flush();
+        $repository->save($item);
 
-        return [
-            'lastUpdated' => $item->getLastUpdated(),
-        ];
+        return $factory->createSingle($item);
     }
 }

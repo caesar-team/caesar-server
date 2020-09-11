@@ -208,6 +208,11 @@ class Item implements ChildItemAwareInterface
 
     public function setParentList(?Directory $parentList)
     {
+        // Parent list could not null while create item
+        if (null === $parentList) {
+            return;
+        }
+
         $this->parentList = $parentList;
     }
 

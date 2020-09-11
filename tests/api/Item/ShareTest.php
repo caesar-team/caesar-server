@@ -42,9 +42,17 @@ class ShareTest extends Unit
         $I->sendPOST('items', [
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_SYSTEM,
+            'secret' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+
+        $I->sendPOST('items', [
+            'listId' => $user->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
             'relatedItem' => $item->getId()->toString(),
             'secret' => uniqid(),
         ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
         [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');
 
         $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [

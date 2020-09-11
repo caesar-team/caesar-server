@@ -299,9 +299,7 @@ class ItemTest extends Unit
         $I->login($user);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
-            'item' => [
-                'secret' => 'secret-edit',
-            ],
+            'secret' => 'secret-edit',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
@@ -316,9 +314,7 @@ class ItemTest extends Unit
         $I->login($user);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
-            'item' => [
-                'secret' => 'secret-edit',
-            ],
+            'secret' => 'secret-edit',
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
