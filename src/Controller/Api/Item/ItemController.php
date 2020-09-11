@@ -58,6 +58,11 @@ final class ItemController extends AbstractController
      *     name="api_get_item_batch",
      *     methods={"GET"}
      * )
+     * @Route(
+     *     path="/all",
+     *     name="api_get_item_all",
+     *     methods={"GET"}
+     * )
      */
     public function items(BatchItemViewFactory $factory): BatchItemsView
     {

@@ -574,6 +574,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         });
     }
 
+    /**
+     * @return Team[]
+     */
     public function getTeams(): array
     {
         return array_map(function (UserTeam $userTeam) {
