@@ -64,28 +64,6 @@ class ShareTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $I->login($memberRead);
-        $I->sendGET('/list');
-        $I->dontSeeResponseByJsonPathContainsJson(
-            sprintf('$[?(@.type=="%s")].children[0].relatedItem', Directory::LIST_INBOX),
-            [
-                '_links' => [
-                    'edit_item' => [],
-                ],
-            ]
-        );
-
-        $I->login($memberWrite);
-        $I->sendGET('/list');
-        $I->seeResponseByJsonPathContainsJson(
-            sprintf('$[?(@.type=="%s")].children[0].relatedItem', Directory::LIST_INBOX),
-            [
-                '_links' => [
-                    'edit_item' => [],
-                ],
-            ]
-        );
     }
 
     /** @test */

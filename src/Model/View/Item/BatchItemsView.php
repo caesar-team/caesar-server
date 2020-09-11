@@ -18,15 +18,23 @@ final class BatchItemsView
     private array $personal;
 
     /**
+     * @var ItemView[]
+     *
+     * @SWG\Property(type="array", @Model(type=ItemView::class))
+     */
+    private array $shared;
+
+    /**
      * @var TeamItemView[]
      *
-     * @SWG\Property(type="array", @Model(type=TeamItemView::class))
+     * @SWG\Property(type="array", @Model(type=ItemView::class))
      */
     private array $teams;
 
     public function __construct()
     {
         $this->personal = [];
+        $this->shared = [];
         $this->teams = [];
     }
 
@@ -47,7 +55,7 @@ final class BatchItemsView
     }
 
     /**
-     * @return TeamItemView[]
+     * @return ItemView[]
      */
     public function getTeams(): array
     {
@@ -55,10 +63,26 @@ final class BatchItemsView
     }
 
     /**
-     * @param TeamItemView[] $teams
+     * @param ItemView[] $teams
      */
     public function setTeams(array $teams): void
     {
         $this->teams = $teams;
+    }
+
+    /**
+     * @return ItemView[]
+     */
+    public function getShared(): array
+    {
+        return $this->shared;
+    }
+
+    /**
+     * @param ItemView[] $shared
+     */
+    public function setShared(array $shared): void
+    {
+        $this->shared = $shared;
     }
 }
