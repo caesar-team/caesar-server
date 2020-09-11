@@ -73,6 +73,8 @@ class ItemViewFactory
             $view->setUpdate($this->updateItemViewFactory->createSingle($item->getUpdate()));
         }
 
+        $view->setIsShared($item->hasSystemItems());
+
         return $view;
     }
 

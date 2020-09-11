@@ -16,10 +16,8 @@ use App\Model\Request\Team\EditUserTeamRequest;
 use App\Model\View\Team\MemberView;
 use App\Notification\MessengerInterface;
 use App\Notification\Model\Message;
-use App\Repository\ItemRepository;
 use App\Repository\UserTeamRepository;
 use App\Security\Voter\UserTeamVoter;
-use App\Utils\ItemExtractor;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
@@ -170,8 +168,7 @@ final class MemberController extends AbstractController
     public function removeMember(
         Team $team,
         User $user,
-        UserTeamRepository $userTeamRepository,
-        ItemRepository $itemRepository
+        UserTeamRepository $userTeamRepository
     ): JsonResponse {
         $this->denyAccessUnlessGranted(UserTeamVoter::REMOVE, $team->getUserTeamByUser($this->getUser()));
 
@@ -180,11 +177,33 @@ final class MemberController extends AbstractController
             throw new NotFoundHttpException('User Team not found');
         }
 
-        $items = ItemExtractor::getTeamItemsForUser($team, $user);
-        foreach ($items as $item) {
-            $itemRepository->remove($item);
+        $userTeamRepository->remove($userTeam);
+
+        return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Leave team.
+     *
+     * @SWG\Tag(name="Team / Member")
+     * @SWG\Response(
+     *     response=204,
+     *     description="Remove team member"
+     * )
+     *
+     * @Route(
+     *     path="/{team}/leave",
+     *     name="api_team_member_leave",
+     *     methods={"POST"}
+     * )
+     */
+    public function leaveTeam(Team $team, UserTeamRepository $userTeamRepository): JsonResponse
+    {
+        $userTeam = $team->getUserTeamByUser($this->getUser());
+        if (null === $userTeam || $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN)) {
+            throw new NotFoundHttpException('User Team not found');
         }
-        $itemRepository->flush();
+
         $userTeamRepository->remove($userTeam);
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
