@@ -29,7 +29,7 @@ final class OriginalItemShareFactory extends AbstractShareFactory
             $originalItem = $itemCollectionRequest->getOriginalItem();
 
             $item = new Item($childItem->getUser());
-            $item->setTeam($childItem->getTeam());
+            $item->setTeam($originalItem->getTeam());
             $directory = $this->getSuggestedDirectory($childItem);
             $item->setParentList($directory);
             $item->setOriginalItem($originalItem);
