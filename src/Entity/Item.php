@@ -534,4 +534,11 @@ class Item implements ChildItemAwareInterface
 
         return $systemItem instanceof Item ? $systemItem : null;
     }
+
+    public function getSystemItemsWithoutRoot(): array
+    {
+        return $this->systemItems->filter(function (Item $item) {
+            return null !== $item->getOriginalItem();
+        })->toArray();
+    }
 }

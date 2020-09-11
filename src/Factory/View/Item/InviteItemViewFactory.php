@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Factory\View\Item;
 
+use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Model\View\Item\InviteItemView;
 
@@ -14,7 +15,7 @@ class InviteItemViewFactory
         $view = new InviteItemView();
         $view->setId($item->getId()->toString());
         $view->setUserId($item->getSignedOwner()->getId()->toString());
-        $view->setAccess($item->getAccess());
+        $view->setAccess($item->getAccess() ?? AccessEnumType::TYPE_READ);
 
         return $view;
     }

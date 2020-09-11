@@ -41,9 +41,12 @@ class ItemViewFactory
         $view->setListId($item->getParentList()->getId()->toString());
         $view->setPreviousListId($item->getPreviousListId());
         $view->setSecret($item->getSecret());
-        $view->setInvited(
-            $this->inviteItemViewFactory->createCollection($item->getUniqueOwnerShareItems())
-        );
+
+        if (0 !== count($item->getSystemItems())) {
+            $view->setInvited($this->inviteItemViewFactory->createCollection($item->getSystemItemsWithoutRoot()));
+        } else {
+            $view->setInvited($this->inviteItemViewFactory->createCollection($item->getUniqueOwnerShareItems()));
+        }
         $view->setOwnerId($item->getOwner()->getId()->toString());
         if (null === $item->getTeam()) {
             $view->setFavorite($item->isFavorite());

@@ -30,6 +30,8 @@ class ShareTest extends Unit
         $memberRead = $this->tester->have(User::class);
         /** @var User $memberWrite */
         $memberWrite = $this->tester->have(User::class);
+        /** @var User $someMember */
+        $someMember = $this->tester->have(User::class);
 
         /** @var Item $item */
         $item = $I->have(Item::class, [
@@ -56,6 +58,24 @@ class ShareTest extends Unit
                 ],
                 [
                     'userId' => $memberWrite->getId()->toString(),
+                    'secret' => 'Some secret',
+                    'cause' => Item::CAUSE_SHARE,
+                    'access' => AccessEnumType::TYPE_WRITE,
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [
+            'items' => [
+                [
+                    'userId' => $memberRead->getId()->toString(),
+                    'secret' => 'Some secret',
+                    'cause' => Item::CAUSE_SHARE,
+                    'access' => AccessEnumType::TYPE_READ,
+                ],
+                [
+                    'userId' => $someMember->getId()->toString(),
                     'secret' => 'Some secret',
                     'cause' => Item::CAUSE_SHARE,
                     'access' => AccessEnumType::TYPE_WRITE,
