@@ -35,9 +35,6 @@ class CreateItemType extends AbstractType
                 'class' => Directory::class,
                 'choice_value' => 'id',
                 'property_path' => 'parentList',
-                'constraints' => [
-                    new NotBlank(),
-                ],
             ])
             ->add('type', ChoiceType::class, [
                 'constraints' => [

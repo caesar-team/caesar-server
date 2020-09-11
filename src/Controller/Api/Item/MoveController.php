@@ -111,6 +111,18 @@ final class MoveController extends AbstractController
 
     /**
      * @SWG\Tag(name="Item")
+     * @SWG\Parameter(
+     *     name="items",
+     *     in="body",
+     *     @SWG\Schema(
+     *         type="object",
+     *         @SWG\Property(
+     *             type="array",
+     *             property="items",
+     *             @SWG\Items(type="string")
+     *         )
+     *     )
+     * )
      * @SWG\Response(
      *     response=204,
      *     description="Items moved",

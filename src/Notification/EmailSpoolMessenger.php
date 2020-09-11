@@ -6,15 +6,15 @@ namespace App\Notification;
 
 use App\Entity\User;
 use App\Notification\Model\Message;
-use OldSound\RabbitMqBundle\RabbitMq\Producer;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class EmailSpoolMessenger implements MessengerInterface
 {
-    private Producer $producer;
+    private MessageBusInterface $bus;
 
-    public function __construct(Producer $producer)
+    public function __construct(MessageBusInterface $bus)
     {
-        $this->producer = $producer;
+        $this->bus = $bus;
     }
 
     public function support(Message $message): bool
@@ -29,6 +29,6 @@ class EmailSpoolMessenger implements MessengerInterface
 
     public function send(Message $message): void
     {
-        $this->producer->publish(serialize($message));
+        $this->bus->dispatch($message);
     }
 }

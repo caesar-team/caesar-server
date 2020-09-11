@@ -102,6 +102,9 @@
         },
         "previousListId": {
           "type": ["string", "null"]
+        },
+        "isShared": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -112,6 +115,7 @@
         "secret",
         "invited",
         "shared",
+        "isShared",
         "update",
         "lastUpdated",
         "tags",

@@ -13,6 +13,8 @@ RUN apk --update add \
     gpgme \
     libzip-dev \
     postgresql-dev \
+    rabbitmq-c \
+    rabbitmq-c-dev \
     zip
 
 RUN docker-php-ext-install \
@@ -24,8 +26,8 @@ RUN docker-php-ext-install \
     zip \
     sockets
 
-RUN pecl install gnupg redis \
-    && docker-php-ext-enable redis
+RUN pecl install gnupg redis amqp \
+    && docker-php-ext-enable redis amqp
 
 # Composer part
 COPY --from=composer /usr/bin/composer /usr/bin/composer

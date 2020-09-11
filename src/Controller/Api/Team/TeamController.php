@@ -132,20 +132,24 @@ class TeamController extends AbstractController
      *     name="api_team_edit",
      *     methods={"PATCH"}
      * )
+     *
+     * @return TeamView|FormInterface
      */
     public function update(
         Team $team,
         Request $request,
         TeamViewFactory $viewFactory,
         EntityManagerInterface $entityManager
-    ): TeamView {
+    ) {
         $this->denyAccessUnlessGranted(TeamVoter::EDIT, $team);
 
         $form = $this->createForm(EditTeamType::class, $team);
         $form->submit($request->request->all());
-        if ($form->isValid()) {
-            $entityManager->flush();
+        if (!$form->isValid()) {
+            return $form;
         }
+
+        $entityManager->flush();
 
         return $viewFactory->createSingle($team);
     }

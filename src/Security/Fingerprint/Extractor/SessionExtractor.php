@@ -13,6 +13,14 @@ final class SessionExtractor implements FingerprintExtractorInterface
 
     public function extract(Request $request): ?string
     {
+        /**
+         * @phpstan-ignore-next-line
+         * @psalm-suppress DocblockTypeContradiction
+         */
+        if (null === $request->getSession()) {
+            return null;
+        }
+
         return $request->getSession()->get(self::NAME_PARAM);
     }
 }

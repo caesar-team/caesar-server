@@ -10,7 +10,6 @@ use Codeception\Module\DataFactory;
 use Codeception\Module\REST;
 use Codeception\Test\Unit;
 use Codeception\Util\HttpCode;
-use OldSound\RabbitMqBundle\RabbitMq\Producer;
 
 class MemberTest extends Unit
 {
@@ -18,11 +17,6 @@ class MemberTest extends Unit
      * @var ApiTester|REST|DataFactory
      */
     protected ApiTester $tester;
-
-    protected function _before()
-    {
-        $this->tester->mockRabbitMQProducer($this->makeEmpty(Producer::class));
-    }
 
     /** @test */
     public function getDefaultMembers()
@@ -200,5 +194,29 @@ class MemberTest extends Unit
 
         $schema = $I->getSchema('team/member.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
+
+    /** @test */
+    public function leaveTeam()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var User $member */
+        $member = $I->have(User::class);
+
+        $team = $I->createTeam($user);
+        $I->addUserToTeam($team, $member);
+
+        $otherTeam = $I->createTeam($user);
+
+        $I->login($member);
+        $I->sendPOST(sprintf('teams/%s/leave', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
+        $I->sendPOST(sprintf('teams/%s/leave', $otherTeam->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
     }
 }

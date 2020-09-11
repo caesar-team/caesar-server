@@ -204,6 +204,8 @@ final class ItemView
      */
     private Item $item;
 
+    private bool $isShared = false;
+
     public function __construct(Item $item)
     {
         $this->item = $item;
@@ -212,6 +214,7 @@ final class ItemView
         $this->relatedItem = null;
         $this->sort = 0;
         $this->favorite = false;
+        $this->isShared = false;
         $this->invited = [];
         $this->tags = [];
     }
@@ -380,5 +383,15 @@ final class ItemView
     public function setRelatedItem(?ItemView $relatedItem): void
     {
         $this->relatedItem = $relatedItem;
+    }
+
+    public function isShared(): bool
+    {
+        return $this->isShared;
+    }
+
+    public function setIsShared(bool $isShared): void
+    {
+        $this->isShared = $isShared;
     }
 }

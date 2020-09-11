@@ -21,11 +21,6 @@ class Api extends \Codeception\Module
         return $jwtManager->create($user);
     }
 
-    public function mockRabbitMQProducer($mockProducer)
-    {
-        $this->getSymfony()->kernel->getContainer()->set('old_sound_rabbit_mq.send_message_producer', $mockProducer);
-    }
-
     public function generateCsrf(string $tokenId)
     {
         /** @var CsrfTokenManagerInterface $tokenManager */
@@ -54,6 +49,17 @@ class Api extends \Codeception\Module
 
         $cookie = new Cookie($session->getName(), $session->getId());
         $symfony->client->getCookieJar()->set($cookie);
+    }
+
+    public function deleteFromAdmin(string $controller, string $uid)
+    {
+        $crudId = substr(sha1(getenv('APP_SECRET').$controller), 0, 7);
+
+        $this->symfonyRequest(
+            'DELETE',
+            sprintf('/admin?crudAction=delete&entityId=%s&crudId=%s', $uid, $crudId),
+            ['_method' => 'DELETE', 'delete_form' => ['_easyadmin_delete_flag' => 1], 'token' => $this->generateCsrf('ea-delete')]
+        );
     }
 
     public function symfonyRequest(string $method, string $url, array $params = [])
