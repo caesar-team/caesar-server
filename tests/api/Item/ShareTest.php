@@ -4,7 +4,6 @@ namespace App\Tests\Item;
 
 use App\DBAL\Types\Enum\AccessEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
-use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Tests\ApiTester;
