@@ -123,7 +123,7 @@ final class ItemController extends AbstractController
         $item = new Item($this->getUser());
         $form = $this->createForm(CreateItemType::class, $item);
 
-        $form->submit($request->request->all(), false);
+        $form->submit($request->request->all());
         if (!$form->isValid()) {
             return $form;
         }
