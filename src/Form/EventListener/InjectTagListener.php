@@ -39,7 +39,9 @@ final class InjectTagListener implements EventSubscriberInterface
         $item = $event->getData();
         if ($item instanceof Item && $event->getForm()->has('tags')) {
             $tags = $event->getForm()->get('tags')->getData();
-
+            if (!is_array($tags)) {
+                return;
+            }
             $names = [];
             $uniqueTags = [];
             foreach ($tags as $tag) {

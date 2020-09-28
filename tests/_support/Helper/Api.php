@@ -8,6 +8,7 @@ use FOS\UserBundle\Model\UserInterface;
 use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class Api extends \Codeception\Module
 {
@@ -20,9 +21,18 @@ class Api extends \Codeception\Module
         return $jwtManager->create($user);
     }
 
-    public function mockRabbitMQProducer($mockProducer)
+    public function generateCsrf(string $tokenId)
     {
-        $this->getSymfony()->kernel->getContainer()->set('old_sound_rabbit_mq.send_message_producer', $mockProducer);
+        /** @var CsrfTokenManagerInterface $tokenManager */
+        $tokenManager = $this->getSymfony()->grabService('security.csrf.token_manager');
+
+        $token = $tokenManager->getToken($tokenId)->getValue();
+
+        /** @var Session $session */
+        $session = $this->getSymfony()->grabService('session');
+        $session->save();
+
+        return $token;
     }
 
     public function symfonyAuth(User $user): void
@@ -39,6 +49,17 @@ class Api extends \Codeception\Module
 
         $cookie = new Cookie($session->getName(), $session->getId());
         $symfony->client->getCookieJar()->set($cookie);
+    }
+
+    public function deleteFromAdmin(string $controller, string $uid)
+    {
+        $crudId = substr(sha1(getenv('APP_SECRET').$controller), 0, 7);
+
+        $this->symfonyRequest(
+            'DELETE',
+            sprintf('/admin?crudAction=delete&entityId=%s&crudId=%s', $uid, $crudId),
+            ['_method' => 'DELETE', 'delete_form' => ['_easyadmin_delete_flag' => 1], 'token' => $this->generateCsrf('ea-delete')]
+        );
     }
 
     public function symfonyRequest(string $method, string $url, array $params = [])

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Security\Voter;
 
+use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\User;
@@ -103,7 +104,16 @@ class ItemVoter extends Voter
 
     private function canEdit(Item $item, User $user): bool
     {
-        return $user->equals($item->getSignedOwner());
+        if ($user->equals($item->getSignedOwner())) {
+            return true;
+        }
+
+        $systemItem = $item->getSystemItemByUser($user);
+        if (null === $systemItem) {
+            return false;
+        }
+
+        return AccessEnumType::TYPE_WRITE === $systemItem->getAccess();
     }
 
     private function canDelete(Item $item, User $user): bool

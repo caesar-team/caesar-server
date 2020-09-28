@@ -35,10 +35,10 @@ class Item implements ChildItemAwareInterface
     protected $id;
 
     /**
-     * @var Directory
+     * @var Directory|null
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childItems", cascade={"persist"}, fetch="EAGER")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     protected $parentList;
 
@@ -163,6 +163,21 @@ class Item implements ChildItemAwareInterface
     protected $team;
 
     /**
+     * @var Item|null
+     *
+     * @ORM\ManyToOne(targetEntity="App\Entity\Item", inversedBy="systemItems", cascade={"persist"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+    protected $relatedItem;
+
+    /**
+     * @var Item[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="relatedItem")
+     */
+    protected $systemItems;
+
+    /**
      * Item constructor.
      *
      * @throws \Exception
@@ -173,8 +188,12 @@ class Item implements ChildItemAwareInterface
         $this->originalItem = null;
         $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedItems = new ArrayCollection();
+        $this->systemItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
         $this->owner = $user;
+        if (null !== $user) {
+            $this->parentList = $user->getDefaultDirectory();
+        }
     }
 
     public function getId(): UuidInterface
@@ -187,7 +206,7 @@ class Item implements ChildItemAwareInterface
         return $this->parentList;
     }
 
-    public function setParentList(Directory $parentList)
+    public function setParentList(?Directory $parentList)
     {
         $this->parentList = $parentList;
     }
@@ -447,7 +466,11 @@ class Item implements ChildItemAwareInterface
 
     public function getTeamFavorite(): array
     {
-        return $this->teamFavorite;
+        /**
+         * @psalm-suppress RedundantConditionGivenDocblockType
+         * @psalm-suppress DocblockTypeContradiction
+         */
+        return null !== $this->teamFavorite ? $this->teamFavorite : [];
     }
 
     public function setTeamFavorite(array $teamFavorite): void
@@ -470,5 +493,45 @@ class Item implements ChildItemAwareInterface
     public function isTeamFavorite(User $user): bool
     {
         return in_array($user->getId()->toString(), $this->getTeamFavorite());
+    }
+
+    public function getRelatedItem(): ?Item
+    {
+        return $this->relatedItem;
+    }
+
+    public function setRelatedItem(?Item $relatedItem): void
+    {
+        $this->relatedItem = $relatedItem;
+    }
+
+    public function hasSystemItems(): bool
+    {
+        return 0 !== $this->systemItems->count();
+    }
+
+    /**
+     * @return Item[]
+     */
+    public function getSystemItems(): array
+    {
+        return $this->systemItems->toArray();
+    }
+
+    public function setSystemItems(Collection $sharedItems): void
+    {
+        $this->systemItems = $sharedItems;
+    }
+
+    public function getSystemItemByUser(User $user): ?Item
+    {
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         */
+        $systemItem = $this->systemItems->filter(function (Item $item) use ($user) {
+            return $item->getSignedOwner()->equals($user);
+        })->first();
+
+        return $systemItem instanceof Item ? $systemItem : null;
     }
 }

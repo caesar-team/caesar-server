@@ -105,6 +105,44 @@ class ListTest extends Unit
     }
 
     /** @test */
+    public function validationCreateList()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+        /** @var User $otherUser */
+        $otherUser = $I->have(User::class);
+
+        $label = uniqid();
+        $I->login($user);
+        $I->sendPOST('list', [
+            'label' => $label,
+            'sort' => 0,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->sendPOST('list', [
+            'label' => $label,
+            'sort' => 0,
+        ]);
+        $I->seeResponseContains('List with such label already exists');
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+
+        $I->login($otherUser);
+        $I->sendPOST('list', [
+            'label' => $label,
+            'sort' => 0,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->sendPOST('list', [
+            'label' => $label,
+            'sort' => 0,
+        ]);
+        $I->seeResponseContains('List with such label already exists');
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+    }
+
+    /** @test */
     public function createListByGuest()
     {
         $I = $this->tester;

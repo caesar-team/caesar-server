@@ -1,0 +1,23 @@
+{% extends '@!EasyAdmin/layout.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <style>
+        .main-sidebar {
+            min-width: 150px;
+        }
+        body.ea-sidebar-width-compact .main-sidebar {
+            min-width: 24px;
+        }
+    </style>
+{% endblock %}
+
+{% block head_javascript %}
+    {{ parent() }}
+    <script src="https://unpkg.com/clipboard@2/dist/clipboard.min.js"></script>
+{% endblock %}
+
+{% block body_javascript %}
+    {{ parent() }}
+    <script>new ClipboardJS('[data-clipboard]');</script>
+{% endblock %}

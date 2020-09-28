@@ -102,6 +102,9 @@
         },
         "previousListId": {
           "type": ["string", "null"]
+        },
+        "isShared": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -118,7 +121,8 @@
         "favorite",
         "ownerId",
         "originalItemId",
-        "previousListId"
+        "previousListId",
+        "isShared"
       ]
     },
     "list": {

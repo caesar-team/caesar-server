@@ -18,7 +18,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * @ORM\Table
  * @ORM\Entity(repositoryClass="App\Repository\DirectoryRepository")
  * @UniqueEntity(
- *     fields={"label", "team"},
+ *     fields={"label", "team", "user"},
  *     ignoreNull=false,
  *     errorPath="label",
  *     message="list.create.label.already_exists",
@@ -92,11 +92,38 @@ class Directory
     private ?Team $team;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="directories")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+    private ?User $user;
+
+    /**
      * @var \DateTimeImmutable
      *
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
     private $createdAt;
+
+    /**
+     * @var User|null
+     *
+     * @ORM\OneToOne(targetEntity="App\Entity\User", mappedBy="inbox")
+     */
+    private $userInbox;
+
+    /**
+     * @var User|null
+     *
+     * @ORM\OneToOne(targetEntity="App\Entity\User", mappedBy="lists")
+     */
+    private $userLists;
+
+    /**
+     * @var User|null
+     *
+     * @ORM\OneToOne(targetEntity="App\Entity\User", mappedBy="trash")
+     */
+    private $userTrash;
 
     /**
      * @todo candidate to refactoring (inbox, trash, etc)
@@ -107,6 +134,7 @@ class Directory
     {
         $this->id = Uuid::uuid4();
         $this->team = null;
+        $this->user = null;
         $this->role = NodeEnumType::TYPE_LIST;
         $this->childLists = new ArrayCollection();
         $this->childItems = new ArrayCollection();
@@ -198,6 +226,7 @@ class Directory
         if (false === $this->childLists->contains($directory)) {
             $this->childLists->add($directory);
             $directory->setParentList($this);
+            $directory->setUser($this->getUser());
         }
     }
 
@@ -245,11 +274,6 @@ class Directory
     public function setSort(int $sort): void
     {
         $this->sort = $sort;
-    }
-
-    public function __toString()
-    {
-        return $this->id->toString();
     }
 
     public function equals(?Directory $directory): bool
@@ -321,5 +345,55 @@ class Directory
     public function setCreatedAt(\DateTimeImmutable $createdAt): void
     {
         $this->createdAt = $createdAt;
+    }
+
+    public function getUserInbox(): ?User
+    {
+        return $this->userInbox;
+    }
+
+    public function setUserInbox(?User $userInbox): void
+    {
+        $this->userInbox = $userInbox;
+    }
+
+    public function getUserLists(): ?User
+    {
+        return $this->userLists;
+    }
+
+    public function setUserLists(?User $userLists): void
+    {
+        $this->userLists = $userLists;
+    }
+
+    public function getUserTrash(): ?User
+    {
+        return $this->userTrash;
+    }
+
+    public function setUserTrash(?User $userTrash): void
+    {
+        $this->userTrash = $userTrash;
+    }
+
+    public function __toString(): string
+    {
+        $type = 'personal';
+        if ($this->getTeam()) {
+            $type = 'team';
+        }
+
+        return sprintf('%s (%s)', $this->getLabel(), $type);
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): void
+    {
+        $this->user = $user;
     }
 }

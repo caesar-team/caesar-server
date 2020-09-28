@@ -32,10 +32,10 @@ admin:
 
 mail:
   resetting:
-    subject: Resetting your password
+    subject: Reset your password
     body: |
       <p>Hi!<br/>
-      Please click on this %confirmationUrl% if you want to reset your current password!<br/>
+      Please click on this <a href="%confirmationUrl%" target="_blank">link</a> if you want to reset your current password!<br/>
       If you did not request a password reset, please ignore this email.</p>
   invite:
     subject: You have been invited to join %app_name%
@@ -50,7 +50,7 @@ mail:
       <p>Hi!<br/>
       You have %share_count% new secrets that have been shared with you.</p>
       <p>If you do not want to see the secrets, you can reject them when you log into %app_name%.<br/>
-      After you log into %app_name%you will see accepted secrets in your Inbox.</p>
+      After you log into %app_name% you will see accepted secrets in your Inbox.</p>
 
       <p><a href="%url%" target="_blank">See what's new!</a></p>
   update:
@@ -77,8 +77,8 @@ mail:
       If you want to view and manage the team's secrets, you need to switch teams after logging in.<br/>
       <a href="%url%" target="_blank">See what's new!</a></p>
   new_registration:
-    subject: New users are registered!
+    subject: New users have been registered!
     body: |
       <p>Hi!</p>
       <p>You have new users in the domain: %email%</p>
-      <p>Make sure to add them to the “%app_name%” team.</p>
+      <p>Make sure to add them to the “<a href="%url%" target="_blank">%app_name%</a>” team.</p>

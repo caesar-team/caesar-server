@@ -3,6 +3,8 @@
 namespace App\Tests\Item;
 
 use App\DBAL\Types\Enum\AccessEnumType;
+use App\DBAL\Types\Enum\NodeEnumType;
+use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Tests\ApiTester;
@@ -10,7 +12,6 @@ use Codeception\Module\DataFactory;
 use Codeception\Module\REST;
 use Codeception\Test\Unit;
 use Codeception\Util\HttpCode;
-use OldSound\RabbitMqBundle\RabbitMq\Producer;
 
 class ShareTest extends Unit
 {
@@ -19,9 +20,72 @@ class ShareTest extends Unit
      */
     protected ApiTester $tester;
 
-    protected function _before()
+    /** @test */
+    public function newShareItem()
     {
-        $this->tester->mockRabbitMQProducer($this->makeEmpty(Producer::class));
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $this->tester->have(User::class);
+        /** @var User $memberRead */
+        $memberRead = $this->tester->have(User::class);
+        /** @var User $memberWrite */
+        $memberWrite = $this->tester->have(User::class);
+
+        /** @var Item $item */
+        $item = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getLists(),
+        ]);
+
+        $I->login($user);
+        $I->sendPOST('items', [
+            'listId' => $user->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
+            'relatedItem' => $item->getId()->toString(),
+            'secret' => uniqid(),
+        ]);
+        [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');
+
+        $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [
+            'items' => [
+                [
+                    'userId' => $memberRead->getId()->toString(),
+                    'secret' => 'Some secret',
+                    'cause' => Item::CAUSE_SHARE,
+                    'access' => AccessEnumType::TYPE_READ,
+                ],
+                [
+                    'userId' => $memberWrite->getId()->toString(),
+                    'secret' => 'Some secret',
+                    'cause' => Item::CAUSE_SHARE,
+                    'access' => AccessEnumType::TYPE_WRITE,
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->login($memberRead);
+        $I->sendGET('/list');
+        $I->dontSeeResponseByJsonPathContainsJson(
+            sprintf('$[?(@.type=="%s")].children[0].relatedItem', Directory::LIST_INBOX),
+            [
+                '_links' => [
+                    'edit_item' => [],
+                ],
+            ]
+        );
+
+        $I->login($memberWrite);
+        $I->sendGET('/list');
+        $I->seeResponseByJsonPathContainsJson(
+            sprintf('$[?(@.type=="%s")].children[0].relatedItem', Directory::LIST_INBOX),
+            [
+                '_links' => [
+                    'edit_item' => [],
+                ],
+            ]
+        );
     }
 
     /** @test */

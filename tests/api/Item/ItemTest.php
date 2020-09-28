@@ -2,6 +2,8 @@
 
 namespace App\Tests\Item;
 
+use App\Controller\Admin\ItemCrudController;
+use App\DBAL\Types\Enum\AccessEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
@@ -39,6 +41,66 @@ class ItemTest extends Unit
 
         $schema = $I->getSchema('item/item.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
+
+    /** @test */
+    public function getBatchItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var User $member */
+        $member = $I->have(User::class);
+
+        /** @var Item $item */
+        $item = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getLists(),
+        ]);
+
+        $team = $I->createTeam($user);
+        $I->addUserToTeam($team, $member);
+        $teamItem = $I->createTeamItem($team, $user);
+
+        $I->login($user);
+        $I->sendGET('/items/batch');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.personal', ['id' => $item->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.personal', ['id' => $teamItem->getId()->toString()]);
+
+        $I->seeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $teamItem->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $item->getId()->toString()]);
+
+        $schema = $I->getSchema('item/batch_item.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
+
+        $I->sendPOST('items', [
+            'listId' => $user->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
+            'relatedItem' => $item->getId()->toString(),
+            'secret' => uniqid(),
+        ]);
+        [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');
+
+        $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [
+            'items' => [
+                [
+                    'userId' => $member->getId()->toString(),
+                    'secret' => 'Some secret',
+                    'cause' => Item::CAUSE_SHARE,
+                    'access' => AccessEnumType::TYPE_READ,
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->login($member);
+        $I->sendGET('/items/batch');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.personal.0.relatedItem', ['id' => $item->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $teamItem->getId()->toString()]);
     }
 
     /** @test */
@@ -160,6 +222,36 @@ class ItemTest extends Unit
 
         $schema = $I->getSchema('item/create_item.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
+
+    /** @test */
+    public function createItemWithoutList()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+        $team = $I->createTeam($user);
+
+        $I->login($user);
+        $I->sendPOST('items', [
+            'type' => NodeEnumType::TYPE_CRED,
+            'secret' => uniqid(),
+            'favorite' => false,
+            'tags' => ['tag'],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([$user->getDefaultDirectory()->getId()->toString()], $I->grabDataFromResponseByJsonPath('$.listId'));
+
+        $I->sendPOST('items', [
+            'listId' => $team->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_CRED,
+            'secret' => uniqid(),
+            'favorite' => false,
+            'tags' => ['tag'],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([$team->getDefaultDirectory()->getId()->toString()], $I->grabDataFromResponseByJsonPath('$.listId'));
     }
 
     /** @test */
@@ -329,5 +421,129 @@ class ItemTest extends Unit
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
+    }
+
+    /** @test */
+    public function removePersonalSystemItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $domainAdmin */
+        $domainAdmin = $I->have(User::class, [
+            'roles' => [User::ROLE_ADMIN],
+        ]);
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var User $shareUser */
+        $shareUser = $I->have(User::class);
+
+        /** @var Item $item */
+        $item = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getDefaultDirectory(),
+        ]);
+
+        $I->login($user);
+        $I->sendPOST('items', [
+            'listId' => $user->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
+            'relatedItem' => $item->getId()->toString(),
+            'secret' => uniqid(),
+        ]);
+        [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');
+
+        $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [
+            'items' => [
+                [
+                    'userId' => $shareUser->getId()->toString(),
+                    'secret' => 'Some secret',
+                    'cause' => Item::CAUSE_SHARE,
+                    'access' => AccessEnumType::TYPE_READ,
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        [$sharedSystemItemId] = $I->grabDataFromResponseByJsonPath('$.items[0].id');
+
+        $I->symfonyAuth($domainAdmin);
+        $I->deleteFromAdmin(ItemCrudController::class, $systemItemId);
+
+        $I->dontSeeInDatabase('item', ['id' => $sharedSystemItemId]);
+        $I->dontSeeInDatabase('item', ['id' => $item->getId()->toString()]);
+    }
+
+    /** @test */
+    public function removeTeamSystemItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $domainAdmin */
+        $domainAdmin = $I->have(User::class, [
+            'roles' => [User::ROLE_ADMIN],
+        ]);
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var User $member */
+        $member = $I->have(User::class);
+
+        /** @var User $removeMember */
+        $removeMember = $I->have(User::class);
+
+        $team = $I->createTeam($user);
+        $I->addUserToTeam($team, $member);
+        $I->addUserToTeam($team, $removeMember);
+
+        $userTeam = $team->getUserTeamByUser($removeMember);
+
+        $item = $I->createTeamItem($team, $removeMember);
+
+        $I->login($user);
+        $I->sendPOST('items', [
+            'listId' => $team->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
+            'secret' => uniqid(),
+        ]);
+        [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');
+
+        $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [
+            'items' => [
+                [
+                    'userId' => $member->getId()->toString(),
+                    'secret' => 'Some secret',
+                    'cause' => Item::CAUSE_SHARE,
+                    'access' => AccessEnumType::TYPE_READ,
+                ],
+            ],
+        ]);
+        [$sharedSystemItemId] = $I->grabDataFromResponseByJsonPath('$.items[0].id');
+
+        $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [
+            'items' => [
+                [
+                    'userId' => $removeMember->getId()->toString(),
+                    'secret' => 'Some secret',
+                    'cause' => Item::CAUSE_SHARE,
+                    'access' => AccessEnumType::TYPE_READ,
+                ],
+            ],
+        ]);
+        [$removeSharedSystemItemId] = $I->grabDataFromResponseByJsonPath('$.items[0].id');
+
+        $I->symfonyAuth($domainAdmin);
+        $I->deleteFromAdmin(ItemCrudController::class, $removeSharedSystemItemId);
+
+        $I->dontSeeInDatabase('user_group', ['id' => $userTeam->getId()->toString()]);
+        $I->seeInDatabase('item', ['id' => $systemItemId]);
+        $I->seeInDatabase('item', ['id' => $sharedSystemItemId]);
+        $I->seeInDatabase('item', ['id' => $item->getId()->toString()]);
+
+        $I->deleteFromAdmin(ItemCrudController::class, $systemItemId);
+        $I->dontSeeInDatabase('groups', ['id' => $team->getId()->toString()]);
+        $I->dontSeeInDatabase('item', ['id' => $systemItemId]);
+        $I->dontSeeInDatabase('item', ['id' => $sharedSystemItemId]);
     }
 }

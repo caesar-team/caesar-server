@@ -49,6 +49,7 @@ final class SendMessageType extends AbstractType
 
         $resolver->setDefaults([
             'data_class' => SendMessageRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

@@ -13,6 +13,8 @@ RUN apk --update add \
     gpgme \
     libzip-dev \
     postgresql-dev \
+    rabbitmq-c \
+    rabbitmq-c-dev \
     zip
 
 RUN docker-php-ext-install \
@@ -24,8 +26,8 @@ RUN docker-php-ext-install \
     zip \
     sockets
 
-RUN pecl install gnupg redis \
-    && docker-php-ext-enable redis
+RUN pecl install gnupg redis amqp \
+    && docker-php-ext-enable redis amqp
 
 # Composer part
 COPY --from=composer /usr/bin/composer /usr/bin/composer
@@ -61,7 +63,7 @@ COPY tests/_scripts/init_db.sh /usr/local/bin
 COPY tests/_scripts/wait-for-it.sh /usr/local/bin
 
 COPY . .
-RUN composer install
+RUN APP_ENV=test composer install
 RUN vendor/bin/php-cs-fixer fix --config=.php_cs.dist -v --dry-run --using-cache=no
 
 RUN bash init_db.sh postgres & wait-for-it.sh 127.0.0.1:5432 -- echo "postgres is up" \

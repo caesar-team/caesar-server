@@ -22,6 +22,7 @@ class UserGroupType extends AbstractType
 
         $resolver->setDefaults([
             'data_class' => UserTeam::class,
+            'csrf_protection' => false,
         ]);
     }
 }

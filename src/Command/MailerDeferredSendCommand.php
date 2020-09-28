@@ -56,14 +56,16 @@ class MailerDeferredSendCommand extends Command
         $messages = $this->repository->getLatestDeferredMessages();
 
         $groupMessages = $this->groupByRecipientAndEvent($messages);
+        $sending = 0;
         foreach ($groupMessages as $recipient => $events) {
             foreach ($this->messageGrouper->group($events) as $message) {
                 $this->messenger->send($message);
+                ++$sending;
             }
         }
 
         $this->repository->markAsSentMessages($messages);
-        $this->io->success('Sending complete!');
+        $this->io->success(sprintf('Sending %s messages complete!', $sending));
 
         return 0;
     }

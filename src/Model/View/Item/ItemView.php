@@ -193,19 +193,28 @@ final class ItemView
     private ?string $previousListId;
 
     /**
+     * @SWG\Property(@Model(type=ItemView::class))
+     */
+    private ?ItemView $relatedItem;
+
+    /**
      * @Serializer\Exclude()
      *
      * @SWG\Property(type="string")
      */
     private Item $item;
 
+    private bool $isShared = false;
+
     public function __construct(Item $item)
     {
         $this->item = $item;
         $this->update = null;
         $this->shared = null;
+        $this->relatedItem = null;
         $this->sort = 0;
         $this->favorite = false;
+        $this->isShared = false;
         $this->invited = [];
         $this->tags = [];
     }
@@ -364,5 +373,25 @@ final class ItemView
     public function getItem(): Item
     {
         return $this->item;
+    }
+
+    public function getRelatedItem(): ?ItemView
+    {
+        return $this->relatedItem;
+    }
+
+    public function setRelatedItem(?ItemView $relatedItem): void
+    {
+        $this->relatedItem = $relatedItem;
+    }
+
+    public function isShared(): bool
+    {
+        return $this->isShared;
+    }
+
+    public function setIsShared(bool $isShared): void
+    {
+        $this->isShared = $isShared;
     }
 }

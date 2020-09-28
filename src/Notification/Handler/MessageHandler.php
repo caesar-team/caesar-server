@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Consumer;
+namespace App\Notification\Handler;
 
 use App\Notification\Model\Message;
-use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
-use PhpAmqpLib\Message\AMQPMessage;
 use Psr\Log\LoggerInterface;
 use Sylius\Component\Mailer\Sender\SenderInterface;
-use Throwable;
+use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
-class SendMessageConsumer implements ConsumerInterface
+class MessageHandler implements MessageHandlerInterface
 {
     private SenderInterface $sender;
 
@@ -23,20 +21,15 @@ class SendMessageConsumer implements ConsumerInterface
         $this->logger = $logger;
     }
 
-    public function execute(AMQPMessage $msg): void
+    public function __invoke(Message $message)
     {
-        $message = unserialize($msg->getBody());
-        if (!$message instanceof Message) {
-            return;
-        }
-
         $email = $message->getEmail();
         $options = $message->getOptions();
         $code = $message->getCode();
 
         try {
             $this->sender->send($code, [$email], $options);
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->logger->critical(sprintf('[Consumer] Error: %s, Trace: %s', $exception->getMessage(), $exception->getTraceAsString()));
             echo $exception->getMessage();
         }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Event\EventSubscriber;
 
 use App\Entity\User;
-use App\Security\Fingerprint\FingerprintManager;
+use App\Security\Fingerprint\FingerprintCheckerInterface;
 use App\Security\Voter\TwoFactorInProgressVoter;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events;
@@ -13,14 +13,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 final class TwoFactorJWTSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var FingerprintManager
-     */
-    private $fingerprintManager;
+    private FingerprintCheckerInterface $checker;
 
-    public function __construct(FingerprintManager $fingerprintManager)
+    public function __construct(FingerprintCheckerInterface $checker)
     {
-        $this->fingerprintManager = $fingerprintManager;
+        $this->checker = $checker;
     }
 
     /**
@@ -40,12 +37,14 @@ final class TwoFactorJWTSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($user->isGoogleAuthenticatorEnabled()) {
-            if ($this->fingerprintManager->hasValidFingerPrint($user)) {
-                return;
-            }
-
-            $event->setData(array_merge($event->getData(), [TwoFactorInProgressVoter::CHECK_KEY_NAME => true]));
+        if (!$user->isGoogleAuthenticatorEnabled()) {
+            return;
         }
+
+        if ($this->checker->hasValidFingerprint($user)) {
+            return;
+        }
+
+        $event->setData(array_merge($event->getData(), [TwoFactorInProgressVoter::CHECK_KEY_NAME => true]));
     }
 }

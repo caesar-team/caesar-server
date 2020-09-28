@@ -64,6 +64,7 @@ class SecretType extends AbstractType
         parent::configureOptions($resolver);
         $resolver->setDefaults([
             'data_class' => ChildItem::class,
+            'csrf_protection' => false,
         ]);
     }
 }

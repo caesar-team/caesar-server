@@ -33,6 +33,7 @@ class ItemListQueryType extends AbstractType
         parent::configureOptions($resolver);
         $resolver->setDefaults([
             'data_class' => ItemListQuery::class,
+            'csrf_protection' => false,
         ]);
     }
 }

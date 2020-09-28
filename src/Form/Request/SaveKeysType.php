@@ -32,6 +32,9 @@ class SaveKeysType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
-        $resolver->setDefault('data_class', User::class);
+        $resolver->setDefaults([
+            'data_class' => User::class,
+            'csrf_protection' => false,
+        ]);
     }
 }

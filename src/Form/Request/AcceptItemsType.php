@@ -24,6 +24,7 @@ class AcceptItemsType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => ItemsCollectionRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

@@ -35,6 +35,7 @@ class UpdateChildItemsRequestType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => ItemCollectionRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

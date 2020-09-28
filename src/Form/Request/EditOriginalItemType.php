@@ -23,6 +23,7 @@ class EditOriginalItemType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => ItemUpdateRequest::class,
+            'csrf_protection' => false,
         ]);
     }
 }

@@ -51,6 +51,43 @@ class ListTest extends Unit
     }
 
     /** @test */
+    public function validationCreateList()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var Team $team */
+        $team = $I->createTeam($user);
+        /** @var Team $otherTeam */
+        $otherTeam = $I->createTeam($user);
+
+        $label = uniqid();
+
+        $I->login($user);
+        $I->sendPOST(sprintf('teams/%s/lists', $team->getId()->toString()), [
+            'label' => $label,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->sendPOST(sprintf('teams/%s/lists', $team->getId()->toString()), [
+            'label' => $label,
+        ]);
+        $I->seeResponseContains('List with such label already exists');
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+
+        $I->sendPOST(sprintf('teams/%s/lists', $otherTeam->getId()->toString()), [
+            'label' => $label,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->sendPOST(sprintf('teams/%s/lists', $otherTeam->getId()->toString()), [
+            'label' => $label,
+        ]);
+        $I->seeResponseContains('List with such label already exists');
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+    }
+
+    /** @test */
     public function editList()
     {
         $I = $this->tester;

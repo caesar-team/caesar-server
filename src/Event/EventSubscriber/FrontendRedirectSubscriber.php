@@ -4,33 +4,28 @@ declare(strict_types=1);
 
 namespace App\Event\EventSubscriber;
 
-use App\Security\Fingerprint\FingerprintStasher;
+use App\Security\Fingerprint\Extractor\SessionExtractor;
+use App\Security\Fingerprint\FingerprintExtractorInterface;
 use App\Security\FrontendUriHandler;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 class FrontendRedirectSubscriber implements EventSubscriberInterface
 {
     private const OAUTH_ROUTE_NAME = 'hwi_oauth_service_redirect';
 
-    /** @var string|null */
-    private $frontendUri;
+    private ?string $frontendUri = null;
 
-    /** @var FrontendUriHandler */
-    private $frontendUriHandler;
+    private FrontendUriHandler $frontendUriHandler;
 
-    /** @var string|null */
-    private $fingerprint;
+    private FingerprintExtractorInterface $extractor;
 
-    /** @var FingerprintStasher */
-    private $fingerprintStasher;
-
-    public function __construct(FrontendUriHandler $frontendUriHandler, FingerprintStasher $fingerprintStasher)
+    public function __construct(FrontendUriHandler $frontendUriHandler, FingerprintExtractorInterface $extractor)
     {
         $this->frontendUriHandler = $frontendUriHandler;
-        $this->fingerprintStasher = $fingerprintStasher;
+        $this->extractor = $extractor;
     }
 
     /**
@@ -44,27 +39,28 @@ class FrontendRedirectSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function onKernelRequest(GetResponseEvent $event)
+    public function onKernelRequest(RequestEvent $event)
     {
         $request = $event->getRequest();
-
         if (self::OAUTH_ROUTE_NAME === $request->get('_route')) {
             $uri = $request->query->get('redirect_uri');
             $this->frontendUriHandler->validateUri($uri);
             $this->frontendUri = $uri;
-            $this->fingerprint = $request->query->get('fingerprint');
             $request->getSession()->set('current_frontend_uri', $uri); //Need redirect back to frontend if auth fails
         }
     }
 
-    public function onKernelResponse(FilterResponseEvent $event)
+    public function onKernelResponse(ResponseEvent $event)
     {
         if (null !== $this->frontendUri) {
             $this->frontendUriHandler->persistUri($event->getResponse(), $this->frontendUri);
         }
 
-        if (null !== $this->fingerprint) {
-            $this->fingerprintStasher->stash($event->getResponse(), $this->fingerprint);
+        $request = $event->getRequest();
+        $fingerprint = $this->extractor->extract($request);
+        if (null === $fingerprint) {
+            return;
         }
+        $request->getSession()->set(SessionExtractor::NAME_PARAM, $fingerprint);
     }
 }

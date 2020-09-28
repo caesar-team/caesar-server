@@ -35,9 +35,6 @@ class CreateItemType extends AbstractType
                 'class' => Directory::class,
                 'choice_value' => 'id',
                 'property_path' => 'parentList',
-                'constraints' => [
-                    new NotBlank(),
-                ],
             ])
             ->add('type', ChoiceType::class, [
                 'constraints' => [
@@ -62,6 +59,12 @@ class CreateItemType extends AbstractType
                 'allow_delete' => true,
                 'mapped' => false,
             ])
+            ->add('relatedItem', EntityType::class, [
+                'class' => Item::class,
+                'choice_value' => 'id',
+                'property_path' => 'relatedItem',
+                'required' => false,
+            ])
         ;
 
         if ($this->injectTagListener) {
@@ -74,6 +77,7 @@ class CreateItemType extends AbstractType
         parent::configureOptions($resolver);
         $resolver->setDefaults([
             'data_class' => Item::class,
+            'csrf_protection' => false,
         ]);
     }
 }
