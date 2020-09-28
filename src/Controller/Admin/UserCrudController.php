@@ -97,6 +97,7 @@ class UserCrudController extends AbstractCrudController
     {
         return $crud
             ->setPageTitle(Crud::PAGE_INDEX, 'Users')
+            ->setSearchFields(['id', 'username', 'email'])
             ->setDefaultSort(['id' => 'DESC'])
         ;
     }
