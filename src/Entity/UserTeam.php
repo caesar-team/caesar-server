@@ -119,4 +119,9 @@ class UserTeam
     {
         return $role === $this->userRole;
     }
+
+    public function __toString(): string
+    {
+        return $this->getUser()->getUsername();
+    }
 }
