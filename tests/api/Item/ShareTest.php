@@ -4,7 +4,6 @@ namespace App\Tests\Item;
 
 use App\DBAL\Types\Enum\AccessEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
-use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Tests\ApiTester;
@@ -31,6 +30,8 @@ class ShareTest extends Unit
         $memberRead = $this->tester->have(User::class);
         /** @var User $memberWrite */
         $memberWrite = $this->tester->have(User::class);
+        /** @var User $someMember */
+        $someMember = $this->tester->have(User::class);
 
         /** @var Item $item */
         $item = $I->have(Item::class, [
@@ -66,27 +67,23 @@ class ShareTest extends Unit
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $I->login($memberRead);
-        $I->sendGET('/list');
-        $I->dontSeeResponseByJsonPathContainsJson(
-            sprintf('$[?(@.type=="%s")].children[0].relatedItem', Directory::LIST_INBOX),
-            [
-                '_links' => [
-                    'edit_item' => [],
+        $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [
+            'items' => [
+                [
+                    'userId' => $memberRead->getId()->toString(),
+                    'secret' => 'Some secret',
+                    'cause' => Item::CAUSE_SHARE,
+                    'access' => AccessEnumType::TYPE_READ,
                 ],
-            ]
-        );
-
-        $I->login($memberWrite);
-        $I->sendGET('/list');
-        $I->seeResponseByJsonPathContainsJson(
-            sprintf('$[?(@.type=="%s")].children[0].relatedItem', Directory::LIST_INBOX),
-            [
-                '_links' => [
-                    'edit_item' => [],
+                [
+                    'userId' => $someMember->getId()->toString(),
+                    'secret' => 'Some secret',
+                    'cause' => Item::CAUSE_SHARE,
+                    'access' => AccessEnumType::TYPE_WRITE,
                 ],
-            ]
-        );
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
     }
 
     /** @test */

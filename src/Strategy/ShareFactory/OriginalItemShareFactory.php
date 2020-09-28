@@ -40,11 +40,15 @@ final class OriginalItemShareFactory extends AbstractShareFactory
             $item->setStatus($this->getStatusByCause($childItem->getCause()));
             $item->setRelatedItem($originalItem->getRelatedItem());
 
-            $this->entityManager->persist($item);
-            $this->sendItemMessage($item);
-            $items[$originalItem->getId()->toString()][] = $item;
+            try {
+                $this->entityManager->persist($item);
+                $this->sendItemMessage($item);
+                $items[$originalItem->getId()->toString()][] = $item;
+                $this->entityManager->flush();
+            } catch (\InvalidArgumentException $exception) {
+                $this->logger->error(sprintf('Error share item %s, Error: %s', $originalItem->getId()->toString(), $exception->getMessage()));
+            }
         }
-        $this->entityManager->flush();
 
         return $items;
     }

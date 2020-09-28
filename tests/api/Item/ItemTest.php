@@ -65,13 +65,13 @@ class ItemTest extends Unit
         $teamItem = $I->createTeamItem($team, $user);
 
         $I->login($user);
-        $I->sendGET('/items/batch');
+        $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseByJsonPathContainsJson('$.personal', ['id' => $item->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.personal', ['id' => $teamItem->getId()->toString()]);
 
-        $I->seeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $teamItem->getId()->toString()]);
-        $I->dontSeeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $item->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.teams', ['id' => $teamItem->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.teams', ['id' => $item->getId()->toString()]);
 
         $schema = $I->getSchema('item/batch_item.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
@@ -97,10 +97,11 @@ class ItemTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->login($member);
-        $I->sendGET('/items/batch');
+        $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseByJsonPathContainsJson('$.personal.0.relatedItem', ['id' => $item->getId()->toString()]);
-        $I->seeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $teamItem->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.shared', ['id' => $item->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.personal', ['id' => $item->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.teams', ['id' => $teamItem->getId()->toString()]);
     }
 
     /** @test */
