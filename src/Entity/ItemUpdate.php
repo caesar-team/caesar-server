@@ -9,6 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
+ * @deprecated
  * @ORM\Table
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks

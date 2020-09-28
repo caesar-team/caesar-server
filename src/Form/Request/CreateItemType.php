@@ -15,6 +15,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -63,7 +64,10 @@ class CreateItemType extends AbstractType
                 'class' => Item::class,
                 'choice_value' => 'id',
                 'property_path' => 'relatedItem',
-                'required' => false,
+                'required' => true,
+                'constraints' => [
+                    new NotBlank(['groups' => ['personal']]),
+                ],
             ])
         ;
 
@@ -78,6 +82,22 @@ class CreateItemType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Item::class,
             'csrf_protection' => false,
+            'validation_groups' => function (FormInterface $form) {
+                $groups = ['Default'];
+                $item = $form->getData();
+                if (!$item instanceof Item) {
+                    return $groups;
+                }
+
+                if (NodeEnumType::TYPE_SYSTEM === $item->getType()
+                    && $item->getParentList()
+                    && null === $item->getParentList()->getTeam()
+                ) {
+                    $groups[] = 'personal';
+                }
+
+                return $groups;
+            },
         ]);
     }
 }

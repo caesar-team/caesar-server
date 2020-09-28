@@ -45,6 +45,7 @@ class ShareTest extends Unit
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
         ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
         [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');
 
         $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [
