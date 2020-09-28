@@ -9,7 +9,6 @@ use App\Utils\ChildItemAwareInterface;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -511,6 +510,11 @@ class Item implements ChildItemAwareInterface
         $this->relatedItem = $relatedItem;
     }
 
+    public function hasSystemItems(): bool
+    {
+        return 0 !== $this->systemItems->count();
+    }
+
     /**
      * @return Item[]
      */
@@ -526,14 +530,12 @@ class Item implements ChildItemAwareInterface
 
     public function getSystemItemByUser(User $user): ?Item
     {
-        $criteria = Criteria::create();
-        $criteria->where(Criteria::expr()->eq('owner', $user));
-
         /**
          * @psalm-suppress UndefinedInterfaceMethod
-         * @phpstan-ignore-next-line
          */
-        $systemItem = $this->systemItems->matching($criteria)->first();
+        $systemItem = $this->systemItems->filter(function (Item $item) use ($user) {
+            return $item->getSignedOwner()->equals($user);
+        })->first();
 
         return $systemItem instanceof Item ? $systemItem : null;
     }
