@@ -208,6 +208,11 @@ class Item implements ChildItemAwareInterface
 
     public function setParentList(?Directory $parentList)
     {
+        // Parent list could not null while create item
+        if (null === $parentList) {
+            return;
+        }
+
         $this->parentList = $parentList;
     }
 
@@ -533,5 +538,12 @@ class Item implements ChildItemAwareInterface
         })->first();
 
         return $systemItem instanceof Item ? $systemItem : null;
+    }
+
+    public function getSystemItemsWithoutRoot(): array
+    {
+        return $this->systemItems->filter(function (Item $item) {
+            return null !== $item->getOriginalItem();
+        })->toArray();
     }
 }

@@ -44,12 +44,7 @@ class UpdateItemTest extends Unit
 
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('items/%s', $itemId), [
-            'originalItem' => [
-                'secret' => $originalItem->getSecret(),
-            ],
-            'item' => [
-                'secret' => 'secret-edit',
-            ],
+            'secret' => 'secret-edit',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 

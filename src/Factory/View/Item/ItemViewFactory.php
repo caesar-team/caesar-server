@@ -41,9 +41,12 @@ class ItemViewFactory
         $view->setListId($item->getParentList()->getId()->toString());
         $view->setPreviousListId($item->getPreviousListId());
         $view->setSecret($item->getSecret());
-        $view->setInvited(
-            $this->inviteItemViewFactory->createCollection($item->getUniqueOwnerShareItems())
-        );
+
+        if (0 !== count($item->getSystemItems())) {
+            $view->setInvited($this->inviteItemViewFactory->createCollection($item->getSystemItemsWithoutRoot()));
+        } else {
+            $view->setInvited($this->inviteItemViewFactory->createCollection($item->getUniqueOwnerShareItems()));
+        }
         $view->setOwnerId($item->getOwner()->getId()->toString());
         if (null === $item->getTeam()) {
             $view->setFavorite($item->isFavorite());
@@ -56,9 +59,7 @@ class ItemViewFactory
         $view->setSort($item->getSort());
         $view->setOriginalItemId($item->getOriginalItemId());
         if ($item->getRelatedItem()) {
-            $view->setRelatedItem(
-                $this->createSingle($item->getRelatedItem())
-            );
+            $view->setRelatedItemId($item->getRelatedItem()->getId()->toString());
         }
 
         $sharedItems = $item->getUniqueOwnerShareItems(Item::CAUSE_SHARE);

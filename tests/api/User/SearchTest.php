@@ -25,7 +25,7 @@ class SearchTest extends Unit
         $user = $I->have(User::class);
 
         $I->login($user);
-        $I->sendGET(sprintf('/users/search/%s', $user->getEmail()));
+        $I->sendGET(sprintf('/users/search?email=%s', $user->getEmail()));
         $I->seeResponseContains($user->getEmail());
         $I->seeResponseCodeIs(HttpCode::OK);
 
@@ -42,7 +42,7 @@ class SearchTest extends Unit
         $user = $I->have(User::class);
 
         $I->login($user);
-        $I->sendGET(sprintf('/users/search/%s', 'not-found@email'));
+        $I->sendGET(sprintf('/users/search?email=%s', 'not-found@email'));
         $I->cantSeeResponseContains('not-found@email');
         $I->seeResponseCodeIs(HttpCode::OK);
     }

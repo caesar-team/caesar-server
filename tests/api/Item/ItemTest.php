@@ -65,13 +65,13 @@ class ItemTest extends Unit
         $teamItem = $I->createTeamItem($team, $user);
 
         $I->login($user);
-        $I->sendGET('/items/batch');
+        $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseByJsonPathContainsJson('$.personal', ['id' => $item->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.personal', ['id' => $teamItem->getId()->toString()]);
 
-        $I->seeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $teamItem->getId()->toString()]);
-        $I->dontSeeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $item->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.teams', ['id' => $teamItem->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.teams', ['id' => $item->getId()->toString()]);
 
         $schema = $I->getSchema('item/batch_item.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
@@ -79,7 +79,7 @@ class ItemTest extends Unit
         $I->sendPOST('items', [
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_SYSTEM,
-            'relatedItem' => $item->getId()->toString(),
+            'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
         ]);
         [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');
@@ -97,10 +97,11 @@ class ItemTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->login($member);
-        $I->sendGET('/items/batch');
+        $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseByJsonPathContainsJson('$.personal.0.relatedItem', ['id' => $item->getId()->toString()]);
-        $I->seeResponseByJsonPathContainsJson('$.teams.0.items', ['id' => $teamItem->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.shared', ['id' => $item->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.personal', ['id' => $item->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.teams', ['id' => $teamItem->getId()->toString()]);
     }
 
     /** @test */
@@ -190,6 +191,46 @@ class ItemTest extends Unit
     }
 
     /** @test */
+    public function createSystemItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var Item $item */
+        $item = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getLists(),
+        ]);
+
+        $team = $I->createTeam($user);
+
+        $I->login($user);
+        $I->sendPOST('items', [
+            'listId' => $user->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
+            'secret' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+
+        $I->sendPOST('items', [
+            'listId' => $user->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
+            'relatedItemId' => $item->getId()->toString(),
+            'secret' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->sendPOST('items', [
+            'listId' => $team->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
+            'secret' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+    }
+
+    /** @test */
     public function createCredItem()
     {
         $I = $this->tester;
@@ -271,16 +312,12 @@ class ItemTest extends Unit
         $I->login($user);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
-            'item' => [
-                'secret' => 'secret-edit',
-            ],
+            'secret' => 'secret-edit',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->sendPATCH(sprintf('/items/%s', $otherItem->getId()), [
-            'item' => [
-                'secret' => 'secret-edit',
-            ],
+            'secret' => 'secret-edit',
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
@@ -449,7 +486,7 @@ class ItemTest extends Unit
         $I->sendPOST('items', [
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_SYSTEM,
-            'relatedItem' => $item->getId()->toString(),
+            'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
         ]);
         [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');
