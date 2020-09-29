@@ -18,6 +18,8 @@ class UserViewFactory
         $view->setAvatar($user->getAvatarLink());
         $view->setPublicKey($user->getPublicKey());
         $view->setEmail($user->getEmail());
+        $view->setTeamIds($user->getTeamsIds());
+        $view->setRoles($user->getRoles());
 
         return $view;
     }

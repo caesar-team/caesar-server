@@ -17,6 +17,7 @@
         </ignoreFiles>
     </projectFiles>
     <issueHandlers>
+        <DeprecatedProperty errorLevel="info"/>
         <DeprecatedMethod errorLevel="info"/>
         <InternalMethod errorLevel="suppress"/>
         <UndefinedDocblockClass errorLevel="suppress"/>
