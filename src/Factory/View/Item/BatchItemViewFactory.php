@@ -40,6 +40,7 @@ class BatchItemViewFactory
 
         $view = new BatchItemsView();
         $view->setPersonal($this->itemFactory->createCollection(array_values($personalItems)));
+        /** @psalm-suppress InvalidArgument */
         $view->setShared($this->itemFactory->createCollection(array_values($sharedItems)));
         $teamItems = [];
         foreach ($user->getTeams() as $team) {

@@ -194,4 +194,16 @@ class UserRepository extends ServiceEntityRepository
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
+
+    public function getDomainAdmins(): array
+    {
+        $queryBuilder = $this->createQueryBuilder('user');
+        $queryBuilder
+            ->select('COUNT(1)')
+            ->andWhere('LOWER(user.roles) NOT LIKE :role')
+            ->setParameter('role', '%'.mb_strtolower(User::ROLE_ADMIN).'%')
+        ;
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

@@ -579,9 +579,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
      */
     public function getTeams(): array
     {
-        return array_map(function (UserTeam $userTeam) {
+        return array_filter(array_map(function (UserTeam $userTeam) {
             return $userTeam->getTeam();
-        }, $this->userTeams->toArray());
+        }, $this->userTeams->toArray()));
     }
 
     public function equals(?User $user): bool

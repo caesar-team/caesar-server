@@ -78,6 +78,12 @@ class UserTeam
         $this->user = $user;
         $this->team = $team;
         $this->userRole = $userRole;
+        if (null !== $user) {
+            $this->user->addUserTeam($this);
+        }
+        if (null !== $team) {
+            $this->team->addUserTeam($this);
+        }
     }
 
     public function getTeam(): ?Team

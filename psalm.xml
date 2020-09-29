@@ -10,12 +10,14 @@
         <directory name="src"/>
         <ignoreFiles>
             <directory name="vendor"/>
+            <directory name="var"/>
             <directory name="src/Migrations"/>
             <file name="src/Kernel.php"/>
             <file name="src/Services/SrpHandler.php"/>
         </ignoreFiles>
     </projectFiles>
     <issueHandlers>
+        <DeprecatedMethod errorLevel="info"/>
         <InternalMethod errorLevel="suppress"/>
         <UndefinedDocblockClass errorLevel="suppress"/>
         <MissingReturnType errorLevel="suppress"/>

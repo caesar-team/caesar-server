@@ -51,6 +51,7 @@ class UserCrudController extends AbstractCrudController
             ChoiceField::new('roles')
                 ->setChoices(self::ROLES_AVAILABLE)
                 ->setFormTypeOptions([
+                    'required' => false,
                     'multiple' => true,
                 ]),
             DateTimeField::new('lastLogin')

@@ -161,3 +161,10 @@ services:
     App\Factory\Entity\FingerprintFactory:
         arguments:
             $lifetime: '%env(int:FINGERPRINT_LIFETIME)%'
+
+    App\Team\UserTeamCollectorInterface: '@App\Team\UserTeamCollector\UserTeamCollectorComposite'
+
+    App\Team\UserTeamCollector\UserTeamCollectorComposite:
+        arguments:
+            - '@App\Team\UserTeamCollector\CreatorUserTeamCollector'
+            - '@App\Team\UserTeamCollector\DomainAdminUserTeamCollector'
