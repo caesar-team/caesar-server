@@ -6,7 +6,6 @@ namespace App\Controller\Api\Team;
 
 use App\Controller\AbstractController;
 use App\Entity\Team;
-use App\Entity\User;
 use App\Entity\UserTeam;
 use App\Factory\Entity\TeamFactory;
 use App\Factory\View\Team\TeamViewFactory;
@@ -203,13 +202,6 @@ class TeamController extends AbstractController
      */
     public function teams(TeamViewFactory $viewFactory, TeamRepository $teamRepository): array
     {
-        $user = $this->getUser();
-        if ($user->hasRole(User::ROLE_ADMIN)) {
-            $teams = $teamRepository->findAll();
-        } else {
-            $teams = $teamRepository->findByUser($user);
-        }
-
-        return $viewFactory->createCollection($teams);
+        return $viewFactory->createCollection($teamRepository->findAll());
     }
 }

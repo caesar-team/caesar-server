@@ -38,6 +38,13 @@ class UserView
      *
      * @SWG\Property(type="string[]", example={"b3d4d910-bf9d-4718-b93c-553f1e6711bb"})
      */
+    private array $roles = [];
+
+    /**
+     * @var string[]
+     *
+     * @SWG\Property(type="string[]", example={"b3d4d910-bf9d-4718-b93c-553f1e6711bb"})
+     */
     private array $teamIds = [];
 
     public function getId(): string
@@ -104,5 +111,21 @@ class UserView
     public function setTeamIds(array $teamIds): void
     {
         $this->teamIds = $teamIds;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getRoles(): array
+    {
+        return $this->roles;
+    }
+
+    /**
+     * @param string[] $roles
+     */
+    public function setRoles(array $roles): void
+    {
+        $this->roles = $roles;
     }
 }

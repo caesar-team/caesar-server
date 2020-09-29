@@ -62,6 +62,7 @@ final class MemberView
     private string $name;
 
     /**
+     * @deprecated
      * @SWG\Property(type="string[]")
      */
     private array $teamIds;
