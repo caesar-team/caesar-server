@@ -32,7 +32,6 @@ class DefaultTeamUserAdder
         }
 
         $userTeam = new UserTeam($user, $team, $role);
-        $user->addUserTeam($userTeam);
         $this->userTeamRepository->save($userTeam);
     }
 }

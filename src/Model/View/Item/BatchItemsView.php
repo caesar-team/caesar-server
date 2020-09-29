@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Model\View\Item;
 
-use App\Model\View\Team\TeamItemView;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 
@@ -25,7 +24,7 @@ final class BatchItemsView
     private array $shared;
 
     /**
-     * @var TeamItemView[]
+     * @var ItemView[]
      *
      * @SWG\Property(type="array", @Model(type=ItemView::class))
      */
