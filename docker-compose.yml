@@ -17,13 +17,8 @@ services:
         XDEBUG_PROFILER_ENABLE_TRIGGER: ${XDEBUG_PROFILER_ENABLE_TRIGGER}
     volumes:
       - .:/var/www/html
-      - vendor:/var/www/html/vendor
-      - cache:/var/www/html/var/cache
-      - jwt:/var/www/html/var/jwt
-
     expose:
       - 9000
-    env_file: .env
     environment:
       - PARENT_USER_ID
       - APP_ENV
@@ -92,9 +87,6 @@ services:
       - "1080:8025"
 volumes:
   db:
-  vendor:
-  cache:
-  jwt:
   db_test:
   redis:
   rmq:

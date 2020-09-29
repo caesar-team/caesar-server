@@ -64,7 +64,6 @@ class CreateItemType extends AbstractType
                 'class' => Item::class,
                 'choice_value' => 'id',
                 'property_path' => 'relatedItem',
-                'required' => true,
                 'constraints' => [
                     new NotBlank(['groups' => ['personal']]),
                 ],

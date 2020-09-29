@@ -191,6 +191,46 @@ class ItemTest extends Unit
     }
 
     /** @test */
+    public function createSystemItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var Item $item */
+        $item = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getLists(),
+        ]);
+
+        $team = $I->createTeam($user);
+
+        $I->login($user);
+        $I->sendPOST('items', [
+            'listId' => $user->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
+            'secret' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+
+        $I->sendPOST('items', [
+            'listId' => $user->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
+            'relatedItemId' => $item->getId()->toString(),
+            'secret' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->sendPOST('items', [
+            'listId' => $team->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_SYSTEM,
+            'secret' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+    }
+
+    /** @test */
     public function createCredItem()
     {
         $I = $this->tester;
