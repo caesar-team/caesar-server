@@ -199,8 +199,7 @@ class UserRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('user');
         $queryBuilder
-            ->select('COUNT(1)')
-            ->andWhere('LOWER(user.roles) NOT LIKE :role')
+            ->where('LOWER(user.roles) NOT LIKE :role')
             ->setParameter('role', '%'.mb_strtolower(User::ROLE_ADMIN).'%')
         ;
 

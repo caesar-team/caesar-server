@@ -80,7 +80,7 @@ final class DefaultTeamUserAdderTest extends Unit
     public function addUser()
     {
         $user = $this->createMock(User::class);
-        $team = $this->make(Team::class);
+        $team = $this->createMock(Team::class);
 
         $this->teamRepository
             ->expects(self::once())

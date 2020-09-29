@@ -22,9 +22,11 @@ class UserTeamCollectorComposite implements UserTeamCollectorInterface
     {
         $users = [];
         foreach ($this->collectors as $collector) {
-            $users = array_merge($collector->collect(), $users);
+            foreach ($collector->collect() as $user) {
+                $users[$user->getId()->toString()] = $user;
+            }
         }
 
-        return array_unique($users);
+        return $users;
     }
 }

@@ -653,4 +653,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
             $directory->setUser($this);
         }
     }
+
+    public function __toString(): string
+    {
+        return $this->getUsername();
+    }
 }
