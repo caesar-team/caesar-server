@@ -460,7 +460,7 @@ class ItemTest extends Unit
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
-    /** @test */
+    /** test */
     public function removePersonalSystemItem()
     {
         $I = $this->tester;
