@@ -8,31 +8,50 @@ use App\Exception\ApiException;
 use App\Utils\ErrorMessageFormatter;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Throwable;
 
 class ErrorResponseListener
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private const ADMIN_ROUTE = 'easyadmin';
 
-    /**
-     * @var ErrorMessageFormatter
-     */
-    private $errorMessageFormatter;
+    private LoggerInterface $logger;
 
-    public function __construct(LoggerInterface $logger, ErrorMessageFormatter $errorMessageFormatter)
-    {
+    private ErrorMessageFormatter $errorMessageFormatter;
+
+    private RouterInterface $router;
+
+    public function __construct(
+        LoggerInterface $logger,
+        ErrorMessageFormatter $errorMessageFormatter,
+        RouterInterface $router
+    ) {
         $this->logger = $logger;
         $this->errorMessageFormatter = $errorMessageFormatter;
+        $this->router = $router;
     }
 
     public function onKernelException(ExceptionEvent $event)
     {
+        $request = $event->getRequest();
+        if (self::ADMIN_ROUTE === $request->attributes->get('_route')) {
+            $session = $request->getSession();
+            if ($session instanceof Session) {
+                $session->getFlashBag()->set('danger', $event->getThrowable()->getMessage());
+            }
+
+//            $event->setResponse(new RedirectResponse(
+//                $this->router->generate(self::ADMIN_ROUTE)
+//            ));
+
+            return;
+        }
+
         $exception = $event->getThrowable();
         $this->logError($exception);
 
@@ -45,16 +64,14 @@ class ErrorResponseListener
         $event->setResponse($response);
     }
 
-    private function logError(Throwable $exception)
+    private function logError(Throwable $exception): void
     {
         if ($exception instanceof HttpExceptionInterface) {
             return;
         }
 
         $context = [
-            'code' => $exception->getCode(),
-            'file' => $exception->getFile(),
-            'line' => $exception->getLine(),
+            'trace' => $exception->getTraceAsString(),
         ];
         $this->logger->error($exception->getMessage(), $context);
     }

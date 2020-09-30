@@ -3,10 +3,11 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Team;
+use App\Form\Type\UserTeamType;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
@@ -25,7 +26,9 @@ class TeamCrudController extends AbstractCrudController
             TextField::new('alias')
                 ->hideOnForm(),
             TextField::new('title'),
-            AssociationField::new('userTeams', 'Users'),
+            CollectionField::new('userTeams', 'Users')
+                ->setEntryIsComplex(true)
+                ->setEntryType(UserTeamType::class),
         ];
     }
 
