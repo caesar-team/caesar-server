@@ -88,6 +88,7 @@ class LimiterTest extends Unit
         ]);
 
         return array_merge([
+            'ownerId' => $user->getId()->toString(),
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),

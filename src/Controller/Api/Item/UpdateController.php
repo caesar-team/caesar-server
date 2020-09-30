@@ -87,7 +87,7 @@ final class UpdateController extends AbstractController
         $this->denyAccessUnlessGranted([ItemVoter::EDIT, TeamItemVoter::EDIT], $item);
 
         $form = $this->createForm(EditItemType::class, $item);
-        $form->submit($request->request->all());
+        $form->submit($request->request->all(), false);
         if (!$form->isValid()) {
             return $form;
         }

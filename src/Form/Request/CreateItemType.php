@@ -7,6 +7,7 @@ namespace App\Form\Request;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
+use App\Entity\User;
 use App\Form\EventListener\InjectTagListener;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -32,6 +33,14 @@ class CreateItemType extends AbstractType
     {
         parent::buildForm($builder, $options);
         $builder
+            ->add('ownerId', EntityType::class, [
+                'class' => User::class,
+                'choice_value' => 'id',
+                'property_path' => 'owner',
+                'constraints' => [
+                    new NotBlank(),
+                ],
+            ])
             ->add('listId', EntityType::class, [
                 'class' => Directory::class,
                 'choice_value' => 'id',

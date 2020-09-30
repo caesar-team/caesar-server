@@ -51,6 +51,18 @@ class ItemTest extends Unit
         $this->canCreateTeamItem($member, $directory);
         $this->dontCreateTeamItem($superAdmin, $directory);
         $this->dontCreateTeamItem($guestUser, $directory);
+
+        $I->login($domainAdmin);
+        $I->sendPOST('items', [
+            'ownerId' => $member->getId()->toString(),
+            'listId' => $directory->getId()->toString(),
+            'type' => NodeEnumType::TYPE_CRED,
+            'secret' => uniqid(),
+            'favorite' => false,
+            'tags' => ['tag'],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([$member->getId()->toString()], $I->grabDataFromResponseByJsonPath('$.ownerId'));
     }
 
     /** @test */
@@ -326,6 +338,7 @@ class ItemTest extends Unit
 
         $I->login($user);
         $I->sendPOST('items', [
+            'ownerId' => $user->getId()->toString(),
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
@@ -344,6 +357,7 @@ class ItemTest extends Unit
 
         $I->login($user);
         $I->sendPOST('items', [
+            'ownerId' => $user->getId()->toString(),
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),

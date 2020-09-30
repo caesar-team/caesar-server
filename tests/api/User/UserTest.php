@@ -138,6 +138,7 @@ class UserTest extends Unit
         [$directoryId] = $I->grabDataFromResponseByJsonPath('$.id');
 
         $I->sendPOST('items', [
+            'ownerId' => $user->getId()->toString(),
             'listId' => $directoryId,
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
@@ -148,6 +149,7 @@ class UserTest extends Unit
         [$itemId] = $I->grabDataFromResponseByJsonPath('$.id');
 
         $I->sendPOST('items', [
+            'ownerId' => $user->getId()->toString(),
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),

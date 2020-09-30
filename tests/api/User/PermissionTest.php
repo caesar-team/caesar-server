@@ -131,6 +131,7 @@ class PermissionTest extends Unit
 
         $I->login($user);
         $I->sendPOST('items', [
+            'ownerId' => $user->getId()->toString(),
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
