@@ -35,11 +35,9 @@ class CreateItemType extends AbstractType
         $builder
             ->add('ownerId', EntityType::class, [
                 'class' => User::class,
+                'required' => false,
                 'choice_value' => 'id',
                 'property_path' => 'owner',
-                'constraints' => [
-                    new NotBlank(),
-                ],
             ])
             ->add('listId', EntityType::class, [
                 'class' => Directory::class,

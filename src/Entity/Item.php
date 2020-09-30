@@ -451,6 +451,10 @@ class Item implements ChildItemAwareInterface
 
     public function setOwner(?User $owner): void
     {
+        //Should not set owner as null
+        if (null === $owner && null !== $this->owner) {
+            return;
+        }
         $this->owner = $owner;
     }
 

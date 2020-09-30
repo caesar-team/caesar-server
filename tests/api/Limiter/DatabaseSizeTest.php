@@ -50,7 +50,6 @@ class DatabaseSizeTest extends Unit
     private function getItemBody(User $user, array $options = []): array
     {
         return array_merge([
-            'ownerId' => $user->getId()->toString(),
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),

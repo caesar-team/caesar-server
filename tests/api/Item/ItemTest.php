@@ -77,7 +77,6 @@ class ItemTest extends Unit
         $I->seeResponseIsValidOnJsonSchemaString($schema);
 
         $I->sendPOST('items', [
-            'ownerId' => $user->getId()->toString(),
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_SYSTEM,
             'relatedItemId' => $item->getId()->toString(),
@@ -209,7 +208,6 @@ class ItemTest extends Unit
 
         $I->login($user);
         $I->sendPOST('items', [
-            'ownerId' => $user->getId()->toString(),
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_SYSTEM,
             'secret' => uniqid(),
@@ -217,7 +215,6 @@ class ItemTest extends Unit
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
 
         $I->sendPOST('items', [
-            'ownerId' => $user->getId()->toString(),
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_SYSTEM,
             'relatedItemId' => $item->getId()->toString(),
@@ -226,7 +223,6 @@ class ItemTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->sendPOST('items', [
-            'ownerId' => $user->getId()->toString(),
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_SYSTEM,
             'secret' => uniqid(),
@@ -248,7 +244,6 @@ class ItemTest extends Unit
 
         $I->login($user);
         $I->sendPOST('items', [
-            'ownerId' => $user->getId()->toString(),
             'listId' => 'invalid-uuid',
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
@@ -258,7 +253,6 @@ class ItemTest extends Unit
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
 
         $I->sendPOST('items', [
-            'ownerId' => $user->getId()->toString(),
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
@@ -282,7 +276,6 @@ class ItemTest extends Unit
 
         $I->login($user);
         $I->sendPOST('items', [
-            'ownerId' => $user->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
             'favorite' => false,
@@ -292,7 +285,6 @@ class ItemTest extends Unit
         $this->assertEquals([$user->getDefaultDirectory()->getId()->toString()], $I->grabDataFromResponseByJsonPath('$.listId'));
 
         $I->sendPOST('items', [
-            'ownerId' => $user->getId()->toString(),
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
@@ -492,7 +484,6 @@ class ItemTest extends Unit
 
         $I->login($user);
         $I->sendPOST('items', [
-            'ownerId' => $user->getId()->toString(),
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_SYSTEM,
             'relatedItemId' => $item->getId()->toString(),
@@ -549,7 +540,6 @@ class ItemTest extends Unit
 
         $I->login($user);
         $I->sendPOST('items', [
-            'ownerId' => $user->getId()->toString(),
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_SYSTEM,
             'secret' => uniqid(),
