@@ -9,6 +9,7 @@ use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Form\EventListener\InjectTagListener;
+use App\Repository\ItemRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -18,15 +19,20 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class CreateItemType extends AbstractType
 {
     private ?InjectTagListener $injectTagListener;
 
-    public function __construct(?InjectTagListener $injectTagListener = null)
+    private ItemRepository $itemRepository;
+
+    public function __construct(ItemRepository $itemRepository, ?InjectTagListener $injectTagListener = null)
     {
         $this->injectTagListener = $injectTagListener;
+        $this->itemRepository = $itemRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -89,6 +95,16 @@ class CreateItemType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Item::class,
             'csrf_protection' => false,
+            'constraints' => [new Callback(function ($object, ExecutionContextInterface $context) {
+                if (!$object instanceof Item || !$object->isKeyPairType() || null === $object->getParentList()->getTeam()) {
+                    return;
+                }
+
+                $item = $this->itemRepository->getTeamKeyPairByUser($object->getOwner(), $object->getParentList()->getTeam());
+                if (null !== $item) {
+                    $context->addViolation('item.keypair.unique');
+                }
+            })],
             'validation_groups' => function (FormInterface $form) {
                 $groups = ['Default'];
                 $item = $form->getData();
