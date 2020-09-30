@@ -73,6 +73,7 @@ class ItemCrudController extends AbstractCrudController
                 'credentials' => NodeEnumType::TYPE_CRED,
                 'document' => NodeEnumType::TYPE_DOCUMENT,
                 'system' => NodeEnumType::TYPE_SYSTEM,
+                'keypair' => NodeEnumType::TYPE_KEYPAIR,
             ])->canSelectMultiple(true))
         ;
     }

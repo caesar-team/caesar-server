@@ -42,7 +42,7 @@ class ShareTest extends Unit
         $I->login($user);
         $I->sendPOST('items', [
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_SYSTEM,
+            'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
         ]);

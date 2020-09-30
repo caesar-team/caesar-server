@@ -52,6 +52,7 @@ class CreateItemType extends AbstractType
                     NodeEnumType::TYPE_CRED,
                     NodeEnumType::TYPE_DOCUMENT,
                     NodeEnumType::TYPE_SYSTEM,
+                    NodeEnumType::TYPE_KEYPAIR,
                 ],
             ])
             ->add('secret', TextType::class, [
@@ -95,7 +96,7 @@ class CreateItemType extends AbstractType
                     return $groups;
                 }
 
-                if (NodeEnumType::TYPE_SYSTEM === $item->getType()
+                if (NodeEnumType::TYPE_KEYPAIR === $item->getType()
                     && $item->getParentList()
                     && null === $item->getParentList()->getTeam()
                 ) {

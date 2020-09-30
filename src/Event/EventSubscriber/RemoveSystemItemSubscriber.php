@@ -33,7 +33,7 @@ final class RemoveSystemItemSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if (NodeEnumType::TYPE_SYSTEM !== $item->getType()) {
+        if (NodeEnumType::TYPE_KEYPAIR !== $item->getType()) {
             return;
         }
 
@@ -49,11 +49,12 @@ final class RemoveSystemItemSubscriber implements EventSubscriberInterface
         }
 
         $userTeam = $item->getTeam()->getUserTeamByUser($item->getSignedOwner());
-
-        if (null == $item->getOriginalItem()) {
-            $this->entityManager->remove($item->getTeam());
-        } elseif (null !== $userTeam) {
+        if (null !== $userTeam) {
             $this->entityManager->remove($userTeam);
+
+            if (1 === $item->getTeam()->getUserTeams()->count()) {
+                $this->entityManager->remove($item->getTeam());
+            }
         }
 
         $this->entityManager->flush();

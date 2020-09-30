@@ -72,7 +72,7 @@ abstract class AbstractShareFactory implements ShareFactoryInterface
     {
         $owner = $item->getSignedOwner();
         if ($owner->hasRole(User::ROLE_ANONYMOUS_USER)
-            || $item->getOriginalItem()->isSystemType()
+            || $item->getOriginalItem()->isKeyPairType()
             || $this->authorizationManager->hasInvitation($owner)
         ) {
             return;

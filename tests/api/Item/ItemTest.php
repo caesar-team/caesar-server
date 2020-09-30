@@ -78,7 +78,7 @@ class ItemTest extends Unit
 
         $I->sendPOST('items', [
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_SYSTEM,
+            'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
         ]);
@@ -95,10 +95,12 @@ class ItemTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
+        [$userSystemItemId] = $I->grabDataFromResponseByJsonPath('$.items[0].id');
 
         $I->login($member);
         $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.keypair', ['id' => $userSystemItemId]);
         $I->seeResponseByJsonPathContainsJson('$.shared', ['id' => $item->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.personal', ['id' => $item->getId()->toString()]);
         $I->seeResponseByJsonPathContainsJson('$.teams', ['id' => $teamItem->getId()->toString()]);
@@ -209,14 +211,14 @@ class ItemTest extends Unit
         $I->login($user);
         $I->sendPOST('items', [
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_SYSTEM,
+            'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
 
         $I->sendPOST('items', [
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_SYSTEM,
+            'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
         ]);
@@ -224,7 +226,7 @@ class ItemTest extends Unit
 
         $I->sendPOST('items', [
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_SYSTEM,
+            'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
@@ -485,7 +487,7 @@ class ItemTest extends Unit
         $I->login($user);
         $I->sendPOST('items', [
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_SYSTEM,
+            'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
         ]);
@@ -541,7 +543,7 @@ class ItemTest extends Unit
         $I->login($user);
         $I->sendPOST('items', [
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_SYSTEM,
+            'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
         ]);
         [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');
@@ -579,7 +581,7 @@ class ItemTest extends Unit
         $I->seeInDatabase('item', ['id' => $item->getId()->toString()]);
 
         $I->deleteFromAdmin(ItemCrudController::class, $systemItemId);
-        $I->dontSeeInDatabase('groups', ['id' => $team->getId()->toString()]);
+        $I->seeInDatabase('groups', ['id' => $team->getId()->toString()]);
         $I->dontSeeInDatabase('item', ['id' => $systemItemId]);
         $I->dontSeeInDatabase('item', ['id' => $sharedSystemItemId]);
     }

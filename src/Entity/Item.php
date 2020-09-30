@@ -327,6 +327,11 @@ class Item implements ChildItemAwareInterface
         return NodeEnumType::TYPE_SYSTEM === $this->type;
     }
 
+    public function isKeyPairType(): bool
+    {
+        return NodeEnumType::TYPE_KEYPAIR === $this->type;
+    }
+
     /**
      * @return Collection|Tag[]
      */

@@ -30,11 +30,27 @@ final class BatchItemsView
      */
     private array $teams;
 
+    /**
+     * @var ItemView[]
+     *
+     * @SWG\Property(type="array", @Model(type=ItemView::class))
+     */
+    private array $system;
+
+    /**
+     * @var ItemView[]
+     *
+     * @SWG\Property(type="array", @Model(type=ItemView::class))
+     */
+    private array $keypair;
+
     public function __construct()
     {
         $this->personal = [];
         $this->shared = [];
         $this->teams = [];
+        $this->system = [];
+        $this->keypair = [];
     }
 
     /**
@@ -83,5 +99,37 @@ final class BatchItemsView
     public function setShared(array $shared): void
     {
         $this->shared = $shared;
+    }
+
+    /**
+     * @return ItemView[]
+     */
+    public function getSystem(): array
+    {
+        return $this->system;
+    }
+
+    /**
+     * @param ItemView[] $system
+     */
+    public function setSystem(array $system): void
+    {
+        $this->system = $system;
+    }
+
+    /**
+     * @return ItemView[]
+     */
+    public function getKeypair(): array
+    {
+        return $this->keypair;
+    }
+
+    /**
+     * @param ItemView[] $keypair
+     */
+    public function setKeypair(array $keypair): void
+    {
+        $this->keypair = $keypair;
     }
 }
