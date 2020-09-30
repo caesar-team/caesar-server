@@ -21,6 +21,9 @@
         },
         "teamIds": {
           "type": "array"
+        },
+        "roles": {
+          "type": "array"
         }
       },
       "required": [
@@ -28,7 +31,8 @@
         "email",
         "name",
         "publicKey",
-        "teamIds"
+        "teamIds",
+        "roles"
       ]
     },
     "directory": {
