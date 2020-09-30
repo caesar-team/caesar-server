@@ -27,15 +27,26 @@ class ListTest extends Unit
         $user = $I->have(User::class);
         /** @var User $otherUser */
         $otherUser = $I->have(User::class);
+        /** @var User $domainAdmin */
+        $domainAdmin = $I->have(User::class, [
+            'roles' => [User::ROLE_ADMIN],
+        ]);
 
         $I->login($user);
         $I->sendGET('/users');
         $I->seeResponseContains($user->getEmail());
         $I->seeResponseContains($otherUser->getEmail());
+        $I->seeResponseContains($domainAdmin->getEmail());
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $schema = $I->getSchema('user/list_user.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+
+        $I->sendGET(sprintf('/users?role=%s', User::ROLE_ADMIN));
+        $I->dontSeeResponseContains($user->getEmail());
+        $I->dontSeeResponseContains($otherUser->getEmail());
+        $I->seeResponseContains($domainAdmin->getEmail());
+        $I->seeResponseCodeIs(HttpCode::OK);
     }
 
     /** @test */

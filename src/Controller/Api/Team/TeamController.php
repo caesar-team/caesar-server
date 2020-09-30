@@ -19,7 +19,6 @@ use App\Repository\TeamRepository;
 use App\Security\Voter\TeamVoter;
 use App\Security\Voter\UserTeamVoter;
 use App\Services\TeamManager;
-use App\Team\UserTeamCollectorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -66,8 +65,7 @@ class TeamController extends AbstractController
         EntityManagerInterface $entityManager,
         TeamFactory $teamFactory,
         TeamManager $teamManager,
-        LimiterInterface $limiter,
-        UserTeamCollectorInterface $userTeamCollector
+        LimiterInterface $limiter
     ) {
         $this->denyAccessUnlessGranted(TeamVoter::CREATE, $this->getUser());
 
@@ -83,9 +81,7 @@ class TeamController extends AbstractController
         }
 
         $entityManager->persist($team);
-        foreach ($userTeamCollector->collect() as $user) {
-            $teamManager->addTeamToUser($user, UserTeam::USER_ROLE_ADMIN, $team);
-        }
+        $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
         $entityManager->flush();
 
         return $viewFactory->createSingle($team);

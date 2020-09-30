@@ -46,13 +46,17 @@ final class ListController extends AbstractController
      *
      * @return UserView[]
      */
-    public function users(Request $request, UserRepository $userRepository, UserViewFactory $viewFactory): array
-    {
+    public function users(
+        Request $request,
+        UserRepository $userRepository,
+        UserViewFactory $viewFactory
+    ): array {
         $ids = $request->query->get('ids', []);
+        $role = $request->query->get('role');
 
         $users = !empty($ids)
             ? $userRepository->findByIds($ids)
-            : $userRepository->findAllExceptAnonymous()
+            : $userRepository->findAllExceptAnonymous($role)
         ;
 
         return $viewFactory->createCollection($users);

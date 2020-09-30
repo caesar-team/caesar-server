@@ -172,13 +172,20 @@ class UserRepository extends ServiceEntityRepository
         return $queryBuilder->getQuery()->getResult();
     }
 
-    public function findAllExceptAnonymous(): array
+    public function findAllExceptAnonymous(?string $role = null): array
     {
         $queryBuilder = $this->createQueryBuilder('user');
         $queryBuilder
             ->andWhere('LOWER(user.roles) NOT LIKE :role')
             ->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%')
         ;
+
+        if (null !== $role) {
+            $queryBuilder
+                ->andWhere('LOWER(user.roles) LIKE :filter_role')
+                ->setParameter('filter_role', '%'.mb_strtolower($role).'%')
+            ;
+        }
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -193,16 +200,5 @@ class UserRepository extends ServiceEntityRepository
         ;
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
-    }
-
-    public function getDomainAdmins(): array
-    {
-        $queryBuilder = $this->createQueryBuilder('user');
-        $queryBuilder
-            ->where('LOWER(user.roles) NOT LIKE :role')
-            ->setParameter('role', '%'.mb_strtolower(User::ROLE_ADMIN).'%')
-        ;
-
-        return $queryBuilder->getQuery()->getResult();
     }
 }
