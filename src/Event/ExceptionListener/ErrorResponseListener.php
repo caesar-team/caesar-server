@@ -8,13 +8,17 @@ use App\Exception\ApiException;
 use App\Utils\ErrorMessageFormatter;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 class ErrorResponseListener
 {
+    private const ADMIN_ROUTE = 'easyadmin';
+
     /**
      * @var LoggerInterface
      */
@@ -33,6 +37,18 @@ class ErrorResponseListener
 
     public function onKernelException(ExceptionEvent $event)
     {
+        $request = $event->getRequest();
+        if (self::ADMIN_ROUTE === $request->attributes->get('_route')) {
+            $session = $request->getSession();
+            if ($session instanceof Session) {
+                $session->getFlashBag()->set('danger', $event->getThrowable()->getMessage());
+            }
+
+            $event->setResponse(new RedirectResponse($request->getRequestUri()));
+
+            return;
+        }
+
         $exception = $event->getThrowable();
         $this->logError($exception);
 
@@ -45,16 +61,14 @@ class ErrorResponseListener
         $event->setResponse($response);
     }
 
-    private function logError(Throwable $exception)
+    private function logError(Throwable $exception): void
     {
         if ($exception instanceof HttpExceptionInterface) {
             return;
         }
 
         $context = [
-            'code' => $exception->getCode(),
-            'file' => $exception->getFile(),
-            'line' => $exception->getLine(),
+            'trace' => $exception->getTraceAsString(),
         ];
         $this->logger->error($exception->getMessage(), $context);
     }
