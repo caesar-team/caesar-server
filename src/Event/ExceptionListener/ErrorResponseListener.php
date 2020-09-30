@@ -13,26 +13,27 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Throwable;
 
 class ErrorResponseListener
 {
     private const ADMIN_ROUTE = 'easyadmin';
 
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
-    /**
-     * @var ErrorMessageFormatter
-     */
-    private $errorMessageFormatter;
+    private ErrorMessageFormatter $errorMessageFormatter;
 
-    public function __construct(LoggerInterface $logger, ErrorMessageFormatter $errorMessageFormatter)
-    {
+    private RouterInterface $router;
+
+    public function __construct(
+        LoggerInterface $logger,
+        ErrorMessageFormatter $errorMessageFormatter,
+        RouterInterface $router
+    ) {
         $this->logger = $logger;
         $this->errorMessageFormatter = $errorMessageFormatter;
+        $this->router = $router;
     }
 
     public function onKernelException(ExceptionEvent $event)
@@ -44,7 +45,9 @@ class ErrorResponseListener
                 $session->getFlashBag()->set('danger', $event->getThrowable()->getMessage());
             }
 
-            $event->setResponse(new RedirectResponse($request->getRequestUri()));
+            $event->setResponse(new RedirectResponse(
+                $this->router->generate(self::ADMIN_ROUTE)
+            ));
 
             return;
         }
