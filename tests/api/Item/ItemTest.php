@@ -67,8 +67,8 @@ class ItemTest extends Unit
         $I->login($user);
         $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseByJsonPathContainsJson('$.personal', ['id' => $item->getId()->toString()]);
-        $I->dontSeeResponseByJsonPathContainsJson('$.personal', ['id' => $teamItem->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.personals', ['id' => $item->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.personals', ['id' => $teamItem->getId()->toString()]);
 
         $I->seeResponseByJsonPathContainsJson('$.teams', ['id' => $teamItem->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.teams', ['id' => $item->getId()->toString()]);
@@ -100,9 +100,9 @@ class ItemTest extends Unit
         $I->login($member);
         $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseByJsonPathContainsJson('$.keypair', ['id' => $userSystemItemId]);
-        $I->seeResponseByJsonPathContainsJson('$.shared', ['id' => $item->getId()->toString()]);
-        $I->dontSeeResponseByJsonPathContainsJson('$.personal', ['id' => $item->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.keypairs', ['id' => $userSystemItemId]);
+        $I->seeResponseByJsonPathContainsJson('$.shares', ['id' => $item->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.personals', ['id' => $item->getId()->toString()]);
         $I->seeResponseByJsonPathContainsJson('$.teams', ['id' => $teamItem->getId()->toString()]);
     }
 

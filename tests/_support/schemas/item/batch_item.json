@@ -2,13 +2,13 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "personal": {
+    "personals": {
       "type": "array",
       "items": {
         "$ref": "schemas://item/definitions.json#/definitions/item"
       }
     },
-    "shared": {
+    "shares": {
       "type": "array",
       "items": {
         "$ref": "schemas://item/definitions.json#/definitions/item"
@@ -19,10 +19,25 @@
       "items": {
         "$ref": "schemas://item/definitions.json#/definitions/item"
       }
+    },
+    "systems": {
+      "type": "array",
+      "items": {
+        "$ref": "schemas://item/definitions.json#/definitions/item"
+      }
+    },
+    "keypairs": {
+      "type": "array",
+      "items": {
+        "$ref": "schemas://item/definitions.json#/definitions/item"
+      }
     }
   },
   "required": [
-    "personal",
-    "teams"
+    "personals",
+    "teams",
+    "systems",
+    "keypairs",
+    "shares"
   ]
 }

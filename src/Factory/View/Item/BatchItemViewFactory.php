@@ -55,12 +55,12 @@ class BatchItemViewFactory
         }
 
         $view = new BatchItemsView();
-        $view->setPersonal($this->itemFactory->createCollection(array_values($personalItems)));
+        $view->setPersonals($this->itemFactory->createCollection(array_values($personalItems)));
         /** @psalm-suppress InvalidArgument */
-        $view->setShared($this->itemFactory->createCollection(array_values($sharedItems)));
+        $view->setShares($this->itemFactory->createCollection(array_values($sharedItems)));
         $view->setTeams($this->itemFactory->createCollection(array_values($teamItems)));
-        $view->setSystem($this->itemFactory->createCollection(array_values($systemItems)));
-        $view->setKeypair($this->itemFactory->createCollection(array_values($keypairItems)));
+        $view->setSystems($this->itemFactory->createCollection(array_values($systemItems)));
+        $view->setKeypairs($this->itemFactory->createCollection(array_values($keypairItems)));
 
         return $view;
     }
