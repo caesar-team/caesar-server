@@ -45,9 +45,9 @@ class ErrorResponseListener
                 $session->getFlashBag()->set('danger', $event->getThrowable()->getMessage());
             }
 
-            $event->setResponse(new RedirectResponse(
-                $this->router->generate(self::ADMIN_ROUTE)
-            ));
+//            $event->setResponse(new RedirectResponse(
+//                $this->router->generate(self::ADMIN_ROUTE)
+//            ));
 
             return;
         }
