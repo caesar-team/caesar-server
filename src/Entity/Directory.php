@@ -337,6 +337,19 @@ class Directory
         return $this->getType();
     }
 
+    public function getPersonalRole(): string
+    {
+        if (null !== $this->getUserInbox()) {
+            return self::LIST_INBOX;
+        } elseif (null !== $this->getUserTrash()) {
+            return self::LIST_TRASH;
+        } elseif (null !== $this->getUser() && $this->equals($this->getUser()->getDefaultDirectory())) {
+            return self::LIST_DEFAULT;
+        }
+
+        return $this->getType();
+    }
+
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
