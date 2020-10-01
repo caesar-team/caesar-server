@@ -1,9 +1,9 @@
 # ---- Base Image ----
 FROM php:7.4-fpm-alpine AS base
-RUN mkdir -p /var/www/html /var/www/html/public/static /var/www/html/var/cache /var/www/html/var/logs /var/www/html/var/sessions && chown -R www-data /var/www/html
 # Set working directory
 WORKDIR /var/www/html
-
+ARG UID=1000
+ARG GID=1000
 RUN apk --update add \
     build-base \
     autoconf \
@@ -15,20 +15,25 @@ RUN apk --update add \
     postgresql-dev \
     rabbitmq-c \
     rabbitmq-c-dev \
-    zip
-
-RUN docker-php-ext-install \
+    zip \ 
+    shadow \ 
+    \
+    && docker-php-ext-install -j$(nproc) \
     intl \
     bcmath\
     opcache \
     pdo \
     pdo_pgsql \
     zip \
-    sockets
+    sockets \
+    \
+    && pecl install gnupg redis amqp \
+    && docker-php-ext-enable redis amqp \
+    \
+    && usermod -u $UID www-data
 
-RUN pecl install gnupg redis amqp \
-    && docker-php-ext-enable redis amqp
-
+RUN mkdir -p /var/www/html /var/www/html/vendor /var/www/html/public/static /var/www/html/var/cache /var/www/html/var/log /var/www/html/var/sessions /var/www/html/var/jwt \
+&& chown -R www-data /var/www/html /var/www/html/vendor /var/www/html/var/cache /var/www/html/var/jwt
 # Composer part
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_MEMORY_LIMIT -1
@@ -65,26 +70,20 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS coreutils \
    && echo "xdebug.max_nesting_level=9999" >> /usr/local/etc/php/conf.d/xdebug.ini \
    && apk del .build-deps
 
-FROM node:10-alpine AS yarn-enc
+## ---- Webpack Encore ----
+FROM node:lts-alpine AS yarn-enc
 COPY . .
 RUN yarn install && yarn encore production
-# ---- Dependencies ----
-FROM base AS dependencies
-# install vendors
-USER www-data
-RUN APP_ENV=prod composer install --prefer-dist --no-plugins --no-scripts --no-dev --optimize-autoloader
 
 # ---- Release ----
 FROM base AS release
-EXPOSE 9000
-USER www-data
-# copy production vendors
-COPY --chown=www-data:www-data . .
-COPY --chown=www-data:www-data --from=dependencies /var/www/html/vendor /var/www/html/vendor
-COPY --from=yarn-enc ./public/build /var/www/html/public/build
+WORKDIR /var/www/html
+COPY --chown=www-data:www-data src src
+COPY --chown=www-data:www-data --from=yarn-enc ./public/build /var/www/html/public/build
 COPY ./config/docker/php/symfony.ini /usr/local/etc/php/conf.d
-# COPY ./config/docker/php/symfony.pool.conf /usr/local/etc/php-fpm.d/
-COPY --chown=www-data:www-data entrypoint.sh /usr/local/bin/
-RUN php bin/console assets:install public
+COPY bin/fix-permissions.sh /usr/local/bin/
+COPY entrypoint.sh /usr/local/bin/
+USER www-data
 # expose port and define CMD
+EXPOSE 9000
 ENTRYPOINT ["entrypoint.sh"]

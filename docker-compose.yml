@@ -19,18 +19,17 @@ services:
       - .:/var/www/html
     expose:
       - 9000
+    env_file: .env
     environment:
       - PARENT_USER_ID
       - APP_ENV
       - PHP_IDE_CONFIG
-    user: "$UID:$UID"
+    user: "${UID}:${GID}"
     depends_on:
       - db
       - db_test
       - redis
       - rabbitmq
-    entrypoint:
-      - "./entrypoint.sh"
   nginx:
     image: 4xxi/nginx:flex
     depends_on:

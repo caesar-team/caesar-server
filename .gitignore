@@ -36,3 +36,4 @@ yarn-error.log
 !/tests/_envs
 codeception.yml
 ###< tests ###
+src/.preload.php
