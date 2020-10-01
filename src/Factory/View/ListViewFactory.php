@@ -29,7 +29,7 @@ class ListViewFactory
         $view = new ListView($directory);
         $view->setId($directory->getId()->toString());
         $view->setLabel($directory->getLabel());
-        $view->setType($directory->getRole());
+        $view->setType($directory->getPersonalRole());
         $view->setChildren(
             $this->itemViewFactory->createCollection(
                 $directory->getChildItems(Item::STATUS_FINISHED)
