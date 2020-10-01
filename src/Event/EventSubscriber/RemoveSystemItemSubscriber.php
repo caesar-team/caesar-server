@@ -6,6 +6,7 @@ namespace App\Event\EventSubscriber;
 
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
+use App\Entity\Team;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityDeletedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -52,7 +53,9 @@ final class RemoveSystemItemSubscriber implements EventSubscriberInterface
         if (null !== $userTeam) {
             $this->entityManager->remove($userTeam);
 
-            if (1 === $item->getTeam()->getUserTeams()->count()) {
+            if (1 === $item->getTeam()->getUserTeams()->count()
+                && Team::DEFAULT_GROUP_ALIAS !== $item->getTeam()->getAlias()
+            ) {
                 $this->entityManager->remove($item->getTeam());
             }
         }
