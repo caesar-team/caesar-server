@@ -75,6 +75,7 @@ class ItemViewFactory
         }
 
         $view->setIsShared($item->hasSystemItems());
+        $view->setTeamId($item->getTeamId());
 
         return $view;
     }

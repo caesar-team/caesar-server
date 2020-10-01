@@ -198,6 +198,11 @@ final class ItemView
     private ?string $relatedItemId;
 
     /**
+     * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d4")
+     */
+    private ?string $teamId;
+
+    /**
      * @Serializer\Exclude()
      *
      * @SWG\Property(type="string")
@@ -212,6 +217,7 @@ final class ItemView
         $this->update = null;
         $this->shared = null;
         $this->relatedItemId = null;
+        $this->teamId = null;
         $this->sort = 0;
         $this->favorite = false;
         $this->isShared = false;
@@ -393,5 +399,15 @@ final class ItemView
     public function setIsShared(bool $isShared): void
     {
         $this->isShared = $isShared;
+    }
+
+    public function getTeamId(): ?string
+    {
+        return $this->teamId;
+    }
+
+    public function setTeamId(?string $teamId): void
+    {
+        $this->teamId = $teamId;
     }
 }
