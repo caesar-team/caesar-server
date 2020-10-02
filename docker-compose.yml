@@ -19,7 +19,6 @@ services:
       - .:/var/www/html
     expose:
       - 9000
-    env_file: .env
     environment:
       - PARENT_USER_ID
       - APP_ENV

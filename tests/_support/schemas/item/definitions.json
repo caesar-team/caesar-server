@@ -30,6 +30,15 @@
               "userId": {
                 "type": "string"
               },
+              "userAvatar": {
+                "type": ["string", "null"]
+              },
+              "userName": {
+                "type": "string"
+              },
+              "userEmail": {
+                "type": "string"
+              },
               "access": {
                 "type": "string"
               }

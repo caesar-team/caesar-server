@@ -78,6 +78,7 @@ class ItemRepository extends ServiceEntityRepository
             ->where('item.team = :team')
             ->andWhere('item.owner = :user')
             ->andWhere('item.type = :type')
+            ->andWhere('item.relatedItem IS NULL')
             ->setParameter('team', $team)
             ->setParameter('user', $user)
             ->setParameter('type', NodeEnumType::TYPE_KEYPAIR)

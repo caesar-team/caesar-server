@@ -100,6 +100,10 @@ class CreateItemType extends AbstractType
                     return;
                 }
 
+                if (null !== $object->getRelatedItem()) {
+                    return;
+                }
+
                 $item = $this->itemRepository->getTeamKeyPairByUser($object->getOwner(), $object->getParentList()->getTeam());
                 if (null !== $item) {
                     $context->addViolation('item.keypair.unique');

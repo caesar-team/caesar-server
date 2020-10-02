@@ -187,9 +187,11 @@ final class ItemController extends AbstractController
 
         /** @var Item $item */
         foreach ($itemsRequest->getItems() as $item) {
-            $this->denyAccessUnlessGranted([TeamItemVoter::CREATE, ItemVoter::CREATE], $item->getParentList());
+            if (null === $item->getOwner()) {
+                $item->setOwner($this->getUser());
+            }
             $item->setTeam($item->getParentList()->getTeam());
-            $item->setOwner($this->getUser());
+            $this->denyAccessUnlessGranted([TeamItemVoter::CREATE, ItemVoter::CREATE], $item->getParentList());
 
             $itemRepository->save($item);
         }

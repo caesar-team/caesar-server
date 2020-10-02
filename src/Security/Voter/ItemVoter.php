@@ -10,6 +10,7 @@ use App\Entity\Item;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class ItemVoter extends Voter
@@ -30,12 +31,15 @@ class ItemVoter extends Voter
         self::SHARE,
     ];
 
+    private AuthorizationCheckerInterface $authorizationChecker;
+
     private UserRepository $userRepository;
 
     private TeamItemVoter $teamItemVoter;
 
-    public function __construct(UserRepository $userRepository, TeamItemVoter $teamItemVoter)
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker, UserRepository $userRepository, TeamItemVoter $teamItemVoter)
     {
+        $this->authorizationChecker = $authorizationChecker;
         $this->userRepository = $userRepository;
         $this->teamItemVoter = $teamItemVoter;
     }
@@ -95,6 +99,10 @@ class ItemVoter extends Voter
 
     private function canCreate(Directory $list, User $user): bool
     {
+        if ($list->getUserInbox()) {
+            return true;
+        }
+
         $itemOwner = $this->userRepository->getByList($list);
 
         return $user->equals($itemOwner)
@@ -108,7 +116,7 @@ class ItemVoter extends Voter
             return true;
         }
 
-        $systemItem = $item->getSystemItemByUser($user);
+        $systemItem = $item->getKeyPairItemByUser($user);
         if (null === $systemItem) {
             return false;
         }
@@ -118,6 +126,15 @@ class ItemVoter extends Voter
 
     private function canDelete(Item $item, User $user): bool
     {
+        if (null !== $item->getRelatedItem()) {
+            $item = $item->getRelatedItem();
+            if (null !== $item->getTeam()) {
+                return $this->authorizationChecker->isGranted(TeamItemVoter::DELETE, $item);
+            }
+
+            return $user->equals($item->getSignedOwner());
+        }
+
         return $user->equals($item->getSignedOwner());
     }
 
