@@ -58,6 +58,8 @@ class TeamController extends AbstractController
      * )
      *
      * @return TeamView|FormInterface
+     *
+     * @deprecated
      */
     public function create(
         Request $request,

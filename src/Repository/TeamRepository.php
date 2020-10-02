@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\Directory;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Model\DTO\Vault;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
@@ -83,5 +84,12 @@ class TeamRepository extends ServiceEntityRepository
         ;
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    public function saveVault(Vault $vault): void
+    {
+        $this->getEntityManager()->persist($vault->getTeam());
+        $this->getEntityManager()->persist($vault->getKeypair());
+        $this->getEntityManager()->flush();
     }
 }
