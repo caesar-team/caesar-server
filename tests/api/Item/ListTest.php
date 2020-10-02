@@ -3,7 +3,6 @@
 namespace App\Tests\Item;
 
 use App\DBAL\Types\Enum\AccessEnumType;
-use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\User;
@@ -60,7 +59,7 @@ class ListTest extends Unit
         $I->sendGET('/list');
         $I->seeResponseContainsJson(['type' => Directory::LIST_INBOX]);
         $I->seeResponseContainsJson(['type' => Directory::LIST_TRASH]);
-        $I->seeResponseContainsJson(['type' => NodeEnumType::TYPE_LIST]);
+        $I->seeResponseContainsJson(['type' => Directory::LIST_DEFAULT]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $schema = $I->getSchema('item/lists.json');
@@ -71,7 +70,7 @@ class ListTest extends Unit
         $I->sendGET('/list');
         $I->seeResponseContainsJson(['type' => Directory::LIST_INBOX]);
         $I->seeResponseContainsJson(['type' => Directory::LIST_TRASH]);
-        $I->seeResponseContainsJson(['type' => NodeEnumType::TYPE_LIST]);
+        $I->seeResponseContainsJson(['type' => Directory::LIST_DEFAULT]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $schema = $I->getSchema('item/lists.json');
