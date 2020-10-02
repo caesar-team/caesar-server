@@ -104,6 +104,13 @@ class Team
     protected $directories;
 
     /**
+     * @var array
+     *
+     * @ORM\Column(type="array", nullable=true)
+     */
+    private $pinned = [];
+
+    /**
      * Group constructor.
      *
      * @throws \Exception
@@ -335,5 +342,36 @@ class Team
             $this->directories->add($directory);
             $directory->setTeam($this);
         }
+    }
+
+    public function getPinned(): array
+    {
+        /**
+         * @psalm-suppress RedundantConditionGivenDocblockType
+         * @psalm-suppress DocblockTypeContradiction
+         */
+        return null !== $this->pinned ? $this->pinned : [];
+    }
+
+    public function setPinned(array $pinned): void
+    {
+        $this->pinned = $pinned;
+    }
+
+    public function togglePinned(User $user): void
+    {
+        $pinned = $this->getPinned();
+        if ($this->isPinned($user)) {
+            unset($pinned[$user->getId()->toString()]);
+        } else {
+            $pinned[$user->getId()->toString()] = $user->getId()->toString();
+        }
+
+        $this->setPinned($pinned);
+    }
+
+    public function isPinned(User $user): bool
+    {
+        return in_array($user->getId()->toString(), $this->getPinned());
     }
 }

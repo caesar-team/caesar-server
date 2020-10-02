@@ -14,13 +14,14 @@ class TeamVoter extends Voter
     public const DELETE = 'team_delete';
     public const CREATE = 'team_create';
     public const EDIT = 'team_edit';
+    public const PINNED = 'team_pinned';
 
     /**
      * {@inheritdoc}
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::CREATE, self::DELETE, self::EDIT])) {
+        if (!in_array($attribute, [self::CREATE, self::DELETE, self::EDIT, self::PINNED])) {
             return false;
         }
 
@@ -44,6 +45,8 @@ class TeamVoter extends Voter
                 return $subject instanceof Team && $this->canDelete($subject, $user);
             case self::EDIT:
                 return $subject instanceof Team && $this->canEdit($subject, $user);
+            case self::PINNED:
+                return $subject instanceof Team && $this->canPinned($subject, $user);
         }
 
         return false;
@@ -64,5 +67,10 @@ class TeamVoter extends Voter
     private function canDelete(Team $team, User $user): bool
     {
         return $this->canEdit($team, $user);
+    }
+
+    private function canPinned(Team $team, User $user): bool
+    {
+        return true;
     }
 }
