@@ -232,6 +232,9 @@
         },
         "type": {
           "type": "string"
+        },
+        "pinned": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -239,7 +242,8 @@
         "title",
         "users",
         "icon",
-        "type"
+        "type",
+        "pinned"
       ]
     },
     "user_team": {
