@@ -109,6 +109,11 @@ class TeamView
     private ?string $type;
 
     /**
+     * @SWG\Property(type="boolean", example=false)
+     */
+    private bool $pinned = false;
+
+    /**
      * @Serializer\Exclude
      */
     private Team $team;
@@ -189,5 +194,15 @@ class TeamView
     public function getUserTeam(): ?UserTeam
     {
         return $this->userTeam;
+    }
+
+    public function isPinned(): bool
+    {
+        return $this->pinned;
+    }
+
+    public function setPinned(bool $pinned): void
+    {
+        $this->pinned = $pinned;
     }
 }

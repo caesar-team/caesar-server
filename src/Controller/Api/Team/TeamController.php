@@ -200,4 +200,34 @@ class TeamController extends AbstractController
     {
         return $viewFactory->createCollection($teamRepository->findAll());
     }
+
+    /**
+     * Toggle pinned team.
+     *
+     * @SWG\Tag(name="Team")
+     * @SWG\Response(
+     *     response=200,
+     *     description="Set pinned is on or off",
+     *     @Model(type=TeamView::class)
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such team"
+     * )
+     *
+     * @Route(
+     *     path="/{team}/pinned",
+     *     name="api_pinned_team_toggle",
+     *     methods={"POST"}
+     * )
+     */
+    public function toggle(Team $team, TeamRepository $repository, TeamViewFactory $factory): TeamView
+    {
+        $this->denyAccessUnlessGranted(TeamVoter::PINNED, $team);
+
+        $team->togglePinned($this->getUser());
+        $repository->save($team);
+
+        return $factory->createSingle($team);
+    }
 }

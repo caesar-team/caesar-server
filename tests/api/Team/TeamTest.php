@@ -4,6 +4,7 @@ namespace App\Tests\Team;
 
 use App\Entity\Item;
 use App\Entity\User;
+use App\Entity\UserTeam;
 use App\Tests\ApiTester;
 use Codeception\Module\DataFactory;
 use Codeception\Module\REST;
@@ -173,5 +174,38 @@ class TeamTest extends Unit
         $I->login($admin);
         $I->sendDELETE(sprintf('teams/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+    }
+
+    /** @test */
+    public function pinnedTeam()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class, [
+            'roles' => [User::ROLE_ADMIN],
+        ]);
+
+        /** @var User $admin */
+        $admin = $I->have(User::class, [
+            'roles' => [User::ROLE_ADMIN],
+        ]);
+
+        $team = $I->createTeam($admin);
+        $I->addUserToTeam($team, $user, UserTeam::USER_ROLE_ADMIN);
+
+        $I->login($user);
+        $I->sendPOST(sprintf('teams/%s/pinned', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([true], $I->grabDataFromResponseByJsonPath('$.pinned'));
+
+        $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([true], $I->grabDataFromResponseByJsonPath('$.pinned'));
+
+        $I->login($admin);
+        $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([false], $I->grabDataFromResponseByJsonPath('$.pinned'));
     }
 }
