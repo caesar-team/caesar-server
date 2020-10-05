@@ -2,6 +2,7 @@
 
 namespace App\Tests\User;
 
+use App\Entity\User;
 use App\Model\View\User\SecurityBootstrapView;
 use App\Tests\ApiTester;
 use Codeception\Module\DataFactory;
@@ -112,5 +113,35 @@ class TwoFATest extends Unit
         ]);
 
         $I->dontSeeInDatabase('fingerprint', ['fingerprint' => $fingerprint]);
+    }
+
+    /** @test */
+    public function getBackupCodes()
+    {
+        $I = $this->tester;
+
+        $userWithout2Fa = $I->haveUserWithKeys([
+            'flow_status' => User::FLOW_STATUS_INCOMPLETE,
+        ]);
+        $user = $I->haveUserWithKeys([
+            'flow_status' => User::FLOW_STATUS_INCOMPLETE,
+            'google_authenticator_secret' => 'secret',
+        ]);
+
+        $activeUser = $I->haveUserWithKeys([
+            'flow_status' => User::FLOW_STATUS_FINISHED,
+        ]);
+
+        $I->login($user);
+        $I->sendGET('auth/2fa/backups');
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->login($userWithout2Fa);
+        $I->sendGET('auth/2fa/backups');
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
+
+        $I->login($activeUser);
+        $I->sendGET('auth/2fa/backups');
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
     }
 }

@@ -207,7 +207,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
             $this->srp = $srp;
         }
         $this->flowStatus = self::FLOW_STATUS_INCOMPLETE;
-        BackUpCodesManager::generate($this);
         $this->directories = new ArrayCollection();
     }
 
@@ -400,23 +399,18 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     }
 
     /**
-     * Check if it is a valid backup code.
+     * {@inheritdoc}
      */
     public function isBackupCode(string $code): bool
     {
-        $encoder = BackUpCodesManager::initEncoder();
-        $code = $encoder->encode($code);
-
         return in_array($code, $this->backupCodes);
     }
 
     /**
-     * Invalidate a backup code.
+     * {@inheritdoc}
      */
     public function invalidateBackupCode(string $code): void
     {
-        $encoder = BackUpCodesManager::initEncoder();
-        $code = $encoder->encode($code);
         $key = array_search($code, $this->backupCodes);
         if (false !== $key) {
             unset($this->backupCodes[$key]);
@@ -428,6 +422,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->backupCodes = $backupCodes;
     }
 
+    public function getBackupCodes(): array
+    {
+        return $this->backupCodes;
+    }
+
     private function getBackupCodesCount(): int
     {
         return $this->backupCodes ? count($this->backupCodes) : 0;
@@ -436,17 +435,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function hasBackupCodes(): bool
     {
         return (bool) $this->getBackupCodesCount();
-    }
-
-    public function getBackupCodes(): array
-    {
-        $encoder = BackUpCodesManager::initEncoder();
-        $codes = [];
-        foreach ($this->backupCodes as $backupCode) {
-            $codes[] = current($encoder->decode($backupCode));
-        }
-
-        return $codes;
     }
 
     /**

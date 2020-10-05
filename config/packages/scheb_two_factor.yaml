@@ -10,3 +10,4 @@ scheb_two_factor:
         template: security/2fa_form.html.twig
     backup_codes:
         enabled: true
+        manager: App\Security\BackupCodes\BackupCodeManager

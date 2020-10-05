@@ -1,5 +1,6 @@
 parameters:
     'env(FINGERPRINT_LIFETIME)': 86400
+    'env(BACKUP_CODE_SALT)': ''
 imports:
     - { resource: events.yaml }
 services:
@@ -161,3 +162,8 @@ services:
     App\Factory\Entity\FingerprintFactory:
         arguments:
             $lifetime: '%env(int:FINGERPRINT_LIFETIME)%'
+
+    App\Security\BackupCodes\NativeBackupCodesEncoder:
+        arguments:
+            $salt: '%env(BACKUP_CODE_SALT)%'
+            $hashLength: '%env(BACKUP_CODE_HASH_LENGTH)%'

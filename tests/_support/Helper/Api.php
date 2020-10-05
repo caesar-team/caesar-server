@@ -3,6 +3,7 @@
 namespace App\Tests\Helper;
 
 use App\Entity\User;
+use App\Security\BackupCodes\BackupCodesEncoderInterface;
 use Codeception\Module\Symfony;
 use FOS\UserBundle\Model\UserInterface;
 use Symfony\Component\BrowserKit\Cookie;
@@ -19,6 +20,14 @@ class Api extends \Codeception\Module
         $jwtManager = $this->getSymfony()->grabService('lexik_jwt_authentication.jwt_manager');
 
         return $jwtManager->create($user);
+    }
+
+    public function encodeCode(string $code): string
+    {
+        /** @var BackupCodesEncoderInterface $encoder */
+        $encoder = $this->getSymfony()->grabService(BackupCodesEncoderInterface::class);
+
+        return $encoder->encode([$code])[0];
     }
 
     public function generateCsrf(string $tokenId)
