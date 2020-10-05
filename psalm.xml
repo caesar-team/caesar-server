@@ -13,6 +13,7 @@
             <directory name="var"/>
             <directory name="src/Migrations"/>
             <file name="src/Kernel.php"/>
+            <file name="src/.preload.php"/>
             <file name="src/Services/SrpHandler.php"/>
         </ignoreFiles>
     </projectFiles>

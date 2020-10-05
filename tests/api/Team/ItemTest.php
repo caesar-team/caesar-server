@@ -51,6 +51,18 @@ class ItemTest extends Unit
         $this->canCreateTeamItem($member, $directory);
         $this->dontCreateTeamItem($superAdmin, $directory);
         $this->dontCreateTeamItem($guestUser, $directory);
+
+        $I->login($domainAdmin);
+        $I->sendPOST('items', [
+            'ownerId' => $member->getId()->toString(),
+            'listId' => $directory->getId()->toString(),
+            'type' => NodeEnumType::TYPE_CRED,
+            'secret' => uniqid(),
+            'favorite' => false,
+            'tags' => ['tag'],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([$member->getId()->toString()], $I->grabDataFromResponseByJsonPath('$.ownerId'));
     }
 
     /** @test */
@@ -244,6 +256,33 @@ class ItemTest extends Unit
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
         $this->canDeleteTeamItem($member, $item, $item2);
+    }
+
+    /** @test */
+    public function createSystemItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        $team = $I->createTeam($user);
+
+        $I->login($user);
+        $I->sendPOST('items', [
+            'listId' => $team->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'secret' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->sendPOST('items', [
+            'listId' => $team->getDefaultDirectory()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'secret' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('Keypair is already exists');
     }
 
     private function canDeleteTeamItem(User $user, Item $item)

@@ -20,6 +20,21 @@ final class InviteItemView
     private string $userId;
 
     /**
+     * @SWG\Property(type="string")
+     */
+    private ?string $userAvatar;
+
+    /**
+     * @SWG\Property(type="string")
+     */
+    private ?string $userName;
+
+    /**
+     * @SWG\Property(type="string")
+     */
+    private string $userEmail;
+
+    /**
      * @SWG\Property(type="string", enum=AccessEnumType::AVAILABLE_TYPES)
      */
     private string $access;
@@ -52,5 +67,35 @@ final class InviteItemView
     public function setAccess(string $access): void
     {
         $this->access = $access;
+    }
+
+    public function getUserAvatar(): ?string
+    {
+        return $this->userAvatar;
+    }
+
+    public function setUserAvatar(?string $userAvatar): void
+    {
+        $this->userAvatar = $userAvatar;
+    }
+
+    public function getUserName(): ?string
+    {
+        return $this->userName;
+    }
+
+    public function setUserName(?string $userName): void
+    {
+        $this->userName = $userName;
+    }
+
+    public function getUserEmail(): string
+    {
+        return $this->userEmail;
+    }
+
+    public function setUserEmail(string $userEmail): void
+    {
+        $this->userEmail = $userEmail;
     }
 }

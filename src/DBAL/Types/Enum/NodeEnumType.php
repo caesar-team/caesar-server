@@ -14,6 +14,7 @@ class NodeEnumType extends AbstractEnumType
     public const TYPE_CRED = 'credentials';
     public const TYPE_DOCUMENT = 'document';
     public const TYPE_SYSTEM = 'system';
+    public const TYPE_KEYPAIR = 'keypair';
 
     /** @var array */
     protected static $choices = [
@@ -22,9 +23,10 @@ class NodeEnumType extends AbstractEnumType
         self::TYPE_TRASH => 'enum.node_type.trash',
         self::TYPE_CRED => 'enum.node_type.credentials',
         self::TYPE_SYSTEM => 'enum.node_type.system',
+        self::TYPE_KEYPAIR => 'enum.node_type.keypair',
     ];
 
     public const AVAILABLE_TYPES = [
-        self::TYPE_LIST, self::TYPE_INBOX, self::TYPE_TRASH, self::TYPE_CRED, self::TYPE_DOCUMENT, self::TYPE_SYSTEM,
+        self::TYPE_LIST, self::TYPE_INBOX, self::TYPE_TRASH, self::TYPE_CRED, self::TYPE_DOCUMENT, self::TYPE_SYSTEM, self::TYPE_KEYPAIR,
     ];
 }

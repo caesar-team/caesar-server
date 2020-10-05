@@ -14,14 +14,14 @@ final class BatchItemsView
      *
      * @SWG\Property(type="array", @Model(type=ItemView::class))
      */
-    private array $personal;
+    private array $personals;
 
     /**
      * @var ItemView[]
      *
      * @SWG\Property(type="array", @Model(type=ItemView::class))
      */
-    private array $shared;
+    private array $shares;
 
     /**
      * @var ItemView[]
@@ -30,27 +30,43 @@ final class BatchItemsView
      */
     private array $teams;
 
+    /**
+     * @var ItemView[]
+     *
+     * @SWG\Property(type="array", @Model(type=ItemView::class))
+     */
+    private array $systems;
+
+    /**
+     * @var ItemView[]
+     *
+     * @SWG\Property(type="array", @Model(type=ItemView::class))
+     */
+    private array $keypairs;
+
     public function __construct()
     {
-        $this->personal = [];
-        $this->shared = [];
+        $this->personals = [];
+        $this->shares = [];
         $this->teams = [];
+        $this->systems = [];
+        $this->keypairs = [];
     }
 
     /**
      * @return ItemView[]
      */
-    public function getPersonal(): array
+    public function getPersonals(): array
     {
-        return $this->personal;
+        return $this->personals;
     }
 
     /**
-     * @param ItemView[] $personal
+     * @param ItemView[] $personals
      */
-    public function setPersonal(array $personal): void
+    public function setPersonals(array $personals): void
     {
-        $this->personal = $personal;
+        $this->personals = $personals;
     }
 
     /**
@@ -72,16 +88,48 @@ final class BatchItemsView
     /**
      * @return ItemView[]
      */
-    public function getShared(): array
+    public function getShares(): array
     {
-        return $this->shared;
+        return $this->shares;
     }
 
     /**
-     * @param ItemView[] $shared
+     * @param ItemView[] $shares
      */
-    public function setShared(array $shared): void
+    public function setShares(array $shares): void
     {
-        $this->shared = $shared;
+        $this->shares = $shares;
+    }
+
+    /**
+     * @return ItemView[]
+     */
+    public function getSystems(): array
+    {
+        return $this->systems;
+    }
+
+    /**
+     * @param ItemView[] $systems
+     */
+    public function setSystems(array $systems): void
+    {
+        $this->systems = $systems;
+    }
+
+    /**
+     * @return ItemView[]
+     */
+    public function getKeypairs(): array
+    {
+        return $this->keypairs;
+    }
+
+    /**
+     * @param ItemView[] $keypairs
+     */
+    public function setKeypairs(array $keypairs): void
+    {
+        $this->keypairs = $keypairs;
     }
 }

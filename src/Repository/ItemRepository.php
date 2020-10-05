@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
@@ -68,6 +69,22 @@ class ItemRepository extends ServiceEntityRepository
         }
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function getTeamKeyPairByUser(User $user, Team $team): ?Item
+    {
+        $queryBuilder = $this
+            ->createQueryBuilder('item')
+            ->where('item.team = :team')
+            ->andWhere('item.owner = :user')
+            ->andWhere('item.type = :type')
+            ->andWhere('item.relatedItem IS NULL')
+            ->setParameter('team', $team)
+            ->setParameter('user', $user)
+            ->setParameter('type', NodeEnumType::TYPE_KEYPAIR)
+        ;
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 
     public function save(Item $item): Item

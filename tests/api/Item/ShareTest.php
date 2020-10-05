@@ -28,8 +28,6 @@ class ShareTest extends Unit
         $user = $this->tester->have(User::class);
         /** @var User $memberRead */
         $memberRead = $this->tester->have(User::class);
-        /** @var User $memberWrite */
-        $memberWrite = $this->tester->have(User::class);
         /** @var User $someMember */
         $someMember = $this->tester->have(User::class);
 
@@ -42,48 +40,42 @@ class ShareTest extends Unit
         $I->login($user);
         $I->sendPOST('items', [
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_SYSTEM,
+            'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-        [$systemItemId] = $I->grabDataFromResponseByJsonPath('$.id');
 
-        $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [
-            'items' => [
-                [
-                    'userId' => $memberRead->getId()->toString(),
-                    'secret' => 'Some secret',
-                    'cause' => Item::CAUSE_SHARE,
-                    'access' => AccessEnumType::TYPE_READ,
-                ],
-                [
-                    'userId' => $memberWrite->getId()->toString(),
-                    'secret' => 'Some secret',
-                    'cause' => Item::CAUSE_SHARE,
-                    'access' => AccessEnumType::TYPE_WRITE,
-                ],
-            ],
+        $I->sendPOST('items', [
+            'ownerId' => $memberRead->getId()->toString(),
+            'listId' => $memberRead->getInbox()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'relatedItemId' => $item->getId()->toString(),
+            'secret' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
+        [$keypairItemId1] = $I->grabDataFromResponseByJsonPath('$.id');
 
-        $I->sendPOST(sprintf('/items/%s/child_item', $systemItemId), [
-            'items' => [
-                [
-                    'userId' => $memberRead->getId()->toString(),
-                    'secret' => 'Some secret',
-                    'cause' => Item::CAUSE_SHARE,
-                    'access' => AccessEnumType::TYPE_READ,
-                ],
-                [
-                    'userId' => $someMember->getId()->toString(),
-                    'secret' => 'Some secret',
-                    'cause' => Item::CAUSE_SHARE,
-                    'access' => AccessEnumType::TYPE_WRITE,
-                ],
-            ],
+        $I->sendPOST('items', [
+            'ownerId' => $someMember->getId()->toString(),
+            'listId' => $someMember->getInbox()->getId()->toString(),
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'relatedItemId' => $item->getId()->toString(),
+            'secret' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
+        [$keypairItemId2] = $I->grabDataFromResponseByJsonPath('$.id');
+
+        $I->sendGET(sprintf('items/%s', $item->getId()->toString()));
+        $I->seeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId1]);
+        $I->seeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId2]);
+
+        $I->sendDELETE(sprintf('items/%s', $keypairItemId1));
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
+        $I->sendGET(sprintf('items/%s', $item->getId()->toString()));
+        $I->dontSeeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId1]);
+        $I->seeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId2]);
     }
 
     /** @test */

@@ -12,6 +12,3 @@ if [ ! -f var/jwt/private.pem ]; then
 else
     printf 'ATTENTION! The certificate already exists, delete the pem file if you want to regenerate the certificate.\n'
 fi
-
-chown www-data:www-data var/jwt/private.pem
-chown www-data:www-data var/jwt/public.pem

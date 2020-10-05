@@ -165,7 +165,7 @@ class Item implements ChildItemAwareInterface
     /**
      * @var Item|null
      *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Item", inversedBy="systemItems", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\Item", inversedBy="keyPairItems", cascade={"persist"})
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $relatedItem;
@@ -175,7 +175,7 @@ class Item implements ChildItemAwareInterface
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="relatedItem")
      */
-    protected $systemItems;
+    protected $keyPairItems;
 
     /**
      * Item constructor.
@@ -188,7 +188,7 @@ class Item implements ChildItemAwareInterface
         $this->originalItem = null;
         $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedItems = new ArrayCollection();
-        $this->systemItems = new ArrayCollection();
+        $this->keyPairItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
         $this->owner = $user;
         if (null !== $user) {
@@ -327,6 +327,11 @@ class Item implements ChildItemAwareInterface
         return NodeEnumType::TYPE_SYSTEM === $this->type;
     }
 
+    public function isKeyPairType(): bool
+    {
+        return NodeEnumType::TYPE_KEYPAIR === $this->type;
+    }
+
     /**
      * @return Collection|Tag[]
      */
@@ -451,6 +456,10 @@ class Item implements ChildItemAwareInterface
 
     public function setOwner(?User $owner): void
     {
+        //Should not set owner as null
+        if (null === $owner && null !== $this->owner) {
+            return;
+        }
         $this->owner = $owner;
     }
 
@@ -512,38 +521,45 @@ class Item implements ChildItemAwareInterface
 
     public function hasSystemItems(): bool
     {
-        return 0 !== $this->systemItems->count();
+        return 0 !== $this->keyPairItems->count();
     }
 
     /**
      * @return Item[]
      */
-    public function getSystemItems(): array
+    public function getKeyPairItems(): array
     {
-        return $this->systemItems->toArray();
+        return $this->keyPairItems->toArray();
     }
 
-    public function setSystemItems(Collection $sharedItems): void
+    public function setKeyPairItems(Collection $sharedItems): void
     {
-        $this->systemItems = $sharedItems;
+        $this->keyPairItems = $sharedItems;
     }
 
-    public function getSystemItemByUser(User $user): ?Item
+    public function getKeyPairItemByUser(User $user): ?Item
     {
         /**
          * @psalm-suppress UndefinedInterfaceMethod
          */
-        $systemItem = $this->systemItems->filter(function (Item $item) use ($user) {
+        $systemItem = $this->keyPairItems->filter(function (Item $item) use ($user) {
             return $item->getSignedOwner()->equals($user);
         })->first();
 
         return $systemItem instanceof Item ? $systemItem : null;
     }
 
-    public function getSystemItemsWithoutRoot(): array
+    public function getKeyPairItemsWithoutRoot(): array
     {
-        return $this->systemItems->filter(function (Item $item) {
-            return null !== $item->getOriginalItem();
+        return $this->keyPairItems->filter(function (Item $item) {
+            return !$this->getOwner()->equals($item->getOwner());
         })->toArray();
+    }
+
+    public function isNotDeletable(): bool
+    {
+        return NodeEnumType::TYPE_TRASH !== $this->getParentList()->getType()
+            && NodeEnumType::TYPE_KEYPAIR !== $this->getType()
+        ;
     }
 }

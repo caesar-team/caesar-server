@@ -12,9 +12,14 @@ class InviteItemViewFactory
 {
     public function createSingle(Item $item): InviteItemView
     {
+        $owner = $item->getSignedOwner();
+
         $view = new InviteItemView();
         $view->setId($item->getId()->toString());
-        $view->setUserId($item->getSignedOwner()->getId()->toString());
+        $view->setUserId($owner->getId()->toString());
+        $view->setUserName($owner->getUsername());
+        $view->setUserAvatar($owner->getAvatarLink());
+        $view->setUserEmail($owner->getEmail());
         $view->setAccess($item->getAccess() ?? AccessEnumType::TYPE_READ);
 
         return $view;

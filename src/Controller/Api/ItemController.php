@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
-use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use App\Model\Request\ItemsCollectionRequest;
 use App\Repository\ItemRepository;
@@ -66,7 +65,7 @@ final class ItemController extends AbstractController
             $item = $manager->getRepository(Item::class)->find($item);
             if ($item instanceof Item) {
                 $this->denyAccessUnlessGranted([ItemVoter::DELETE, TeamItemVoter::DELETE], $item);
-                if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
+                if ($item->isNotDeletable()) {
                     $message = $this->translator->trans('app.exception.delete_trash_only');
                     throw new BadRequestHttpException($message);
                 }
@@ -125,7 +124,7 @@ final class ItemController extends AbstractController
     public function deleteItem(Item $item, EntityManagerInterface $manager)
     {
         $this->denyAccessUnlessGranted([ItemVoter::DELETE, TeamItemVoter::DELETE], $item);
-        if (NodeEnumType::TYPE_TRASH !== $item->getParentList()->getType()) {
+        if ($item->isNotDeletable()) {
             $message = $this->translator->trans('app.exception.delete_trash_only');
             throw new BadRequestHttpException($message);
         }
