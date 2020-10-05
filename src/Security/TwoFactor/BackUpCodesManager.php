@@ -8,6 +8,9 @@ use App\Entity\User;
 use App\Utils\HashidsEncoderInterface;
 use Hashids\Hashids;
 
+/**
+ * @deprecated
+ */
 class BackUpCodesManager implements HashidsEncoderInterface
 {
     public const CODES_COUNT = 20;

@@ -7,7 +7,9 @@ namespace App\Controller\Api;
 use App\Controller\AbstractController;
 use App\Entity\User;
 use App\Form\Request\TwoFactoryAuthEnableType;
+use App\Security\BackupCodes\BackupCodeCreator;
 use App\Security\TwoFactor\GoogleAuthenticator;
+use App\Security\Voter\BackupCodesVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use RuntimeException;
@@ -235,11 +237,14 @@ final class TwoFactorAuthController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function getBackupCodes()
+    public function getBackupCodes(BackupCodeCreator $backupCodeCreator)
     {
         /** @var User $user */
         $user = $this->getUser();
+        $this->denyAccessUnlessGranted(BackupCodesVoter::GET, $user);
 
-        return new JsonResponse($user->getBackupCodes());
+        $codes = $backupCodeCreator->createAndSaveBackupCodes($user);
+
+        return new JsonResponse($codes);
     }
 }
