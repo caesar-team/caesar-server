@@ -6,10 +6,8 @@ namespace App\Model\View\CredentialsList;
 
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
-use App\Model\View\Item\ItemView;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
-use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 
 /**
@@ -73,9 +71,9 @@ class ListView
     private int $sort;
 
     /**
-     * @var ItemView[]
+     * @var string[]
      *
-     * @SWG\Property(type="array", @Model(type=ItemView::class))
+     * @SWG\Property(type="string[]", example="{4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46, 2fcc1ae0-4fd6-5c16-6e4b-7c37486c7d46}")
      */
     private array $children;
 
@@ -137,7 +135,7 @@ class ListView
     }
 
     /**
-     * @return ItemView[]
+     * @return string[]
      */
     public function getChildren(): array
     {
@@ -145,7 +143,7 @@ class ListView
     }
 
     /**
-     * @param ItemView[] $children
+     * @param string[] $children
      */
     public function setChildren(array $children): void
     {
