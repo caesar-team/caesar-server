@@ -6,19 +6,15 @@ namespace App\Factory\View;
 
 use App\Entity\Directory;
 use App\Entity\Item;
-use App\Factory\View\Item\ItemViewFactory;
 use App\Model\View\CredentialsList\ListView;
 use App\Repository\TeamRepository;
 
 class ListViewFactory
 {
-    private ItemViewFactory $itemViewFactory;
-
     private TeamRepository $teamRepository;
 
-    public function __construct(ItemViewFactory $itemViewFactory, TeamRepository $teamRepository)
+    public function __construct(TeamRepository $teamRepository)
     {
-        $this->itemViewFactory = $itemViewFactory;
         $this->teamRepository = $teamRepository;
     }
 
@@ -30,11 +26,9 @@ class ListViewFactory
         $view->setId($directory->getId()->toString());
         $view->setLabel($directory->getLabel());
         $view->setType($directory->getPersonalRole());
-        $view->setChildren(
-            $this->itemViewFactory->createCollection(
-                $directory->getChildItems(Item::STATUS_FINISHED)
-            )
-        );
+        $view->setChildren(array_map(function (Item $item) {
+            return $item->getId()->toString();
+        }, $directory->getChildItems()));
         $view->setSort($directory->getSort());
         $view->setTeamId($team ? $team->getId()->toString() : null);
         $view->setCreatedAt($directory->getCreatedAt());
