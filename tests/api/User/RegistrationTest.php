@@ -39,6 +39,7 @@ class RegistrationTest extends Unit
         $userId = $I->grabFromDatabase('fos_user', 'id', ['username' => $email]);
 
         $I->dontSeeInDatabase('user_group', ['group_id' => $team->getId()->toString(), 'user_id' => $userId]);
+        $I->seeInDatabase('directory', ['label' => 'default', 'user_id' => $userId]);
     }
 
     /** @test */
