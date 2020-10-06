@@ -18,7 +18,7 @@ final class InvalidRequestExceptionNormalizer implements NormalizerInterface
     {
         $this->normalizer = $normalizer;
     }
-    
+
     public function normalize($object, string $format = null, array $context = [])
     {
         $data = $this->normalizer->normalize($object, $format, $context);
