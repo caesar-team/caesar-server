@@ -16,10 +16,9 @@ use App\Security\Voter\TeamItemVoter;
 use App\Security\Voter\TeamListVoter;
 use App\Services\File\ItemMoveResolver;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\NonUniqueResultException;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -80,7 +79,6 @@ final class MoveController extends AbstractController
      *     methods={"PATCH"}
      * )
      *
-     * @throws NonUniqueResultException
      * @throws \Exception
      */
     public function moveItem(
@@ -88,7 +86,7 @@ final class MoveController extends AbstractController
         Request $request,
         ItemMoveResolver $itemMoveResolver,
         ItemRepository $itemRepository
-    ): ?FormInterface {
+    ): void {
         $this->denyAccessUnlessGranted([ItemVoter::MOVE, TeamItemVoter::MOVE], $item);
 
         $replacedItem = new Item();
@@ -96,7 +94,7 @@ final class MoveController extends AbstractController
         $form = $this->createForm(MoveItemType::class, $replacedItem);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $this->denyAccessUnlessGranted([ListVoter::MOVABLE, TeamListVoter::MOVABLE], $replacedItem->getParentList());
@@ -105,8 +103,6 @@ final class MoveController extends AbstractController
 
         $itemMoveResolver->move($item, $replacedItem->getParentList());
         $itemRepository->flush();
-
-        return null;
     }
 
     /**

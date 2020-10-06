@@ -11,9 +11,9 @@ use App\Form\Query\ItemListQueryType;
 use App\Model\Query\ItemListQuery;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -53,16 +53,16 @@ final class ListController extends AbstractController
      *     methods={"GET"}
      * )
      *
-     * @return array<int, ItemView>|FormInterface
+     * @return array<int, ItemView>
      */
-    public function itemList(Request $request, ItemListViewFactory $viewFactory, ItemRepository $repository)
+    public function itemList(Request $request, ItemListViewFactory $viewFactory, ItemRepository $repository): array
     {
         $itemListQuery = new ItemListQuery();
 
         $form = $this->createForm(ItemListQueryType::class, $itemListQuery);
         $form->submit($request->query->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $itemCollection = $repository->getByQuery($itemListQuery);

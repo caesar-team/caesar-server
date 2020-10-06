@@ -23,9 +23,9 @@ use App\Model\View\Share\ShareListView;
 use App\Repository\TeamRepository;
 use App\Services\ShareManager;
 use App\Utils\DirectoryHelper;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -126,20 +126,18 @@ final class ShareController extends AbstractController
      *     name="api_child_to_item",
      *     methods={"POST"}
      * )
-     *
-     * @return array|FormInterface
      */
     public function createChildItemToItem(
         Item $item,
         Request $request,
         LinkedItemViewFactory $viewFactory,
         ShareFactoryContext $shareFactoryContext
-    ) {
+    ): array {
         $itemCollectionRequest = new ItemCollectionRequest($item);
         $form = $this->createForm(ChildItemCollectionRequestType::class, $itemCollectionRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $batchCollectionRequest = new BatchItemCollectionRequest();
@@ -171,19 +169,17 @@ final class ShareController extends AbstractController
      *     name="api_batch_share_item",
      *     methods={"POST"}
      * )
-     *
-     * @return ShareListView|FormInterface
      */
     public function batchShare(
         Request $request,
         ShareManager $shareManager,
         ShareListViewFactory $viewFactory
-    ) {
+    ): ShareListView {
         $collectionRequest = new BatchShareRequest();
         $form = $this->createForm(BatchShareRequestType::class, $collectionRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         //@todo @frontend remove `shares` to frontend and return ShareView[]

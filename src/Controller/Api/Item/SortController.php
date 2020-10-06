@@ -10,9 +10,9 @@ use App\Factory\View\Item\ItemViewFactory;
 use App\Form\Request\SortItemType;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -54,15 +54,13 @@ final class SortController extends AbstractController
      *     name="api_item_sort",
      *     methods={"PATCH"}
      * )
-     *
-     * @return ItemView|FormInterface
      */
-    public function sort(Item $item, ItemRepository $repository, ItemViewFactory $factory, Request $request)
+    public function sort(Item $item, ItemRepository $repository, ItemViewFactory $factory, Request $request): ItemView
     {
         $form = $this->createForm(SortItemType::class, $item);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $repository->save($item);

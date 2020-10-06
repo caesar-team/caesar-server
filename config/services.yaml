@@ -167,3 +167,10 @@ services:
         arguments:
             $salt: '%env(BACKUP_CODE_SALT)%'
             $hashLength: '%env(BACKUP_CODE_HASH_LENGTH)%'
+
+    App\Normalizer\InvalidRequestExceptionNormalizer:
+        decorates: Fourxxi\RestRequestError\Serializer\InvalidRequestExceptionNormalizer
+        arguments:
+            - '@App\Normalizer\InvalidRequestExceptionNormalizer.inner'
+        tags:
+            - { name: 'serializer.normalizer' }

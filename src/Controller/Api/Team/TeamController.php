@@ -20,9 +20,9 @@ use App\Security\Voter\TeamVoter;
 use App\Security\Voter\UserTeamVoter;
 use App\Services\TeamManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -57,8 +57,6 @@ class TeamController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @return TeamView|FormInterface
-     *
      * @deprecated
      */
     public function create(
@@ -68,7 +66,7 @@ class TeamController extends AbstractController
         TeamFactory $teamFactory,
         TeamManager $teamManager,
         LimiterInterface $limiter
-    ) {
+    ): TeamView {
         $this->denyAccessUnlessGranted(TeamVoter::CREATE, $this->getUser());
 
         $limiter->check([
@@ -79,7 +77,7 @@ class TeamController extends AbstractController
         $form = $this->createForm(CreateTeamType::class, $team);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $entityManager->persist($team);
@@ -133,21 +131,19 @@ class TeamController extends AbstractController
      *     name="api_team_edit",
      *     methods={"PATCH"}
      * )
-     *
-     * @return TeamView|FormInterface
      */
     public function update(
         Team $team,
         Request $request,
         TeamViewFactory $viewFactory,
         EntityManagerInterface $entityManager
-    ) {
+    ): TeamView {
         $this->denyAccessUnlessGranted(TeamVoter::EDIT, $team);
 
         $form = $this->createForm(EditTeamType::class, $team);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $entityManager->flush();

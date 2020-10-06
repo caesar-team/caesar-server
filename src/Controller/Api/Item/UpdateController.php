@@ -12,9 +12,9 @@ use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\TeamItemVoter;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -75,21 +75,19 @@ final class UpdateController extends AbstractController
      *     name="api_edit_item",
      *     methods={"PATCH"}
      * )
-     *
-     * @return ItemView|FormInterface
      */
     public function edit(
         Item $item,
         Request $request,
         ItemRepository $repository,
         ItemViewFactory $factory
-    ) {
+    ): ItemView {
         $this->denyAccessUnlessGranted([ItemVoter::EDIT, TeamItemVoter::EDIT], $item);
 
         $form = $this->createForm(EditItemType::class, $item);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $repository->save($item);

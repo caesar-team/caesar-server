@@ -8,7 +8,6 @@ use App\Controller\AbstractController;
 use App\Entity\Srp;
 use App\Entity\User;
 use App\Event\User\RegistrationCompletedEvent;
-use App\Exception\ApiException;
 use App\Factory\View\Srp\SrpPrepareViewFactory;
 use App\Form\Request\Srp\LoginPrepareType;
 use App\Form\Request\Srp\LoginType;
@@ -21,21 +20,19 @@ use App\Security\Authentication\SrppAuthenticator;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
-use App\Utils\ErrorMessageFormatter;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use FOS\UserBundle\Event\FilterUserResponseEvent;
 use FOS\UserBundle\Event\FormEvent;
 use FOS\UserBundle\Event\GetResponseUserEvent;
 use FOS\UserBundle\FOSUserEvents;
 use FOS\UserBundle\Model\UserManagerInterface;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use RuntimeException;
 use Swagger\Annotations as SWG;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -86,25 +83,19 @@ final class SrpController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @throws ApiException
-     * @throws NonUniqueResultException
+     * @throws \Exception
      */
     public function registerAction(
         Request $request,
         UserManagerInterface $userManager,
         TranslatorInterface $translator,
         AuthorizationManager $authorizationManager,
-        ErrorMessageFormatter $errorMessageFormatter,
         EventDispatcherInterface $eventDispatcher
-    ): ?FormInterface {
+    ): void {
         $email = $request->request->get('email');
         $user = $userManager->findUserByEmail($email);
         if ($user instanceof User && $authorizationManager->hasInvitation($user)) {
-            $errorMessage = $translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]);
-            $exception = new AccessDeniedHttpException($errorMessage);
-            $errorData = $errorMessageFormatter->errorFormat($exception, AuthorizationManager::ERROR_UNFINISHED_FLOW_USER);
-
-            throw new ApiException($errorData, Response::HTTP_BAD_REQUEST);
+            throw new AccessDeniedHttpException($translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]));
         }
 
         $user = new User(new Srp());
@@ -112,13 +103,11 @@ final class SrpController extends AbstractController
         $form = $this->createForm(RegistrationType::class, $user);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $userManager->updateUser($user);
         $eventDispatcher->dispatch(new RegistrationCompletedEvent($user));
-
-        return null;
     }
 
     /**
@@ -162,8 +151,6 @@ final class SrpController extends AbstractController
      * )
      *
      * @throws Exception
-     *
-     * @return PreparedSrpView|FormInterface
      */
     public function prepareLoginAction(
         Request $request,
@@ -171,7 +158,7 @@ final class SrpController extends AbstractController
         UserRepository $userRepository,
         SrpHandler $srpHandler,
         SrpPrepareViewFactory $viewFactory
-    ) {
+    ): PreparedSrpView {
         $email = (string) $request->request->get('email');
         $user = $userRepository->findOneByEmail($email);
         if (null === $user) {
@@ -188,7 +175,7 @@ final class SrpController extends AbstractController
         $form = $this->createForm(LoginPrepareType::class, $srp);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $privateEphemeral = $srpHandler->getRandomSeed();
@@ -253,16 +240,14 @@ final class SrpController extends AbstractController
      *     name="api_srp_login",
      *     methods={"POST"}
      * )
-     *
-     * @return array|FormInterface
      */
-    public function loginAction(Request $request, SrpUserManager $srpUserManager, JWTTokenManagerInterface $jwtManager)
+    public function loginAction(Request $request, SrpUserManager $srpUserManager, JWTTokenManagerInterface $jwtManager): array
     {
         $loginRequest = new LoginRequest();
         $form = $this->createForm(LoginType::class, $loginRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $sessionMatcher = $srpUserManager->getMatcherSession($loginRequest);
@@ -306,7 +291,7 @@ final class SrpController extends AbstractController
      *
      * @throws Exception
      */
-    public function updatePassword(Request $request, UserManagerInterface $manager): ?FormInterface
+    public function updatePassword(Request $request, UserManagerInterface $manager): void
     {
         $user = $this->getUser();
         if (!$user instanceof User) {
@@ -321,15 +306,13 @@ final class SrpController extends AbstractController
         $form = $this->createForm(UpdatePasswordType::class, $user);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         if ($user->hasRole(User::ROLE_READ_ONLY_USER)) {
             $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
         }
         $manager->updateUser($user);
-
-        return null;
     }
 
     /**
@@ -351,15 +334,13 @@ final class SrpController extends AbstractController
      * )
      *
      * @param mixed $token
-     *
-     * @return FormInterface|RedirectResponse|Response|null
      */
     public function resetPassword(
         Request $request,
         $token,
         UserManagerInterface $userManager,
-        EventDispatcherInterface $eventDispatcher)
-    {
+        EventDispatcherInterface $eventDispatcher
+    ): ?Response {
         $user = $userManager->findUserByConfirmationToken($token);
 
         if (!$user instanceof User) {
@@ -412,7 +393,7 @@ final class SrpController extends AbstractController
                 new FilterUserResponseEvent($user, $request, $response)
             );
         } else {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         return null;

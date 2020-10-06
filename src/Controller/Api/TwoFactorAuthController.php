@@ -11,6 +11,7 @@ use App\Security\BackupCodes\BackupCodeCreator;
 use App\Security\TwoFactor\GoogleAuthenticator;
 use App\Security\Voter\BackupCodesVoter;
 use Doctrine\ORM\EntityManagerInterface;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use RuntimeException;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
@@ -70,10 +71,8 @@ final class TwoFactorAuthController extends AbstractController
      *     name="api_security_2fa_activate",
      *     methods={"POST"}
      * )
-     *
-     * @return FormInterface|Response
      */
-    public function activateTwoFactor(Request $request, EntityManagerInterface $manager)
+    public function activateTwoFactor(Request $request, EntityManagerInterface $manager): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -84,7 +83,7 @@ final class TwoFactorAuthController extends AbstractController
         $form = $this->createForm(TwoFactoryAuthEnableType::class, $user);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $manager->persist($user);

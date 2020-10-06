@@ -18,9 +18,9 @@ use App\Notification\MessengerInterface;
 use App\Notification\Model\Message;
 use App\Repository\UserTeamRepository;
 use App\Security\Voter\UserTeamVoter;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -114,8 +114,6 @@ final class MemberController extends AbstractController
      *     name="api_team_member_add",
      *     methods={"POST"}
      * )
-     *
-     * @return MemberView|FormInterface
      */
     public function addMember(
         Request $request,
@@ -124,14 +122,14 @@ final class MemberController extends AbstractController
         MemberViewFactory $viewFactory,
         UserTeamRepository $repository,
         MessengerInterface $messenger
-    ) {
+    ): MemberView {
         $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
         $userTeam = new UserTeam();
         $form = $this->createForm(AddMemberType::class, $userTeam);
         $form->submit($request->request->all());
 
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $userTeam->setUser($user);
@@ -230,16 +228,14 @@ final class MemberController extends AbstractController
      *     name="api_team_member_edit",
      *     methods={"PATCH"}
      * )
-     *
-     * @return MemberView|FormInterface
      */
     public function editMember(
         Request $request,
         Team $team,
         User $user,
         MemberViewFactory $viewFactory,
-        UserTeamRepository $userTeamRepository)
-    {
+        UserTeamRepository $userTeamRepository
+    ): MemberView {
         $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
 
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
@@ -251,7 +247,7 @@ final class MemberController extends AbstractController
         $form = $this->createForm(EditUserTeamType::class, $editUserTeamRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $userTeam->setUserRole($editUserTeamRequest->getUserRole());

@@ -259,7 +259,7 @@ class ItemTest extends Unit
     }
 
     /** @test */
-    public function createSystemItem()
+    public function createKeypairItem()
     {
         $I = $this->tester;
 

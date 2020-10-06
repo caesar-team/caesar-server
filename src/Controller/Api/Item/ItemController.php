@@ -19,9 +19,9 @@ use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\TeamItemVoter;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -116,8 +116,6 @@ final class ItemController extends AbstractController
      *     name="api_create_item",
      *     methods={"POST"}
      * )
-     *
-     * @return ItemView|FormInterface
      */
     public function create(
         Request $request,
@@ -130,7 +128,8 @@ final class ItemController extends AbstractController
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            //return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $limiter->check([
@@ -164,21 +163,21 @@ final class ItemController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @return array<ItemView>|FormInterface
+     * @return array<ItemView>
      */
     public function batchCreate(
         Request $request,
         ItemViewFactory $viewFactory,
         ItemRepository $itemRepository,
         LimiterInterface $limiter
-    ) {
+    ): array {
         $itemsRequest = new ItemsCollectionRequest();
 
         $form = $this->createForm(CreateItemsType::class, $itemsRequest);
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $limiter->check([

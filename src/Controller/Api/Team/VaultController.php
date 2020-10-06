@@ -15,9 +15,9 @@ use App\Model\Request\Team\CreateVaultRequest;
 use App\Model\View\Team\VaultView;
 use App\Repository\TeamRepository;
 use App\Security\Voter\TeamVoter;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -49,8 +49,6 @@ class VaultController extends AbstractController
      *     name="api_vault_create",
      *     methods={"POST"}
      * )
-     *
-     * @return VaultView|FormInterface
      */
     public function create(
         Request $request,
@@ -58,7 +56,7 @@ class VaultController extends AbstractController
         VaultViewFactory $viewFactory,
         VaultFactory $factory,
         LimiterInterface $limiter
-    ) {
+    ): VaultView {
         $this->denyAccessUnlessGranted(TeamVoter::CREATE, $this->getUser());
 
         $limiter->check([
@@ -69,7 +67,7 @@ class VaultController extends AbstractController
         $form = $this->createForm(CreateVaultType::class, $createRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $vault = $factory->createFromRequest($createRequest);

@@ -27,10 +27,10 @@ use App\Repository\UserRepository;
 use App\Security\Fingerprint\FingerprintRepositoryInterface;
 use App\Services\InvitationManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Psr\Log\LoggerInterface;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -90,15 +90,13 @@ final class UserController extends AbstractController
      * )
      *
      * @throws \Exception
-     *
-     * @return array|FormInterface
      */
     public function createUser(
         Request $request,
         UserRepository $userRepository,
         EntityManagerInterface $entityManager,
         LimiterInterface $limiter
-    ) {
+    ): array {
         $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
         if (null === $user) {
             $user = new User(new Srp());
@@ -110,7 +108,7 @@ final class UserController extends AbstractController
         $form = $this->createForm(CreateInvitedUserType::class, $user);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         if ($user->isFullUser()) {
@@ -211,14 +209,14 @@ final class UserController extends AbstractController
      *
      * @throws \Exception
      */
-    public function sendInvitation(Request $request, MessengerInterface $messenger, LoggerInterface $logger): ?FormInterface
+    public function sendInvitation(Request $request, MessengerInterface $messenger, LoggerInterface $logger): void
     {
         $sendRequest = new SendInviteRequest();
 
         $form = $this->createForm(SendInviteType::class, $sendRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $messenger->send(Message::createFromUser(
@@ -229,8 +227,6 @@ final class UserController extends AbstractController
 
         $logger->debug('Registered in UserController::sendInvitation');
         $logger->debug(sprintf('Username: %s', $sendRequest->getUser()->getUsername()));
-
-        return null;
     }
 
     /**
@@ -257,17 +253,15 @@ final class UserController extends AbstractController
      * )
      *
      * @throws \Exception
-     *
-     * @return FormInterface|null
      */
-    public function sendInvitations(Request $request, MessengerInterface $messenger)
+    public function sendInvitations(Request $request, MessengerInterface $messenger): void
     {
         $sendRequests = new SendInviteRequests();
 
         $form = $this->createForm(SendInvitesType::class, $sendRequests);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         foreach ($sendRequests->getMessages() as $requestMessage) {
@@ -277,8 +271,6 @@ final class UserController extends AbstractController
                 ['url' => $requestMessage->getUrl()]
             ));
         }
-
-        return null;
     }
 
     /**
@@ -289,14 +281,12 @@ final class UserController extends AbstractController
      * )
      *
      * @throws \Exception
-     *
-     * @return array|FormInterface
      */
     public function batchCreateUser(
         Request $request,
         EntityManagerInterface $entityManager,
         LimiterInterface $limiter
-    ) {
+    ): array {
         $requestUsers = $request->request->get('users');
 
         $newUsers = [];
@@ -305,7 +295,7 @@ final class UserController extends AbstractController
             $form = $this->createForm(CreateInvitedUserType::class, $user);
             $form->submit($requestUser);
             if (!$form->isValid()) {
-                return $form;
+                throw new FormInvalidRequestException($form);
             }
             $newUsers[] = $user;
         }

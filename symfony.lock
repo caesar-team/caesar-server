@@ -1,4 +1,7 @@
 {
+    "4xxi/rest-request-errors": {
+        "version": "1.4"
+    },
     "amphp/amp": {
         "version": "v2.4.4"
     },
