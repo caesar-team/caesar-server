@@ -30,6 +30,8 @@ class TeamListCrudController extends AbstractCrudController
         $queryBuilder = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
         $queryBuilder
             ->andWhere('entity.team IS NOT NULL')
+            ->andWhere('entity.label != :list')
+            ->setParameter('list', Directory::LIST_ROOT_LIST)
         ;
 
         return $queryBuilder;
