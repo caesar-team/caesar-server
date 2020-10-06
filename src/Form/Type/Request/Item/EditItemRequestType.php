@@ -2,32 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Form\Request;
+namespace App\Form\Type\Request\Item;
 
-use App\Entity\Item;
 use App\Entity\User;
-use App\Form\EventListener\InjectTagListener;
+use App\Request\Item\EditItemRequest;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
-class EditItemType extends AbstractType
+class EditItemRequestType extends AbstractType
 {
-    private ?InjectTagListener $injectTagListener;
-
-    private Security $security;
-
-    public function __construct(?InjectTagListener $injectTagListener = null, Security $security)
-    {
-        $this->injectTagListener = $injectTagListener;
-        $this->security = $security;
-    }
-
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -37,11 +24,7 @@ class EditItemType extends AbstractType
                 'choice_value' => 'id',
                 'property_path' => 'owner',
             ])
-            ->add('secret', TextType::class, [
-                'constraints' => [
-                    new NotBlank(),
-                ],
-            ])
+            ->add('secret', TextType::class)
             ->add('tags', CollectionType::class, [
                 'entry_type' => TextType::class,
                 'entry_options' => ['label' => false],
@@ -50,16 +33,12 @@ class EditItemType extends AbstractType
                 'mapped' => false,
             ])
         ;
-
-        if ($this->injectTagListener) {
-            $builder->addEventSubscriber($this->injectTagListener);
-        }
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => Item::class,
+            'data_class' => EditItemRequest::class,
             'csrf_protection' => false,
         ]);
     }
