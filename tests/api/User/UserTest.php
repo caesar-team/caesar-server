@@ -24,6 +24,30 @@ class UserTest extends Unit
     protected ApiTester $tester;
 
     /** @test */
+    public function createUser()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        $I->login($user);
+        $I->sendPOST('user', [
+            'email' => 'som@email',
+            'plainPassword' => '',
+            'encryptedPrivateKey' => '',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContainsJson([
+            'code' => 400,
+            'message' => 'Validation Failed',
+            'errors' => [
+                'children' => [],
+            ],
+        ]);
+    }
+
+    /** @test */
     public function getSelfInfo()
     {
         $I = $this->tester;

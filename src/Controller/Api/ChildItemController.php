@@ -12,10 +12,10 @@ use App\Model\Request\BatchChildItemsCollectionRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Services\ChildItemActualizer;
 use Doctrine\ORM\EntityManagerInterface;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -111,21 +111,17 @@ final class ChildItemController extends AbstractController
      *     name="api_update_child_item",
      *     methods={"PATCH"}
      * )
-     *
-     * @return FormInterface|null
      */
-    public function updateChildItemAccessAction(Item $item, Request $request, EntityManagerInterface $entityManager)
+    public function updateChildItemAccessAction(Item $item, Request $request, EntityManagerInterface $entityManager): void
     {
         $form = $this->createForm(InviteUpdateRequestType::class, $item);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $entityManager->persist($item);
         $entityManager->flush();
-
-        return null;
     }
 
     /**
@@ -152,23 +148,19 @@ final class ChildItemController extends AbstractController
      * )
      *
      * @throws \Doctrine\ORM\NonUniqueResultException
-     *
-     * @return FormInterface|null
      */
-    public function batchUpdateChildItems(Request $request, ChildItemActualizer $childItemHandler)
+    public function batchUpdateChildItems(Request $request, ChildItemActualizer $childItemHandler): void
     {
         $batchChildItemsCollectionRequest = new BatchChildItemsCollectionRequest();
         $form = $this->createForm(BatchUpdateChildItemsRequestType::class, $batchChildItemsCollectionRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
         foreach ($batchChildItemsCollectionRequest->getCollectionItems() as $itemCollectionRequest) {
             /** @psalm-suppress ArgumentTypeCoercion */
             $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
         }
-
-        return null;
     }
 
     /**
@@ -224,21 +216,17 @@ final class ChildItemController extends AbstractController
      * )
      *
      * @throws \Doctrine\ORM\NonUniqueResultException
-     *
-     * @return FormInterface|null
      */
-    public function updateChildItems(Item $item, Request $request, ChildItemActualizer $childItemHandler)
+    public function updateChildItems(Item $item, Request $request, ChildItemActualizer $childItemHandler): void
     {
         $itemCollectionRequest = new ItemCollectionRequest($item);
         $form = $this->createForm(UpdateChildItemsRequestType::class, $itemCollectionRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         /** @psalm-suppress ArgumentTypeCoercion */
         $childItemHandler->updateChildItems($itemCollectionRequest, $this->getUser());
-
-        return null;
     }
 }

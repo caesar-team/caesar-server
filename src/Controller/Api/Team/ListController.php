@@ -17,9 +17,9 @@ use App\Model\View\Team\TeamListView;
 use App\Modifier\DirectoryModifier;
 use App\Repository\DirectoryRepository;
 use App\Security\Voter\TeamListVoter;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -69,8 +69,6 @@ final class ListController extends AbstractController
      * )
      *
      * @Route(path="/{team}/lists", name="api_team_create_list", methods={"POST"})
-     *
-     * @return TeamListView|FormInterface
      */
     public function create(
         Request $request,
@@ -78,7 +76,7 @@ final class ListController extends AbstractController
         TeamDirectoryFactory $factory,
         DirectoryRepository $repository,
         TeamListViewFactory $viewFactory
-    ) {
+    ): TeamListView {
         $this->denyAccessUnlessGranted(TeamListVoter::CREATE, $team);
 
         $createRequest = new CreateListRequest($team);
@@ -86,7 +84,7 @@ final class ListController extends AbstractController
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $directory = $factory->createFromRequest($createRequest);
@@ -106,15 +104,13 @@ final class ListController extends AbstractController
      * )
      *
      * @Route(path="/{team}/lists/{list}", name="api_team_edit_list", methods={"PATCH"})
-     *
-     * @return TeamListView|FormInterface
      */
     public function edit(
         Request $request,
         Directory $list,
         DirectoryModifier $modifier,
         TeamListViewFactory $viewFactory
-    ) {
+    ): TeamListView {
         $this->denyAccessUnlessGranted(TeamListVoter::EDIT, $list);
 
         $editRequest = new EditListRequest($list);
@@ -122,7 +118,7 @@ final class ListController extends AbstractController
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $modifier->modifyByRequest($editRequest);

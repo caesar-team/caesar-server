@@ -19,6 +19,7 @@ use App\Security\Voter\ListVoter;
 use App\Security\Voter\TeamListVoter;
 use App\Services\ItemDisplacer;
 use Doctrine\ORM\EntityManagerInterface;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Form\FormInterface;
@@ -107,10 +108,8 @@ final class ListController extends AbstractController
      *     name="api_create_list",
      *     methods={"POST"}
      * )
-     *
-     * @return FormInterface|ListView
      */
-    public function createListAction(Request $request, EntityManagerInterface $manager, ListViewFactory $factory)
+    public function createListAction(Request $request, EntityManagerInterface $manager, ListViewFactory $factory): ListView
     {
         $this->denyAccessUnlessGranted(ListVoter::CREATE);
 
@@ -122,7 +121,7 @@ final class ListController extends AbstractController
 
         $form->submit($request->request->all(), false);
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
         $list->setParentList($user->getLists());
 
@@ -249,7 +248,7 @@ final class ListController extends AbstractController
      *     methods={"PATCH"}
      * )
      */
-    public function sortList(Directory $list, Request $request, EntityManagerInterface $manager): ?FormInterface
+    public function sortList(Directory $list, Request $request, EntityManagerInterface $manager): void
     {
         if (null === $list->getTeam()) {
             $this->denyAccessUnlessGranted(ListVoter::SORT, $list);
@@ -265,13 +264,11 @@ final class ListController extends AbstractController
         $form = $this->createForm(SortListType::class, $list);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $manager->persist($list);
         $manager->flush();
-
-        return null;
     }
 
     /**

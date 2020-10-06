@@ -20,10 +20,10 @@ use App\Security\Voter\UserVoter;
 use App\Services\InvitationManager;
 use App\Services\TeamManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -78,15 +78,15 @@ final class KeysController extends AbstractController
      *     methods={"POST"}
      * )
      *
-     * @return array<PublicUserKeyView>|FormInterface
+     * @return array<PublicUserKeyView>
      */
-    public function batchPublicKeyAction(Request $request, PublicUserKeyViewFactory $factory, UserRepository $repository)
+    public function batchPublicKeyAction(Request $request, PublicUserKeyViewFactory $factory, UserRepository $repository): array
     {
         $keysRequest = new PublicKeysRequest();
         $form = $this->createForm(PublicKeysRequestType::class, $keysRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         return $factory->createCollection(
@@ -150,14 +150,14 @@ final class KeysController extends AbstractController
      *
      * @throws \Exception
      */
-    public function saveKeys(Request $request, EntityManagerInterface $entityManager, TeamManager $teamManager): ?FormInterface
+    public function saveKeys(Request $request, EntityManagerInterface $entityManager, TeamManager $teamManager): void
     {
         $user = $this->getUser();
 
         $form = $this->createForm(SaveKeysType::class, $user);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         /** @var User $oldUser */
@@ -177,8 +177,6 @@ final class KeysController extends AbstractController
         }
 
         $entityManager->flush();
-
-        return null;
     }
 
     /**
@@ -197,21 +195,19 @@ final class KeysController extends AbstractController
      * )
      * @Entity("user", expr="repository.findOneByEmail(email)")
      */
-    public function updateKeys(Request $request, EntityManagerInterface $entityManager, User $user): ?FormInterface
+    public function updateKeys(Request $request, EntityManagerInterface $entityManager, User $user): void
     {
         $this->denyAccessUnlessGranted(UserVoter::UPDATE_KEY, $user);
 
         $form = $this->createForm(SaveKeysType::class, $user);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         $user->setFlowStatus(User::FLOW_STATUS_CHANGE_PASSWORD);
 
         $entityManager->flush();
-
-        return null;
     }
 
     //@todo candidate to refactoring
