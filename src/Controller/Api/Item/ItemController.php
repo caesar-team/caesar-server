@@ -6,17 +6,19 @@ namespace App\Controller\Api\Item;
 
 use App\Controller\AbstractController;
 use App\Entity\Item;
+use App\Factory\Entity\ItemFactory;
 use App\Factory\View\Item\BatchItemViewFactory;
 use App\Factory\View\Item\ItemViewFactory;
-use App\Form\Request\CreateItemsType;
-use App\Form\Request\CreateItemType;
+use App\Form\Type\Request\Item\CreateBatchItemsRequestType;
+use App\Form\Type\Request\Item\CreateItemRequestType;
 use App\Limiter\Inspector\ItemCountInspector;
 use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
-use App\Model\Request\ItemsCollectionRequest;
 use App\Model\View\Item\BatchItemsView;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
+use App\Request\Item\CreateBatchItemsRequest;
+use App\Request\Item\CreateItemRequest;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\TeamItemVoter;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
@@ -103,7 +105,7 @@ final class ItemController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=CreateItemType::class)
+     *     @Model(type=CreateItemRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
@@ -120,11 +122,14 @@ final class ItemController extends AbstractController
     public function create(
         Request $request,
         ItemViewFactory $viewFactory,
+        ItemFactory $factory,
         ItemRepository $itemRepository,
         LimiterInterface $limiter
     ): ItemView {
-        $item = new Item($this->getUser());
-        $form = $this->createForm(CreateItemType::class, $item);
+        $createRequest = new CreateItemRequest($this->getUser());
+        $form = $this->createForm(CreateItemRequestType::class, $createRequest, [
+            'user' => $this->getUser(),
+        ]);
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {
@@ -135,9 +140,8 @@ final class ItemController extends AbstractController
             new LimitCheck(ItemCountInspector::class, 1),
         ]);
 
+        $item = $factory->createFromRequest($createRequest);
         $this->denyAccessUnlessGranted([TeamItemVoter::CREATE, ItemVoter::CREATE], $item->getParentList());
-        $item->setTeam($item->getParentList()->getTeam());
-
         $itemRepository->save($item);
 
         return $viewFactory->createSingle($item);
@@ -149,7 +153,7 @@ final class ItemController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\CreateItemsType::class)
+     *     @Model(type=CreateBatchItemsRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
@@ -167,12 +171,12 @@ final class ItemController extends AbstractController
     public function batchCreate(
         Request $request,
         ItemViewFactory $viewFactory,
+        ItemFactory $factory,
         ItemRepository $itemRepository,
         LimiterInterface $limiter
     ): array {
-        $itemsRequest = new ItemsCollectionRequest();
-
-        $form = $this->createForm(CreateItemsType::class, $itemsRequest);
+        $itemsRequest = new CreateBatchItemsRequest($this->getUser());
+        $form = $this->createForm(CreateBatchItemsRequestType::class, $itemsRequest);
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {
@@ -183,17 +187,14 @@ final class ItemController extends AbstractController
             new LimitCheck(ItemCountInspector::class, count($itemsRequest->getItems())),
         ]);
 
-        /** @var Item $item */
-        foreach ($itemsRequest->getItems() as $item) {
-            if (null === $item->getOwner()) {
-                $item->setOwner($this->getUser());
-            }
-            $item->setTeam($item->getParentList()->getTeam());
+        $items = [];
+        foreach ($itemsRequest->getItems() as $createItemRequest) {
+            $item = $factory->createFromRequest($createItemRequest);
             $this->denyAccessUnlessGranted([TeamItemVoter::CREATE, ItemVoter::CREATE], $item->getParentList());
-
             $itemRepository->save($item);
+            $items[] = $item;
         }
 
-        return $viewFactory->createCollection($itemsRequest->getItems());
+        return $viewFactory->createCollection($items);
     }
 }

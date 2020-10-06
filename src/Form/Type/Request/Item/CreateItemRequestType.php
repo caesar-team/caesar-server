@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Form\Request;
+namespace App\Form\Type\Request\Item;
 
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\User;
-use App\Form\EventListener\InjectTagListener;
-use App\Repository\ItemRepository;
+use App\Request\Item\CreateItemRequest;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -18,23 +17,11 @@ use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Callback;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
-class CreateItemType extends AbstractType
+class CreateItemRequestType extends AbstractType
 {
-    private ?InjectTagListener $injectTagListener;
-
-    private ItemRepository $itemRepository;
-
-    public function __construct(ItemRepository $itemRepository, ?InjectTagListener $injectTagListener = null)
-    {
-        $this->injectTagListener = $injectTagListener;
-        $this->itemRepository = $itemRepository;
-    }
-
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         parent::buildForm($builder, $options);
@@ -48,12 +35,9 @@ class CreateItemType extends AbstractType
             ->add('listId', EntityType::class, [
                 'class' => Directory::class,
                 'choice_value' => 'id',
-                'property_path' => 'parentList',
+                'property_path' => 'list',
             ])
             ->add('type', ChoiceType::class, [
-                'constraints' => [
-                    new NotBlank(),
-                ],
                 'choices' => [
                     NodeEnumType::TYPE_CRED,
                     NodeEnumType::TYPE_DOCUMENT,
@@ -61,11 +45,7 @@ class CreateItemType extends AbstractType
                     NodeEnumType::TYPE_KEYPAIR,
                 ],
             ])
-            ->add('secret', TextType::class, [
-                'constraints' => [
-                    new NotBlank(),
-                ],
-            ])
+            ->add('secret', TextType::class)
             ->add('favorite', CheckboxType::class)
             ->add('tags', CollectionType::class, [
                 'entry_type' => TextType::class,
@@ -78,49 +58,47 @@ class CreateItemType extends AbstractType
                 'class' => Item::class,
                 'choice_value' => 'id',
                 'property_path' => 'relatedItem',
-                'constraints' => [
-                    new NotBlank(['groups' => ['personal']]),
-                ],
             ])
         ;
-
-        if ($this->injectTagListener) {
-            $builder->addEventSubscriber($this->injectTagListener);
-        }
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
+//        $resolver->setRequired('user');
+//        $resolver->setAllowedTypes('user', User::class);
+
         $resolver->setDefaults([
-            'data_class' => Item::class,
+            'user' => null,
+            'data_class' => CreateItemRequest::class,
+            'empty_data' => function (Options $options) {
+                $user = $options['user'];
+
+                return function (FormInterface $form) use ($user) {
+                    return $form->isEmpty() && !$form->isRequired() ? null : new CreateItemRequest($user);
+                };
+            },
             'csrf_protection' => false,
-            'constraints' => [new Callback(function ($object, ExecutionContextInterface $context) {
-                if (!$object instanceof Item || !$object->isKeyPairType() || null === $object->getParentList()->getTeam()) {
-                    return;
-                }
-
-                if (null !== $object->getRelatedItem()) {
-                    return;
-                }
-
-                $item = $this->itemRepository->getTeamKeyPairByUser($object->getOwner(), $object->getParentList()->getTeam());
-                if (null !== $item) {
-                    $context->addViolation('item.keypair.unique');
-                }
-            })],
             'validation_groups' => function (FormInterface $form) {
                 $groups = ['Default'];
-                $item = $form->getData();
-                if (!$item instanceof Item) {
+                $data = $form->getData();
+                if (!$data instanceof CreateItemRequest) {
                     return $groups;
                 }
 
-                if (NodeEnumType::TYPE_KEYPAIR === $item->getType()
-                    && $item->getParentList()
-                    && null === $item->getParentList()->getTeam()
+                if (NodeEnumType::TYPE_KEYPAIR === $data->getType()
+                    && null !== $data->getList()
+                    && null === $data->getList()->getTeam()
                 ) {
                     $groups[] = 'personal';
+                }
+
+                if (NodeEnumType::TYPE_KEYPAIR === $data->getType()
+                    && null !== $data->getList()
+                    && null !== $data->getList()->getTeam()
+                    && null === $data->getRelatedItem()
+                ) {
+                    $groups[] = 'keypair';
                 }
 
                 return $groups;

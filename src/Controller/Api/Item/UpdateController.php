@@ -7,9 +7,10 @@ namespace App\Controller\Api\Item;
 use App\Controller\AbstractController;
 use App\Entity\Item;
 use App\Factory\View\Item\ItemViewFactory;
-use App\Form\Request\EditItemType;
+use App\Form\Type\Request\Item\EditItemRequestType;
 use App\Model\View\Item\ItemView;
-use App\Repository\ItemRepository;
+use App\Modifier\ItemModifier;
+use App\Request\Item\EditItemRequest;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\TeamItemVoter;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
@@ -31,7 +32,7 @@ final class UpdateController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=EditItemType::class)
+     *     @Model(type=EditItemRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
@@ -79,18 +80,19 @@ final class UpdateController extends AbstractController
     public function edit(
         Item $item,
         Request $request,
-        ItemRepository $repository,
+        ItemModifier $modifier,
         ItemViewFactory $factory
     ): ItemView {
         $this->denyAccessUnlessGranted([ItemVoter::EDIT, TeamItemVoter::EDIT], $item);
 
-        $form = $this->createForm(EditItemType::class, $item);
+        $editRequest = new EditItemRequest($item);
+        $form = $this->createForm(EditItemRequestType::class, $editRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
 
-        $repository->save($item);
+        $item = $modifier->modifyByRequest($editRequest);
 
         return $factory->createSingle($item);
     }
