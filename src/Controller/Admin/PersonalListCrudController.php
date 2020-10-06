@@ -31,6 +31,8 @@ class PersonalListCrudController extends AbstractCrudController
         $queryBuilder
             ->leftJoin('entity.user', '_user')
             ->andWhere('_user.id IS NOT NULL')
+            ->andWhere('entity.label != :list')
+            ->setParameter('list', Directory::LIST_ROOT_LIST)
         ;
 
         return $queryBuilder;
