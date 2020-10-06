@@ -122,13 +122,12 @@ final class ItemController extends AbstractController
         ItemViewFactory $viewFactory,
         ItemRepository $itemRepository,
         LimiterInterface $limiter
-    ) {
+    ): ItemView {
         $item = new Item($this->getUser());
         $form = $this->createForm(CreateItemType::class, $item);
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            //return $form;
             throw new FormInvalidRequestException($form);
         }
 
