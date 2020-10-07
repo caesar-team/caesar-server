@@ -131,11 +131,6 @@ final class ItemView
     private string $type;
 
     /**
-     * @SWG\Property(type="integer", example=0)
-     */
-    private int $sort;
-
-    /**
      * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
      */
     private ?string $listId;
@@ -218,7 +213,6 @@ final class ItemView
         $this->shared = null;
         $this->relatedItemId = null;
         $this->teamId = null;
-        $this->sort = 0;
         $this->favorite = false;
         $this->isShared = false;
         $this->invited = [];
@@ -248,16 +242,6 @@ final class ItemView
     public function setType(string $type): void
     {
         $this->type = $type;
-    }
-
-    public function getSort(): int
-    {
-        return $this->sort;
-    }
-
-    public function setSort(int $sort): void
-    {
-        $this->sort = $sort;
     }
 
     public function getListId(): ?string

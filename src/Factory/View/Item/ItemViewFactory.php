@@ -52,7 +52,6 @@ class ItemViewFactory
                 $view->setFavorite($item->isTeamFavorite($user));
             }
         }
-        $view->setSort($item->getSort());
         $view->setOriginalItemId($item->getOriginalItemId());
         if ($item->getRelatedItem()) {
             $view->setRelatedItemId($item->getRelatedItem()->getId()->toString());

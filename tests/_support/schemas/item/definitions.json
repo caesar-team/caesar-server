@@ -10,9 +10,6 @@
         "type": {
           "type": "string"
         },
-        "sort": {
-          "type": "integer"
-        },
         "listId": {
           "type": "string"
         },
@@ -119,7 +116,6 @@
       "required": [
         "id",
         "type",
-        "sort",
         "listId",
         "secret",
         "invited",
@@ -132,41 +128,6 @@
         "ownerId",
         "originalItemId",
         "previousListId"
-      ]
-    },
-    "offered_item": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "sort": {
-          "type": "integer"
-        },
-        "listId": {
-          "type": "string"
-        },
-        "secret": {
-          "type": "string"
-        },
-        "ownerId": {
-          "type": "string"
-        },
-        "originalItemId": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "id",
-        "type",
-        "sort",
-        "listId",
-        "secret",
-        "ownerId",
-        "originalItemId"
       ]
     },
     "child_item": {

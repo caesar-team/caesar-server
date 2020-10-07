@@ -7,10 +7,7 @@ namespace App\Controller\Api\Item;
 use App\Context\ShareFactoryContext;
 use App\Controller\AbstractController;
 use App\Entity\Item;
-use App\Entity\Team;
 use App\Factory\View\Item\LinkedItemViewFactory;
-use App\Factory\View\Item\OfferedItemViewFactory;
-use App\Factory\View\Item\OfferedTeamItemsViewFactory;
 use App\Factory\View\Share\ShareListViewFactory;
 use App\Form\Request\BatchShareRequestType;
 use App\Form\Request\Invite\ChildItemCollectionRequestType;
@@ -18,11 +15,8 @@ use App\Model\Request\BatchItemCollectionRequest;
 use App\Model\Request\BatchShareRequest;
 use App\Model\Request\ItemCollectionRequest;
 use App\Model\View\Item\LinkedItemView;
-use App\Model\View\Item\OfferedItemsView;
 use App\Model\View\Share\ShareListView;
-use App\Repository\TeamRepository;
 use App\Services\ShareManager;
-use App\Utils\DirectoryHelper;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -35,38 +29,6 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 final class ShareController extends AbstractController
 {
-    /**
-     * Get shared items to me.
-     *
-     * @SWG\Tag(name="Item / Share")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="Items collection",
-     *     @SWG\Schema(type="array", @Model(type=OfferedItemsView::class))
-     * )
-     * @Route("/offered_item", methods={"GET"}, name="api_item_offered_list")
-     */
-    public function getOfferedItemsList(
-        TeamRepository $teamRepository,
-        OfferedItemViewFactory $itemViewFactory,
-        OfferedTeamItemsViewFactory $teamItemsViewFactory
-    ): OfferedItemsView {
-        $user = $this->getUser();
-
-        $teams = $teamRepository->findByUser($user);
-        $teams = array_values(array_filter($teams, static function (Team $team) {
-            return !empty($team->getOfferedItems());
-        }));
-
-        return new OfferedItemsView(
-            $itemViewFactory->createCollection(
-                DirectoryHelper::extractOfferedItemsByUser($user)
-            ),
-            $teamItemsViewFactory->createCollection($teams)
-        );
-    }
-
     /**
      * Create linked items to item.
      *

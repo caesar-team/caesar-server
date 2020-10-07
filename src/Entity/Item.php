@@ -126,12 +126,6 @@ class Item implements ChildItemAwareInterface
     protected $update;
 
     /**
-     * @var int
-     * @ORM\Column(type="integer", options={"default": 0}, nullable=false)
-     */
-    protected $sort = 0;
-
-    /**
      * @var string|null
      * @ORM\Column(type="string", length=510, nullable=true)
      */
@@ -307,8 +301,14 @@ class Item implements ChildItemAwareInterface
         $this->favorite = $favorite;
     }
 
-    public function toggleFavorite(): void
+    public function toggleFavorite(User $user): void
     {
+        if (null !== $this->getTeam()) {
+            $this->toggleTeamFavorite($user);
+
+            return;
+        }
+
         $this->favorite = !$this->favorite;
     }
 
@@ -383,16 +383,6 @@ class Item implements ChildItemAwareInterface
     public function clearUpdate(): void
     {
         $this->update = null;
-    }
-
-    public function getSort(): int
-    {
-        return $this->sort;
-    }
-
-    public function setSort(int $sort): void
-    {
-        $this->sort = $sort;
     }
 
     public function getLink(): ?string

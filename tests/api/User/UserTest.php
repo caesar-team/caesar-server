@@ -84,22 +84,6 @@ class UserTest extends Unit
     }
 
     /** @test */
-    public function getPermissions()
-    {
-        $I = $this->tester;
-
-        /** @var User $user */
-        $user = $I->have(User::class);
-
-        $I->login($user);
-        $I->sendGET('/user/permissions');
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('user/permissions.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
-    }
-
-    /** @test */
     public function removeShareUser()
     {
         $I = $this->tester;
