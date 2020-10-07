@@ -9,7 +9,6 @@ use App\Entity\Security\Invitation;
 use App\Entity\Srp;
 use App\Entity\User;
 use App\Factory\View\SecurityBootstrapViewFactory;
-use App\Factory\View\UserSecurityInfoViewFactory;
 use App\Form\Request\CreateInvitedUserType;
 use App\Form\Request\SendInvitesType;
 use App\Form\Request\SendInviteType;
@@ -20,7 +19,6 @@ use App\Mailer\MailRegistry;
 use App\Model\Request\SendInviteRequest;
 use App\Model\Request\SendInviteRequests;
 use App\Model\View\User\SecurityBootstrapView;
-use App\Model\View\User\UserSecurityInfoView;
 use App\Notification\MessengerInterface;
 use App\Notification\Model\Message;
 use App\Repository\UserRepository;
@@ -128,31 +126,6 @@ final class UserController extends AbstractController
         return [
             'user' => $user->getId()->toString(),
         ];
-    }
-
-    /**
-     * @SWG\Tag(name="Security")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="User's permissions",
-     *     @Model(type=UserSecurityInfoView::class)
-     * )
-     *
-     * @SWG\Response(
-     *     response=401,
-     *     description="Access denied"
-     * )
-     *
-     * @Route(
-     *     path="/api/user/permissions",
-     *     name="api_user_permissions",
-     *     methods={"GET"}
-     * )
-     */
-    public function permissions(UserSecurityInfoViewFactory $infoViewFactory): UserSecurityInfoView
-    {
-        return $infoViewFactory->createSingle($this->getUser());
     }
 
     /**

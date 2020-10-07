@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Factory\View\Team;
 
 use App\Entity\Directory;
+use App\Entity\Item;
 use App\Factory\View\ItemListViewFactory;
 use App\Model\View\Team\TeamListView;
 use App\Repository\TeamRepository;
@@ -28,9 +29,9 @@ class TeamListViewFactory
         $view->setLabel($directory->getLabel());
         $view->setType($directory->getTeamRole());
         $view->setSort($directory->getSort());
-        $view->setChildren(
-            $this->itemListViewFactory->create($directory->getChildItems())
-        );
+        $view->setChildren(array_map(function (Item $item) {
+            return $item->getId()->toString();
+        }, $directory->getChildItems()));
         $team = $this->teamRepository->findOneByDirectory($directory);
         $view->setTeamId($team ? $team->getId()->toString() : null);
 

@@ -501,7 +501,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     {
         $criteria = Criteria::create();
         $criteria->where(Criteria::expr()->isNull('team'));
-        $criteria->orderBy(['sort' => Criteria::ASC]);
+        $criteria->orderBy(['lastUpdated' => Criteria::ASC]);
 
         /**
          * @psalm-suppress UndefinedInterfaceMethod

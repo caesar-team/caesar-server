@@ -1,130 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "definitions": {
-    "children": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "sort": {
-          "type": "integer"
-        },
-        "listId": {
-          "type": "string"
-        },
-        "secret": {
-          "type": "string"
-        },
-        "invited": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "userId": {
-                "type": "string"
-              },
-              "access": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "shared": {
-          "type": ["object", "null"],
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "teamId": {
-              "type": ["string", "null"]
-            },
-            "userId": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            },
-            "lastUpdated": {
-              "type": "string"
-            },
-            "access": {
-              "type": "string"
-            },
-            "link": {
-              "type": ["string", "null"]
-            },
-            "isAccepted": {
-              "type": "boolean"
-            },
-            "publicKey": {
-              "type": ["string", "null"]
-            }
-          }
-        },
-        "update": {
-          "type": ["object", "null"],
-          "properties": {
-            "secret": {
-              "type": ["string", "null"]
-            },
-            "userId": {
-              "type": "string"
-            },
-            "createdAt": {
-              "type": "string"
-            }
-          }
-        },
-        "lastUpdated": {
-          "type": "string"
-        },
-        "tags": {
-          "type": ["array", "null"],
-          "items": {
-            "type": "string"
-          }
-        },
-        "favorite": {
-          "type": "boolean"
-        },
-        "ownerId": {
-          "type": "string"
-        },
-        "originalItemId": {
-          "type": ["string", "null"]
-        },
-        "previousListId": {
-          "type": ["string", "null"]
-        },
-        "isShared": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "id",
-        "type",
-        "sort",
-        "listId",
-        "secret",
-        "invited",
-        "shared",
-        "update",
-        "lastUpdated",
-        "tags",
-        "favorite",
-        "ownerId",
-        "originalItemId",
-        "previousListId",
-        "isShared"
-      ]
-    },
     "list": {
       "type": "object",
       "properties": {
@@ -143,7 +19,7 @@
         "children": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/children"
+            "type": "string"
           }
         },
         "teamId": {

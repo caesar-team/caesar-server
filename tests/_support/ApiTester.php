@@ -2,13 +2,11 @@
 
 namespace App\Tests;
 
-use App\DBAL\Types\Enum\AccessEnumType;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
 use Codeception\PHPUnit\Constraint\JsonContains;
-use Codeception\Util\HttpCode;
 use Codeception\Util\JsonArray;
 use FOS\UserBundle\Model\UserInterface;
 use League\FactoryMuffin\Faker\Facade as Faker;
@@ -43,32 +41,6 @@ class ApiTester extends \Codeception\Actor
     public function get2FAHashCode(string $code): string
     {
         return $this->encodeCode($code);
-    }
-
-    public function shareItemToUser(Item $item, User $user, ?Team $team = null): void
-    {
-        $paramItem = [
-            'userId' => $user->getId()->toString(),
-            'secret' => 'Some secret string, it doesn`t matter for backend',
-            'access' => AccessEnumType::TYPE_READ,
-            'cause' => Item::CAUSE_INVITE,
-        ];
-
-        if (null !== $team) {
-            $paramItem['teamId'] = $team->getId()->toString();
-        }
-
-        $this->sendPOST('/items/batch/share',
-            [
-                'originalItems' => [
-                    [
-                        'originalItem' => $item->getId()->toString(),
-                        'items' => [$paramItem],
-                    ],
-                ],
-            ]
-        );
-        $this->seeResponseCodeIs(HttpCode::OK);
     }
 
     public function createDefaultTeam(): Team

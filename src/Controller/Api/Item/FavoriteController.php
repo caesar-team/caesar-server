@@ -6,15 +6,11 @@ namespace App\Controller\Api\Item;
 
 use App\Controller\AbstractController;
 use App\Entity\Item;
-use App\Entity\Team;
 use App\Factory\View\Item\FavoriteItemViewFactory;
-use App\Factory\View\Item\ItemViewFactory;
 use App\Model\View\Item\FavoriteItemView;
-use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\TeamItemVoter;
-use App\Security\Voter\UserTeamVoter;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Routing\Annotation\Route;
@@ -31,36 +27,6 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 final class FavoriteController extends AbstractController
 {
-    /**
-     * Get list of favourite items.
-     *
-     * @SWG\Tag(name="Item / Favorite")
-     * @SWG\Response(
-     *     response=200,
-     *     description="List of favourite items",
-     *     @SWG\Schema(type="array", @Model(type=ItemView::class))
-     * )
-     *
-     * @Route(
-     *     path="/api/items/favorite/{team}",
-     *     name="api_favorites_item",
-     *     methods={"GET"}
-     * )
-     *
-     * @return ItemView[]
-     */
-    public function favorite(ItemViewFactory $viewFactory, ItemRepository $repository, ?Team $team = null): array
-    {
-        $user = $this->getUser();
-        if (null !== $team) {
-            $this->denyAccessUnlessGranted(UserTeamVoter::VIEW, $user->getUserTeamByTeam($team));
-        }
-
-        return $viewFactory->createCollection(
-            $repository->getFavoritesItems($user, $team)
-        );
-    }
-
     /**
      * Toggle favorite item.
      *
@@ -85,11 +51,7 @@ final class FavoriteController extends AbstractController
     {
         $this->denyAccessUnlessGranted([ItemVoter::FAVORITE, TeamItemVoter::FAVORITE], $item);
 
-        if (null !== $item->getTeam()) {
-            $item->toggleTeamFavorite($this->getUser());
-        } else {
-            $item->toggleFavorite();
-        }
+        $item->toggleFavorite($this->getUser());
         $repository->save($item);
 
         return $factory->createSingle($item);

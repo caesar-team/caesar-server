@@ -130,29 +130,5 @@ class FavoriteTest extends Unit
 
         $I->sendPOST(sprintf('/items/%s/favorite', $teamItem->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $I->sendGET('/items/favorite/');
-        $I->canSeeResponseContains($item->getId()->toString());
-        $I->cantSeeResponseContains($teamItem->getId()->toString());
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseIsValidOnJsonSchemaString(
-            $I->getSchema('item/item_list.json')
-        );
-
-        $I->sendGET(sprintf('/items/favorite/%s', $team->getId()->toString()));
-        $I->canSeeResponseContains($teamItem->getId()->toString());
-        $I->cantSeeResponseContains($item->getId()->toString());
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseIsValidOnJsonSchemaString(
-            $I->getSchema('item/item_list.json')
-        );
-
-        $I->login($member);
-        $I->sendGET(sprintf('/items/favorite/%s', $team->getId()->toString()));
-        $I->cantSeeResponseContains($teamItem->getId()->toString());
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseIsValidOnJsonSchemaString(
-            $I->getSchema('item/item_list.json')
-        );
     }
 }
