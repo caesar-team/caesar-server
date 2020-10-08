@@ -5,22 +5,23 @@ declare(strict_types=1);
 namespace App\JsonRpc\Method;
 
 use App\Entity\User;
+use App\Repository\InvitationRepository;
 use App\Repository\UserRepository;
-use App\Services\InvitationManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
 use Yoanm\JsonRpcServer\Domain\JsonRpcMethodInterface;
 
 class ChangeUserKeysMethod implements JsonRpcMethodInterface
 {
-    private UserRepository $repository;
+    private UserRepository $userRepository;
 
-    private EntityManagerInterface $entityManager;
+    private InvitationRepository $invitationRepository;
 
-    public function __construct(UserRepository $repository, EntityManagerInterface $entityManager)
-    {
-        $this->repository = $repository;
-        $this->entityManager = $entityManager;
+    public function __construct(
+        UserRepository $userRepository,
+        InvitationRepository $invitationRepository
+    ) {
+        $this->userRepository = $userRepository;
+        $this->invitationRepository = $invitationRepository;
     }
 
     public function apply(array $paramList = null)
@@ -30,7 +31,7 @@ class ChangeUserKeysMethod implements JsonRpcMethodInterface
             return ['error' => 'User not found'];
         }
 
-        $user = $this->repository->find($userId);
+        $user = $this->userRepository->find($userId);
         if (null === $user) {
             return ['error' => 'User not found'];
         }
@@ -42,10 +43,10 @@ class ChangeUserKeysMethod implements JsonRpcMethodInterface
         }
 
         if ($user->isFullUser()) {
-            InvitationManager::removeInvitation($user, $this->entityManager);
+            $this->invitationRepository->deleteByHash($user->getHashEmail());
         }
 
-        $this->entityManager->flush();
+        $this->userRepository->save($user);
 
         return ['status' => $user->getFlowStatus()];
     }

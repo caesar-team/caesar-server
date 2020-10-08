@@ -26,18 +26,30 @@ class InvitationRepository extends ServiceEntityRepository
      */
     public function findOneFreshByHash(string $hash): ?Invitation
     {
-        $qb = $this->createQueryBuilder('invitation');
-        $qb
+        $queryBuilder = $this->createQueryBuilder('invitation');
+        $queryBuilder
             ->where('invitation.hash =:hash')
             ->setParameter('hash', $hash)
             ->setMaxResults(1)
         ;
-        $invitation = $qb->getQuery()->getOneOrNullResult();
+        $invitation = $queryBuilder->getQuery()->getOneOrNullResult();
         if ($invitation instanceof Invitation && !$this->isFresh($invitation)) {
             $invitation = null;
         }
 
         return $invitation;
+    }
+
+    public function deleteByHash(string $hash): void
+    {
+        $queryBuilder = $this->createQueryBuilder('invitation');
+        $queryBuilder
+            ->delete()
+            ->where('invitation.hash = :hash')
+            ->setParameter('hash', $hash)
+        ;
+
+        $queryBuilder->getQuery()->execute();
     }
 
     private function isFresh(Invitation $invitation): bool

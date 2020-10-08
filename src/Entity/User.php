@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Security\AuthorizationManager\InvitationEncoder;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
@@ -639,6 +640,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
             $this->directories->add($directory);
             $directory->setUser($this);
         }
+    }
+
+    public function getHashEmail(): string
+    {
+        return (InvitationEncoder::initEncoder())->encode($this->getEmail());
     }
 
     public function __toString(): string

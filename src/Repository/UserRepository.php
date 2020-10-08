@@ -201,4 +201,16 @@ class UserRepository extends ServiceEntityRepository
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
+
+    public function findWithoutPublicKey(array $criteria): ?User
+    {
+        $queryBuilder = $this->createQueryBuilder('user');
+        $queryBuilder
+            ->where('user.publicKey IS NULL')
+            ->andWhere('LOWER(user.email) = :email')
+            ->setParameter('email', $criteria['email'] ?? '')
+        ;
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
 }
