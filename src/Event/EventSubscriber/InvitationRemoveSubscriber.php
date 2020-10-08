@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Event\EventSubscriber;
 
+use App\Entity\Security\Invitation;
 use App\Entity\User;
-use App\Services\InvitationManager;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,10 +13,7 @@ use Doctrine\ORM\Events;
 
 class InvitationRemoveSubscriber implements EventSubscriber
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -42,6 +39,6 @@ class InvitationRemoveSubscriber implements EventSubscriber
             return;
         }
 
-        InvitationManager::removeInvitation($user, $this->entityManager);
+        $this->entityManager->getRepository(Invitation::class)->deleteByHash($user->getHashEmail());
     }
 }

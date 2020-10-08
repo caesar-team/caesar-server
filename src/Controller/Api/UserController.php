@@ -6,12 +6,15 @@ namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
 use App\Entity\Security\Invitation;
-use App\Entity\Srp;
 use App\Entity\User;
+use App\Factory\Entity\UserFactory;
 use App\Factory\View\SecurityBootstrapViewFactory;
-use App\Form\Request\CreateInvitedUserType;
+use App\Factory\View\User\UserViewFactory;
 use App\Form\Request\SendInvitesType;
 use App\Form\Request\SendInviteType;
+use App\Form\Type\Request\User\CreateBatchInvitedUserRequestType;
+use App\Form\Type\Request\User\CreateInvitedUserRequestType;
+use App\Invitation\InvitationReplacer;
 use App\Limiter\Inspector\UserCountInspector;
 use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
@@ -19,18 +22,18 @@ use App\Mailer\MailRegistry;
 use App\Model\Request\SendInviteRequest;
 use App\Model\Request\SendInviteRequests;
 use App\Model\View\User\SecurityBootstrapView;
+use App\Model\View\User\UserView;
 use App\Notification\MessengerInterface;
 use App\Notification\Model\Message;
-use App\Repository\UserRepository;
+use App\Request\User\CreateBatchInvitedUserRequest;
+use App\Request\User\CreateInvitedUserRequest;
 use App\Security\Fingerprint\FingerprintRepositoryInterface;
-use App\Services\InvitationManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Psr\Log\LoggerInterface;
 use Swagger\Annotations as SWG;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 final class UserController extends AbstractController
@@ -62,19 +65,12 @@ final class UserController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\CreateInvitedUserType::class)
+     *     @Model(type=CreateInvitedUserRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Success user created update",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="string",
-     *             property="user",
-     *             example="553d9b8d-fce0-4a53-8cba-f7d334160bc4"
-     *         )
-     *     )
+     *     description="Success user created or updated keys",
+     *     @Model(type=UserView::class)
      * )
      * @SWG\Response(
      *     response=401,
@@ -91,41 +87,32 @@ final class UserController extends AbstractController
      */
     public function createUser(
         Request $request,
-        UserRepository $userRepository,
+        UserFactory $factory,
+        UserViewFactory $viewFactory,
+        InvitationReplacer $invitationReplacer,
         EntityManagerInterface $entityManager,
         LimiterInterface $limiter
-    ): array {
-        $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
-        if (null === $user) {
-            $user = new User(new Srp());
-        } elseif (null !== $user->getPublicKey()) {
-            $message = $this->translator->trans('app.exception.user_already_exists');
-            throw new BadRequestHttpException($message);
-        }
-
-        $form = $this->createForm(CreateInvitedUserType::class, $user);
+    ): UserView {
+        $createRequest = new CreateInvitedUserRequest();
+        $form = $this->createForm(CreateInvitedUserRequestType::class, $createRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
 
+        $user = $factory->createFromInvitedRequest($createRequest);
         if ($user->isFullUser()) {
             $limiter->check([
                 new LimitCheck(UserCountInspector::class, 1),
             ]);
 
-            $this->removeInvitation($user, $entityManager);
-            $invitation = new Invitation();
-            $invitation->setHash($user->getEmail());
-            $entityManager->persist($invitation);
+            $entityManager->persist($invitationReplacer->replaceByUser($user));
         }
 
         $entityManager->persist($user);
         $entityManager->flush();
 
-        return [
-            'user' => $user->getId()->toString(),
-        ];
+        return $viewFactory->createSingle($user);
     }
 
     /**
@@ -219,11 +206,7 @@ final class UserController extends AbstractController
      *     description="Returns send mail errors",
      * )
      *
-     * @Route(
-     *     "/api/invitations",
-     *     name="api_send_invitations",
-     *     methods={"POST"}
-     * )
+     * @Route("/api/invitations", name="api_send_invitations", methods={"POST"})
      *
      * @throws \Exception
      */
@@ -247,60 +230,62 @@ final class UserController extends AbstractController
     }
 
     /**
-     * @Route(
-     *     path="/api/user/batch",
-     *     methods={"POST"},
-     *     name="api_user_batch_create"
+     * @SWG\Tag(name="Invitation")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=CreateInvitedUserRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success user created update",
+     *     @SWG\Schema(type="array", @Model(type=UserView::class))
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
      * )
      *
-     * @throws \Exception
+     * @Route(path="/api/user/batch", methods={"POST"}, name="api_user_batch_create")
+     *
+     * @return UserView[]
      */
     public function batchCreateUser(
         Request $request,
+        UserFactory $factory,
+        UserViewFactory $viewFactory,
+        InvitationReplacer $invitationReplacer,
         EntityManagerInterface $entityManager,
         LimiterInterface $limiter
     ): array {
-        $requestUsers = $request->request->get('users');
+        $batchRequest = new CreateBatchInvitedUserRequest();
 
-        $newUsers = [];
-        foreach ($requestUsers as $requestUser) {
-            $user = new User(new Srp());
-            $form = $this->createForm(CreateInvitedUserType::class, $user);
-            $form->submit($requestUser);
-            if (!$form->isValid()) {
-                throw new FormInvalidRequestException($form);
-            }
-            $newUsers[] = $user;
+        $form = $this->createForm(CreateBatchInvitedUserRequestType::class, $batchRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            throw new FormInvalidRequestException($form);
         }
 
-        $fullUsers = array_filter($newUsers, static function (User $user) {
-            return !$user->hasRole(User::ROLE_ANONYMOUS_USER);
+        $users = [];
+        foreach ($batchRequest->getUsers() as $createRequest) {
+            $users[] = $factory->createFromInvitedRequest($createRequest);
+        }
+        $fullUsers = array_filter($users, static function (User $user) {
+            return $user->isFullUser();
         });
 
         $limiter->check([
             new LimitCheck(UserCountInspector::class, count($fullUsers)),
         ]);
 
-        $users = [];
-        foreach ($newUsers as $user) {
-            if ($user->isFullUser()) {
-                $this->removeInvitation($user, $entityManager);
-                $invitation = new Invitation();
-                $invitation->setHash($user->getEmail());
-                $entityManager->persist($invitation);
-            }
-
-            $entityManager->persist($user);
-            $users[] = $user->getId()->toString();
+        foreach ($fullUsers as $user) {
+            $entityManager->persist($invitationReplacer->replaceByUser($user));
         }
 
+        array_map([$entityManager, 'persist'], $users);
         $entityManager->flush();
 
-        return ['users' => $users];
-    }
-
-    private function removeInvitation(User $user, EntityManagerInterface $entityManager)
-    {
-        InvitationManager::removeInvitation($user, $entityManager);
+        return $viewFactory->createCollection($users);
     }
 }

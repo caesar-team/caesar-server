@@ -15,9 +15,9 @@ use App\Form\Request\SaveKeysType;
 use App\Model\Request\PublicKeysRequest;
 use App\Model\View\User\PublicUserKeyView;
 use App\Model\View\User\UserKeysView;
+use App\Repository\InvitationRepository;
 use App\Repository\UserRepository;
 use App\Security\Voter\UserVoter;
-use App\Services\InvitationManager;
 use App\Services\TeamManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
@@ -150,8 +150,12 @@ final class KeysController extends AbstractController
      *
      * @throws \Exception
      */
-    public function saveKeys(Request $request, EntityManagerInterface $entityManager, TeamManager $teamManager): void
-    {
+    public function saveKeys(
+        Request $request,
+        InvitationRepository $repository,
+        EntityManagerInterface $entityManager,
+        TeamManager $teamManager
+    ): void {
         $user = $this->getUser();
 
         $form = $this->createForm(SaveKeysType::class, $user);
@@ -169,7 +173,7 @@ final class KeysController extends AbstractController
         }
 
         if ($user->isFullUser()) {
-            InvitationManager::removeInvitation($user, $entityManager);
+            $repository->deleteByHash($user->getHashEmail());
             $userTeam = $teamManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
             if (null !== $userTeam) {
                 $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
