@@ -10,7 +10,7 @@ use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Table
- * @ORM\Entity(repositoryClass="SystemLimitRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\SystemLimitRepository")
  */
 class SystemLimit
 {

@@ -21,7 +21,12 @@ class ItemFactory
     public function createFromRequest(CreateItemRequest $request): Item
     {
         $item = new Item($request->getOwner() ?: $request->getUser());
-        $item->setParentList($request->getList() ?: $item->getSignedOwner()->getDefaultDirectory());
+        $parentList = $request->getList() ?: $item->getSignedOwner()->getDefaultDirectory();
+        if (null !== $request->getOwner() && !$request->getUser()->equals($request->getOwner())) {
+            $parentList = $request->getList() ?: $item->getSignedOwner()->getInbox();
+        }
+
+        $item->setParentList($parentList);
         $item->setType($request->getType());
         $item->setSecret($request->getSecret());
         $item->setFavorite($request->isFavorite());

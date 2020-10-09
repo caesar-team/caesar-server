@@ -42,17 +42,6 @@ class TeamManager
         $this->entityManager->persist($userTeam);
     }
 
-    private function findDefaultTeam(): Team
-    {
-        $team = $this->repository->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
-
-        if (is_null($team)) {
-            throw new LogicException('At least one team must exists');
-        }
-
-        return $team;
-    }
-
     public function findUserTeamByAlias(User $user, string $alias): ?UserTeam
     {
         foreach ($user->getUserTeams() as $userTeam) {
@@ -62,5 +51,16 @@ class TeamManager
         }
 
         return null;
+    }
+
+    private function findDefaultTeam(): Team
+    {
+        $team = $this->repository->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
+
+        if (is_null($team)) {
+            throw new LogicException('At least one team must exists');
+        }
+
+        return $team;
     }
 }

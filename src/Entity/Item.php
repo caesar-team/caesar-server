@@ -25,7 +25,7 @@ class Item implements ChildItemAwareInterface
     public const STATUS_FINISHED = 'finished';
     public const STATUS_OFFERED = 'offered';
     public const STATUS_DEFAULT = self::STATUS_FINISHED;
-    public const EXPIRATION_INTERVAL = '+ 1 day';
+
     /**
      * @var UuidInterface
      *
@@ -117,13 +117,6 @@ class Item implements ChildItemAwareInterface
      * @ORM\Column(type="AccessEnumType", nullable=true)
      */
     protected $access;
-
-    /**
-     * @var ItemUpdate|null
-     *
-     * @ORM\OneToOne(targetEntity="App\Entity\ItemUpdate", mappedBy="item", orphanRemoval=true, cascade={"persist"}, fetch="EXTRA_LAZY")
-     */
-    protected $update;
 
     /**
      * @var string|null
@@ -368,21 +361,6 @@ class Item implements ChildItemAwareInterface
     public function setAccess(?string $access): void
     {
         $this->access = $access;
-    }
-
-    public function getUpdate(): ?ItemUpdate
-    {
-        return $this->update;
-    }
-
-    public function setUpdate(?ItemUpdate $update): void
-    {
-        $this->update = $update;
-    }
-
-    public function clearUpdate(): void
-    {
-        $this->update = null;
     }
 
     public function getLink(): ?string

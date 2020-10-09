@@ -7,7 +7,7 @@ use Swagger\Annotations\Property;
 /**
  * @Annotation
  */
-class EnumProperty extends Property
+class EnumPropertySome extends Property
 {
     private const ENUM_PROPERTY = 'enumPath';
 

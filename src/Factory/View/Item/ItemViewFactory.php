@@ -15,20 +15,16 @@ class ItemViewFactory
 
     private InviteItemViewFactory $inviteItemViewFactory;
 
-    private UpdateItemViewFactory $updateItemViewFactory;
-
-    private SharedChildItemViewFactory $sharedChildItemViewFactory;
+    private SharedItemViewFactory $sharedItemViewFactory;
 
     public function __construct(
         Security $security,
         InviteItemViewFactory $inviteItemViewFactory,
-        UpdateItemViewFactory $updateItemViewFactory,
-        SharedChildItemViewFactory $sharedChildItemViewFactory
+        SharedItemViewFactory $sharedItemViewFactory
     ) {
         $this->security = $security;
         $this->inviteItemViewFactory = $inviteItemViewFactory;
-        $this->updateItemViewFactory = $updateItemViewFactory;
-        $this->sharedChildItemViewFactory = $sharedChildItemViewFactory;
+        $this->sharedItemViewFactory = $sharedItemViewFactory;
     }
 
     public function createSingle(Item $item): ItemView
@@ -61,12 +57,8 @@ class ItemViewFactory
         if (!empty($sharedItems) && current($sharedItems) instanceof Item) {
             $sharedItem = current($sharedItems);
             $view->setShared(
-                $this->sharedChildItemViewFactory->createSingle($sharedItem)
+                $this->sharedItemViewFactory->createSingle($sharedItem)
             );
-        }
-
-        if (null !== $item->getUpdate()) {
-            $view->setUpdate($this->updateItemViewFactory->createSingle($item->getUpdate()));
         }
 
         $view->setIsShared($item->hasSystemItems());

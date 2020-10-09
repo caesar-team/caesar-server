@@ -18,7 +18,6 @@ class TeamItemVoter extends Voter
     public const DELETE = 'team_delete_list_item';
     public const MOVE = 'team_move_list_item';
     public const FAVORITE = 'team_favorite_list_item';
-    public const SHARE = 'team_share_list_item';
 
     private const ATTRIBUTES = [
         self::CREATE,
@@ -26,7 +25,6 @@ class TeamItemVoter extends Voter
         self::DELETE,
         self::MOVE,
         self::FAVORITE,
-        self::SHARE,
     ];
 
     /**
@@ -72,8 +70,6 @@ class TeamItemVoter extends Voter
                 return $subject instanceof Item && $this->canDelete($subject, $user);
             case self::MOVE:
                 return $subject instanceof Item && $this->canMove($subject, $user);
-            case self::SHARE:
-                return $subject instanceof Item && $this->canShare($subject, $user);
             case self::FAVORITE:
                 return $subject instanceof Item && $this->canFavorite($subject, $user);
         }
@@ -132,11 +128,6 @@ class TeamItemVoter extends Voter
     }
 
     private function canMove(Item $subject, User $user): bool
-    {
-        return $this->canDelete($subject, $user);
-    }
-
-    private function canShare(Item $subject, User $user): bool
     {
         return $this->canDelete($subject, $user);
     }

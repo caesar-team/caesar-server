@@ -242,7 +242,7 @@ class ItemTest extends Unit
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
 
-        $this->canDeleteTeamItem($domainAdmin, $item, $item2);
+        $this->canDeleteTeamItem($domainAdmin, $item);
 
         $item = $I->createTeamItem($team, $member);
         $item2 = $I->createTeamItem($team, $member);
@@ -255,7 +255,7 @@ class ItemTest extends Unit
         $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
-        $this->canDeleteTeamItem($member, $item, $item2);
+        $this->canDeleteTeamItem($member, $item);
     }
 
     /** @test */

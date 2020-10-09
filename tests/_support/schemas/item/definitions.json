@@ -74,20 +74,6 @@
             }
           }
         },
-        "update": {
-          "type": ["object", "null"],
-          "properties": {
-            "secret": {
-              "type": ["string", "null"]
-            },
-            "userId": {
-              "type": "string"
-            },
-            "createdAt": {
-              "type": "string"
-            }
-          }
-        },
         "lastUpdated": {
           "type": "string"
         },
@@ -121,55 +107,12 @@
         "invited",
         "shared",
         "isShared",
-        "update",
         "lastUpdated",
         "tags",
         "favorite",
         "ownerId",
         "originalItemId",
         "previousListId"
-      ]
-    },
-    "child_item": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "teamId": {
-          "type": ["string", "null"]
-        },
-        "userId": {
-          "type": "string"
-        },
-        "lastUpdated": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "id",
-        "teamId",
-        "userId",
-        "lastUpdated"
-      ]
-    },
-    "linked_item": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "userId": {
-          "type": "string"
-        },
-        "lastUpdated": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "lastUpdated"
       ]
     },
     "list": {

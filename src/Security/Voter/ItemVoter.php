@@ -20,7 +20,6 @@ class ItemVoter extends Voter
     public const DELETE = 'delete_list_item';
     public const MOVE = 'move_list_item';
     public const FAVORITE = 'favorite_list_item';
-    public const SHARE = 'share_list_item';
 
     private const ATTRIBUTES = [
         self::CREATE,
@@ -28,7 +27,6 @@ class ItemVoter extends Voter
         self::DELETE,
         self::MOVE,
         self::FAVORITE,
-        self::SHARE,
     ];
 
     private AuthorizationCheckerInterface $authorizationChecker;
@@ -85,8 +83,6 @@ class ItemVoter extends Voter
                 return $subject instanceof Item && $this->canMove($subject, $user);
             case self::FAVORITE:
                 return $subject instanceof Item && $this->canFavorite($subject, $user);
-            case self::SHARE:
-                return $subject instanceof Item && $this->canShare($subject, $user);
         }
 
         return false;
@@ -139,11 +135,6 @@ class ItemVoter extends Voter
     }
 
     private function canFavorite(Item $item, User $user): bool
-    {
-        return $user->equals($item->getSignedOwner());
-    }
-
-    private function canShare(Item $item, User $user): bool
     {
         return $user->equals($item->getSignedOwner());
     }

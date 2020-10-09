@@ -55,14 +55,6 @@ use Swagger\Annotations as SWG;
  *     )
  * )
  * @Hateoas\Relation(
- *     "batch_share_item",
- *     attributes={"method": "POST"},
- *     href=@Hateoas\Route("api_batch_share_item"),
- *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::SHARE'), object.getItem()))"
- *     )
- * )
- * @Hateoas\Relation(
  *     "team_edit_item",
  *     attributes={"method": "PATCH"},
  *     href=@Hateoas\Route(
@@ -93,14 +85,6 @@ use Swagger\Annotations as SWG;
  *     ),
  *     exclusion=@Hateoas\Exclusion(
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::MOVE'), object.getItem()))"
- *     )
- * )
- * @Hateoas\Relation(
- *     "team_batch_share_item",
- *     attributes={"method": "POST"},
- *     href=@Hateoas\Route("api_batch_share_item"),
- *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::SHARE'), object.getItem()))"
  *     )
  * )
  * @Hateoas\Relation(

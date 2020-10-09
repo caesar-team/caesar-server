@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Factory\View\Item;
 
 use App\Entity\Item;
-use App\Model\View\Item\SharedChildItemView;
+use App\Model\View\Item\SharedItemView;
 use App\Services\PermissionManager;
 
-class SharedChildItemViewFactory
+class SharedItemViewFactory
 {
     private PermissionManager $permissionManager;
 
@@ -17,11 +17,11 @@ class SharedChildItemViewFactory
         $this->permissionManager = $permissionManager;
     }
 
-    public function createSingle(Item $item): SharedChildItemView
+    public function createSingle(Item $item): SharedItemView
     {
         $user = $item->getSignedOwner();
 
-        $view = new SharedChildItemView();
+        $view = new SharedItemView();
         $view->setId($item->getId()->toString());
         $view->setTeamId($item->getTeamId());
         $view->setUserId($user->getId()->toString());
