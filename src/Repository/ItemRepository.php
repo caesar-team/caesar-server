@@ -9,6 +9,7 @@ use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Model\Query\ItemListQuery;
+use App\Request\Item\KeypairFilterRequest;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
@@ -24,6 +25,42 @@ class ItemRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Item::class);
+    }
+
+    public function getKeypairsByRequest(KeypairFilterRequest $request): array
+    {
+        $queryBuilder = $this->createQueryBuilder('item');
+        $queryBuilder
+            ->where('item.type = :type')
+            ->andWhere('item.owner = :user')
+            ->setParameter('type', NodeEnumType::TYPE_KEYPAIR)
+            ->setParameter('user', $request->getUser())
+        ;
+
+        if ($request->hasPersonalType()) {
+            $queryBuilder->andWhere('item.team IS NULL');
+        }
+        if ($request->hasTeamType()) {
+            $queryBuilder->andWhere('item.team IS NOT NULL');
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function getKeypairsUserTeam(Team $team, User $user): ?Item
+    {
+        $queryBuilder = $this->createQueryBuilder('item');
+        $queryBuilder
+            ->where('item.type = :type')
+            ->andWhere('item.owner = :user')
+            ->andWhere('item.team = :team')
+            ->andWhere('item.relatedItem IS NULL')
+            ->setParameter('type', NodeEnumType::TYPE_KEYPAIR)
+            ->setParameter('user', $user)
+            ->setParameter('team', $team)
+        ;
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 
     public function getByQuery(ItemListQuery $query): array
