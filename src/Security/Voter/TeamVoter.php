@@ -71,6 +71,6 @@ class TeamVoter extends Voter
 
     private function canPinned(Team $team, User $user): bool
     {
-        return true;
+        return $user->hasRole(User::ROLE_ADMIN);
     }
 }
