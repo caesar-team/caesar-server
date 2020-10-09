@@ -15,13 +15,18 @@ class TeamVoter extends Voter
     public const CREATE = 'team_create';
     public const EDIT = 'team_edit';
     public const PINNED = 'team_pinned';
+    public const GET_KEYPAIR = 'get_keypair';
+
+    private const AVAILABLE_ATTRIBUTES = [
+        self::CREATE, self::DELETE, self::EDIT, self::PINNED, self::GET_KEYPAIR,
+    ];
 
     /**
      * {@inheritdoc}
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::CREATE, self::DELETE, self::EDIT, self::PINNED])) {
+        if (!in_array($attribute, self::AVAILABLE_ATTRIBUTES)) {
             return false;
         }
 
@@ -47,6 +52,8 @@ class TeamVoter extends Voter
                 return $subject instanceof Team && $this->canEdit($subject, $user);
             case self::PINNED:
                 return $subject instanceof Team && $this->canPinned($subject, $user);
+            case self::GET_KEYPAIR:
+                return $subject instanceof Team && $this->canGetKeypair($subject, $user);
         }
 
         return false;
@@ -72,5 +79,10 @@ class TeamVoter extends Voter
     private function canPinned(Team $team, User $user): bool
     {
         return $user->hasRole(User::ROLE_ADMIN);
+    }
+
+    private function canGetKeypair(Team $team, User $user): bool
+    {
+        return null !== $team->getUserTeamByUser($user);
     }
 }

@@ -23,7 +23,7 @@ nelmio_api_doc:
               description: ''
             - name: Item
               description: ''
-            - name: 'Item / Share'
+            - name: 'Item / Keypair'
               description: ''
             - name: 'Item / Favorite'
               description: ''
