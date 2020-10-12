@@ -56,7 +56,7 @@
         "yoanm/symfony-jsonrpc-params-validator": "2.0.2"
     },
     "require-dev": {
-        "codeception/codeception": "4.1.7",
+        "codeception/codeception": "4.1.8",
         "codeception/module-asserts": "1.3.0",
         "codeception/module-datafactory": "1.0.0",
         "codeception/module-db": "1.0.1",
