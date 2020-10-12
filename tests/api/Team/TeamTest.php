@@ -195,13 +195,25 @@ class TeamTest extends Unit
         $I->addUserToTeam($team, $user, UserTeam::USER_ROLE_ADMIN);
 
         $I->login($user);
-        $I->sendPOST(sprintf('teams/%s/pinned', $team->getId()->toString()));
+        $I->sendPOST(sprintf('teams/%s/pin', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([true], $I->grabDataFromResponseByJsonPath('$.pinned'));
+
+        $I->sendPOST(sprintf('teams/%s/pin', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
         $this->assertEquals([true], $I->grabDataFromResponseByJsonPath('$.pinned'));
 
         $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
         $this->assertEquals([true], $I->grabDataFromResponseByJsonPath('$.pinned'));
+
+        $I->sendPOST(sprintf('teams/%s/unpin', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([false], $I->grabDataFromResponseByJsonPath('$.pinned'));
+
+        $I->sendPOST(sprintf('teams/%s/unpin', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([false], $I->grabDataFromResponseByJsonPath('$.pinned'));
 
         $I->login($admin);
         $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
