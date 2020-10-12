@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "136893917e0b1296f45305e0134bdf55",
+    "content-hash": "7d19c69a5e4136a58ba60f1d3daaf6c1",
     "packages": [
         {
             "name": "4xxi/rest-request-errors",
