@@ -175,7 +175,7 @@ globals:
 steps:
 - <<: *stepCheckBuild
   when:
-    branch: [ feature/*, renovate/* ]
+    branch: [ feature/* ]
 
 - <<: *stepMainBuild
   when:
@@ -199,5 +199,4 @@ trigger:
   - master
   - develop
   - feature/*
-  - renovate/*
 
