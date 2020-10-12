@@ -205,7 +205,7 @@ class TeamController extends AbstractController
      * @SWG\Tag(name="Team")
      * @SWG\Response(
      *     response=200,
-     *     description="Set pinned is on or off",
+     *     description="Set pinned is on",
      *     @Model(type=TeamView::class)
      * )
      * @SWG\Response(
@@ -214,16 +214,46 @@ class TeamController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/{team}/pinned",
+     *     path="/{team}/pin",
      *     name="api_pinned_team_toggle",
      *     methods={"POST"}
      * )
      */
-    public function toggle(Team $team, TeamRepository $repository, TeamViewFactory $factory): TeamView
+    public function pin(Team $team, TeamRepository $repository, TeamViewFactory $factory): TeamView
     {
         $this->denyAccessUnlessGranted(TeamVoter::PINNED, $team);
 
         $team->togglePinned($this->getUser());
+        $repository->save($team);
+
+        return $factory->createSingle($team);
+    }
+
+    /**
+     * Toggle pinned team.
+     *
+     * @SWG\Tag(name="Team")
+     * @SWG\Response(
+     *     response=200,
+     *     description="Set unpinned is off",
+     *     @Model(type=TeamView::class)
+     * )
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such team"
+     * )
+     *
+     * @Route(
+     *     path="/{team}/unpin",
+     *     name="api_unpinned_team_toggle",
+     *     methods={"POST"}
+     * )
+     */
+    public function unpin(Team $team, TeamRepository $repository, TeamViewFactory $factory): TeamView
+    {
+        $this->denyAccessUnlessGranted(TeamVoter::PINNED, $team);
+
+        $team->togglePinned($this->getUser(), false);
         $repository->save($team);
 
         return $factory->createSingle($team);

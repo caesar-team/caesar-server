@@ -358,12 +358,12 @@ class Team
         $this->pinned = $pinned;
     }
 
-    public function togglePinned(User $user): void
+    public function togglePinned(User $user, bool $pin = true): void
     {
         $pinned = $this->getPinned();
-        if ($this->isPinned($user)) {
+        if ($this->isPinned($user) && !$pin) {
             unset($pinned[$user->getId()->toString()]);
-        } else {
+        } elseif (!$this->isPinned($user) && $pin) {
             $pinned[$user->getId()->toString()] = $user->getId()->toString();
         }
 
