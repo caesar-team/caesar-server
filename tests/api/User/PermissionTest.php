@@ -144,7 +144,6 @@ class PermissionTest extends Unit
             'move_item' => [],
             'delete_item' => [],
             'favorite_item_toggle' => [],
-            'batch_share_item' => [],
         ]]);
 
         $I->sendGET(sprintf('items/%s', $itemId));
@@ -154,7 +153,6 @@ class PermissionTest extends Unit
             'move_item' => [],
             'delete_item' => [],
             'favorite_item_toggle' => [],
-            'batch_share_item' => [],
         ]]);
     }
 }

@@ -57,15 +57,6 @@ use Swagger\Annotations as SWG;
  *     )
  * )
  * @Hateoas\Relation(
- *     "batch_share_item",
- *     attributes={"method": "POST"},
- *     href=@Hateoas\Route("api_batch_share_item"),
- *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::SHARE'), object.getItem()))"
- *     )
- * )
- *
- * @Hateoas\Relation(
  *     "team_edit_item",
  *     attributes={"method": "PATCH"},
  *     href=@Hateoas\Route(
@@ -96,14 +87,6 @@ use Swagger\Annotations as SWG;
  *     ),
  *     exclusion=@Hateoas\Exclusion(
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::MOVE'), object.getItem()))"
- *     )
- * )
- * @Hateoas\Relation(
- *     "team_batch_share_item",
- *     attributes={"method": "POST"},
- *     href=@Hateoas\Route("api_batch_share_item"),
- *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::SHARE'), object.getItem()))"
  *     )
  * )
  * @Hateoas\Relation(
@@ -150,12 +133,7 @@ final class ItemView
     /**
      * @SWG\Property(@Model(type=SharedChildItemView::class))
      */
-    private ?SharedChildItemView $shared;
-
-    /**
-     * @SWG\Property(@Model(type=UpdateItemView::class))
-     */
-    private ?UpdateItemView $update;
+    private ?SharedItemView $shared;
 
     /**
      * @SWG\Property(type="string", example="2020-06-24T08:03:12+00:00")
@@ -209,7 +187,6 @@ final class ItemView
     public function __construct(Item $item)
     {
         $this->item = $item;
-        $this->update = null;
         $this->shared = null;
         $this->relatedItemId = null;
         $this->teamId = null;
@@ -280,24 +257,14 @@ final class ItemView
         $this->invited = $invited;
     }
 
-    public function getShared(): ?SharedChildItemView
+    public function getShared(): ?SharedItemView
     {
         return $this->shared;
     }
 
-    public function setShared(?SharedChildItemView $shared): void
+    public function setShared(?SharedItemView $shared): void
     {
         $this->shared = $shared;
-    }
-
-    public function getUpdate(): ?UpdateItemView
-    {
-        return $this->update;
-    }
-
-    public function setUpdate(?UpdateItemView $update): void
-    {
-        $this->update = $update;
     }
 
     public function getLastUpdated(): \DateTime

@@ -16,8 +16,6 @@ class LimiterSubscriber implements EventSubscriberInterface
     private const DATABASE_SIZE_ROUTES = [
         'api_create_item',
         'api_batch_create_items',
-        'api_child_to_item',
-        'api_batch_share_item',
         'api_edit_item',
         'api_team_create_list',
         'api_team_edit_list',

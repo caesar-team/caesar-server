@@ -10,15 +10,11 @@
     },
     "masterPasswordState": {
       "type": "string"
-    },
-    "sharedItemsState": {
-      "type": "string"
     }
   },
   "required": [
     "twoFactorAuthState",
     "passwordState",
-    "masterPasswordState",
-    "sharedItemsState"
+    "masterPasswordState"
   ]
 }

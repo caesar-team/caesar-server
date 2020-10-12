@@ -28,11 +28,6 @@ class SecurityBootstrapView
      */
     private string $masterPasswordState;
 
-    /**
-     * @SWG\Property(type="string", example="SKIP|CHECK")
-     */
-    private string $sharedItemsState;
-
     public function getTwoFactorAuthState(): string
     {
         return $this->twoFactorAuthState;
@@ -61,15 +56,5 @@ class SecurityBootstrapView
     public function setMasterPasswordState(string $masterPasswordState): void
     {
         $this->masterPasswordState = $masterPasswordState;
-    }
-
-    public function getSharedItemsState(): string
-    {
-        return $this->sharedItemsState;
-    }
-
-    public function setSharedItemsState(string $sharedItemsState): void
-    {
-        $this->sharedItemsState = $sharedItemsState;
     }
 }

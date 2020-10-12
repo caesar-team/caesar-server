@@ -6,6 +6,7 @@ namespace App\Event\EventSubscriber;
 
 use App\Entity\Security\Invitation;
 use App\Entity\User;
+use App\Repository\InvitationRepository;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\EntityManagerInterface;
@@ -39,6 +40,8 @@ class InvitationRemoveSubscriber implements EventSubscriber
             return;
         }
 
-        $this->entityManager->getRepository(Invitation::class)->deleteByHash($user->getHashEmail());
+        /** @var InvitationRepository $repository */
+        $repository = $this->entityManager->getRepository(Invitation::class);
+        $repository->deleteByHash($user->getHashEmail());
     }
 }

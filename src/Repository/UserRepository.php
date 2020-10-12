@@ -8,7 +8,6 @@ use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
-use App\Traits\PaginatorTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Ramsey\Uuid\Uuid;
@@ -21,8 +20,6 @@ use Ramsey\Uuid\Uuid;
  */
 class UserRepository extends ServiceEntityRepository
 {
-    use PaginatorTrait;
-
     private DirectoryRepository $directoryRepository;
 
     public function __construct(ManagerRegistry $registry, DirectoryRepository $directoryRepository)

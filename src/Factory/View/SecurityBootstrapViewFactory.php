@@ -9,7 +9,6 @@ use App\Model\View\User\SecurityBootstrapView;
 use App\Repository\TeamRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Security\Voter\TwoFactorAuthStateVoter;
-use App\Utils\DirectoryHelper;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class SecurityBootstrapViewFactory
@@ -36,7 +35,6 @@ class SecurityBootstrapViewFactory
         $securityBootstrapView->setTwoFactorAuthState($this->getTwoFactorAuthState($user));
         $securityBootstrapView->setPasswordState($this->getPasswordState($user));
         $securityBootstrapView->setMasterPasswordState($this->getMasterPasswordState($user));
-        $securityBootstrapView->setSharedItemsState($this->getSharedItemsStepState($user));
 
         return $securityBootstrapView;
     }
@@ -87,23 +85,6 @@ class SecurityBootstrapViewFactory
             default:
                 $state = is_null($user->getEncryptedPrivateKey()) ? SecurityBootstrapView::STATE_CREATE : SecurityBootstrapView::STATE_CHECK;
                 break;
-        }
-
-        return $state;
-    }
-
-    private function getSharedItemsStepState(User $user): string
-    {
-        switch (true) {
-            case $this->authorizationManager->hasInvitation($user) && SecurityBootstrapView::STATE_CREATE === $this->getMasterPasswordState($user):
-                $state = SecurityBootstrapView::STATE_CHECK;
-                break;
-            case $user->isFullUser():
-                $teams = $this->teamRepository->findByUser($user);
-                $state = DirectoryHelper::hasOfferedItems($user, $teams) ? SecurityBootstrapView::STATE_CHECK : SecurityBootstrapView::STATE_SKIP;
-                break;
-            default:
-                $state = SecurityBootstrapView::STATE_SKIP;
         }
 
         return $state;

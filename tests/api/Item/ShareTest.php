@@ -2,7 +2,6 @@
 
 namespace App\Tests\Item;
 
-use App\DBAL\Types\Enum\AccessEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use App\Entity\User;
@@ -76,86 +75,5 @@ class ShareTest extends Unit
         $I->sendGET(sprintf('items/%s', $item->getId()->toString()));
         $I->dontSeeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId1]);
         $I->seeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId2]);
-    }
-
-    /** @test */
-    public function createChildItemToItem()
-    {
-        $I = $this->tester;
-
-        /** @var User $user */
-        $user = $this->tester->have(User::class);
-        /** @var User $member */
-        $member = $this->tester->have(User::class);
-
-        $team = $I->createTeam($user);
-        $I->addUserToTeam($team, $member);
-
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $user->getLists(),
-        ]);
-
-        $I->login($user);
-        $I->sendPOST(sprintf('/items/%s/child_item', $item->getId()->toString()), [
-            'items' => [
-                [
-                    'userId' => $member->getId()->toString(),
-                    'teamId' => $team->getId()->toString(),
-                    'secret' => 'some secret',
-                    'cause' => Item::CAUSE_SHARE,
-                    'link' => '',
-                    'access' => AccessEnumType::TYPE_READ,
-                ],
-            ],
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('item/linked_items_list.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
-    }
-
-    /** @test */
-    public function batchShare()
-    {
-        $I = $this->tester;
-
-        /** @var User $user */
-        $user = $this->tester->have(User::class);
-        /** @var User $member */
-        $member = $this->tester->have(User::class);
-
-        $team = $I->createTeam($user);
-        $I->addUserToTeam($team, $member);
-
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $user->getLists(),
-        ]);
-
-        $I->login($user);
-        $I->sendPOST('/items/batch/share', [
-            'originalItems' => [
-                [
-                    'originalItem' => $item->getId()->toString(),
-                    'items' => [
-                        [
-                            'userId' => $member->getId()->toString(),
-                            'teamId' => $team->getId()->toString(),
-                            'secret' => 'some secret',
-                            'cause' => Item::CAUSE_SHARE,
-                            'link' => '',
-                            'access' => AccessEnumType::TYPE_READ,
-                        ],
-                    ],
-                ],
-            ],
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('item/batch_share.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
     }
 }
