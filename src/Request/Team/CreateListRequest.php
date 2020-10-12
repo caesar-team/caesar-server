@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace App\Model\Request\Team;
+namespace App\Request\Team;
 
-use App\Entity\Directory;
+use App\Entity\Team;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
-final class EditListRequest
+final class CreateListRequest
 {
     /**
      * @Assert\NotBlank()
      */
     private ?string $label;
 
-    private Directory $directory;
+    private Team $team;
 
-    public function __construct(Directory $directory)
+    public function __construct(Team $team)
     {
-        $this->directory = $directory;
-        $this->label = $directory->getLabel();
+        $this->team = $team;
+        $this->label = '';
     }
 
     public function getLabel(): ?string
@@ -33,23 +33,21 @@ final class EditListRequest
         $this->label = $label;
     }
 
+    public function getTeam(): Team
+    {
+        return $this->team;
+    }
+
     /**
      * @Assert\Callback
      */
     public function uniqueValidation(ExecutionContextInterface $context)
     {
-        $list = $this->getDirectory()->getTeam()->getDirectoryByLabel($this->getLabel());
-
-        if ($list && !$this->getDirectory()->equals($list)) {
+        if ($this->team->getDirectoryByLabel($this->getLabel())) {
             $context->buildViolation('list.create.label.already_exists')
                 ->atPath('label')
                 ->addViolation()
             ;
         }
-    }
-
-    public function getDirectory(): Directory
-    {
-        return $this->directory;
     }
 }

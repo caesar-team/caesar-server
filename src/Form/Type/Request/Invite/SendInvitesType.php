@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Form\Request;
+namespace App\Form\Type\Request\Invite;
 
-use App\Model\Request\SendInviteRequests;
+use App\Request\Invite\SendInviteRequests;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;

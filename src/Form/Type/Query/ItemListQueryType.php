@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Form\Query;
+namespace App\Form\Type\Query;
 
 use App\Entity\Directory;
 use App\Model\Query\ItemListQuery;

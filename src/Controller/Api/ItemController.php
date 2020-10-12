@@ -6,32 +6,28 @@ namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
 use App\Entity\Item;
-use App\Model\Request\ItemsCollectionRequest;
+use App\Form\Type\Request\Item\ItemsCollectionRequestType;
+use App\Request\Item\ItemsCollectionRequest;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\TeamItemVoter;
 use Doctrine\ORM\EntityManagerInterface;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 
 final class ItemController extends AbstractController
 {
     /**
+     * Batch delete items (if items into trash list).
+     *
      * @SWG\Tag(name="Item")
      * @SWG\Parameter(
      *     name="items",
      *     in="body",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="array",
-     *             property="items",
-     *             @SWG\Items(type="string")
-     *         )
-     *     )
+     *     @Model(type=ItemsCollectionRequestType::class)
      * )
      * @SWG\Response(
      *     response=204,
@@ -42,34 +38,34 @@ final class ItemController extends AbstractController
      *     name="api_batch_delete_items",
      *     methods={"DELETE"}
      * )
-     *
-     * @return null
      */
-    public function batchDelete(Request $request, EntityManagerInterface $manager, SerializerInterface $serializer)
+    public function batchDelete(Request $request, EntityManagerInterface $manager): void
     {
+        //@todo @frontend candidate to refactoring, stay only request (body)
         $query = $request->query->all();
         if (empty($query)) {
             $query = $request->request->all();
         }
 
-        /** @var ItemsCollectionRequest $itemsCollection */
-        $itemsCollection = $serializer->deserialize(json_encode($query), ItemsCollectionRequest::class, 'json');
+        $batchRequest = new ItemsCollectionRequest();
 
-        foreach ($itemsCollection->getItems() as $item) {
-            $item = $manager->getRepository(Item::class)->find($item);
-            if ($item instanceof Item) {
-                $this->denyAccessUnlessGranted([ItemVoter::DELETE, TeamItemVoter::DELETE], $item);
-                if ($item->isNotDeletable()) {
-                    $message = $this->translator->trans('app.exception.delete_trash_only');
-                    throw new BadRequestHttpException($message);
-                }
-
-                $manager->remove($item);
-            }
+        $form = $this->createForm(ItemsCollectionRequestType::class, $batchRequest);
+        $form->submit($query);
+        if (!$form->isValid()) {
+            throw new FormInvalidRequestException($form);
         }
-        $manager->flush();
 
-        return null;
+        foreach ($batchRequest->getItems() as $item) {
+            $this->denyAccessUnlessGranted([ItemVoter::DELETE, TeamItemVoter::DELETE], $item);
+            if ($item->isNotDeletable()) {
+                $message = $this->translator->trans('app.exception.delete_trash_only');
+                throw new BadRequestHttpException($message);
+            }
+
+            $manager->remove($item);
+        }
+
+        $manager->flush();
     }
 
     /**

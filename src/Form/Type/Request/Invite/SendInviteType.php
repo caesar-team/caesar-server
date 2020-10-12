@@ -2,22 +2,27 @@
 
 declare(strict_types=1);
 
-namespace App\Form\Request\Srp;
+namespace App\Form\Type\Request\Invite;
 
 use App\Entity\User;
-use App\Model\Request\LoginRequest;
+use App\Request\Invite\SendInviteRequest;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Url;
 
-class LoginType extends AbstractType
+final class SendInviteType extends AbstractType
 {
+    /**
+     * {@inheritdoc}
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         parent::buildForm($builder, $options);
+
         $builder
             ->add('email', EntityType::class, [
                 'property_path' => 'user',
@@ -27,18 +32,23 @@ class LoginType extends AbstractType
                     new NotBlank(),
                 ],
             ])
-            ->add('matcher', TextType::class, [
+            ->add('url', TextType::class, [
                 'constraints' => [
                     new NotBlank(),
+                    new Url(),
                 ],
             ]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
+
         $resolver->setDefaults([
-            'data_class' => LoginRequest::class,
+            'data_class' => SendInviteRequest::class,
             'csrf_protection' => false,
         ]);
     }

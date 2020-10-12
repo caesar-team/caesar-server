@@ -3,7 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Team;
-use App\Form\Type\UserTeamType;
+use App\Form\Type\Admin\UserTeamType;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;

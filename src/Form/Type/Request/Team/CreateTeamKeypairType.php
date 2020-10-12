@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Form\Request;
+namespace App\Form\Type\Request\Team;
 
-use App\Model\Request\CreateTeamKeypairRequest;
+use App\Request\Team\CreateTeamKeypairRequest;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;

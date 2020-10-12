@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Model\Request;
+namespace App\Request\Invite;
 
 use App\Entity\User;
 

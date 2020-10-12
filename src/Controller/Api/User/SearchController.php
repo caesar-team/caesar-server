@@ -6,7 +6,6 @@ namespace App\Controller\Api\User;
 
 use App\Controller\AbstractController;
 use App\Factory\View\User\SearchUserViewFactory;
-use App\Model\Request\FilterRequest;
 use App\Model\View\User\SearchUserView;
 use App\Repository\UserRepository;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -43,8 +42,10 @@ final class SearchController extends AbstractController
         UserRepository $userRepository,
         SearchUserViewFactory $viewFactory
     ): array {
-        $filter = FilterRequest::createFromRequest($request);
-
-        return $viewFactory->createCollection($userRepository->findByPartOfEmail($filter->getEmail()));
+        return $viewFactory->createCollection(
+            $userRepository->findByPartOfEmail(
+                $request->get('email', '')
+            )
+        );
     }
 }

@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Model\Request\Team;
+namespace App\Request\Team;
 
 use App\Entity\User;
-use App\Model\Request\CreateTeamKeypairRequest;
 
 final class CreateVaultRequest
 {

@@ -7,7 +7,7 @@ namespace App\Factory\Entity;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\UserTeam;
 use App\Model\DTO\Vault;
-use App\Model\Request\Team\CreateVaultRequest;
+use App\Request\Team\CreateVaultRequest;
 
 class VaultFactory
 {

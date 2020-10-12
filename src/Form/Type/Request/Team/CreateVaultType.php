@@ -2,28 +2,27 @@
 
 declare(strict_types=1);
 
-namespace App\Form\Request\Team;
+namespace App\Form\Type\Request\Team;
 
-use App\Entity\UserTeam;
-use App\Model\Request\Team\EditUserTeamRequest;
+use App\Request\Team\CreateVaultRequest;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-final class EditUserTeamType extends AbstractType
+class CreateVaultType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('userRole', ChoiceType::class, [
-            'choices' => UserTeam::ROLES,
-        ]);
+        $builder
+            ->add('team', CreateTeamRequestType::class)
+            ->add('keypair', CreateTeamKeypairType::class)
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => EditUserTeamRequest::class,
+            'data_class' => CreateVaultRequest::class,
             'csrf_protection' => false,
         ]);
     }
