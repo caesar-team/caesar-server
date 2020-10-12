@@ -107,7 +107,7 @@ class MemberTest extends Unit
             'secret' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
+        $this->assertEquals([HttpCode::FORBIDDEN], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
         $I->sendPOST(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
@@ -157,7 +157,7 @@ class MemberTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
+        $this->assertEquals([HttpCode::FORBIDDEN], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
         $I->sendPOST(sprintf('teams/%s/members/batch', $team->getId()->toString()), [
@@ -208,7 +208,7 @@ class MemberTest extends Unit
         $I->login($user);
         $I->sendDELETE(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
+        $this->assertEquals([HttpCode::FORBIDDEN], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
         $I->sendDELETE(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()));
@@ -241,7 +241,7 @@ class MemberTest extends Unit
             'userRole' => UserTeam::USER_ROLE_ADMIN,
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
+        $this->assertEquals([HttpCode::FORBIDDEN], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
         $I->haveHttpHeader('Content-Type', 'application/json');
