@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Table
  * @ORM\Entity
- * @ORM\EntityListeners({"App\Event\EntityListener\FileListener"})
+ * @ORM\EntityListeners({"App\EventSubscriber\Doctrine\FileListener"})
  */
 class Avatar extends AbstractImage
 {

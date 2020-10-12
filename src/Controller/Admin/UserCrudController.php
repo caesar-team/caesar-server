@@ -3,15 +3,10 @@
 namespace App\Controller\Admin;
 
 use App\Entity\User;
-use Doctrine\ORM\Query\Expr\Orx;
-use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\FilterDataDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -105,56 +100,12 @@ class UserCrudController extends AbstractCrudController
 
     public function configureFilters(Filters $filters): Filters
     {
-        //@todo update after merge https://github.com/EasyCorp/EasyAdminBundle/pull/3725/files
-//        $rolesFilter = ArrayFilter::new('roles')
-//            ->setChoices(self::ROLES_AVAILABLE)
-//            ->canSelectMultiple(true)
-//        ;
-
-        $rolesFilter = ChoiceFilter::new('roles')
-            ->setChoices(self::ROLES_AVAILABLE)
-            ->canSelectMultiple(true)
-        ;
-
-        $rolesFilter
-            ->getAsDto()
-            ->setApplyCallable(static function (QueryBuilder $queryBuilder, FilterDataDto $filterDataDto, ?FieldDto $fieldDto, EntityDto $entityDto) {
-                $alias = $filterDataDto->getEntityAlias();
-                $property = $filterDataDto->getProperty();
-                $comparison = $filterDataDto->getComparison();
-                $parameterName = $filterDataDto->getParameterName();
-                $value = $filterDataDto->getValue();
-                $isMultiple = $filterDataDto->getFormTypeOption('value_type_options.multiple');
-
-                if ('NOT IN' === $comparison) {
-                    $comparison = 'NOT LIKE';
-                } else {
-                    $comparison = 'LIKE';
-                }
-
-                if (null === $value || ($isMultiple && 0 === \count($value))) {
-                    $queryBuilder->andWhere(sprintf('%s.%s %s', $alias, $property, $comparison));
-                } else {
-                    $orX = new Orx();
-                    if ($isMultiple && is_array($value)) {
-                        foreach ($value as $i => $val) {
-                            $parameterNameVal = sprintf('%s_%s', $parameterName, $i);
-                            $orX->add(sprintf('%s.%s %s :%s', $alias, $property, $comparison, $parameterNameVal));
-                            $queryBuilder->setParameter($parameterNameVal, '%'.$val.'%');
-                        }
-                    } else {
-                        $orX->add(sprintf('%s.%s %s :%s', $alias, $property, $comparison, $parameterName));
-                        $queryBuilder->setParameter($parameterName, '%'.$value.'%');
-                    }
-
-                    $queryBuilder->andWhere($orX);
-                }
-            })
-        ;
-
         return $filters
             ->add(BooleanFilter::new('enabled'))
-            ->add($rolesFilter)
+            ->add(ArrayFilter::new('roles')
+                ->setChoices(self::ROLES_AVAILABLE)
+                ->canSelectMultiple(true)
+            )
             ->add(ChoiceFilter::new('flowStatus')
                 ->setChoices(self::FLOW_STATUS_AVAILABLE)
                 ->canSelectMultiple(true)

@@ -2,18 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Event\ExceptionListener;
+namespace App\EventSubscriber\Kernel;
 
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class ErrorResponseListener
+class ErrorResponseListener implements EventSubscriberInterface
 {
     private const ADMIN_ROUTE = 'easyadmin';
 
@@ -31,6 +33,13 @@ class ErrorResponseListener
         $this->logger = $logger;
         $this->router = $router;
         $this->serializer = $serializer;
+    }
+
+    public static function getSubscribedEvents()
+    {
+        return [
+            KernelEvents::EXCEPTION => 'onKernelException',
+        ];
     }
 
     public function onKernelException(ExceptionEvent $event)

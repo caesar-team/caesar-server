@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Event\EventSubscriber;
+namespace App\EventSubscriber\Admin;
 
 use App\Entity\User;
 use App\Repository\ItemRepository;

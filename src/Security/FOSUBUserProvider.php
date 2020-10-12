@@ -6,7 +6,6 @@ namespace App\Security;
 
 use App\Entity\User;
 use App\Event\User\RegistrationCompletedEvent;
-use App\Model\Event\AppEvents;
 use App\Repository\UserRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\File\FileDownloader;
@@ -17,7 +16,6 @@ use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
 use HWI\Bundle\OAuthBundle\Security\Core\Exception\AccountNotLinkedException;
 use HWI\Bundle\OAuthBundle\Security\Core\User\FOSUBUserProvider as BaseUserProvider;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -88,19 +86,16 @@ class FOSUBUserProvider extends BaseUserProvider
                 if ($user instanceof User) {
                     $avatar = $this->downloader->createAvatarFromLink($response->getProfilePicture());
                     $user->setAvatar($avatar);
-
-                    $this->eventDispatcher->dispatch(new RegistrationCompletedEvent($user));
                 }
 
                 $this->userManager->updateCanonicalFields($user);
                 $this->userManager->updatePassword($user);
 
-                /**
-                 * @phpstan-ignore-next-line
-                 * @psalm-suppress InvalidArgument
-                 * @psalm-suppress TooManyArguments
-                 */
-                $this->eventDispatcher->dispatch(AppEvents::REGISTER_BY_GOOGLE, new GenericEvent($user));
+                if ($user instanceof  User) {
+                    $this->eventDispatcher->dispatch(
+                        new RegistrationCompletedEvent($user, RegistrationCompletedEvent::FROM_GOOGLE)
+                    );
+                }
             }
         }
 

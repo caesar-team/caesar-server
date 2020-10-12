@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Event\EntityListener;
+namespace App\EventSubscriber\Doctrine;
 
 use App\Model\File\AbstractFile;
 use Doctrine\ORM\Mapping\PostPersist;

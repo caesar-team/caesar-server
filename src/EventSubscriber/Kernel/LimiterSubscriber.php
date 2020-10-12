@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Event\EventSubscriber;
+namespace App\EventSubscriber\Kernel;
 
 use App\Limiter\Inspector\DatabaseSizeInspector;
 use App\Limiter\LimiterInterface;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Event\EventSubscriber;
+namespace App\EventSubscriber\System;
 
 use App\Event\User\RegistrationCompletedEvent;
 use App\Mailer\MailRegistry;

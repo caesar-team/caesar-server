@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Event\EventSubscriber;
+namespace App\EventSubscriber\Doctrine;
 
 use App\Entity\Security\Invitation;
 use App\Entity\User;
 use App\Repository\InvitationRepository;
-use Doctrine\Common\EventSubscriber;
+use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
 
-class InvitationRemoveSubscriber implements EventSubscriber
+class InvitationRemoveSubscriber implements EventSubscriberInterface
 {
     private EntityManagerInterface $entityManager;
 

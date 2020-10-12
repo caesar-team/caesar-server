@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Event\EventSubscriber;
+namespace App\EventSubscriber\Doctrine;
 
-use App\Entity\User;
-use Doctrine\Common\EventSubscriber;
+use App\Entity\Team;
+use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
 
-final class RemoveDirectoriesDeletedUserSubscriber implements EventSubscriber
+final class RemoveDirectoriesDeletedTeamSubscriber implements EventSubscriberInterface
 {
     /**
      * Returns an array of events this subscriber wants to listen to.
@@ -25,14 +25,13 @@ final class RemoveDirectoriesDeletedUserSubscriber implements EventSubscriber
 
     public function preRemove(LifecycleEventArgs $args): void
     {
-        $user = $args->getObject();
+        $team = $args->getObject();
 
-        if (!$user instanceof User) {
+        if (!$team instanceof Team) {
             return;
         }
 
-        $args->getObjectManager()->remove($user->getLists());
-        $args->getObjectManager()->remove($user->getTrash());
-        $args->getObjectManager()->remove($user->getInbox());
+        $args->getObjectManager()->remove($team->getLists());
+        $args->getObjectManager()->remove($team->getTrash());
     }
 }

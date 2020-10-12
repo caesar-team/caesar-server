@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Event\EventSubscriber;
+namespace App\EventSubscriber\Admin;
 
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;

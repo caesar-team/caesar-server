@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Event\EventSubscriber;
+namespace App\EventSubscriber\Doctrine;
 
-use Doctrine\Common\EventSubscriber;
+use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Tools\Event\GenerateSchemaEventArgs;
 
 /**
@@ -12,7 +12,7 @@ use Doctrine\ORM\Tools\Event\GenerateSchemaEventArgs;
  *
  * @see https://github.com/doctrine/dbal/issues/1110#issuecomment-255765189
  */
-class MigrationEventSubscriber implements EventSubscriber
+class MigrationEventSubscriber implements EventSubscriberInterface
 {
     /**
      * @return array
