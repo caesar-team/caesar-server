@@ -62,7 +62,7 @@
         "codeception/module-db": "1.0.1",
         "codeception/module-doctrine2": "1.0.1",
         "codeception/module-phpbrowser": "1.0.1",
-        "codeception/module-rest": "1.2.3",
+        "codeception/module-rest": "1.2.4",
         "codeception/module-symfony": "1.1.1",
         "friendsofphp/php-cs-fixer": "2.16.4",
         "phpstan/phpstan": "0.12.48",

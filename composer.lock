@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "136893917e0b1296f45305e0134bdf55",
+    "content-hash": "9a7a51d846303f5ac874e9a1419b5642",
     "packages": [
         {
             "name": "4xxi/rest-request-errors",
@@ -13021,16 +13021,16 @@
         },
         {
             "name": "codeception/module-rest",
-            "version": "1.2.3",
+            "version": "1.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Codeception/module-rest.git",
-                "reference": "63d09a1ed9fb9bb981d22396e7c2c7d20570f217"
+                "reference": "308d1b7782317310018e0ea45223caada51ea89f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Codeception/module-rest/zipball/63d09a1ed9fb9bb981d22396e7c2c7d20570f217",
-                "reference": "63d09a1ed9fb9bb981d22396e7c2c7d20570f217",
+                "url": "https://api.github.com/repos/Codeception/module-rest/zipball/308d1b7782317310018e0ea45223caada51ea89f",
+                "reference": "308d1b7782317310018e0ea45223caada51ea89f",
                 "shasum": ""
             },
             "require": {
@@ -13068,7 +13068,7 @@
                 "codeception",
                 "rest"
             ],
-            "time": "2020-09-17T13:36:51+00:00"
+            "time": "2020-10-11T18:38:50+00:00"
         },
         {
             "name": "codeception/module-symfony",
