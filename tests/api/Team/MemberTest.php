@@ -102,17 +102,19 @@ class MemberTest extends Unit
         $I->addUserToTeam($team, $user);
 
         $I->login($user);
-        $I->sendPOST(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
+        $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
             'userRole' => UserTeam::USER_ROLE_ADMIN,
             'secret' => uniqid(),
+            'userId' => $otherUser->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([HttpCode::FORBIDDEN], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
-        $I->sendPOST(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
+        $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
             'userRole' => UserTeam::USER_ROLE_ADMIN,
             'secret' => uniqid(),
+            'userId' => $otherUser->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
@@ -120,9 +122,10 @@ class MemberTest extends Unit
         $I->seeResponseIsValidOnJsonSchemaString($schema);
 
         $I->login($domainAdmin);
-        $I->sendPOST(sprintf('teams/%s/members/%s', $team->getId()->toString(), $member->getId()->toString()), [
+        $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
             'userRole' => UserTeam::USER_ROLE_ADMIN,
             'secret' => uniqid(),
+            'userId' => $member->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 

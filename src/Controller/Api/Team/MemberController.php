@@ -155,7 +155,7 @@ final class MemberController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/{team}/members/{user}",
+     *     path="/{team}/members",
      *     name="api_team_member_add",
      *     methods={"POST"}
      * )
@@ -163,13 +163,12 @@ final class MemberController extends AbstractController
     public function addMember(
         Request $request,
         Team $team,
-        User $user,
         MemberCreator $memberCreator,
         MemberViewFactory $viewFactory
     ): MemberView {
         $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
 
-        $createRequest = new CreateMemberRequest($team, $user);
+        $createRequest = new CreateMemberRequest($team);
 
         $form = $this->createForm(CreateMemberRequestType::class, $createRequest);
         $form->submit($request->request->all());

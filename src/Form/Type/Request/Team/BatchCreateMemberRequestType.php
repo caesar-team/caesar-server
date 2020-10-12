@@ -21,7 +21,7 @@ class BatchCreateMemberRequestType extends AbstractType
         }
 
         $builder->add('members', CollectionType::class, [
-            'entry_type' => CreateMemberWithUserRequestType::class,
+            'entry_type' => CreateMemberRequestType::class,
             'entry_options' => [
                 'team' => $team,
             ],

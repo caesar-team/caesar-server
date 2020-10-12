@@ -27,9 +27,8 @@ final class CreateMemberRequest
 
     private Team $team;
 
-    public function __construct(Team $team, ?User $user = null)
+    public function __construct(Team $team)
     {
-        $this->user = $user;
         $this->team = $team;
     }
 
