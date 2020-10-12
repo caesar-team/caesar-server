@@ -530,4 +530,11 @@ class Item implements ChildItemAwareInterface
             && NodeEnumType::TYPE_KEYPAIR !== $this->getType()
         ;
     }
+
+    public function moveTo(Directory $directory): void
+    {
+        $this->setPreviousList($this->getParentList());
+        $this->setParentList($directory);
+        $this->setTeam($directory->getTeam());
+    }
 }

@@ -7,21 +7,21 @@ namespace App\Controller\Api\Item;
 use App\Controller\AbstractController;
 use App\Entity\Directory;
 use App\Entity\Item;
-use App\Form\Request\MoveItemType;
-use App\Model\Request\ItemsCollectionRequest;
+use App\Form\Type\Request\Item\ItemsCollectionRequestType;
+use App\Form\Type\Request\Item\MoveItemRequestType;
 use App\Repository\ItemRepository;
+use App\Request\Item\ItemsCollectionRequest;
+use App\Request\Item\MoveItemRequest;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\ListVoter;
 use App\Security\Voter\TeamItemVoter;
 use App\Security\Voter\TeamListVoter;
-use App\Services\File\ItemMoveResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @Route(path="/api/items")
@@ -42,7 +42,7 @@ final class MoveController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\MoveItemType::class)
+     *     @Model(type=MoveItemRequestType::class)
      * )
      * @SWG\Response(
      *     response=204,
@@ -84,25 +84,21 @@ final class MoveController extends AbstractController
     public function moveItem(
         Item $item,
         Request $request,
-        ItemMoveResolver $itemMoveResolver,
         ItemRepository $itemRepository
     ): void {
         $this->denyAccessUnlessGranted([ItemVoter::MOVE, TeamItemVoter::MOVE], $item);
 
-        $replacedItem = new Item();
+        $moveRequest = new MoveItemRequest($this->getUser());
 
-        $form = $this->createForm(MoveItemType::class, $replacedItem);
+        $form = $this->createForm(MoveItemRequestType::class, $moveRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
+        $this->denyAccessUnlessGranted([ListVoter::MOVABLE, TeamListVoter::MOVABLE], $moveRequest->getList());
 
-        $this->denyAccessUnlessGranted([ListVoter::MOVABLE, TeamListVoter::MOVABLE], $replacedItem->getParentList());
-
-        $replacedItem->setOwner($item->getOwner());
-
-        $itemMoveResolver->move($item, $replacedItem->getParentList());
-        $itemRepository->flush();
+        $item->moveTo($moveRequest->getList());
+        $itemRepository->save($item);
     }
 
     /**
@@ -110,14 +106,7 @@ final class MoveController extends AbstractController
      * @SWG\Parameter(
      *     name="items",
      *     in="body",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="array",
-     *             property="items",
-     *             @SWG\Items(type="string")
-     *         )
-     *     )
+     *     @Model(type=ItemsCollectionRequestType::class)
      * )
      * @SWG\Response(
      *     response=204,
@@ -137,22 +126,23 @@ final class MoveController extends AbstractController
     public function batchMove(
         Request $request,
         Directory $directory,
-        EntityManagerInterface $manager,
-        SerializerInterface $serializer,
-        ItemMoveResolver $itemMoveResolver
+        EntityManagerInterface $entityManager
     ): void {
         $this->denyAccessUnlessGranted([ListVoter::MOVABLE, TeamListVoter::MOVABLE], $directory);
 
-        /** @var ItemsCollectionRequest $itemsCollection */
-        $itemsCollection = $serializer->deserialize(json_encode($request->request->all()), ItemsCollectionRequest::class, 'json');
+        $batchRequest = new ItemsCollectionRequest();
 
-        foreach ($itemsCollection->getItems() as $item) {
-            $item = $manager->getRepository(Item::class)->find($item);
-            if ($item instanceof Item) {
-                $this->denyAccessUnlessGranted([ItemVoter::MOVE, TeamItemVoter::MOVE], $item);
-                $itemMoveResolver->move($item, $directory);
-            }
+        $form = $this->createForm(ItemsCollectionRequestType::class, $batchRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            throw new FormInvalidRequestException($form);
         }
-        $manager->flush();
+
+        foreach ($batchRequest->getItems() as $item) {
+            $this->denyAccessUnlessGranted([ItemVoter::MOVE, TeamItemVoter::MOVE], $item);
+            $item->moveTo($directory);
+            $entityManager->persist($item);
+        }
+        $entityManager->flush();
     }
 }

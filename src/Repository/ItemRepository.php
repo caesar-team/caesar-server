@@ -142,17 +142,6 @@ class ItemRepository extends ServiceEntityRepository
         $this->_em->flush();
     }
 
-    public function findByParentDirectoryAndParent(Item $item): array
-    {
-        $qb = $this->createQueryBuilder('item');
-        $qb->where('item.parentList =:parent_list');
-        $qb->andWhere('item.originalItem =:item');
-        $qb->setParameter('parent_list', $item->getParentList());
-        $qb->setParameter('item', $item);
-
-        return $qb->getQuery()->getResult();
-    }
-
     public function resetOwnerTeamItems(Team $team, User $oldOwner, User $newOwner): void
     {
         $queryBuilder = $this->createQueryBuilder('item');
