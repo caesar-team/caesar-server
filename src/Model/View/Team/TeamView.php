@@ -79,10 +79,32 @@ use Swagger\Annotations as SWG;
  *     )
  * )
  * @Hateoas\Relation(
+ *     "team_member_batch_add",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route(
+ *         "api_team_member_batch",
+ *         parameters={ "team": "expr(object.getId())"}
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\UserTeamVoter::EDIT'), object.getUserTeam()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
  *     "team_pinned",
  *     attributes={"method": "POST"},
  *     href=@Hateoas\Route(
  *         "api_pinned_team_toggle",
+ *         parameters={ "team": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamVoter::PINNED'), object.getTeam()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "team_unpinned",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route(
+ *         "api_unpinned_team_toggle",
  *         parameters={ "team": "expr(object.getId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
