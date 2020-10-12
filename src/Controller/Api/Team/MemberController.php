@@ -9,15 +9,16 @@ use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
 use App\Factory\View\Team\MemberViewFactory;
-use App\Form\Request\Team\AddMemberType;
 use App\Form\Request\Team\EditUserTeamType;
-use App\Mailer\MailRegistry;
+use App\Form\Type\Request\Team\BatchCreateMemberRequestType;
+use App\Form\Type\Request\Team\CreateMemberRequestType;
 use App\Model\Request\Team\EditUserTeamRequest;
 use App\Model\View\Team\MemberView;
-use App\Notification\MessengerInterface;
-use App\Notification\Model\Message;
 use App\Repository\UserTeamRepository;
+use App\Request\Team\BatchCreateMemberRequest;
+use App\Request\Team\CreateMemberRequest;
 use App\Security\Voter\UserTeamVoter;
+use App\Team\MemberCreator;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -26,7 +27,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\RouterInterface;
 
 /**
  * @Route(path="/api/teams")
@@ -94,14 +94,59 @@ final class MemberController extends AbstractController
     }
 
     /**
-     * Add member to team.
+     * Add batch members to team.
      *
      * @SWG\Tag(name="Team / Member")
-     *
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=AddMemberType::class)
+     *     @Model(type=BatchCreateMemberRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Add team member",
+     *     @SWG\Schema(type="array", @Model(type=MemberView::class))
+     * )
+     *
+     * @Route(
+     *     path="/{team}/members/batch",
+     *     name="api_team_member_batch",
+     *     methods={"POST"}
+     * )
+     */
+    public function batchMember(
+        Request $request,
+        Team $team,
+        MemberViewFactory $viewFactory,
+        MemberCreator $memberCreator
+    ): array {
+        $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
+
+        $batchRequest = new BatchCreateMemberRequest($team);
+
+        $form = $this->createForm(BatchCreateMemberRequestType::class, $batchRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            throw new FormInvalidRequestException($form);
+        }
+
+        $result = [];
+        foreach ($batchRequest->getMembers() as $memberRequest) {
+            $member = $memberCreator->createAndSave($memberRequest);
+            $result[] = $member->getUserTeam();
+        }
+
+        return $viewFactory->createCollection($result);
+    }
+
+    /**
+     * Add member to team.
+     *
+     * @SWG\Tag(name="Team / Member")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=CreateMemberRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
@@ -119,33 +164,21 @@ final class MemberController extends AbstractController
         Request $request,
         Team $team,
         User $user,
-        MemberViewFactory $viewFactory,
-        UserTeamRepository $repository,
-        MessengerInterface $messenger
+        MemberCreator $memberCreator,
+        MemberViewFactory $viewFactory
     ): MemberView {
         $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
-        $userTeam = new UserTeam();
-        $form = $this->createForm(AddMemberType::class, $userTeam);
-        $form->submit($request->request->all());
 
+        $createRequest = new CreateMemberRequest($team, $user);
+
+        $form = $this->createForm(CreateMemberRequestType::class, $createRequest);
+        $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
+        $member = $memberCreator->createAndSave($createRequest);
 
-        $userTeam->setUser($user);
-        $userTeam->setTeam($team);
-        $repository->save($userTeam);
-
-        $messenger->send(Message::createFromUser(
-            $user,
-            MailRegistry::ADD_TO_TEAM,
-            [
-                'team_name' => $team->getTitle(),
-                'url' => $this->generateUrl('root', [], RouterInterface::ABSOLUTE_URL),
-            ]
-        ));
-
-        return $viewFactory->createSingle($userTeam);
+        return $viewFactory->createSingle($member->getUserTeam());
     }
 
     /**

@@ -104,6 +104,7 @@ class MemberTest extends Unit
         $I->login($user);
         $I->sendPOST(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
             'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'secret' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
@@ -111,6 +112,7 @@ class MemberTest extends Unit
         $I->login($admin);
         $I->sendPOST(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
             'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'secret' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
@@ -120,10 +122,66 @@ class MemberTest extends Unit
         $I->login($domainAdmin);
         $I->sendPOST(sprintf('teams/%s/members/%s', $team->getId()->toString(), $member->getId()->toString()), [
             'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'secret' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $schema = $I->getSchema('team/member.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
+
+    /** @test */
+    public function addBatchMembersToTeam()
+    {
+        $I = $this->tester;
+
+        /** @var User $admin */
+        $admin = $I->have(User::class);
+        /** @var User $user */
+        $user = $I->have(User::class);
+        /** @var User $member */
+        $member = $I->have(User::class);
+        /** @var User $otherUser */
+        $otherUser = $I->have(User::class);
+
+        $team = $I->createTeam($admin);
+
+        $I->login($user);
+        $I->sendPOST(sprintf('teams/%s/members/batch', $team->getId()->toString()), [
+            'members' => [
+                [
+                    'userRole' => UserTeam::USER_ROLE_ADMIN,
+                    'secret' => uniqid(),
+                    'userId' => $otherUser->getId()->toString(),
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
+        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
+
+        $I->login($admin);
+        $I->sendPOST(sprintf('teams/%s/members/batch', $team->getId()->toString()), [
+            'members' => [
+                [
+                    'userRole' => UserTeam::USER_ROLE_ADMIN,
+                    'secret' => uniqid(),
+                    'userId' => $user->getId()->toString(),
+                ],
+                [
+                    'userRole' => UserTeam::USER_ROLE_MEMBER,
+                    'secret' => uniqid(),
+                    'userId' => $member->getId()->toString(),
+                ],
+                [
+                    'userRole' => UserTeam::USER_ROLE_MEMBER,
+                    'secret' => uniqid(),
+                    'userId' => $otherUser->getId()->toString(),
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $schema = $I->getSchema('team/members.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
     }
 

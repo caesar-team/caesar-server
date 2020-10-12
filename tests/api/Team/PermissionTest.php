@@ -21,6 +21,7 @@ class PermissionTest extends Unit
         'team_edit' => [],
         'team_members' => [],
         'team_member_add' => [],
+        'team_member_batch_add' => [],
         'team_create_list' => [],
         'team_get_lists' => [],
         'team_pinned' => [],
@@ -29,6 +30,7 @@ class PermissionTest extends Unit
     private const TEAM_ADMIN_ACCESS = [
         'team_members' => [],
         'team_member_add' => [],
+        'team_member_batch_add' => [],
         'team_create_list' => [],
         'team_get_lists' => [],
     ];

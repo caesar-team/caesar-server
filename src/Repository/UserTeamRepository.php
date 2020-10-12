@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
+use App\Model\DTO\Member;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
@@ -67,5 +68,12 @@ class UserTeamRepository extends ServiceEntityRepository
     {
         $this->_em->persist($userTeam);
         $this->_em->flush();
+    }
+
+    public function saveMember(Member $member): void
+    {
+        $this->getEntityManager()->persist($member->getUserTeam());
+        $this->getEntityManager()->persist($member->getKeypair());
+        $this->getEntityManager()->flush();
     }
 }
