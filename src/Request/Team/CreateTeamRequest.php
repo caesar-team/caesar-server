@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Request\Team;
 
+use App\Validator\Constraints\UniqueEntityProperty;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class CreateTeamRequest
@@ -12,6 +13,7 @@ final class CreateTeamRequest
      * @var string
      *
      * @Assert\NotBlank
+     * @UniqueEntityProperty(entityClass="App\Entity\Team", field="title", message="team.label.unique")
      */
     private $title;
 

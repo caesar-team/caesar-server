@@ -5,16 +5,21 @@ declare(strict_types=1);
 namespace App\Request\Team;
 
 use App\Entity\User;
+use Symfony\Component\Validator\Constraints as Assert;
 
 final class CreateVaultRequest
 {
     /**
      * @var CreateTeamRequest
+     *
+     * @Assert\Valid
      */
     private $team;
 
     /**
      * @var CreateTeamKeypairRequest
+     *
+     * @Assert\Valid
      */
     private $keypair;
 

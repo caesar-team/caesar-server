@@ -45,7 +45,7 @@ class VaultTest extends Unit
         $I->login($admin);
         $I->sendPOST('/vault', [
             'team' => [
-                'title' => uniqid(),
+                'title' => 'Vault team test',
                 'icon' => null,
             ],
             'keypair' => [
@@ -56,5 +56,27 @@ class VaultTest extends Unit
 
         $schema = $I->getSchema('team/vault.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+
+        $I->sendPOST('/vault', [
+            'team' => [
+                'title' => 'Vault team test',
+                'icon' => null,
+            ],
+            'keypair' => [
+                'secret' => uniqid(),
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+
+        $I->sendPOST('/vault', [
+            'team' => [
+                'title' => null,
+                'icon' => null,
+            ],
+            'keypair' => [
+                'secret' => null,
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
     }
 }
