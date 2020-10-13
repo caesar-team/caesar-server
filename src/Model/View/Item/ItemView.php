@@ -46,6 +46,17 @@ use Swagger\Annotations as SWG;
  *     )
  * )
  * @Hateoas\Relation(
+ *     "share_item",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route(
+ *         "api_item_share",
+ *         parameters={ "item": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\ItemVoter::EDIT'), object.getItem()))"
+ *     )
+ * )
+ * @Hateoas\Relation(
  *     "favorite_item_toggle",
  *     attributes={"method": "POST"},
  *     href=@Hateoas\Route(
