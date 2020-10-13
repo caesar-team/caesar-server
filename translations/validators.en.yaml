@@ -3,6 +3,11 @@ item:
     invalid_list: You are not owner of list
   keypair:
     unique: Keypair is already exists
+
+team:
+  label:
+    unuqie: You already have a team with the same name. Choose another name.
+
 list.create.label.already_exists: List with such label already exists
 item.invite.update.invalid_user: You are sent invalid users collection
 
