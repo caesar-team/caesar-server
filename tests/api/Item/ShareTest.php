@@ -19,7 +19,7 @@ class ShareTest extends Unit
     protected ApiTester $tester;
 
     /** @test */
-    public function newShareItem()
+    public function createKeypairItems()
     {
         $I = $this->tester;
 
@@ -75,5 +75,63 @@ class ShareTest extends Unit
         $I->sendGET(sprintf('items/%s', $item->getId()->toString()));
         $I->dontSeeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId1]);
         $I->seeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId2]);
+    }
+
+    /** @test */
+    public function shareItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $this->tester->have(User::class);
+        /** @var User $member */
+        $member = $this->tester->have(User::class);
+        /** @var User $otherMember */
+        $otherMember = $this->tester->have(User::class);
+
+        /** @var Item $item */
+        $item = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getLists(),
+        ]);
+
+        $I->login($member);
+        $I->sendPOST(sprintf('items/%s/share', $item->getId()->toString()), [
+            'users' => [
+                [
+                    'userId' => $member->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
+
+        $I->login($user);
+        $I->sendPOST(sprintf('items/%s/share', $item->getId()->toString()), [
+            'users' => [
+                [
+                    'userId' => $member->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+                [
+                    'userId' => $otherMember->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $schema = $I->getSchema('item/shares.json');
+        $I->seeResponseIsValidOnJsonSchemaString($schema);
+
+        $I->sendPOST(sprintf('items/%s/share', $item->getId()->toString()), [
+            'users' => [
+                [
+                    'userId' => $member->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
     }
 }

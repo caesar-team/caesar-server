@@ -8,11 +8,13 @@ use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Model\DTO\Share;
 use App\Model\Query\ItemListQuery;
 use App\Request\Item\KeypairFilterRequest;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
+use Psr\Log\LoggerInterface;
 
 /**
  * @method Item|null find($id, $lockMode = null, $lockVersion = null)
@@ -22,9 +24,12 @@ use Doctrine\ORM\Query\Expr\Join;
  */
 class ItemRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private LoggerInterface $logger;
+
+    public function __construct(ManagerRegistry $registry, LoggerInterface $logger)
     {
         parent::__construct($registry, Item::class);
+        $this->logger = $logger;
     }
 
     public function getKeypairsByRequest(KeypairFilterRequest $request): array
@@ -185,5 +190,25 @@ class ItemRepository extends ServiceEntityRepository
         ;
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @return Share[]
+     */
+    public function saveShares(Share ...$shares): array
+    {
+        $result = [];
+        foreach ($shares as $share) {
+            try {
+                $this->getEntityManager()->persist($share->getKeypair());
+                $this->getEntityManager()->flush();
+
+                $result[] = $share;
+            } catch (\Exception $exception) {
+                $this->logger->critical(sprintf('Could not save share, reason: %s', $exception->getMessage()));
+            }
+        }
+
+        return $result;
     }
 }
