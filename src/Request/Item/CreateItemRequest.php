@@ -8,14 +8,16 @@ use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Model\AwareOwnerAndRelatedItemInterface;
 use App\Team\AwareOwnerAndTeamInterface;
 use App\Validator\Constraints as AppAssert;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @AppAssert\UniqueTeamKeypair(groups={"keypair"})
+ * @AppAssert\UniquePersonalKeypair(groups={"personal"})
  */
-final class CreateItemRequest implements AwareOwnerAndTeamInterface
+final class CreateItemRequest implements AwareOwnerAndTeamInterface, AwareOwnerAndRelatedItemInterface
 {
     private ?User $owner;
 
