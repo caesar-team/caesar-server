@@ -60,12 +60,31 @@ class ItemTest extends Unit
         ]);
 
         $team = $I->createTeam($user);
+        /** @var Item $userKeypairTeam */
+        $userKeypairTeam = $I->have(Item::class, [
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'parent_list' => $team->getDefaultDirectory(),
+            'owner' => $user,
+            'team' => $team,
+            'secret' => uniqid(),
+        ]);
         $I->addUserToTeam($team, $member);
+        /** @var Item $memberKeypairTeam */
+        $memberKeypairTeam = $I->have(Item::class, [
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'parent_list' => $team->getDefaultDirectory(),
+            'owner' => $member,
+            'team' => $team,
+            'secret' => uniqid(),
+        ]);
         $teamItem = $I->createTeamItem($team, $user);
 
         $I->login($user);
         $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.keypairs', ['id' => $userKeypairTeam->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.keypairs', ['id' => $memberKeypairTeam->getId()->toString()]);
+
         $I->seeResponseByJsonPathContainsJson('$.personals', ['id' => $item->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.personals', ['id' => $teamItem->getId()->toString()]);
 
@@ -96,6 +115,8 @@ class ItemTest extends Unit
         $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseByJsonPathContainsJson('$.keypairs', ['id' => $userKeypairItemId]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.keypairs', ['id' => $userKeypairTeam->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.keypairs', ['id' => $memberKeypairTeam->getId()->toString()]);
         $I->seeResponseByJsonPathContainsJson('$.shares', ['id' => $item->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.personals', ['id' => $item->getId()->toString()]);
         $I->seeResponseByJsonPathContainsJson('$.teams', ['id' => $teamItem->getId()->toString()]);

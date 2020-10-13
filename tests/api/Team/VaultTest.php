@@ -3,6 +3,7 @@
 namespace App\Tests\Team;
 
 use App\Entity\User;
+use App\Entity\UserTeam;
 use App\Tests\ApiTester;
 use Codeception\Module\DataFactory;
 use Codeception\Module\REST;
@@ -78,5 +79,48 @@ class VaultTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+    }
+
+    /** @test */
+    public function batchItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class, [
+            'roles' => [User::ROLE_ADMIN],
+        ]);
+        /** @var User $member */
+        $member = $I->have(User::class);
+
+        $I->login($user);
+        $I->sendPOST('/vault', [
+            'team' => [
+                'title' => uniqid(),
+                'icon' => null,
+            ],
+            'keypair' => [
+                'secret' => uniqid(),
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        [$teamId] = $I->grabDataFromResponseByJsonPath('$.team.id');
+
+        $I->sendPOST(sprintf('teams/%s/members', $teamId), [
+            'userRole' => UserTeam::USER_ROLE_MEMBER,
+            'secret' => uniqid(),
+            'userId' => $member->getId()->toString(),
+        ]);
+
+        $I->sendGET('/items/all');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.keypairs', ['ownerId' => $user->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.keypairs', ['ownerId' => $member->getId()->toString()]);
+
+        $I->login($member);
+        $I->sendGET('/items/all');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.keypairs', ['ownerId' => $member->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.keypairs', ['ownerId' => $user->getId()->toString()]);
     }
 }

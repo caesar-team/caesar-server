@@ -32,6 +32,10 @@ class BatchItemViewFactory
         foreach ($items as $item) {
             switch ($item->getType()) {
                 case NodeEnumType::TYPE_KEYPAIR:
+                    if (!$item->getSignedOwner()->equals($user)) {
+                        break;
+                    }
+
                     $keypairItems[$item->getId()->toString()] = $item;
                     if (null !== $item->getRelatedItem()) {
                         $sharedItems[$item->getRelatedItem()->getId()->toString()] = $item->getRelatedItem();
