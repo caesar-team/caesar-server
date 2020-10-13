@@ -111,6 +111,17 @@ use Swagger\Annotations as SWG;
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamVoter::PINNED'), object.getTeam()))"
  *     )
  * )
+ * @Hateoas\Relation(
+ *     "team_leave",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route(
+ *         "api_team_member_leave",
+ *         parameters={ "team": "expr(object.getId())" }
+ *     ),
+ *     exclusion=@Hateoas\Exclusion(
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamVoter::LEAVE'), object.getTeam()))"
+ *     )
+ * )
  */
 class TeamView
 {

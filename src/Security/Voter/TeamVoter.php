@@ -16,9 +16,10 @@ class TeamVoter extends Voter
     public const EDIT = 'team_edit';
     public const PINNED = 'team_pinned';
     public const GET_KEYPAIR = 'get_keypair';
+    public const LEAVE = 'team_leave';
 
     private const AVAILABLE_ATTRIBUTES = [
-        self::CREATE, self::DELETE, self::EDIT, self::PINNED, self::GET_KEYPAIR,
+        self::CREATE, self::DELETE, self::EDIT, self::PINNED, self::GET_KEYPAIR, self::LEAVE,
     ];
 
     /**
@@ -54,6 +55,8 @@ class TeamVoter extends Voter
                 return $subject instanceof Team && $this->canPinned($subject, $user);
             case self::GET_KEYPAIR:
                 return $subject instanceof Team && $this->canGetKeypair($subject, $user);
+            case self::LEAVE:
+                return $subject instanceof Team && $this->canLeave($subject, $user);
         }
 
         return false;
@@ -82,6 +85,11 @@ class TeamVoter extends Voter
     }
 
     private function canGetKeypair(Team $team, User $user): bool
+    {
+        return null !== $team->getUserTeamByUser($user);
+    }
+
+    private function canLeave(Team $team, User $user): bool
     {
         return null !== $team->getUserTeamByUser($user);
     }
