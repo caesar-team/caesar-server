@@ -18,7 +18,7 @@ class UserTeamViewFactory
 
         $team = $userTeam->getTeam();
 
-        $view = new UserTeamView($team);
+        $view = new UserTeamView($team, $userTeam);
         $view->setId($team->getId()->toString());
         $view->setTitle($team->getTitle());
         $view->setType($team->getAlias() ?: Team::OTHER_TYPE);
