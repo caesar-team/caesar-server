@@ -5,21 +5,18 @@ declare(strict_types=1);
 namespace App\Controller\Api\User;
 
 use App\Controller\AbstractController;
-use App\Entity\Team;
 use App\Entity\User;
-use App\Entity\UserTeam;
 use App\Factory\View\User\PublicUserKeyViewFactory;
 use App\Factory\View\UserKeysViewFactory;
-use App\Form\Request\SaveKeysType;
 use App\Form\Type\Request\Key\PublicKeysRequestType;
+use App\Form\Type\Request\User\SaveKeysRequestType;
 use App\Model\View\User\PublicUserKeyView;
 use App\Model\View\User\UserKeysView;
-use App\Repository\InvitationRepository;
 use App\Repository\UserRepository;
 use App\Request\Key\PublicKeysRequest;
+use App\Request\User\SaveKeysRequest;
 use App\Security\Voter\UserVoter;
-use App\Services\TeamManager;
-use Doctrine\ORM\EntityManagerInterface;
+use App\User\UserKeysUpdater;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
@@ -131,11 +128,10 @@ final class KeysController extends AbstractController
      * Update keys.
      *
      * @SWG\Tag(name="Keys")
-     *
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=SaveKeysType::class)
+     *     @Model(type=SaveKeysRequestType::class)
      * )
      * @SWG\Response(
      *     response=204,
@@ -150,43 +146,27 @@ final class KeysController extends AbstractController
      *
      * @throws \Exception
      */
-    public function saveKeys(
-        Request $request,
-        InvitationRepository $repository,
-        EntityManagerInterface $entityManager,
-        TeamManager $teamManager
-    ): void {
-        $user = $this->getUser();
-
-        $form = $this->createForm(SaveKeysType::class, $user);
+    public function saveKeys(Request $request, UserKeysUpdater $updater): void
+    {
+        $saveRequest = new SaveKeysRequest($this->getUser());
+        $form = $this->createForm(SaveKeysRequestType::class, $saveRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
 
-        /** @var User $oldUser */
-        $oldUser = $entityManager->getUnitOfWork()->getOriginalEntityData($user);
-        if (!$user->isFullUser()) {
-            $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
-        } else {
-            $this->setFlowStatusByPrivateKeys($oldUser, $user);
-        }
-
-        if ($user->isFullUser()) {
-            $repository->deleteByHash($user->getHashEmail());
-            $userTeam = $teamManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
-            if (null !== $userTeam) {
-                $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
-            }
-        }
-
-        $entityManager->flush();
+        $updater->saveKeysFromRequest($saveRequest);
     }
 
     /**
      * Update keys for user without keys.
      *
      * @SWG\Tag(name="Keys")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=SaveKeysRequestType::class)
+     * )
      * @SWG\Response(
      *     response=204,
      *     description="Success keys update",
@@ -199,36 +179,17 @@ final class KeysController extends AbstractController
      * )
      * @Entity("user", expr="repository.findOneByEmail(email)")
      */
-    public function updateKeys(Request $request, EntityManagerInterface $entityManager, User $user): void
+    public function updateKeys(Request $request, User $user, UserKeysUpdater $updater): void
     {
         $this->denyAccessUnlessGranted(UserVoter::UPDATE_KEY, $user);
 
-        $form = $this->createForm(SaveKeysType::class, $user);
+        $saveRequest = new SaveKeysRequest($user);
+        $form = $this->createForm(SaveKeysRequestType::class, $saveRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
 
-        $user->setFlowStatus(User::FLOW_STATUS_CHANGE_PASSWORD);
-
-        $entityManager->flush();
-    }
-
-    //@todo candidate to refactoring
-    private function setFlowStatus(string $currentFlowStatus): string
-    {
-        if (User::FLOW_STATUS_CHANGE_PASSWORD === $currentFlowStatus) {
-            return $currentFlowStatus;
-        }
-
-        return User::FLOW_STATUS_FINISHED;
-    }
-
-    //@todo candidate to refactoring
-    private function setFlowStatusByPrivateKeys($oldUser, User $user)
-    {
-        if ($oldUser['encryptedPrivateKey'] !== $user->getEncryptedPrivateKey()) {
-            $user->setFlowStatus($this->setFlowStatus($user->getFlowStatus()));
-        }
+        $updater->updateKeysFromRequest($saveRequest);
     }
 }
