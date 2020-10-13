@@ -87,8 +87,10 @@ class CreateItemRequestType extends AbstractType
                 }
 
                 if (NodeEnumType::TYPE_KEYPAIR === $data->getType()
-                    && null !== $data->getList()
-                    && null === $data->getList()->getTeam()
+                    && (
+                        (null !== $data->getList() && null === $data->getList()->getTeam())
+                        || null === $data->getList()
+                    )
                 ) {
                     $groups[] = 'personal';
                 }

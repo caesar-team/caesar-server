@@ -124,6 +124,22 @@ class ItemRepository extends ServiceEntityRepository
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 
+    public function getPersonalKeyPairByUser(User $user, Item $relatedItem): ?Item
+    {
+        $queryBuilder = $this
+            ->createQueryBuilder('item')
+            ->where('item.team IS NULL')
+            ->andWhere('item.owner = :user')
+            ->andWhere('item.type = :type')
+            ->andWhere('item.relatedItem = :item')
+            ->setParameter('user', $user)
+            ->setParameter('item', $relatedItem)
+            ->setParameter('type', NodeEnumType::TYPE_KEYPAIR)
+        ;
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
     public function save(Item $item): Item
     {
         $this->_em->persist($item);

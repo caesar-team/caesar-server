@@ -20,6 +20,53 @@ class KeypairTest extends Unit
     protected ApiTester $tester;
 
     /** @test */
+    public function createKeypairsWithoutRelatedItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        $I->login($user);
+        $I->sendPOST('items', [
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'secret' => uniqid(),
+            'relatedItemId' => null,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+    }
+
+    /** @test */
+    public function createKeypairsUniqueRelatedItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var Item $item */
+        $item = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getDefaultDirectory(),
+        ]);
+
+        $I->login($user);
+        $I->sendPOST('items', [
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'secret' => uniqid(),
+            'relatedItemId' => $item->getId()->toString(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->sendPOST('items', [
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'secret' => uniqid(),
+            'relatedItemId' => $item->getId()->toString(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+    }
+
+    /** @test */
     public function getKeypairs()
     {
         $I = $this->tester;
