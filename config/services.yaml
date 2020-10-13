@@ -1,8 +1,6 @@
 parameters:
     'env(FINGERPRINT_LIFETIME)': 86400
     'env(BACKUP_CODE_SALT)': ''
-imports:
-    - { resource: events.yaml }
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -77,7 +75,7 @@ services:
         arguments:
             - '@snc_redis.default'
 
-    App\Event\EventSubscriber\PromoteAdminSubscriber:
+    App\EventSubscriber\System\PromoteAdminSubscriber:
         arguments:
             $domainAdminEmail: '%env(resolve:DOMAIN_ADMIN_EMAIL)%'
 
@@ -171,3 +169,8 @@ services:
             - '@App\Normalizer\InvalidRequestExceptionNormalizer.inner'
         tags:
             - { name: 'serializer.normalizer' }
+
+    App\EventSubscriber\Doctrine\FileListener:
+        arguments: [ '%kernel.project_dir%' ]
+        tags:
+            - { name: doctrine.orm.entity_listener }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Factory\Entity;
 
 use App\Entity\Directory;
-use App\Model\Request\Team\CreateListRequest;
+use App\Request\Team\CreateListRequest;
 
 class TeamDirectoryFactory
 {

@@ -26,15 +26,15 @@ class DatabaseSizeTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        $I->setLimiterSize(DatabaseSizeInspector::class, 10000); //in bytes
+        $I->setLimiterSize(DatabaseSizeInspector::class, 100000); //in bytes
 
         $I->login($user);
-        $I->haveHttpHeader('Content-Length', 1000);
+        $I->haveHttpHeader('Content-Length', 100);
         $I->sendPOST('items', $this->getItemBody($user));
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        // Try to send 3Mb data
-        $I->haveHttpHeader('Content-Length', 1024 * 1024 * 3);
+        // Try to send 30Mb data
+        $I->haveHttpHeader('Content-Length', 1024 * 1024 * 30);
         $I->sendPOST('items', $this->getItemBody($user));
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContains('Free space in the database is reached. Contact your Administrator to expand it');

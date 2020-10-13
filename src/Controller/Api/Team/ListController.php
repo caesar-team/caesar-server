@@ -9,13 +9,13 @@ use App\Entity\Directory;
 use App\Entity\Team;
 use App\Factory\Entity\TeamDirectoryFactory;
 use App\Factory\View\Team\TeamListViewFactory;
-use App\Form\Request\Team\CreateListType;
-use App\Form\Request\Team\EditListType;
-use App\Model\Request\Team\CreateListRequest;
-use App\Model\Request\Team\EditListRequest;
+use App\Form\Type\Request\Team\CreateListRequestType;
+use App\Form\Type\Request\Team\EditListRequestType;
 use App\Model\View\Team\TeamListView;
 use App\Modifier\DirectoryModifier;
 use App\Repository\DirectoryRepository;
+use App\Request\Team\CreateListRequest;
+use App\Request\Team\EditListRequest;
 use App\Security\Voter\TeamListVoter;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -80,7 +80,7 @@ final class ListController extends AbstractController
         $this->denyAccessUnlessGranted(TeamListVoter::CREATE, $team);
 
         $createRequest = new CreateListRequest($team);
-        $form = $this->createForm(CreateListType::class, $createRequest);
+        $form = $this->createForm(CreateListRequestType::class, $createRequest);
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {
@@ -114,7 +114,7 @@ final class ListController extends AbstractController
         $this->denyAccessUnlessGranted(TeamListVoter::EDIT, $list);
 
         $editRequest = new EditListRequest($list);
-        $form = $this->createForm(EditListType::class, $editRequest);
+        $form = $this->createForm(EditListRequestType::class, $editRequest);
 
         $form->submit($request->request->all());
         if (!$form->isValid()) {

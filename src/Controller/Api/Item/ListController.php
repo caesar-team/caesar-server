@@ -7,7 +7,7 @@ namespace App\Controller\Api\Item;
 use App\Controller\AbstractController;
 use App\Entity\Item;
 use App\Factory\View\ItemListViewFactory;
-use App\Form\Query\ItemListQueryType;
+use App\Form\Type\Query\ItemListQueryType;
 use App\Model\Query\ItemListQuery;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;

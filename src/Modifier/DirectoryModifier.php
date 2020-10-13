@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Modifier;
 
 use App\Entity\Directory;
-use App\Model\Request\Team\EditListRequest;
 use App\Repository\DirectoryRepository;
+use App\Request\Team\EditListRequest;
 
 class DirectoryModifier
 {
