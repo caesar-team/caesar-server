@@ -13,6 +13,9 @@
       "name": {
         "type": "string"
       },
+      "publicKey": {
+        "type": ["string", "null"]
+      },
       "avatar": {
         "type": ["string", "null"]
       },
@@ -24,6 +27,8 @@
       "id",
       "email",
       "name",
+      "publicKey",
+      "avatar",
       "teamIds"
     ]
   }

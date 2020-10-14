@@ -17,6 +17,7 @@ final class SearchUserViewFactory
         $view->setName($user->getUsername());
         $view->setAvatar($user->getAvatarLink());
         $view->setTeamIds($user->getTeamsIds());
+        $view->setPublicKey($user->getPublicKey());
 
         return $view;
     }
