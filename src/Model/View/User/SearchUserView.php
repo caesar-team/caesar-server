@@ -19,6 +19,11 @@ class SearchUserView
     private string $email;
 
     /**
+     * @SWG\Property(type="string", example="somepublickey")
+     */
+    private ?string $publicKey;
+
+    /**
      * @SWG\Property(type="string", example="ipopov")
      */
     private string $name;
@@ -89,5 +94,15 @@ class SearchUserView
     public function setTeamIds(array $teamIds): void
     {
         $this->teamIds = $teamIds;
+    }
+
+    public function getPublicKey(): ?string
+    {
+        return $this->publicKey;
+    }
+
+    public function setPublicKey(?string $publicKey): void
+    {
+        $this->publicKey = $publicKey;
     }
 }
