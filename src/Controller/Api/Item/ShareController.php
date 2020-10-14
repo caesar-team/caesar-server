@@ -13,6 +13,7 @@ use App\Model\View\Item\ShareView;
 use App\Repository\ItemRepository;
 use App\Request\Item\ShareBatchItemRequest;
 use App\Security\Voter\ItemVoter;
+use App\Security\Voter\TeamItemVoter;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -54,7 +55,7 @@ final class ShareController extends AbstractController
         ShareFactory $factory,
         ShareViewFactory $viewFactory
     ): array {
-        $this->denyAccessUnlessGranted(ItemVoter::EDIT, $item);
+        $this->denyAccessUnlessGranted([ItemVoter::EDIT, TeamItemVoter::EDIT], $item);
 
         $shareRequest = new ShareBatchItemRequest($item);
 
