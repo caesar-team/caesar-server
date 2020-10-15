@@ -218,6 +218,6 @@ class TeamTest extends Unit
         $I->login($admin);
         $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-        $this->assertEquals([false], $I->grabDataFromResponseByJsonPath('$.pinned'));
+        $this->assertEquals([true], $I->grabDataFromResponseByJsonPath('$.pinned'));
     }
 }

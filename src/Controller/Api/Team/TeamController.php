@@ -223,7 +223,7 @@ class TeamController extends AbstractController
     {
         $this->denyAccessUnlessGranted(TeamVoter::PINNED, $team);
 
-        $team->togglePinned($this->getUser());
+        $team->togglePinned($this->getUser(), false);
         $repository->save($team);
 
         return $factory->createSingle($team);
@@ -253,7 +253,7 @@ class TeamController extends AbstractController
     {
         $this->denyAccessUnlessGranted(TeamVoter::PINNED, $team);
 
-        $team->togglePinned($this->getUser(), false);
+        $team->togglePinned($this->getUser());
         $repository->save($team);
 
         return $factory->createSingle($team);
