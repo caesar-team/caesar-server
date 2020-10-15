@@ -31,7 +31,7 @@ class ShareFactory
             $item = $this->itemFactory->create();
             $item->setOwner($user);
             $item->setType(NodeEnumType::TYPE_KEYPAIR);
-            $item->setParentList($user->getDefaultDirectory());
+            $item->setParentList($user->getInbox());
             $item->setSecret($userRequest->getSecret());
             $item->setRelatedItem($relatedItem);
 

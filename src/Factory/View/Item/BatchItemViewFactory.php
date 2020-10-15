@@ -8,6 +8,7 @@ use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\User;
 use App\Factory\View\Team\TeamItemViewFactory;
 use App\Model\View\Item\BatchItemsView;
+use App\Model\View\Item\ItemView;
 
 class BatchItemViewFactory
 {
@@ -61,7 +62,17 @@ class BatchItemViewFactory
         $view = new BatchItemsView();
         $view->setPersonals($this->itemFactory->createCollection(array_values($personalItems)));
         /** @psalm-suppress InvalidArgument */
-        $view->setShares($this->itemFactory->createCollection(array_values($sharedItems)));
+        $view->setShares(
+            // @todo remove after implemented inbox
+            array_map(
+                static function (ItemView $view) use ($user) {
+                    $view->setListId($user->getInbox()->getId()->toString());
+
+                    return $view;
+                },
+                $this->itemFactory->createCollection(array_values($sharedItems))
+            )
+        );
         $view->setTeams($this->itemFactory->createCollection(array_values($teamItems)));
         $view->setSystems($this->itemFactory->createCollection(array_values($systemItems)));
         $view->setKeypairs($this->itemFactory->createCollection(array_values($keypairItems)));
