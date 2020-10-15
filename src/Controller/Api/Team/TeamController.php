@@ -10,12 +10,14 @@ use App\Entity\UserTeam;
 use App\Factory\Entity\TeamFactory;
 use App\Factory\View\Team\TeamViewFactory;
 use App\Form\Request\Team\CreateTeamType;
-use App\Form\Request\Team\EditTeamType;
+use App\Form\Type\Request\Team\EditTeamRequestType;
 use App\Limiter\Inspector\TeamCountInspector;
 use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
 use App\Model\View\Team\TeamView;
+use App\Modifier\TeamModifier;
 use App\Repository\TeamRepository;
+use App\Request\Team\EditTeamRequest;
 use App\Security\Voter\TeamVoter;
 use App\Security\Voter\UserTeamVoter;
 use App\Services\TeamManager;
@@ -136,17 +138,18 @@ class TeamController extends AbstractController
         Team $team,
         Request $request,
         TeamViewFactory $viewFactory,
-        EntityManagerInterface $entityManager
+        TeamModifier $modifier
     ): TeamView {
         $this->denyAccessUnlessGranted(TeamVoter::EDIT, $team);
 
-        $form = $this->createForm(EditTeamType::class, $team);
+        $editRequest = new EditTeamRequest($team);
+        $form = $this->createForm(EditTeamRequestType::class, $editRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
 
-        $entityManager->flush();
+        $team = $modifier->modifyByRequest($editRequest);
 
         return $viewFactory->createSingle($team);
     }

@@ -7,14 +7,19 @@ namespace App\Controller\Api;
 use App\Controller\AbstractController;
 use App\Entity\Directory;
 use App\Entity\User;
+use App\Factory\Entity\UserDirectoryFactory;
 use App\Factory\View\ListViewFactory;
 use App\Factory\View\ShortListViewFactory;
-use App\Form\Request\CreateListType;
-use App\Form\Request\EditListType;
-use App\Form\Request\SortListType;
+use App\Form\Type\Request\User\CreateListRequestType;
+use App\Form\Type\Request\User\EditListRequestType;
+use App\Form\Type\Request\User\SortListRequestType;
 use App\Model\View\CredentialsList\ListView;
 use App\Model\View\CredentialsList\ShortListView;
+use App\Modifier\DirectoryModifier;
 use App\Repository\DirectoryRepository;
+use App\Request\User\CreateListRequest;
+use App\Request\User\EditListRequest;
+use App\Request\User\SortListRequest;
 use App\Security\Voter\ListVoter;
 use App\Security\Voter\TeamListVoter;
 use App\Services\ItemDisplacer;
@@ -22,7 +27,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -84,19 +88,12 @@ final class ListController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\CreateListType::class)
+     *     @Model(type=CreateListRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Success item created",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="string",
-     *             property="id",
-     *             example="f553f7c5-591a-4aed-9148-2958b7d88ee5",
-     *         )
-     *     )
+     *     description="Success list created",
+     *     @Model(type=ListView::class)
      * )
      * @SWG\Response(
      *     response=403,
@@ -109,26 +106,26 @@ final class ListController extends AbstractController
      *     methods={"POST"}
      * )
      */
-    public function createListAction(Request $request, EntityManagerInterface $manager, ListViewFactory $factory): ListView
-    {
+    public function createListAction(
+        Request $request,
+        DirectoryRepository $repository,
+        UserDirectoryFactory $factory,
+        ListViewFactory $viewFactory
+    ): ListView {
         $this->denyAccessUnlessGranted(ListVoter::CREATE);
 
-        $list = new Directory();
-        /** @var User $user */
-        $user = $this->getUser();
-        $list->setUser($user);
-        $form = $this->createForm(CreateListType::class, $list);
+        $createRequest = new CreateListRequest($this->getUser());
 
+        $form = $this->createForm(CreateListRequestType::class, $createRequest);
         $form->submit($request->request->all(), false);
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
-        $list->setParentList($user->getLists());
 
-        $manager->persist($list);
-        $manager->flush();
+        $list = $factory->createFromRequest($createRequest);
+        $repository->save($list);
 
-        return $factory->createSingle($list);
+        return $viewFactory->createSingle($list);
     }
 
     /**
@@ -137,11 +134,12 @@ final class ListController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\EditListType::class)
+     *     @Model(type=EditListRequestType::class)
      * )
      * @SWG\Response(
-     *     response=204,
-     *     description="Success list edited",
+     *     response=200,
+     *     description="Success edited list of user",
+     *     @Model(type=ListView::class)
      * )
      * @SWG\Response(
      *     response=403,
@@ -158,24 +156,29 @@ final class ListController extends AbstractController
      *     methods={"PATCH"}
      * )
      */
-    public function editListAction(Directory $list, Request $request, EntityManagerInterface $manager): ?FormInterface
-    {
+    public function editListAction(
+        Request $request,
+        Directory $list,
+        ListViewFactory $viewFactory,
+        DirectoryModifier $modifier
+    ): ListView {
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
         if (null === $list->getParentList()) { //root list
             $message = $this->translator->trans('app.exception.cant_edit_root_list');
             throw new BadRequestHttpException($message);
         }
 
-        $form = $this->createForm(EditListType::class, $list);
+        $editRequest = new EditListRequest($list);
+
+        $form = $this->createForm(EditListRequestType::class, $editRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
-        $manager->persist($list);
-        $manager->flush();
+        $list = $modifier->modifyByRequest($editRequest);
 
-        return null;
+        return $viewFactory->createSingle($list);
     }
 
     /**
@@ -227,7 +230,7 @@ final class ListController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\SortListType::class)
+     *     @Model(type=SortListRequestType::class)
      * )
      * @SWG\Response(
      *     response=204,
@@ -248,7 +251,7 @@ final class ListController extends AbstractController
      *     methods={"PATCH"}
      * )
      */
-    public function sortList(Directory $list, Request $request, EntityManagerInterface $manager): void
+    public function sortList(Directory $list, Request $request, DirectoryModifier $modifier): void
     {
         if (null === $list->getTeam()) {
             $this->denyAccessUnlessGranted(ListVoter::SORT, $list);
@@ -261,14 +264,15 @@ final class ListController extends AbstractController
             throw new BadRequestHttpException($message);
         }
 
-        $form = $this->createForm(SortListType::class, $list);
+        $sortRequest = new SortListRequest($list);
+
+        $form = $this->createForm(SortListRequestType::class, $sortRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
 
-        $manager->persist($list);
-        $manager->flush();
+        $modifier->modifySortByRequest($sortRequest);
     }
 
     /**

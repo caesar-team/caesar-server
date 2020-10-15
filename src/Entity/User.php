@@ -643,6 +643,20 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }
     }
 
+    public function getDirectoryByLabel(?string $label): ?Directory
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('label', $label));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $directory = $this->directories->matching($criteria)->first();
+
+        return $directory instanceof Directory ? $directory : null;
+    }
+
     public function getHashEmail(): string
     {
         return (InvitationEncoder::initEncoder())->encode($this->getEmail());

@@ -129,6 +129,7 @@ class TeamTest extends Unit
         ]);
 
         $team = $I->createTeam($admin);
+        $otherTeam = $I->createTeam($user);
         $I->addUserToTeam($team, $user);
 
         $I->login($user);
@@ -149,6 +150,18 @@ class TeamTest extends Unit
 
         $schema = $I->getSchema('team/team.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('teams/%s', $team->getId()->toString()), [
+            'title' => 'Edited title',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('teams/%s', $team->getId()->toString()), [
+            'title' => $otherTeam->getTitle(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
     }
 
     /** @test */
