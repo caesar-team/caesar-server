@@ -21,6 +21,7 @@ class UserCrudController extends AbstractCrudController
     private const ROLES_AVAILABLE = [
         'domain admin' => User::ROLE_ADMIN,
         'super admin' => User::ROLE_SUPER_ADMIN,
+        'manager' => User::ROLE_MANAGER,
         'read-only user' => User::ROLE_READ_ONLY_USER,
         'anonymous' => User::ROLE_ANONYMOUS_USER,
     ];

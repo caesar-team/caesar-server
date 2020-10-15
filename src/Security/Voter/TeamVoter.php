@@ -64,7 +64,7 @@ class TeamVoter extends Voter
 
     private function canCreate(User $user): bool
     {
-        return $user->hasRole(User::ROLE_ADMIN);
+        return $user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_MANAGER);
     }
 
     private function canEdit(Team $team, User $user): bool
