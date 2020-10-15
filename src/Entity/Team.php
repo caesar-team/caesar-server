@@ -351,6 +351,6 @@ class Team
 
     public function isPinned(User $user): bool
     {
-        return in_array($user->getId()->toString(), $this->getPinned());
+        return !in_array($user->getId()->toString(), $this->getPinned());
     }
 }
