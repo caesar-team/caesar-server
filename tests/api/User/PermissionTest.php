@@ -65,55 +65,23 @@ class PermissionTest extends Unit
         $I = $this->tester;
 
         /** @var User $superAdmin */
-        $superAdmin = $I->have(User::class, [
-            'roles' => [User::ROLE_SUPER_ADMIN],
-        ]);
+        $superAdmin = $I->have(User::class, ['roles' => [User::ROLE_SUPER_ADMIN]]);
         /** @var User $domainAdmin */
-        $domainAdmin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
+        $domainAdmin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
+        /** @var User $manager */
+        $manager = $I->have(User::class, ['roles' => [User::ROLE_MANAGER]]);
         /** @var User $user */
         $user = $I->have(User::class);
         /** @var User $guest */
-        $guest = $I->have(User::class, [
-            'roles' => [User::ROLE_ANONYMOUS_USER],
-        ]);
+        $guest = $I->have(User::class, ['roles' => [User::ROLE_ANONYMOUS_USER]]);
 
-        $I->login($superAdmin);
-        $I->sendGET('/users/self');
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseContainsJson(['_links' => [
-            'create_list' => [],
-        ]]);
-        $I->dontSeeResponseContainsJson(['_links' => [
-            'team_create' => [],
-        ]]);
+        $this->canFullUserAccess($manager);
+        $this->canFullUserAccess($domainAdmin);
 
-        $I->login($domainAdmin);
-        $I->sendGET('/users/self');
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseContainsJson(['_links' => [
-            'create_list' => [],
-            'team_create' => [],
-        ]]);
+        $this->canPartUserAccess($superAdmin);
+        $this->canPartUserAccess($user);
 
-        $I->login($user);
-        $I->sendGET('/users/self');
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseContainsJson(['_links' => [
-            'create_list' => [],
-        ]]);
-        $I->dontSeeResponseContainsJson(['_links' => [
-            'team_create' => [],
-        ]]);
-
-        $I->login($guest);
-        $I->sendGET('/users/self');
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $I->dontSeeResponseContainsJson(['_links' => [
-            'create_list' => [],
-            'team_create' => [],
-        ]]);
+        $this->dontUserAccess($guest);
     }
 
     /** @test */
@@ -153,6 +121,47 @@ class PermissionTest extends Unit
             'move_item' => [],
             'delete_item' => [],
             'favorite_item_toggle' => [],
+        ]]);
+    }
+
+    private function canFullUserAccess(User $user): void
+    {
+        $I = $this->tester;
+
+        $I->login($user);
+        $I->sendGET('/users/self');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseContainsJson(['_links' => [
+            'create_list' => [],
+            'team_create' => [],
+        ]]);
+    }
+
+    private function canPartUserAccess(User $user): void
+    {
+        $I = $this->tester;
+
+        $I->login($user);
+        $I->sendGET('/users/self');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseContainsJson(['_links' => [
+            'create_list' => [],
+        ]]);
+        $I->dontSeeResponseContainsJson(['_links' => [
+            'team_create' => [],
+        ]]);
+    }
+
+    private function dontUserAccess(User $user): void
+    {
+        $I = $this->tester;
+
+        $I->login($user);
+        $I->sendGET('/users/self');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->dontSeeResponseContainsJson(['_links' => [
+            'create_list' => [],
+            'team_create' => [],
         ]]);
     }
 }

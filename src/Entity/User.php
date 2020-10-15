@@ -32,6 +32,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public const DEFAULT_FLOW_STATUS = self::FLOW_STATUS_FINISHED;
     public const ROLE_USER = 'ROLE_USER';
     public const ROLE_ADMIN = 'ROLE_ADMIN';
+    public const ROLE_MANAGER = 'ROLE_MANAGER';
     public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
     public const ROLE_READ_ONLY_USER = 'ROLE_READ_ONLY_USER';
     public const ROLE_ANONYMOUS_USER = 'ROLE_ANONYMOUS_USER';
