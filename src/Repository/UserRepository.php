@@ -8,6 +8,7 @@ use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Model\Query\UserListQuery;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Ramsey\Uuid\Uuid;
@@ -21,12 +22,14 @@ use Ramsey\Uuid\Uuid;
 class UserRepository extends ServiceEntityRepository
 {
     private DirectoryRepository $directoryRepository;
+    private array $domains;
 
-    public function __construct(ManagerRegistry $registry, DirectoryRepository $directoryRepository)
+    public function __construct(ManagerRegistry $registry, DirectoryRepository $directoryRepository, array $domains)
     {
         parent::__construct($registry, User::class);
 
         $this->directoryRepository = $directoryRepository;
+        $this->domains = $domains;
     }
 
     public function save(User $user): void
@@ -209,5 +212,49 @@ class UserRepository extends ServiceEntityRepository
         ;
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    public function findUsersByQuery(UserListQuery $query): array
+    {
+        $queryBuilder = $this->createQueryBuilder('user');
+
+        if (empty($query->getIds())) {
+            $queryBuilder
+                ->andWhere('LOWER(user.roles) NOT LIKE :role')
+                ->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%')
+            ;
+        }
+
+        if (null !== $query->getRole()) {
+            $queryBuilder
+                ->andWhere('LOWER(user.roles) LIKE :filter_role')
+                ->setParameter('filter_role', '%'.mb_strtolower($query->getRole()).'%')
+            ;
+        }
+
+        if (!empty($query->getIds())) {
+            $queryBuilder
+                ->andWhere('user.id IN(:ids)')
+                ->setParameter('ids', $query->getIds())
+            ;
+        }
+
+        if ($query->isDomain()) {
+            $domainQuery = [];
+            foreach ($this->domains as $domain) {
+                $domainQuery[] = $queryBuilder
+                    ->expr()
+                    ->like('user.email', $queryBuilder->expr()->literal('%@'.$domain))
+                ;
+            }
+
+            if (!empty($domainQuery)) {
+                $queryBuilder
+                    ->andWhere($queryBuilder->expr()->orX(...$domainQuery))
+                ;
+            }
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }
