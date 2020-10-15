@@ -41,16 +41,52 @@ class ListTest extends Unit
 
         $schema = $I->getSchema('user/list_user.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
+
+    /** @test */
+    public function getFilterList()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class, [
+            'email' => 'test@example.com',
+        ]);
+        /** @var User $otherUser */
+        $otherUser = $I->have(User::class, [
+            'email' => 'test@example.ru',
+        ]);
+        /** @var User $domainAdmin */
+        $domainAdmin = $I->have(User::class, [
+            'roles' => [User::ROLE_ADMIN],
+        ]);
+        /** @var User $anonymous */
+        $anonymous = $I->have(User::class, [
+            'roles' => [User::ROLE_ANONYMOUS_USER],
+        ]);
+
+        $I->login($user);
+        $I->sendGET(sprintf('/users?ids[]=%s', $anonymous->getId()->toString()));
+        $I->seeResponseContains($anonymous->getEmail());
+        $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->sendGET(sprintf('/users?role=%s', User::ROLE_ADMIN));
         $I->dontSeeResponseContains($user->getEmail());
         $I->dontSeeResponseContains($otherUser->getEmail());
+        $I->dontSeeResponseContains($anonymous->getEmail());
         $I->seeResponseContains($domainAdmin->getEmail());
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->sendGET(sprintf('/users?is_domain_user=true', User::ROLE_ADMIN));
+        $I->seeResponseContains($user->getEmail());
+        $I->seeResponseContains($otherUser->getEmail());
+        $I->dontSeeResponseContains($anonymous->getEmail());
+        $I->dontSeeResponseContains($domainAdmin->getEmail());
         $I->seeResponseCodeIs(HttpCode::OK);
     }
 
     /** @test */
-    public function getFilteredList()
+    public function getFilteredByIdsList()
     {
         $I = $this->tester;
 
@@ -70,8 +106,8 @@ class ListTest extends Unit
 
         $I->login($user);
         $I->sendGET(sprintf('/users?ids[]=%s', 'some-invalid-id'));
-        $I->cantSeeResponseContains($user->getEmail());
-        $I->cantSeeResponseContains($otherUser->getEmail());
+        $I->seeResponseContains($user->getEmail());
+        $I->seeResponseContains($otherUser->getEmail());
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $schema = $I->getSchema('user/list_user.json');

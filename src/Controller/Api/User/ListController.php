@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Controller\Api\User;
 
 use App\Controller\AbstractController;
+use App\Entity\User;
 use App\Factory\View\User\UserViewFactory;
+use App\Model\Query\UserListQuery;
 use App\Model\View\User\UserView;
 use App\Repository\UserRepository;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -29,13 +31,25 @@ final class ListController extends AbstractController
      *     type="array",
      *     @SWG\Items(type="string")
      * )
+     * @SWG\Parameter(
+     *     name="role",
+     *     in="query",
+     *     description="User role",
+     *     type="string",
+     *     enum={User::ROLE_USER, User::ROLE_ADMIN}
+     * )
+     * @SWG\Parameter(
+     *     name="is_domain_user",
+     *     in="query",
+     *     description="Is user in domain",
+     *     type="boolean",
+     * )
      * @SWG\Response(
      *     response=200,
      *     description="List of users",
      *     @SWG\Schema(
      *         type="array",
      *     @Model(type=UserView::class))
-     * )
      * )
      * @SWG\Response(
      *     response=401,
@@ -46,19 +60,12 @@ final class ListController extends AbstractController
      *
      * @return UserView[]
      */
-    public function users(
-        Request $request,
-        UserRepository $userRepository,
-        UserViewFactory $viewFactory
-    ): array {
-        $ids = $request->query->get('ids', []);
-        $role = $request->query->get('role');
-
-        $users = !empty($ids)
-            ? $userRepository->findByIds($ids)
-            : $userRepository->findAllExceptAnonymous($role)
-        ;
-
-        return $viewFactory->createCollection($users);
+    public function users(Request $request, UserRepository $repository, UserViewFactory $factory): array
+    {
+        return $factory->createCollection(
+            $repository->findUsersByQuery(
+                new UserListQuery($request)
+            )
+        );
     }
 }

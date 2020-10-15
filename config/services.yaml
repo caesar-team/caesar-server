@@ -174,3 +174,7 @@ services:
         arguments: [ '%kernel.project_dir%' ]
         tags:
             - { name: doctrine.orm.entity_listener }
+
+    App\Repository\UserRepository:
+        arguments:
+            $domains: '%env(csv:OAUTH_ALLOWED_DOMAINS)%'
