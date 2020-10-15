@@ -248,6 +248,11 @@ class Directory
      */
     public function getLabel(): ?string
     {
+        // @todo remove after implemented inbox
+        if (null !== $this->getUserInbox()) {
+            return 'Shared with me';
+        }
+
         return $this->label;
     }
 
