@@ -66,7 +66,6 @@ class ItemTest extends Unit
             'parent_list' => $team->getDefaultDirectory(),
             'owner' => $user,
             'team' => $team,
-            'secret' => uniqid(),
         ]);
         $I->addUserToTeam($team, $member);
         /** @var Item $memberKeypairTeam */
@@ -75,7 +74,6 @@ class ItemTest extends Unit
             'parent_list' => $team->getDefaultDirectory(),
             'owner' => $member,
             'team' => $team,
-            'secret' => uniqid(),
         ]);
         $teamItem = $I->createTeamItem($team, $user);
 
@@ -99,6 +97,7 @@ class ItemTest extends Unit
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
 
         $I->sendPOST('items', [
@@ -107,6 +106,7 @@ class ItemTest extends Unit
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         [$userKeypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');
@@ -229,6 +229,7 @@ class ItemTest extends Unit
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
 
@@ -237,6 +238,7 @@ class ItemTest extends Unit
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
@@ -244,6 +246,7 @@ class ItemTest extends Unit
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
     }
@@ -265,6 +268,7 @@ class ItemTest extends Unit
             'listId' => 'invalid-uuid',
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
+            'title' => 'item title',
             'favorite' => false,
             'tags' => ['tag'],
         ]);
@@ -274,6 +278,7 @@ class ItemTest extends Unit
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
+            'title' => 'item title',
             'favorite' => false,
             'tags' => ['tag'],
         ]);
@@ -296,6 +301,7 @@ class ItemTest extends Unit
         $I->sendPOST('items', [
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
+            'title' => 'item title',
             'favorite' => false,
             'tags' => ['tag'],
         ]);
@@ -306,6 +312,7 @@ class ItemTest extends Unit
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
+            'title' => 'item title',
             'favorite' => false,
             'tags' => ['tag'],
         ]);
@@ -331,11 +338,13 @@ class ItemTest extends Unit
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
             'secret' => 'secret-edit',
+            'title' => 'item title (edited)',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->sendPATCH(sprintf('/items/%s', $otherItem->getId()), [
             'secret' => 'secret-edit',
+            'title' => 'item title (edited)',
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
@@ -506,6 +515,7 @@ class ItemTest extends Unit
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         [$keypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');
 
@@ -514,6 +524,7 @@ class ItemTest extends Unit
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         [$userKeypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');
@@ -557,6 +568,7 @@ class ItemTest extends Unit
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         [$keypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');
 
@@ -565,6 +577,7 @@ class ItemTest extends Unit
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         [$memberKeypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');
@@ -574,6 +587,7 @@ class ItemTest extends Unit
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         [$removeMemberKeypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');

@@ -45,6 +45,7 @@ class CreateItemRequestType extends AbstractType
                     NodeEnumType::TYPE_KEYPAIR,
                 ],
             ])
+            ->add('title', TextType::class)
             ->add('secret', TextType::class)
             ->add('favorite', CheckboxType::class)
             ->add('tags', CollectionType::class, [

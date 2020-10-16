@@ -40,6 +40,7 @@ class ShareTest extends Unit
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
@@ -48,6 +49,7 @@ class ShareTest extends Unit
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
@@ -57,6 +59,7 @@ class ShareTest extends Unit
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'relatedItemId' => $item->getId()->toString(),
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         [$keypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');

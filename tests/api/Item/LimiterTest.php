@@ -91,6 +91,7 @@ class LimiterTest extends Unit
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
+            'title' => 'item title',
             'favorite' => false,
             'tags' => ['tag'],
         ], $options);

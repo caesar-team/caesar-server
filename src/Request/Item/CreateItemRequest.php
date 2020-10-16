@@ -31,6 +31,11 @@ final class CreateItemRequest implements AwareOwnerAndTeamInterface, AwareOwnerA
     /**
      * @Assert\NotBlank()
      */
+    private ?string $title;
+
+    /**
+     * @Assert\NotBlank()
+     */
     private ?string $secret;
 
     private bool $favorite;
@@ -134,5 +139,15 @@ final class CreateItemRequest implements AwareOwnerAndTeamInterface, AwareOwnerA
     public function getTeam(): ?Team
     {
         return null !== $this->getList() ? $this->getList()->getTeam() : null;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(?string $title): void
+    {
+        $this->title = $title;
     }
 }

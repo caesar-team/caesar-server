@@ -24,6 +24,7 @@ class EditItemRequestType extends AbstractType
                 'choice_value' => 'id',
                 'property_path' => 'owner',
             ])
+            ->add('title', TextType::class)
             ->add('secret', TextType::class)
             ->add('tags', CollectionType::class, [
                 'entry_type' => TextType::class,

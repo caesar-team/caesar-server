@@ -30,6 +30,7 @@ class ShareFactory
 
             $item = $this->itemFactory->create();
             $item->setOwner($user);
+            $item->setTitle(NodeEnumType::TYPE_KEYPAIR);
             $item->setType(NodeEnumType::TYPE_KEYPAIR);
             $item->setParentList($user->getInbox());
             $item->setSecret($userRequest->getSecret());

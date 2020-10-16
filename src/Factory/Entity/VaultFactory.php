@@ -43,6 +43,7 @@ class VaultFactory
         $item = $this->itemFactory->create();
         $item->setOwner($user);
         $item->setTeam($team);
+        $item->setTitle(NodeEnumType::TYPE_KEYPAIR);
         $item->setType(NodeEnumType::TYPE_KEYPAIR);
         $item->setParentList($team->getDefaultDirectory());
         $item->setSecret($keypairRequest->getSecret());

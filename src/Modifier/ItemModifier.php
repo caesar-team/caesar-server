@@ -29,6 +29,7 @@ class ItemModifier
             $item->setOwner($request->getOwner());
         }
         $item->setSecret($request->getSecret());
+        $item->setTitle($request->getTitle());
         $item->setTags(new ArrayCollection($this->transformer->transform($request->getTags())));
         $this->repository->save($item);
 

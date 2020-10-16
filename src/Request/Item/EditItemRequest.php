@@ -15,6 +15,11 @@ final class EditItemRequest
     /**
      * @Assert\NotBlank()
      */
+    private ?string $title;
+
+    /**
+     * @Assert\NotBlank()
+     */
     private ?string $secret;
 
     private array $tags;
@@ -25,6 +30,7 @@ final class EditItemRequest
     {
         $this->tags = $item->getTags()->toArray();
         $this->secret = $item->getSecret();
+        $this->title = $item->getTitle();
         $this->owner = $item->getSignedOwner();
         $this->item = $item;
     }
@@ -62,5 +68,15 @@ final class EditItemRequest
     public function getItem(): Item
     {
         return $this->item;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(?string $title): void
+    {
+        $this->title = $title;
     }
 }
