@@ -664,7 +664,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 
     public function canFinished(): bool
     {
-        return null !== $this->getGoogleAuthenticatorSecret()
+        return $this->isGoogleAuthenticatorEnabled()
             && User::FLOW_STATUS_INCOMPLETE === $this->getFlowStatus()
             && $this->hasBackupCodes()
         ;
