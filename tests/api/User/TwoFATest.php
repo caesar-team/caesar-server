@@ -144,4 +144,30 @@ class TwoFATest extends Unit
         $I->sendGET('auth/2fa/backups');
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
     }
+
+    /** @test */
+    public function acceptBackupCodes()
+    {
+        $I = $this->tester;
+
+        $user = $I->haveUserWithKeys([
+            'flow_status' => User::FLOW_STATUS_INCOMPLETE,
+            'google_authenticator_secret' => 'secret',
+        ]);
+
+        $I->login($user);
+
+        // try to accept without backup codes
+        $I->sendPOST('auth/2fa/backups/accept');
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+        $I->seeInDatabase('fos_user', ['email' => $user->getEmail(), 'flow_status' => User::FLOW_STATUS_INCOMPLETE]);
+
+        $I->sendGET('auth/2fa/backups');
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->sendPOST('auth/2fa/backups/accept');
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
+        $I->seeInDatabase('fos_user', ['email' => $user->getEmail(), 'flow_status' => User::FLOW_STATUS_FINISHED]);
+    }
 }

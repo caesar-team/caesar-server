@@ -662,6 +662,14 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return (InvitationEncoder::initEncoder())->encode($this->getEmail());
     }
 
+    public function canFinished(): bool
+    {
+        return $this->isGoogleAuthenticatorEnabled()
+            && User::FLOW_STATUS_INCOMPLETE === $this->getFlowStatus()
+            && $this->hasBackupCodes()
+        ;
+    }
+
     public function __toString(): string
     {
         return $this->getUsername();
