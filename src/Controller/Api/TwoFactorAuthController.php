@@ -7,6 +7,7 @@ namespace App\Controller\Api;
 use App\Controller\AbstractController;
 use App\Entity\User;
 use App\Form\Request\TwoFactoryAuthEnableType;
+use App\Repository\UserRepository;
 use App\Security\BackupCodes\BackupCodeCreator;
 use App\Security\TwoFactor\GoogleAuthenticator;
 use App\Security\Voter\BackupCodesVoter;
@@ -245,5 +246,34 @@ final class TwoFactorAuthController extends AbstractController
         $codes = $backupCodeCreator->createAndSaveBackupCodes($user);
 
         return new JsonResponse($codes);
+    }
+
+    /**
+     * Accept Backup codes.
+     *
+     * @SWG\Tag(name="Security")
+     *
+     * @SWG\Response(
+     *     response=204,
+     *     description="Accepted backupcodes",
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/auth/2fa/backups/accept",
+     *     name="api_security_2fa_backup_codes_accept",
+     *     methods={"POST"}
+     * )
+     */
+    public function accept(UserRepository $repository): void
+    {
+        $user = $this->getUser();
+        if ($user->canFinished()) {
+            $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
+            $repository->save($user);
+        }
     }
 }

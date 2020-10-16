@@ -42,6 +42,7 @@ class UserController extends AbstractController
     public function reset2fa(User $user, UserManagerInterface $userManager)
     {
         $user->setGoogleAuthenticatorSecret(null);
+        $user->setFlowStatus(User::FLOW_STATUS_INCOMPLETE);
         $userManager->updateUser($user);
 
         /**
