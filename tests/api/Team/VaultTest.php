@@ -82,6 +82,37 @@ class VaultTest extends Unit
     }
 
     /** @test */
+    public function managerCreateTeam()
+    {
+        $I = $this->tester;
+
+        /** @var User $manager */
+        $manager = $I->have(User::class, [
+            'roles' => [User::ROLE_MANAGER],
+        ]);
+
+        $I->login($manager);
+        $I->sendPOST('/vault', [
+            'team' => [
+                'title' => uniqid(),
+                'icon' => null,
+            ],
+
+            'keypair' => [
+                'secret' => uniqid(),
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->seeResponseByJsonPathContainsJson('$.team', [
+            '_links' => [
+                'team_edit' => [],
+                'team_delete' => [],
+            ],
+        ]);
+    }
+
+    /** @test */
     public function batchItem()
     {
         $I = $this->tester;

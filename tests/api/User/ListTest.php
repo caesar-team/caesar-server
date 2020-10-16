@@ -283,11 +283,11 @@ class ListTest extends Unit
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->login($user);
         $I->sendPATCH(sprintf('list/%s/sort', $list->getId()->toString()), [
-            'sort' => 5,
+            'sort' => 3,
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
 
         $I->sendGET('list');
-        $I->seeResponseContainsJson(['id' => $list->getId()->toString(), 'sort' => 5]);
+        $I->seeResponseContainsJson(['id' => $list->getId()->toString(), 'sort' => 3]);
     }
 }

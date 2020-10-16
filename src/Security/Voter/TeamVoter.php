@@ -6,6 +6,7 @@ namespace App\Security\Voter;
 
 use App\Entity\Team;
 use App\Entity\User;
+use App\Entity\UserTeam;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -69,8 +70,17 @@ class TeamVoter extends Voter
 
     private function canEdit(Team $team, User $user): bool
     {
+        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
+            return false;
+        }
+
+        $userTeam = $team->getUserTeamByUser($user);
+
         return $user->hasRole(User::ROLE_ADMIN)
-            && Team::DEFAULT_GROUP_ALIAS !== $team->getAlias()
+            || ($user->hasRole(User::ROLE_MANAGER)
+                && null !== $userTeam
+                && $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN)
+            )
         ;
     }
 
@@ -91,6 +101,10 @@ class TeamVoter extends Voter
 
     private function canLeave(Team $team, User $user): bool
     {
+        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
+            return false;
+        }
+
         return null !== $team->getUserTeamByUser($user);
     }
 }
