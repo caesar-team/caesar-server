@@ -6,7 +6,8 @@ namespace App\Modifier;
 
 use App\Entity\Directory;
 use App\Repository\DirectoryRepository;
-use App\Request\Team\EditListRequest;
+use App\Request\EditListRequestInterface;
+use App\Request\User\SortListRequest;
 
 class DirectoryModifier
 {
@@ -17,7 +18,16 @@ class DirectoryModifier
         $this->repository = $repository;
     }
 
-    public function modifyByRequest(EditListRequest $request): Directory
+    public function modifySortByRequest(SortListRequest $request): Directory
+    {
+        $directory = $request->getDirectory();
+        $directory->setSort($request->getSort());
+        $this->repository->save($directory);
+
+        return $directory;
+    }
+
+    public function modifyByRequest(EditListRequestInterface $request): Directory
     {
         $directory = $request->getDirectory();
         $directory->setLabel($request->getLabel());

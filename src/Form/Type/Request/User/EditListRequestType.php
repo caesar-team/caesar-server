@@ -2,26 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Form\Request;
+namespace App\Form\Type\Request\User;
 
-use App\Entity\Directory;
+use App\Request\User\EditListRequest;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
-class SortListType extends AbstractType
+class EditListRequestType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        parent::buildForm($builder, $options);
         $builder
-            ->add('sort', NumberType::class, [
-                'constraints' => [
-                    new NotBlank(),
-                ],
-            ])
+            ->add('label')
         ;
     }
 
@@ -29,7 +22,7 @@ class SortListType extends AbstractType
     {
         parent::configureOptions($resolver);
         $resolver->setDefaults([
-            'data_class' => Directory::class,
+            'data_class' => EditListRequest::class,
             'csrf_protection' => false,
         ]);
     }

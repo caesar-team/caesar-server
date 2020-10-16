@@ -136,19 +136,6 @@ class ListTest extends Unit
         ]);
         $I->seeResponseContains('List with such label already exists');
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
-
-        $team = $I->createTeam($user);
-
-        $I->sendPOST(sprintf('teams/%s/lists', $team->getId()->toString()), [
-            'label' => 'New list',
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $I->sendPOST(sprintf('teams/%s/lists', $team->getId()->toString()), [
-            'label' => 'New list',
-        ]);
-        $I->seeResponseContains('List with such label already exists');
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
     }
 
     /** @test */
@@ -181,6 +168,7 @@ class ListTest extends Unit
             'sort' => 0,
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
+
         $I->sendPOST('list', [
             'label' => $label,
             'sort' => 0,
@@ -227,5 +215,79 @@ class ListTest extends Unit
 
         $schema = $I->getSchema('user/short_directory_list.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+    }
+
+    /** @test */
+    public function editList()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var Directory $otherList */
+        $otherList = $I->have(Directory::class, [
+            'user' => $user,
+            'parent_list' => $user->getLists(),
+        ]);
+
+        /** @var Directory $list */
+        $list = $I->have(Directory::class, [
+            'user' => $user,
+            'parent_list' => $user->getLists(),
+        ]);
+
+        $I->login($user);
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('list/%s', $list->getId()->toString()), [
+            'label' => $list->getLabel(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('list/%s', $list->getId()->toString()), [
+            'label' => uniqid(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('list/%s', $list->getId()->toString()), [
+            'label' => $otherList->getLabel(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('List with such label already exists');
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('list/%s', $list->getId()->toString()), [
+            'label' => null,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('This value should not be blank.');
+    }
+
+    /** @test */
+    public function sortList()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var Directory $list */
+        $list = $I->have(Directory::class, [
+            'user' => $user,
+            'parent_list' => $user->getLists(),
+        ]);
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->login($user);
+        $I->sendPATCH(sprintf('list/%s/sort', $list->getId()->toString()), [
+            'sort' => 5,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
+        $I->sendGET('list');
+        $I->seeResponseContainsJson(['id' => $list->getId()->toString(), 'sort' => 5]);
     }
 }

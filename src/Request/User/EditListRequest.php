@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Request\Team;
+namespace App\Request\User;
 
 use App\Entity\Directory;
 use App\Request\EditListRequestInterface;
@@ -12,16 +12,17 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 final class EditListRequest implements EditListRequestInterface
 {
     /**
-     * @Assert\NotBlank()
+     * @var string|null
+     *
+     * @Assert\NotBlank
      */
-    private ?string $label;
+    private $label;
 
     private Directory $directory;
 
     public function __construct(Directory $directory)
     {
         $this->directory = $directory;
-        $this->label = $directory->getLabel();
     }
 
     public function getLabel(): ?string
@@ -34,12 +35,17 @@ final class EditListRequest implements EditListRequestInterface
         $this->label = $label;
     }
 
+    public function getDirectory(): Directory
+    {
+        return $this->directory;
+    }
+
     /**
      * @Assert\Callback
      */
     public function uniqueValidation(ExecutionContextInterface $context)
     {
-        $list = $this->getDirectory()->getTeam()->getDirectoryByLabel($this->getLabel());
+        $list = $this->getDirectory()->getUser()->getDirectoryByLabel($this->getLabel());
 
         if ($list && !$this->getDirectory()->equals($list)) {
             $context->buildViolation('list.create.label.already_exists')
@@ -47,10 +53,5 @@ final class EditListRequest implements EditListRequestInterface
                 ->addViolation()
             ;
         }
-    }
-
-    public function getDirectory(): Directory
-    {
-        return $this->directory;
     }
 }

@@ -12,18 +12,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use LogicException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Table
  * @ORM\Entity(repositoryClass="App\Repository\DirectoryRepository")
- * @UniqueEntity(
- *     fields={"label", "team", "user"},
- *     ignoreNull=false,
- *     errorPath="label",
- *     message="list.create.label.already_exists",
- *     groups={"unique_label"}
- * )
  */
 class Directory
 {

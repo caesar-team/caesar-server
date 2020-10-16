@@ -2,33 +2,28 @@
 
 declare(strict_types=1);
 
-namespace App\Form\Request\Team;
+namespace App\Form\Type\Request\User;
 
-use App\Entity\Team;
+use App\Request\User\CreateListRequest;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
-class EditTeamType extends AbstractType
+class CreateListRequestType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('title', TextType::class, [
-                'constraints' => [
-                    new NotBlank(),
-                ],
-            ])
-            ->add('icon')
+            ->add('label')
+            ->add('sort')
         ;
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
+        parent::configureOptions($resolver);
         $resolver->setDefaults([
-            'data_class' => Team::class,
+            'data_class' => CreateListRequest::class,
             'csrf_protection' => false,
         ]);
     }
