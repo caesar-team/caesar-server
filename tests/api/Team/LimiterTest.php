@@ -35,23 +35,38 @@ class LimiterTest extends Unit
         $I->setLimiterSize(TeamCountInspector::class, 1);
 
         $I->login($user);
-        $I->sendPOST('/teams', [
-            'title' => uniqid(),
-            'icon' => null,
+        $I->sendPOST('/vault', [
+            'team' => [
+                'title' => uniqid(),
+                'icon' => null,
+            ],
+            'keypair' => [
+                'secret' => uniqid(),
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-        $I->sendPOST('/teams', [
-            'title' => uniqid(),
-            'icon' => null,
+        $I->sendPOST('/vault', [
+            'team' => [
+                'title' => uniqid(),
+                'icon' => null,
+            ],
+            'keypair' => [
+                'secret' => uniqid(),
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContains('Maximum number of teams is reached. Contact your Administrator');
 
         $I->setLimiterSize(TeamCountInspector::class, -1);
 
-        $I->sendPOST('/teams', [
-            'title' => uniqid(),
-            'icon' => null,
+        $I->sendPOST('/vault', [
+            'team' => [
+                'title' => uniqid(),
+                'icon' => null,
+            ],
+            'keypair' => [
+                'secret' => uniqid(),
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
     }

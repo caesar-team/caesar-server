@@ -91,7 +91,7 @@ class TeamVoter extends Voter
 
     private function canPinned(Team $team, User $user): bool
     {
-        return $user->hasRole(User::ROLE_ADMIN);
+        return $user->hasRole(User::ROLE_ADMIN) && null !== $team->getUserTeamByUser($user);
     }
 
     private function canGetKeypair(Team $team, User $user): bool

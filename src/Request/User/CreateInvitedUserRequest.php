@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Request\User;
 
+use App\Request\SrpAwareRequestInterface;
 use App\Validator\Constraints as AppAssert;
 use Symfony\Component\Validator\Constraints as Assert;
 
-final class CreateInvitedUserRequest
+final class CreateInvitedUserRequest implements SrpAwareRequestInterface
 {
     /**
      * @var string

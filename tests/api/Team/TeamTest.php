@@ -20,38 +20,6 @@ class TeamTest extends Unit
     protected ApiTester $tester;
 
     /** @test */
-    public function createTeam()
-    {
-        $I = $this->tester;
-
-        /** @var User $user */
-        $user = $I->have(User::class);
-
-        $I->login($user);
-        $I->sendPOST('/teams', [
-            'title' => 'My test team',
-            'icon' => null,
-        ]);
-        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
-
-        /** @var User $admin */
-        $admin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
-
-        $I->login($admin);
-        $I->sendPOST('/teams', [
-            'title' => 'My test team',
-            'icon' => null,
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('team/team.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
-    }
-
-    /** @test */
     public function getTeam()
     {
         $I = $this->tester;
@@ -232,5 +200,12 @@ class TeamTest extends Unit
         $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
         $this->assertEquals([true], $I->grabDataFromResponseByJsonPath('$.pinned'));
+
+        $I->sendPOST(sprintf('teams/%s/leave', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
+        $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $this->assertEquals([false], $I->grabDataFromResponseByJsonPath('$.pinned'));
     }
 }
