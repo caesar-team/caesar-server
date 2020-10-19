@@ -7,15 +7,52 @@ namespace App\Factory\Entity;
 use App\Entity\Srp;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Request\Srp\RegistrationRequest;
+use App\Request\SrpAwareRequestInterface;
 use App\Request\User\CreateInvitedUserRequest;
+use App\Security\AuthorizationManager\AuthorizationManager;
+use FOS\UserBundle\Model\UserManagerInterface;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UserFactory
 {
     private UserRepository $repository;
 
-    public function __construct(UserRepository $repository)
-    {
+    private UserManagerInterface $userManager;
+
+    private AuthorizationManager $authorizationManager;
+
+    private TranslatorInterface $translator;
+
+    public function __construct(
+        UserRepository $repository,
+        UserManagerInterface $userManager,
+        AuthorizationManager $authorizationManager,
+        TranslatorInterface $translator
+    ) {
         $this->repository = $repository;
+        $this->userManager = $userManager;
+        $this->authorizationManager = $authorizationManager;
+        $this->translator = $translator;
+    }
+
+    public function createFromRegistrationRequest(RegistrationRequest $request): User
+    {
+        $user = $this->userManager->findUserByEmail($request->getEmail());
+        if ($user instanceof User && $this->authorizationManager->hasInvitation($user)) {
+            throw new AccessDeniedHttpException($this->translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $request->getEmail()]));
+        }
+
+        $user = new User();
+        $user->setEmail($request->getEmail());
+        $user->setUsername($request->getEmail());
+        $user->setPlainPassword(uniqid());
+        $user->setEnabled(true);
+
+        $this->setSrp($user, $request);
+
+        return $user;
     }
 
     public function createFromInvitedRequest(CreateInvitedUserRequest $request): User
@@ -44,7 +81,7 @@ class UserFactory
         return $user;
     }
 
-    private function setSrp(User $user, CreateInvitedUserRequest $request): void
+    private function setSrp(User $user, SrpAwareRequestInterface $request): void
     {
         $srp = $user->getSrp() ?? new Srp();
         $srp->setSeed($request->getSeed());

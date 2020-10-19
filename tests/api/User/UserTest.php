@@ -189,11 +189,16 @@ class UserTest extends Unit
             'cause' => Item::CAUSE_SHARE,
         ]);
 
-        $I->sendPOST('/teams', [
-            'title' => uniqid(),
-            'icon' => null,
+        $I->sendPOST('/vault', [
+            'team' => [
+                'title' => uniqid(),
+                'icon' => null,
+            ],
+            'keypair' => [
+                'secret' => uniqid(),
+            ],
         ]);
-        [$teamId] = $I->grabDataFromResponseByJsonPath('$.id');
+        [$teamId] = $I->grabDataFromResponseByJsonPath('$.team.id');
 
         $I->sendPOST(sprintf('teams/%s/lists', $teamId), [
             'label' => uniqid(),

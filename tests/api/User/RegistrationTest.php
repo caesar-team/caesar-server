@@ -34,7 +34,11 @@ class RegistrationTest extends Unit
             'verifier' => self::VERIFIER,
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
+        $srpId = $I->grabFromDatabase('fos_user', 'srp_id', ['username' => $email]);
+
         $I->seeInDatabase('fos_user', ['username' => $email]);
+        $I->seeInDatabase('srp', ['id' => $srpId, 'seed' => self::SEED, 'verifier' => self::VERIFIER]);
 
         $userId = $I->grabFromDatabase('fos_user', 'id', ['username' => $email]);
 
