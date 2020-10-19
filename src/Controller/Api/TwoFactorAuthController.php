@@ -6,12 +6,13 @@ namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
 use App\Entity\User;
-use App\Form\Request\TwoFactoryAuthEnableType;
+use App\Form\Type\Request\User\TwoFactoryAuthEnableRequestType;
+use App\Modifier\UserModifier;
 use App\Repository\UserRepository;
+use App\Request\User\TwoFactoryAuthEnableRequest;
 use App\Security\BackupCodes\BackupCodeCreator;
 use App\Security\TwoFactor\GoogleAuthenticator;
 use App\Security\Voter\BackupCodesVoter;
-use Doctrine\ORM\EntityManagerInterface;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use RuntimeException;
@@ -33,7 +34,7 @@ final class TwoFactorAuthController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\TwoFactoryAuthEnableType::class)
+     *     @Model(type=TwoFactoryAuthEnableRequestType::class)
      * )
      * @SWG\Response(
      *     response=201,
@@ -73,22 +74,22 @@ final class TwoFactorAuthController extends AbstractController
      *     methods={"POST"}
      * )
      */
-    public function activateTwoFactor(Request $request, EntityManagerInterface $manager): Response
+    public function activateTwoFactor(Request $request, UserModifier $modifier): Response
     {
-        /** @var User $user */
         $user = $this->getUser();
         if ($user->getGoogleAuthenticatorSecret()) {
             return Response::create(null, Response::HTTP_CREATED);
         }
 
-        $form = $this->createForm(TwoFactoryAuthEnableType::class, $user);
+        $activateRequest = new TwoFactoryAuthEnableRequest($user);
+
+        $form = $this->createForm(TwoFactoryAuthEnableRequestType::class, $activateRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
 
-        $manager->persist($user);
-        $manager->flush();
+        $modifier->modifyByRequest($activateRequest);
 
         return new Response();
     }

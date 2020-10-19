@@ -337,7 +337,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return $this->srp;
     }
 
-    public function setSrp(Srp $srp): void
+    public function setSrp(?Srp $srp): void
     {
         $this->srp = $srp;
     }

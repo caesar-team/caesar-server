@@ -2,26 +2,28 @@
 
 declare(strict_types=1);
 
-namespace App\Form\Request;
+namespace App\Form\Type\Request\User;
 
-use App\Entity\UserTeam;
+use App\Request\User\TwoFactoryAuthEnableRequest;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class UserGroupType extends AbstractType
+class TwoFactoryAuthEnableRequestType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        parent::buildForm($builder, $options);
+        $builder
+            ->add('secret')
+            ->add('fingerprint')
+            ->add('authCode')
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        parent::configureOptions($resolver);
-
         $resolver->setDefaults([
-            'data_class' => UserTeam::class,
+            'data_class' => TwoFactoryAuthEnableRequest::class,
             'csrf_protection' => false,
         ]);
     }
