@@ -80,6 +80,7 @@ final class TwoFactorAuthController extends AbstractController
         if ($user->getGoogleAuthenticatorSecret()) {
             return Response::create(null, Response::HTTP_CREATED);
         }
+        $user->setGoogleAuthenticatorSecret($request->get('secret'));
 
         $activateRequest = new TwoFactoryAuthEnableRequest($user);
 
