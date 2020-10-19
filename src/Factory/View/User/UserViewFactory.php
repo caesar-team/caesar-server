@@ -19,7 +19,7 @@ class UserViewFactory
         $view->setPublicKey($user->getPublicKey());
         $view->setEmail($user->getEmail());
         $view->setTeamIds($user->getTeamsIds());
-        $view->setRoles($user->getRoles());
+        $view->setDomainRoles($user->getRoles());
 
         return $view;
     }

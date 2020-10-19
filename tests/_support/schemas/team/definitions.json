@@ -53,39 +53,16 @@
     "team_member": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "user": {
+          "$ref": "#/definitions/user"
         },
-        "email": {
-          "type": "string"
-        },
-        "avatar": {
-          "type": ["string", "null"]
-        },
-        "publicKey": {
-          "type": ["string", "null"]
-        },
-        "name": {
-          "type": "string"
-        },
-        "teamIds": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "role": {
+        "teamRole": {
           "type": "string"
         }
       },
       "required": [
-        "id",
-        "email",
-        "avatar",
-        "publicKey",
-        "name",
-        "teamIds",
-        "role"
+        "user",
+        "teamRole"
       ]
     },
     "team": {
@@ -159,6 +136,40 @@
         "updatedAt",
         "icon",
         "pinned"
+      ]
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": ["string", "null"]
+        },
+        "publicKey": {
+          "type": ["string", "null"]
+        },
+        "teamIds": {
+          "type": "array"
+        },
+        "domainRoles": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name",
+        "publicKey",
+        "teamIds",
+        "domainRoles"
       ]
     }
   }

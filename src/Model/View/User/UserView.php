@@ -38,7 +38,7 @@ class UserView
      *
      * @SWG\Property(type="string[]", example={"b3d4d910-bf9d-4718-b93c-553f1e6711bb"})
      */
-    private array $roles = [];
+    private array $domainRoles = [];
 
     /**
      * @var string[]
@@ -116,16 +116,16 @@ class UserView
     /**
      * @return string[]
      */
-    public function getRoles(): array
+    public function getDomainRoles(): array
     {
-        return $this->roles;
+        return $this->domainRoles;
     }
 
     /**
-     * @param string[] $roles
+     * @param string[] $domainRoles
      */
-    public function setRoles(array $roles): void
+    public function setDomainRoles(array $domainRoles): void
     {
-        $this->roles = $roles;
+        $this->domainRoles = $domainRoles;
     }
 }

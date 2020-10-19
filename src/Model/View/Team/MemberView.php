@@ -6,8 +6,10 @@ namespace App\Model\View\Team;
 
 use App\Entity\Team;
 use App\Entity\UserTeam;
+use App\Model\View\User\UserView;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 
 /**
@@ -37,40 +39,14 @@ use Swagger\Annotations as SWG;
 final class MemberView
 {
     /**
-     * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
+     * @SWG\Property(@Model(type=UserView::class))
      */
-    private string $id;
-
-    /**
-     * @SWG\Property(type="string", example="some@email.com")
-     */
-    private string $email;
-
-    /**
-     * @SWG\Property(type="string", example="Avatar data")
-     */
-    private ?string $avatar;
-
-    /**
-     * @SWG\Property(type="string")
-     */
-    private ?string $publicKey;
-
-    /**
-     * @SWG\Property(type="string", example="Some name")
-     */
-    private string $name;
-
-    /**
-     * @deprecated
-     * @SWG\Property(type="string[]")
-     */
-    private array $teamIds;
+    private ?UserView $user;
 
     /**
      * @SWG\Property(type="string", enum=UserTeam::ROLES)
      */
-    private string $role;
+    private string $teamRole;
 
     /**
      * @Serializer\Exclude
@@ -90,72 +66,27 @@ final class MemberView
 
     public function getId(): string
     {
-        return $this->id;
+        return $this->user->getId();
     }
 
-    public function setId(string $id): void
+    public function getUser(): ?UserView
     {
-        $this->id = $id;
+        return $this->user;
     }
 
-    public function getEmail(): string
+    public function setUser(?UserView $user): void
     {
-        return $this->email;
+        $this->user = $user;
     }
 
-    public function setEmail(string $email): void
+    public function getTeamRole(): string
     {
-        $this->email = $email;
+        return $this->teamRole;
     }
 
-    public function getAvatar(): ?string
+    public function setTeamRole(string $teamRole): void
     {
-        return $this->avatar;
-    }
-
-    public function setAvatar(?string $avatar): void
-    {
-        $this->avatar = $avatar;
-    }
-
-    public function getPublicKey(): ?string
-    {
-        return $this->publicKey;
-    }
-
-    public function setPublicKey(?string $publicKey): void
-    {
-        $this->publicKey = $publicKey;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): void
-    {
-        $this->name = $name;
-    }
-
-    public function getTeamIds(): array
-    {
-        return $this->teamIds;
-    }
-
-    public function setTeamIds(array $teamIds): void
-    {
-        $this->teamIds = $teamIds;
-    }
-
-    public function getRole(): string
-    {
-        return $this->role;
-    }
-
-    public function setRole(string $role): void
-    {
-        $this->role = $role;
+        $this->teamRole = $teamRole;
     }
 
     public function getUserTeam(): ?UserTeam
