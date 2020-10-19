@@ -149,6 +149,7 @@ class UserTest extends Unit
             'listId' => $directoryId,
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
+            'title' => 'item title',
             'favorite' => false,
             'tags' => ['tag'],
         ]);
@@ -159,6 +160,7 @@ class UserTest extends Unit
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
+            'title' => 'item title',
             'favorite' => false,
             'tags' => ['tag'],
         ]);

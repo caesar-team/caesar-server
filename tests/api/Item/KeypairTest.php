@@ -31,6 +31,7 @@ class KeypairTest extends Unit
         $I->sendPOST('items', [
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
+            'title' => 'item title',
             'relatedItemId' => null,
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
@@ -54,6 +55,7 @@ class KeypairTest extends Unit
         $I->sendPOST('items', [
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
+            'title' => 'item title',
             'relatedItemId' => $item->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
@@ -61,6 +63,7 @@ class KeypairTest extends Unit
         $I->sendPOST('items', [
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
+            'title' => 'item title',
             'relatedItemId' => $item->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);

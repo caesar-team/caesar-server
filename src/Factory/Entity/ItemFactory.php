@@ -29,6 +29,7 @@ class ItemFactory
         $item->setParentList($parentList);
         $item->setType($request->getType());
         $item->setSecret($request->getSecret());
+        $item->setTitle($request->getTitle());
         $item->setFavorite($request->isFavorite());
         $item->setTags(new ArrayCollection($this->transformer->transform($request->getTags())));
         $item->setRelatedItem($request->getRelatedItem());

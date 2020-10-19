@@ -97,12 +97,16 @@
         },
         "isShared": {
           "type": "boolean"
+        } ,
+        "title": {
+          "type": ["string", "null"]
         }
       },
       "required": [
         "id",
         "type",
         "listId",
+        "title",
         "secret",
         "invited",
         "shared",

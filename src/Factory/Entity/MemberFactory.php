@@ -33,6 +33,7 @@ class MemberFactory
         $keypair = $this->itemFactory->create();
         $keypair->setOwner($user);
         $keypair->setTeam($team);
+        $keypair->setTitle(NodeEnumType::TYPE_KEYPAIR);
         $keypair->setType(NodeEnumType::TYPE_KEYPAIR);
         $keypair->setParentList($team->getDefaultDirectory());
         $keypair->setSecret($request->getSecret());

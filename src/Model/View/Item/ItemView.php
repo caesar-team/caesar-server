@@ -141,6 +141,11 @@ final class ItemView
     private ?string $listId;
 
     /**
+     * @SWG\Property(type="string", example="Title")
+     */
+    private ?string $title;
+
+    /**
      * @SWG\Property(type="string", example="-----BEGIN PGP MESSAGE----- Version: OpenPGP.js v4.2.2 ....")
      */
     private ?string $secret;
@@ -382,5 +387,15 @@ final class ItemView
     public function setTeamId(?string $teamId): void
     {
         $this->teamId = $teamId;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(?string $title): void
+    {
+        $this->title = $title;
     }
 }

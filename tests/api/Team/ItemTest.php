@@ -58,6 +58,7 @@ class ItemTest extends Unit
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
+            'title' => 'item title',
             'favorite' => false,
             'tags' => ['tag'],
         ]);
@@ -273,6 +274,7 @@ class ItemTest extends Unit
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
@@ -280,6 +282,7 @@ class ItemTest extends Unit
             'listId' => $team->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_KEYPAIR,
             'secret' => uniqid(),
+            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContains('Keypair is already exists');
@@ -339,6 +342,7 @@ class ItemTest extends Unit
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
             'secret' => 'secret-edit',
+            'title' => 'item title (edited)',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
@@ -354,6 +358,7 @@ class ItemTest extends Unit
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
             'secret' => 'secret-edit',
+            'title' => 'item title (edited)',
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
@@ -368,6 +373,7 @@ class ItemTest extends Unit
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
+            'title' => 'item title',
             'favorite' => false,
             'tags' => ['tag'],
         ]);
@@ -386,6 +392,7 @@ class ItemTest extends Unit
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
+            'title' => 'item title',
             'favorite' => false,
             'tags' => ['tag'],
         ]);
