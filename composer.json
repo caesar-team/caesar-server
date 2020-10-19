@@ -40,7 +40,7 @@
         "symfony/console": "4.4.15",
         "symfony/dotenv": "4.4.15",
         "symfony/expression-language": "4.4.15",
-        "symfony/flex": "1.9.6",
+        "symfony/flex": "1.9.10",
         "symfony/framework-bundle": "4.4.15",
         "symfony/http-foundation": "4.4.15",
         "symfony/messenger": "4.4.15",
