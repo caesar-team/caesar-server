@@ -36,7 +36,7 @@ class TeamViewFactory
         $view->setTitle($team->getTitle());
         $view->setIcon($team->getIcon());
         $view->setType($team->getAlias() ?: Team::OTHER_TYPE);
-        if ($user instanceof User) {
+        if ($user instanceof User && null !== $userTeam) {
             $view->setPinned($team->isPinned($user));
         }
 
