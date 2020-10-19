@@ -17,6 +17,7 @@ class UserTeamViewFactory
         }
 
         $team = $userTeam->getTeam();
+        $user = $userTeam->getUser();
 
         $view = new UserTeamView($team, $userTeam);
         $view->setId($team->getId()->toString());
@@ -26,6 +27,7 @@ class UserTeamViewFactory
         $view->setUpdatedAt($userTeam->getUpdatedAt());
         $view->setUserRole($userTeam->getUserRole());
         $view->setIcon($team->getIcon());
+        $view->setPinned($team->isPinned($user));
 
         return $view;
     }
