@@ -18,6 +18,13 @@ class DatabaseSizeTest extends Unit
      */
     protected ApiTester $tester;
 
+    protected function _before()
+    {
+        $this->tester->executeQuery('TRUNCATE directory CASCADE;');
+        $this->tester->executeQuery('TRUNCATE groups CASCADE;');
+        $this->tester->executeQuery('TRUNCATE fos_user CASCADE;');
+    }
+
     /** @test */
     public function checkSizeDatabase()
     {
