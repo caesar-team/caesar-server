@@ -281,20 +281,35 @@ class ListTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        /** @var Directory $list */
-        $list = $I->have(Directory::class, [
+        /** @var Directory $list1 */
+        $list1 = $I->have(Directory::class, [
             'user' => $user,
             'parent_list' => $user->getLists(),
+            'sort' => 0,
+        ]);
+        /** @var Directory $list2 */
+        $list2 = $I->have(Directory::class, [
+            'user' => $user,
+            'parent_list' => $user->getLists(),
+            'sort' => 1,
+        ]);
+        /** @var Directory $list2 */
+        $list3 = $I->have(Directory::class, [
+            'user' => $user,
+            'parent_list' => $user->getLists(),
+            'sort' => 2,
         ]);
 
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->login($user);
-        $I->sendPATCH(sprintf('list/%s/sort', $list->getId()->toString()), [
-            'sort' => 3,
+        $I->sendPATCH(sprintf('list/%s/sort', $list1->getId()->toString()), [
+            'sort' => 2,
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
 
         $I->sendGET('list');
-        $I->seeResponseContainsJson(['id' => $list->getId()->toString(), 'sort' => 3]);
+        $I->seeResponseContainsJson(['id' => $list1->getId()->toString(), 'sort' => 2]);
+        $I->seeResponseContainsJson(['id' => $list2->getId()->toString(), 'sort' => 0]);
+        $I->seeResponseContainsJson(['id' => $list3->getId()->toString(), 'sort' => 1]);
     }
 }

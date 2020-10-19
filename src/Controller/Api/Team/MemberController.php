@@ -17,6 +17,7 @@ use App\Repository\UserTeamRepository;
 use App\Request\Team\BatchCreateMemberRequest;
 use App\Request\Team\CreateMemberRequest;
 use App\Request\Team\EditUserTeamRequest;
+use App\Security\Voter\TeamVoter;
 use App\Security\Voter\UserTeamVoter;
 use App\Team\MemberCreator;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
@@ -218,7 +219,7 @@ final class MemberController extends AbstractController
      * @SWG\Tag(name="Team / Member")
      * @SWG\Response(
      *     response=204,
-     *     description="Remove team member"
+     *     description="Leave team member"
      * )
      *
      * @Route(
@@ -229,10 +230,8 @@ final class MemberController extends AbstractController
      */
     public function leaveTeam(Team $team, UserTeamRepository $userTeamRepository): JsonResponse
     {
+        $this->denyAccessUnlessGranted(TeamVoter::LEAVE, $team);
         $userTeam = $team->getUserTeamByUser($this->getUser());
-        if (null === $userTeam || $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN)) {
-            throw new NotFoundHttpException('User Team not found');
-        }
 
         $userTeamRepository->remove($userTeam);
 
