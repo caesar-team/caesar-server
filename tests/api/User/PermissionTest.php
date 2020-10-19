@@ -36,7 +36,7 @@ class PermissionTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
 
         [$inbox] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', Directory::LIST_INBOX));
-        self::assertTrue(isset($inbox['_links']));
+        self::assertTrue(!isset($inbox['_links']));
 
         [$trash] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', Directory::LIST_TRASH));
         self::assertTrue(!isset($trash['_links']));
