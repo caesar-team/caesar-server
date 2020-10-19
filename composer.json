@@ -65,7 +65,7 @@
         "codeception/module-rest": "1.2.4",
         "codeception/module-symfony": "1.1.1",
         "friendsofphp/php-cs-fixer": "2.16.4",
-        "phpstan/phpstan": "0.12.48",
+        "phpstan/phpstan": "0.12.50",
         "phpstan/phpstan-doctrine": "0.12.21",
         "phpstan/phpstan-symfony": "0.12.8",
         "psalm/plugin-symfony": "1.5.0",
