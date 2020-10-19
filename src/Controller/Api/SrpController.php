@@ -8,17 +8,18 @@ use App\Controller\AbstractController;
 use App\Entity\Srp;
 use App\Entity\User;
 use App\Event\User\RegistrationCompletedEvent;
+use App\Factory\Entity\UserFactory;
 use App\Factory\View\Srp\SrpPrepareViewFactory;
-use App\Form\Request\Srp\RegistrationType;
-use App\Form\Request\Srp\UpdatePasswordType;
 use App\Form\Type\Request\Srp\LoginPrepareRequestType;
 use App\Form\Type\Request\Srp\LoginType;
+use App\Form\Type\Request\Srp\RegistrationRequestType;
+use App\Form\Type\Srp\UpdatePasswordType;
 use App\Model\View\Srp\PreparedSrpView;
 use App\Modifier\SrpModifier;
 use App\Request\Auth\LoginRequest;
 use App\Request\Srp\LoginPrepareRequest;
+use App\Request\Srp\RegistrationRequest;
 use App\Security\Authentication\SrppAuthenticator;
-use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
 use Exception;
@@ -40,7 +41,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class SrpController extends AbstractController
 {
@@ -50,7 +50,7 @@ final class SrpController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\Srp\RegistrationType::class)
+     *     @Model(type=RegistrationRequestType::class)
      * )
      * @SWG\Response(
      *     response=204,
@@ -88,24 +88,18 @@ final class SrpController extends AbstractController
     public function registerAction(
         Request $request,
         UserManagerInterface $userManager,
-        TranslatorInterface $translator,
-        AuthorizationManager $authorizationManager,
+        UserFactory $factory,
         EventDispatcherInterface $eventDispatcher
     ): void {
-        $email = $request->request->get('email');
-        $user = $userManager->findUserByEmail($email);
-        if ($user instanceof User && $authorizationManager->hasInvitation($user)) {
-            throw new AccessDeniedHttpException($translator->trans('authentication.invitation_wrong_auth_point', ['%email%' => $email]));
-        }
+        $registerRequest = new RegistrationRequest();
 
-        $user = new User(new Srp());
-
-        $form = $this->createForm(RegistrationType::class, $user);
+        $form = $this->createForm(RegistrationRequestType::class, $registerRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
 
+        $user = $factory->createFromRegistrationRequest($registerRequest);
         $userManager->updateUser($user);
         $eventDispatcher->dispatch(new RegistrationCompletedEvent($user));
     }
@@ -251,7 +245,7 @@ final class SrpController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\Srp\UpdatePasswordType::class)
+     *     @Model(type=UpdatePasswordType::class)
      * )
      * @SWG\Response(
      *     response=204,
@@ -301,7 +295,7 @@ final class SrpController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\Srp\UpdatePasswordType::class)
+     *     @Model(type=UpdatePasswordType::class)
      * )
      * @SWG\Response(
      *     response=204,

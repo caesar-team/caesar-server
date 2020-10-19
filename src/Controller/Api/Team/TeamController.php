@@ -6,21 +6,14 @@ namespace App\Controller\Api\Team;
 
 use App\Controller\AbstractController;
 use App\Entity\Team;
-use App\Entity\UserTeam;
-use App\Factory\Entity\TeamFactory;
 use App\Factory\View\Team\TeamViewFactory;
-use App\Form\Request\Team\CreateTeamType;
 use App\Form\Type\Request\Team\EditTeamRequestType;
-use App\Limiter\Inspector\TeamCountInspector;
-use App\Limiter\LimiterInterface;
-use App\Limiter\Model\LimitCheck;
 use App\Model\View\Team\TeamView;
 use App\Modifier\TeamModifier;
 use App\Repository\TeamRepository;
 use App\Request\Team\EditTeamRequest;
 use App\Security\Voter\TeamVoter;
 use App\Security\Voter\UserTeamVoter;
-use App\Services\TeamManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -39,56 +32,6 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class TeamController extends AbstractController
 {
-    /**
-     * Create a team.
-     *
-     * @SWG\Tag(name="Team")
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=CreateTeamType::class)
-     * )
-     * @SWG\Response(
-     *     response=200,
-     *     description="Create a team",
-     *     @Model(type=TeamView::class)
-     * )
-     *
-     * @Route(
-     *     name="api_team_create",
-     *     methods={"POST"}
-     * )
-     *
-     * @deprecated
-     */
-    public function create(
-        Request $request,
-        TeamViewFactory $viewFactory,
-        EntityManagerInterface $entityManager,
-        TeamFactory $teamFactory,
-        TeamManager $teamManager,
-        LimiterInterface $limiter
-    ): TeamView {
-        $this->denyAccessUnlessGranted(TeamVoter::CREATE, $this->getUser());
-
-        $limiter->check([
-            new LimitCheck(TeamCountInspector::class, 1),
-        ]);
-
-        $team = $teamFactory->create();
-        $form = $this->createForm(CreateTeamType::class, $team);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            throw new FormInvalidRequestException($form);
-        }
-
-        $entityManager->persist($team);
-        $teamManager->addTeamToUser($this->getUser(), UserTeam::USER_ROLE_ADMIN, $team);
-        $entityManager->flush();
-
-        return $viewFactory->createSingle($team);
-    }
-
     /**
      * Get a team.
      *
@@ -120,7 +63,7 @@ class TeamController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=CreateTeamType::class)
+     *     @Model(type=EditTeamRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
