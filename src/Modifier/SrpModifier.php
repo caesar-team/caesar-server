@@ -45,6 +45,7 @@ class SrpModifier
 
             throw new AccessDeniedHttpException($message, null, Response::HTTP_BAD_REQUEST);
         }
+        $srp->setPublicClientEphemeralValue($request->getPublicEphemeralValue());
 
         $privateEphemeral = $this->srpHandler->getRandomSeed();
         $publicEphemeralValue = $this->srpHandler->generatePublicServerEphemeral($privateEphemeral, $srp->getVerifier());
