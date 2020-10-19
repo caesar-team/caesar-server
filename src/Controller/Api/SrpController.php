@@ -9,18 +9,18 @@ use App\Entity\Srp;
 use App\Entity\User;
 use App\Event\User\RegistrationCompletedEvent;
 use App\Factory\View\Srp\SrpPrepareViewFactory;
-use App\Form\Request\Srp\LoginPrepareType;
 use App\Form\Request\Srp\RegistrationType;
 use App\Form\Request\Srp\UpdatePasswordType;
+use App\Form\Type\Request\Srp\LoginPrepareRequestType;
 use App\Form\Type\Request\Srp\LoginType;
 use App\Model\View\Srp\PreparedSrpView;
-use App\Repository\UserRepository;
+use App\Modifier\SrpModifier;
 use App\Request\Auth\LoginRequest;
+use App\Request\Srp\LoginPrepareRequest;
 use App\Security\Authentication\SrppAuthenticator;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\SrpHandler;
 use App\Services\SrpUserManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use FOS\UserBundle\Event\FilterUserResponseEvent;
 use FOS\UserBundle\Event\FormEvent;
@@ -116,7 +116,7 @@ final class SrpController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=LoginPrepareType::class)
+     *     @Model(type=LoginPrepareRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
@@ -154,37 +154,17 @@ final class SrpController extends AbstractController
      */
     public function prepareLoginAction(
         Request $request,
-        EntityManagerInterface $entityManager,
-        UserRepository $userRepository,
-        SrpHandler $srpHandler,
+        SrpModifier $modifier,
         SrpPrepareViewFactory $viewFactory
     ): PreparedSrpView {
-        $email = (string) $request->request->get('email');
-        $user = $userRepository->findOneByEmail($email);
-        if (null === $user) {
-            $message = $this->translator->trans('app.exception.user_not_found');
-            throw new AccessDeniedHttpException($message, null, Response::HTTP_BAD_REQUEST);
-        }
-        $srp = $user->getSrp();
-
-        if (is_null($srp)) {
-            $message = $this->translator->trans('app.exception.invalid_srp');
-            throw new AccessDeniedHttpException($message, null, Response::HTTP_BAD_REQUEST);
-        }
-
-        $form = $this->createForm(LoginPrepareType::class, $srp);
+        $prepareRequest = new LoginPrepareRequest();
+        $form = $this->createForm(LoginPrepareRequestType::class, $prepareRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
 
-        $privateEphemeral = $srpHandler->getRandomSeed();
-        $publicEphemeralValue = $srpHandler->generatePublicServerEphemeral($privateEphemeral, $srp->getVerifier());
-        $srp->setPublicServerEphemeralValue($publicEphemeralValue);
-        $srp->setPrivateServerEphemeralValue($privateEphemeral);
-
-        $entityManager->persist($srp);
-        $entityManager->flush();
+        $srp = $modifier->modifyByRequest($prepareRequest);
 
         return $viewFactory->createSingle($srp);
     }

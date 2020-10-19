@@ -27,6 +27,10 @@ class SrpTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
+        $userWithoutSrp = $I->have(User::class, [
+            'srp' => null,
+        ]);
+
         $I->sendPOST('/auth/srpp/login_prepare', [
             'email' => $user->getEmail(),
             'publicEphemeralValue' => self::PUBLIC_EPHEMERAL_VALUE,
@@ -36,5 +40,17 @@ class SrpTest extends Unit
 
         $schema = $I->getSchema('security/prepare_srp.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+
+        $I->sendPOST('/auth/srpp/login_prepare', [
+            'email' => 'some-user',
+            'publicEphemeralValue' => self::PUBLIC_EPHEMERAL_VALUE,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+
+        $I->sendPOST('/auth/srpp/login_prepare', [
+            'email' => $userWithoutSrp->getEmail(),
+            'publicEphemeralValue' => self::PUBLIC_EPHEMERAL_VALUE,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
     }
 }

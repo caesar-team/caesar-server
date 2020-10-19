@@ -170,4 +170,23 @@ class TwoFATest extends Unit
 
         $I->seeInDatabase('fos_user', ['email' => $user->getEmail(), 'flow_status' => User::FLOW_STATUS_FINISHED]);
     }
+
+    /** @test */
+    public function activate2fa()
+    {
+        $I = $this->tester;
+
+        $user = $I->haveUserWithKeys([
+            'flow_status' => User::FLOW_STATUS_INCOMPLETE,
+        ]);
+
+        $I->login($user);
+        $I->sendPOST('auth/2fa/activate', [
+            'secret' => '',
+            'fingerprint' => 'fingerprint',
+            'authCode' => '11111',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('Invalid two-factor authentication code.');
+    }
 }
