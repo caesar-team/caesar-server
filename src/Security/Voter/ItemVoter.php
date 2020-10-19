@@ -95,7 +95,7 @@ class ItemVoter extends Voter
 
     private function canCreate(Directory $list, User $user): bool
     {
-        if ($list->getUserInbox()) {
+        if ($list->getUserInbox() && !$list->getUser()->equals($user)) {
             return true;
         }
 

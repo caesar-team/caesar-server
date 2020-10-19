@@ -160,6 +160,11 @@ final class UserTeamView
     private ?string $icon;
 
     /**
+     * @SWG\Property(type="boolean", example=false)
+     */
+    private bool $pinned = false;
+
+    /**
      * @Serializer\Exclude
      */
     private Team $team;
@@ -243,6 +248,16 @@ final class UserTeamView
     public function setIcon(?string $icon): void
     {
         $this->icon = $icon;
+    }
+
+    public function isPinned(): bool
+    {
+        return $this->pinned;
+    }
+
+    public function setPinned(bool $pinned): void
+    {
+        $this->pinned = $pinned;
     }
 
     public function getTeam(): Team

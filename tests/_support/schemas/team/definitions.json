@@ -145,6 +145,9 @@
         },
         "icon": {
           "type": ["string", "null"]
+        },
+        "pinned": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -154,7 +157,8 @@
         "userRole",
         "createdAt",
         "updatedAt",
-        "icon"
+        "icon",
+        "pinned"
       ]
     }
   }

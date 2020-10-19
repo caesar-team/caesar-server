@@ -200,9 +200,16 @@ class UserTest extends Unit
         ]);
         [$listTeamId] = $I->grabDataFromResponseByJsonPath('$.id');
 
-        $I->sendPOST(sprintf('teams/%s/members/%s', $teamId, $member->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_MEMBER,
+        $I->sendPOST(sprintf('teams/%s/members/batch', $teamId), [
+            'members' => [
+                [
+                    'userRole' => UserTeam::USER_ROLE_MEMBER,
+                    'secret' => uniqid(),
+                    'userId' => $member->getId()->toString(),
+                ],
+            ],
         ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
 
         /** @var Team $team */
         $team = $I->createTeam($user);
