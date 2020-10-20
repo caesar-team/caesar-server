@@ -198,7 +198,7 @@ final class ItemController extends AbstractController
             $items[] = $item;
         }
 
-        return $viewFactory->createCollection(array_values($items));
+        return $viewFactory->createCollection($items);
     }
 
     /**
