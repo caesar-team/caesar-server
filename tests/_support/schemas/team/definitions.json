@@ -111,7 +111,7 @@
         "type": {
           "type": ["string", "null"]
         },
-        "userRole": {
+        "teamRole": {
           "type": ["string", "null"]
         },
         "createdAt": {
@@ -131,7 +131,7 @@
         "id",
         "title",
         "type",
-        "userRole",
+        "teamRole",
         "createdAt",
         "updatedAt",
         "icon",
