@@ -12,6 +12,7 @@ use App\Factory\View\Team\MemberViewFactory;
 use App\Form\Type\Request\Team\BatchCreateMemberRequestType;
 use App\Form\Type\Request\Team\CreateMemberRequestType;
 use App\Form\Type\Request\Team\EditUserTeamType;
+use App\Model\Query\MemberListQuery;
 use App\Model\View\Team\MemberView;
 use App\Repository\UserTeamRepository;
 use App\Request\Team\BatchCreateMemberRequest;
@@ -61,7 +62,7 @@ final class MemberController extends AbstractController
         $team = $this->getDefaultTeam();
 
         $this->denyAccessUnlessGranted(UserTeamVoter::VIEW, $team->getUserTeamByUser($this->getUser()));
-        $usersTeams = $userTeamRepository->findMembers($team);
+        $usersTeams = $userTeamRepository->findMembersByTeam($team);
 
         return $viewFactory->createCollection($usersTeams);
     }
@@ -70,6 +71,20 @@ final class MemberController extends AbstractController
      * Get team members.
      *
      * @SWG\Tag(name="Team / Member")
+     *
+     * @SWG\Parameter(
+     *     name="ids",
+     *     in="query",
+     *     description="User ids",
+     *     type="array",
+     *     @SWG\Items(type="string")
+     * )
+     * @SWG\Parameter(
+     *     name="without_keypair",
+     *     in="query",
+     *     description="Get members without keypairs",
+     *     type="boolean",
+     * )
      *
      * @SWG\Response(
      *     response=200,
@@ -85,13 +100,15 @@ final class MemberController extends AbstractController
      *
      * @return MemberView[]
      */
-    public function members(Request $request, Team $team, UserTeamRepository $userTeamRepository, MemberViewFactory $viewFactory)
+    public function members(Request $request, Team $team, UserTeamRepository $repository, MemberViewFactory $viewFactory)
     {
         $this->denyAccessUnlessGranted(UserTeamVoter::VIEW, $team->getUserTeamByUser($this->getUser()));
-        $ids = $request->query->get('ids', []);
-        $usersTeams = $userTeamRepository->findMembers($team, $ids);
 
-        return $viewFactory->createCollection($usersTeams);
+        return $viewFactory->createCollection(
+            $repository->getMembersByQuery(
+                new MemberListQuery($team, $request)
+            )
+        );
     }
 
     /**
