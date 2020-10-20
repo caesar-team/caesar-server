@@ -5,6 +5,8 @@ item:
     unique: Keypair is already exists
 
 team:
+  member:
+    unique: User already exists as member.
   label:
     unique: You already have a team with the same name. Choose another name.
 

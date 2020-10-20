@@ -7,6 +7,7 @@ namespace App\Request\Team;
 use App\Entity\Team;
 use App\Entity\User;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 final class CreateMemberRequest
 {
@@ -65,5 +66,18 @@ final class CreateMemberRequest
     public function getTeam(): Team
     {
         return $this->team;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function callback(ExecutionContextInterface $context)
+    {
+        if (null !== $this->team->getUserTeamByUser($this->user)) {
+            $context
+                ->buildViolation('team.member.unique')
+                ->atPath('user')
+                ->addViolation();
+        }
     }
 }

@@ -5,19 +5,11 @@ declare(strict_types=1);
 namespace App\Request\Item;
 
 use App\Entity\Directory;
-use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
-use App\Model\AwareOwnerAndRelatedItemInterface;
-use App\Team\AwareOwnerAndTeamInterface;
-use App\Validator\Constraints as AppAssert;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @AppAssert\UniqueTeamKeypair(groups={"keypair"})
- * @AppAssert\UniquePersonalKeypair(groups={"personal"})
- */
-final class CreateItemRequest implements AwareOwnerAndTeamInterface, AwareOwnerAndRelatedItemInterface
+final class CreateItemRequest
 {
     private ?User $owner;
 
@@ -42,11 +34,6 @@ final class CreateItemRequest implements AwareOwnerAndTeamInterface, AwareOwnerA
 
     private array $tags;
 
-    /**
-     * @Assert\NotBlank(groups={"personal"})
-     */
-    private ?Item $relatedItem;
-
     private User $user;
 
     public function __construct(User $user)
@@ -58,7 +45,6 @@ final class CreateItemRequest implements AwareOwnerAndTeamInterface, AwareOwnerA
         $this->secret = null;
         $this->favorite = false;
         $this->tags = [];
-        $this->relatedItem = null;
     }
 
     public function getOwner(): ?User
@@ -119,16 +105,6 @@ final class CreateItemRequest implements AwareOwnerAndTeamInterface, AwareOwnerA
     public function setTags(array $tags): void
     {
         $this->tags = $tags;
-    }
-
-    public function getRelatedItem(): ?Item
-    {
-        return $this->relatedItem;
-    }
-
-    public function setRelatedItem(?Item $relatedItem): void
-    {
-        $this->relatedItem = $relatedItem;
     }
 
     public function getUser(): User

@@ -10,6 +10,7 @@ use App\Factory\Entity\ItemFactory;
 use App\Factory\View\Item\BatchItemViewFactory;
 use App\Factory\View\Item\ItemViewFactory;
 use App\Form\Type\Request\Item\CreateBatchItemsRequestType;
+use App\Form\Type\Request\Item\CreateBatchKeypairsRequestType;
 use App\Form\Type\Request\Item\CreateItemRequestType;
 use App\Limiter\Inspector\ItemCountInspector;
 use App\Limiter\LimiterInterface;
@@ -18,6 +19,7 @@ use App\Model\View\Item\BatchItemsView;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
 use App\Request\Item\CreateBatchItemsRequest;
+use App\Request\Item\CreateBatchKeypairsRequest;
 use App\Request\Item\CreateItemRequest;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\TeamItemVoter;
@@ -192,9 +194,59 @@ final class ItemController extends AbstractController
             $item = $factory->createFromRequest($createItemRequest);
             $this->denyAccessUnlessGranted([TeamItemVoter::CREATE, ItemVoter::CREATE], $item->getParentList());
             $itemRepository->save($item);
+
             $items[] = $item;
         }
 
-        return $viewFactory->createCollection($items);
+        return $viewFactory->createCollection(array_values($items));
+    }
+
+    /**
+     * @SWG\Tag(name="Item")
+     *
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=CreateBatchKeypairsRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success keypairs created"
+     * )
+     *
+     * @Route(
+     *     path="/batch/keypairs",
+     *     name="api_batch_create_keypairs_items",
+     *     methods={"POST"}
+     * )
+     */
+    public function batchKeypairCreate(
+        Request $request,
+        ItemViewFactory $viewFactory,
+        ItemFactory $factory,
+        ItemRepository $itemRepository
+    ) {
+        $itemsRequest = new CreateBatchKeypairsRequest($this->getUser());
+        $form = $this->createForm(CreateBatchKeypairsRequestType::class, $itemsRequest);
+
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            throw new FormInvalidRequestException($form);
+        }
+
+        $items = [];
+        foreach ($itemsRequest->getItems() as $createItemRequest) {
+            $item = $factory->createTeamKeypairFromRequest($createItemRequest);
+            $this->denyAccessUnlessGranted(TeamItemVoter::CREATE, $item->getParentList());
+            if (isset($items[$item->getTeamKeypairGroupKey()])) {
+                continue;
+            }
+
+            $itemRepository->save($item);
+
+            $items[$item->getTeamKeypairGroupKey()] = $item;
+        }
+
+        return $viewFactory->createCollection(array_values($items));
     }
 }

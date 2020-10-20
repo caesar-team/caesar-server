@@ -92,29 +92,25 @@ class ItemTest extends Unit
         $schema = $I->getSchema('item/batch_item.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
 
-        $I->sendPOST('items', [
-            'listId' => $user->getDefaultDirectory()->getId()->toString(),
+        $I->have(Item::class, [
             'type' => NodeEnumType::TYPE_KEYPAIR,
-            'relatedItemId' => $item->getId()->toString(),
-            'secret' => uniqid(),
-            'title' => 'item title',
+            'parent_list' => $user->getDefaultDirectory(),
+            'owner' => $user,
+            'related_item' => $item,
         ]);
 
-        $I->sendPOST('items', [
-            'ownerId' => $member->getId()->toString(),
-            'listId' => $member->getInbox()->getId()->toString(),
+        /** @var Item $userKeypairItem */
+        $userKeypairItem = $I->have(Item::class, [
             'type' => NodeEnumType::TYPE_KEYPAIR,
-            'relatedItemId' => $item->getId()->toString(),
-            'secret' => uniqid(),
-            'title' => 'item title',
+            'parent_list' => $member->getInbox(),
+            'owner' => $member,
+            'related_item' => $item,
         ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        [$userKeypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');
 
         $I->login($member);
         $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseByJsonPathContainsJson('$.keypairs', ['id' => $userKeypairItemId]);
+        $I->seeResponseByJsonPathContainsJson('$.keypairs', ['id' => $userKeypairItem->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.keypairs', ['id' => $userKeypairTeam->getId()->toString()]);
         $I->seeResponseByJsonPathContainsJson('$.keypairs', ['id' => $memberKeypairTeam->getId()->toString()]);
         $I->seeResponseByJsonPathContainsJson('$.shares', ['id' => $item->getId()->toString()]);
@@ -206,49 +202,6 @@ class ItemTest extends Unit
             [$thirdItem->getId()->toString()],
             $I->grabDataFromResponseByJsonPath('$.[0].id')
         );
-    }
-
-    /** @test */
-    public function createKeypairItem()
-    {
-        $I = $this->tester;
-
-        /** @var User $user */
-        $user = $I->have(User::class);
-
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $user->getLists(),
-        ]);
-
-        $team = $I->createTeam($user);
-
-        $I->login($user);
-        $I->sendPOST('items', [
-            'listId' => $user->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'secret' => uniqid(),
-            'title' => 'item title',
-        ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
-
-        $I->sendPOST('items', [
-            'listId' => $user->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'relatedItemId' => $item->getId()->toString(),
-            'secret' => uniqid(),
-            'title' => 'item title',
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $I->sendPOST('items', [
-            'listId' => $team->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'secret' => uniqid(),
-            'title' => 'item title',
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
     }
 
     /** @test */
@@ -488,7 +441,7 @@ class ItemTest extends Unit
     }
 
     /** @test */
-    public function removePersonalSystemItem()
+    public function removePersonalKeypairItem()
     {
         $I = $this->tester;
 
@@ -510,100 +463,27 @@ class ItemTest extends Unit
         ]);
 
         $I->login($user);
-        $I->sendPOST('items', [
-            'listId' => $user->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'relatedItemId' => $item->getId()->toString(),
-            'secret' => uniqid(),
-            'title' => 'item title',
-        ]);
-        [$keypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');
 
-        $I->sendPOST('items', [
-            'ownerId' => $shareUser->getId()->toString(),
+        /** @var Item $ownerKeypairItem */
+        $ownerKeypairItem = $I->have(Item::class, [
             'type' => NodeEnumType::TYPE_KEYPAIR,
-            'relatedItemId' => $item->getId()->toString(),
-            'secret' => uniqid(),
-            'title' => 'item title',
+            'parent_list' => $user->getInbox(),
+            'owner' => $user,
+            'related_item' => $item,
         ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        [$userKeypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');
+
+        /** @var Item $userKeypairItem */
+        $userKeypairItem = $I->have(Item::class, [
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'parent_list' => $shareUser->getInbox(),
+            'owner' => $shareUser,
+            'related_item' => $item,
+        ]);
 
         $I->symfonyAuth($domainAdmin);
-        $I->deleteFromAdmin(ItemCrudController::class, $keypairItemId);
+        $I->deleteFromAdmin(ItemCrudController::class, $ownerKeypairItem->getId()->toString());
 
-        $I->dontSeeInDatabase('item', ['id' => $userKeypairItemId]);
+        $I->dontSeeInDatabase('item', ['id' => $userKeypairItem->getId()->toString()]);
         $I->dontSeeInDatabase('item', ['id' => $item->getId()->toString()]);
-    }
-
-    /** @test */
-    public function removeTeamSystemItem()
-    {
-        $I = $this->tester;
-
-        /** @var User $domainAdmin */
-        $domainAdmin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
-
-        /** @var User $user */
-        $user = $I->have(User::class);
-
-        /** @var User $member */
-        $member = $I->have(User::class);
-
-        /** @var User $removeMember */
-        $removeMember = $I->have(User::class);
-
-        $team = $I->createTeam($user);
-        $I->addUserToTeam($team, $member);
-        $I->addUserToTeam($team, $removeMember);
-
-        $userTeam = $team->getUserTeamByUser($removeMember);
-
-        $item = $I->createTeamItem($team, $removeMember);
-
-        $I->login($user);
-        $I->sendPOST('items', [
-            'listId' => $team->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'secret' => uniqid(),
-            'title' => 'item title',
-        ]);
-        [$keypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');
-
-        $I->sendPOST('items', [
-            'ownerId' => $member->getId()->toString(),
-            'listId' => $team->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'secret' => uniqid(),
-            'title' => 'item title',
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        [$memberKeypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');
-
-        $I->sendPOST('items', [
-            'ownerId' => $removeMember->getId()->toString(),
-            'listId' => $team->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'secret' => uniqid(),
-            'title' => 'item title',
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        [$removeMemberKeypairItemId] = $I->grabDataFromResponseByJsonPath('$.id');
-
-        $I->symfonyAuth($domainAdmin);
-        $I->deleteFromAdmin(ItemCrudController::class, $removeMemberKeypairItemId);
-
-        $I->dontSeeInDatabase('user_group', ['id' => $userTeam->getId()->toString()]);
-        $I->seeInDatabase('item', ['id' => $keypairItemId]);
-        $I->seeInDatabase('item', ['id' => $memberKeypairItemId]);
-        $I->seeInDatabase('item', ['id' => $item->getId()->toString()]);
-
-        $I->deleteFromAdmin(ItemCrudController::class, $keypairItemId);
-        $I->dontSeeInDatabase('user_group', ['id' => $user->getId()->toString()]);
-        $I->seeInDatabase('groups', ['id' => $team->getId()->toString()]);
-        $I->seeInDatabase('item', ['id' => $memberKeypairItemId]);
-        $I->dontSeeInDatabase('item', ['id' => $keypairItemId]);
     }
 }

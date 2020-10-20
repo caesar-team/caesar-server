@@ -2,7 +2,6 @@
 
 namespace App\Tests\Item;
 
-use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Tests\ApiTester;
@@ -37,36 +36,24 @@ class ShareTest extends Unit
         ]);
 
         $I->login($user);
-        $I->sendPOST('items', [
-            'listId' => $user->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'relatedItemId' => $item->getId()->toString(),
-            'secret' => uniqid(),
-            'title' => 'item title',
+        $I->sendPOST(sprintf('items/%s/share', $item->getId()->toString()), [
+            'users' => [
+                [
+                    'userId' => $user->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+                [
+                    'userId' => $memberRead->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+                [
+                    'userId' => $someMember->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+            ],
         ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $I->sendPOST('items', [
-            'ownerId' => $memberRead->getId()->toString(),
-            'listId' => $memberRead->getInbox()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'relatedItemId' => $item->getId()->toString(),
-            'secret' => uniqid(),
-            'title' => 'item title',
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        [$keypairItemId1] = $I->grabDataFromResponseByJsonPath('$.id');
-
-        $I->sendPOST('items', [
-            'ownerId' => $someMember->getId()->toString(),
-            'listId' => $someMember->getInbox()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'relatedItemId' => $item->getId()->toString(),
-            'secret' => uniqid(),
-            'title' => 'item title',
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        [$keypairItemId2] = $I->grabDataFromResponseByJsonPath('$.id');
+        [$keypairItemId1] = $I->grabDataFromResponseByJsonPath('$[1].keypairId');
+        [$keypairItemId2] = $I->grabDataFromResponseByJsonPath('$[2].keypairId');
 
         $I->sendGET(sprintf('items/%s', $item->getId()->toString()));
         $I->seeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId1]);

@@ -20,24 +20,6 @@ class KeypairTest extends Unit
     protected ApiTester $tester;
 
     /** @test */
-    public function createKeypairsWithoutRelatedItem()
-    {
-        $I = $this->tester;
-
-        /** @var User $user */
-        $user = $I->have(User::class);
-
-        $I->login($user);
-        $I->sendPOST('items', [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'secret' => uniqid(),
-            'title' => 'item title',
-            'relatedItemId' => null,
-        ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
-    }
-
-    /** @test */
     public function createKeypairsUniqueRelatedItem()
     {
         $I = $this->tester;
@@ -52,19 +34,27 @@ class KeypairTest extends Unit
         ]);
 
         $I->login($user);
-        $I->sendPOST('items', [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'secret' => uniqid(),
-            'title' => 'item title',
-            'relatedItemId' => $item->getId()->toString(),
+        $I->sendPOST(sprintf('items/%s/share', $item->getId()->toString()), [
+            'users' => [
+                [
+                    'userId' => $user->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+                [
+                    'userId' => $user->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $I->sendPOST('items', [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'secret' => uniqid(),
-            'title' => 'item title',
-            'relatedItemId' => $item->getId()->toString(),
+        $I->sendPOST(sprintf('items/%s/share', $item->getId()->toString()), [
+            'users' => [
+                [
+                    'userId' => $user->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
     }

@@ -134,6 +134,13 @@ class MemberTest extends Unit
         $schema = $I->getSchema('team/member.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
 
+        $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
+            'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'secret' => uniqid(),
+            'userId' => $otherUser->getId()->toString(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+
         $I->login($domainAdmin);
         $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
             'userRole' => UserTeam::USER_ROLE_ADMIN,
@@ -178,6 +185,11 @@ class MemberTest extends Unit
         $I->login($admin);
         $I->sendPOST(sprintf('teams/%s/members/batch', $team->getId()->toString()), [
             'members' => [
+                [
+                    'userRole' => UserTeam::USER_ROLE_ADMIN,
+                    'secret' => uniqid(),
+                    'userId' => $user->getId()->toString(),
+                ],
                 [
                     'userRole' => UserTeam::USER_ROLE_ADMIN,
                     'secret' => uniqid(),
