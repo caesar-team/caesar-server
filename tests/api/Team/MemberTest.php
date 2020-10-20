@@ -2,6 +2,8 @@
 
 namespace App\Tests\Team;
 
+use App\DBAL\Types\Enum\NodeEnumType;
+use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
@@ -60,6 +62,12 @@ class MemberTest extends Unit
         $otherUser = $I->have(User::class);
 
         $team = $I->createTeam($admin);
+        $I->have(Item::class, [
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'parent_list' => $team->getDefaultDirectory(),
+            'owner' => $admin,
+            'team' => $team,
+        ]);
         $I->addUserToTeam($team, $user);
 
         $I->login($otherUser);
@@ -75,6 +83,11 @@ class MemberTest extends Unit
 
         $schema = $I->getSchema('team/members.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
+
+        $I->sendGET(sprintf('teams/%s/members?without_keypair=true', $team->getId()->toString()));
+        $I->dontSeeResponseContains($admin->getId()->toString());
+        $I->seeResponseContains($user->getId()->toString());
+        $I->seeResponseCodeIs(HttpCode::OK);
     }
 
     /** @test */
