@@ -208,7 +208,7 @@ class UserTest extends Unit
         $I->sendPOST(sprintf('teams/%s/members/batch', $teamId), [
             'members' => [
                 [
-                    'userRole' => UserTeam::USER_ROLE_MEMBER,
+                    'teamRole' => UserTeam::USER_ROLE_MEMBER,
                     'secret' => uniqid(),
                     'userId' => $member->getId()->toString(),
                 ],

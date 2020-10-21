@@ -298,7 +298,7 @@ final class MemberController extends AbstractController
             throw new FormInvalidRequestException($form);
         }
 
-        $userTeam->setUserRole($editUserTeamRequest->getUserRole());
+        $userTeam->setUserRole($editUserTeamRequest->getTeamRole());
         $userTeamRepository->save($userTeam);
 
         return $viewFactory->createSingle($userTeam);

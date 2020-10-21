@@ -21,7 +21,7 @@ class CreateMemberRequestType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('userRole', ChoiceType::class, [
+            ->add('teamRole', ChoiceType::class, [
                 'choices' => UserTeam::ROLES,
             ])
             ->add('secret', TextType::class)

@@ -9,15 +9,15 @@ final class EditUserTeamRequest
     /**
      * @var string|null
      */
-    private $userRole;
+    private $teamRole;
 
-    public function getUserRole(): ?string
+    public function getTeamRole(): ?string
     {
-        return $this->userRole;
+        return $this->teamRole;
     }
 
-    public function setUserRole(?string $userRole): void
+    public function setTeamRole(?string $teamRole): void
     {
-        $this->userRole = $userRole;
+        $this->teamRole = $teamRole;
     }
 }

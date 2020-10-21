@@ -125,7 +125,7 @@ class MemberTest extends Unit
 
         $I->login($user);
         $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'teamRole' => UserTeam::USER_ROLE_ADMIN,
             'secret' => uniqid(),
             'userId' => $otherUser->getId()->toString(),
         ]);
@@ -134,7 +134,7 @@ class MemberTest extends Unit
 
         $I->login($admin);
         $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'teamRole' => UserTeam::USER_ROLE_ADMIN,
             'secret' => uniqid(),
             'userId' => $otherUser->getId()->toString(),
         ]);
@@ -145,7 +145,7 @@ class MemberTest extends Unit
 
         $I->login($domainAdmin);
         $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'teamRole' => UserTeam::USER_ROLE_ADMIN,
             'secret' => uniqid(),
             'userId' => $member->getId()->toString(),
         ]);
@@ -175,7 +175,7 @@ class MemberTest extends Unit
         $I->sendPOST(sprintf('teams/%s/members/batch', $team->getId()->toString()), [
             'members' => [
                 [
-                    'userRole' => UserTeam::USER_ROLE_ADMIN,
+                    'teamRole' => UserTeam::USER_ROLE_ADMIN,
                     'secret' => uniqid(),
                     'userId' => $otherUser->getId()->toString(),
                 ],
@@ -188,17 +188,17 @@ class MemberTest extends Unit
         $I->sendPOST(sprintf('teams/%s/members/batch', $team->getId()->toString()), [
             'members' => [
                 [
-                    'userRole' => UserTeam::USER_ROLE_ADMIN,
+                    'teamRole' => UserTeam::USER_ROLE_ADMIN,
                     'secret' => uniqid(),
                     'userId' => $user->getId()->toString(),
                 ],
                 [
-                    'userRole' => UserTeam::USER_ROLE_MEMBER,
+                    'teamRole' => UserTeam::USER_ROLE_MEMBER,
                     'secret' => uniqid(),
                     'userId' => $member->getId()->toString(),
                 ],
                 [
-                    'userRole' => UserTeam::USER_ROLE_MEMBER,
+                    'teamRole' => UserTeam::USER_ROLE_MEMBER,
                     'secret' => uniqid(),
                     'userId' => $otherUser->getId()->toString(),
                 ],
@@ -278,14 +278,14 @@ class MemberTest extends Unit
         $I->login($manager);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('teams/%s/members/%s', $team->getId()->toString(), $admin->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_MEMBER,
+            'teamRole' => UserTeam::USER_ROLE_MEMBER,
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
 
         $I->login($user);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'teamRole' => UserTeam::USER_ROLE_ADMIN,
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([HttpCode::FORBIDDEN], $I->grabDataFromResponseByJsonPath('$.error.code'));
@@ -293,7 +293,7 @@ class MemberTest extends Unit
         $I->login($admin);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'teamRole' => UserTeam::USER_ROLE_ADMIN,
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
