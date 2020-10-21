@@ -26,6 +26,8 @@ class MemberViewFactory
         $user = $userTeam->getUser();
 
         $view = new MemberView($userTeam, $userTeam->getTeam());
+        $view->setUserId($user->getId()->toString());
+        $view->setId($userTeam->getId()->toString());
         $view->setUser($this->userViewFactory->createSingle($user));
         $view->setTeamRole($userTeam->getUserRole());
 

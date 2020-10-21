@@ -53,15 +53,27 @@
     "team_member": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string"
+        },
         "user": {
           "$ref": "#/definitions/user"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "teamId": {
+          "type": "string"
         },
         "teamRole": {
           "type": "string"
         }
       },
       "required": [
+        "id",
         "user",
+        "userId",
+        "teamId",
         "teamRole"
       ]
     },

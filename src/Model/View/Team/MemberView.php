@@ -18,7 +18,7 @@ use Swagger\Annotations as SWG;
  *     attributes={"method": "DELETE"},
  *     href=@Hateoas\Route(
  *         "api_team_member_remove",
- *         parameters={ "team": "expr(object.getTeamId())", "user": "expr(object.getId())" }
+ *         parameters={ "team": "expr(object.getTeamId())", "user": "expr(object.getUserId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\UserTeamVoter::REMOVE'), object.getUserTeam()))"
@@ -29,7 +29,7 @@ use Swagger\Annotations as SWG;
  *     attributes={"method": "PATCH"},
  *     href=@Hateoas\Route(
  *         "api_team_member_edit",
- *         parameters={ "team": "expr(object.getTeamId())", "user": "expr(object.getId())" }
+ *         parameters={ "team": "expr(object.getTeamId())", "user": "expr(object.getUserId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\UserTeamVoter::EDIT'), object.getUserTeam()))"
@@ -38,6 +38,16 @@ use Swagger\Annotations as SWG;
  */
 final class MemberView
 {
+    /**
+     * @SWG\Property(type="string", example="a68833af-ab0f-4db3-acde-fccc47641b9e")
+     */
+    private string $id;
+
+    /**
+     * @SWG\Property(type="string", example="a68833af-ab0f-4db3-acde-fccc47641b9e")
+     */
+    private string $userId;
+
     /**
      * @SWG\Property(@Model(type=UserView::class))
      */
@@ -49,7 +59,7 @@ final class MemberView
     private string $teamRole;
 
     /**
-     * @Serializer\Exclude
+     * @SWG\Property(type="string", example="a68833af-ab0f-4db3-acde-fccc47641b9e")
      */
     private string $teamId;
 
@@ -66,7 +76,22 @@ final class MemberView
 
     public function getId(): string
     {
-        return $this->user->getId();
+        return $this->id;
+    }
+
+    public function setId(string $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function setUserId(string $userId): void
+    {
+        $this->userId = $userId;
+    }
+
+    public function getUserId(): string
+    {
+        return $this->userId;
     }
 
     public function getUser(): ?UserView
