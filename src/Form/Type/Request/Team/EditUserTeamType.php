@@ -15,7 +15,7 @@ final class EditUserTeamType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('userRole', ChoiceType::class, [
+        $builder->add('teamRole', ChoiceType::class, [
             'choices' => UserTeam::ROLES,
         ]);
     }

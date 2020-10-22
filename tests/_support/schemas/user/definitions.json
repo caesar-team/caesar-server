@@ -22,7 +22,7 @@
         "teamIds": {
           "type": "array"
         },
-        "roles": {
+        "domainRoles": {
           "type": "array"
         }
       },
@@ -32,7 +32,7 @@
         "name",
         "publicKey",
         "teamIds",
-        "roles"
+        "domainRoles"
       ]
     },
     "directory": {

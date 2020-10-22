@@ -55,6 +55,11 @@ class MemberTest extends Unit
             'roles' => [User::ROLE_ADMIN],
         ]);
 
+        /** @var User $manager */
+        $manager = $I->have(User::class, [
+            'roles' => [User::ROLE_MANAGER],
+        ]);
+
         /** @var User $user */
         $user = $I->have(User::class);
 
@@ -69,6 +74,7 @@ class MemberTest extends Unit
             'team' => $team,
         ]);
         $I->addUserToTeam($team, $user);
+        $I->addUserToTeam($team, $manager, UserTeam::USER_ROLE_ADMIN);
 
         $I->login($otherUser);
         $I->sendGET(sprintf('teams/%s/members', $team->getId()->toString()));
@@ -88,6 +94,9 @@ class MemberTest extends Unit
         $I->dontSeeResponseContains($admin->getId()->toString());
         $I->seeResponseContains($user->getId()->toString());
         $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->login($manager);
+        $I->sendGET(sprintf('teams/%s/members', $team->getId()->toString()));
     }
 
     /** @test */
@@ -116,7 +125,7 @@ class MemberTest extends Unit
 
         $I->login($user);
         $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'teamRole' => UserTeam::USER_ROLE_ADMIN,
             'secret' => uniqid(),
             'userId' => $otherUser->getId()->toString(),
         ]);
@@ -125,7 +134,7 @@ class MemberTest extends Unit
 
         $I->login($admin);
         $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'teamRole' => UserTeam::USER_ROLE_ADMIN,
             'secret' => uniqid(),
             'userId' => $otherUser->getId()->toString(),
         ]);
@@ -136,7 +145,7 @@ class MemberTest extends Unit
 
         $I->login($domainAdmin);
         $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'teamRole' => UserTeam::USER_ROLE_ADMIN,
             'secret' => uniqid(),
             'userId' => $member->getId()->toString(),
         ]);
@@ -166,7 +175,7 @@ class MemberTest extends Unit
         $I->sendPOST(sprintf('teams/%s/members/batch', $team->getId()->toString()), [
             'members' => [
                 [
-                    'userRole' => UserTeam::USER_ROLE_ADMIN,
+                    'teamRole' => UserTeam::USER_ROLE_ADMIN,
                     'secret' => uniqid(),
                     'userId' => $otherUser->getId()->toString(),
                 ],
@@ -179,17 +188,17 @@ class MemberTest extends Unit
         $I->sendPOST(sprintf('teams/%s/members/batch', $team->getId()->toString()), [
             'members' => [
                 [
-                    'userRole' => UserTeam::USER_ROLE_ADMIN,
+                    'teamRole' => UserTeam::USER_ROLE_ADMIN,
                     'secret' => uniqid(),
                     'userId' => $user->getId()->toString(),
                 ],
                 [
-                    'userRole' => UserTeam::USER_ROLE_MEMBER,
+                    'teamRole' => UserTeam::USER_ROLE_MEMBER,
                     'secret' => uniqid(),
                     'userId' => $member->getId()->toString(),
                 ],
                 [
-                    'userRole' => UserTeam::USER_ROLE_MEMBER,
+                    'teamRole' => UserTeam::USER_ROLE_MEMBER,
                     'secret' => uniqid(),
                     'userId' => $otherUser->getId()->toString(),
                 ],
@@ -211,6 +220,11 @@ class MemberTest extends Unit
             'roles' => [User::ROLE_ADMIN],
         ]);
 
+        /** @var User $manager */
+        $manager = $I->have(User::class, [
+            'roles' => [User::ROLE_MANAGER],
+        ]);
+
         /** @var User $user */
         $user = $I->have(User::class);
 
@@ -220,6 +234,11 @@ class MemberTest extends Unit
         $team = $I->createTeam($admin);
         $I->addUserToTeam($team, $user);
         $I->addUserToTeam($team, $otherUser);
+        $I->addUserToTeam($team, $manager, UserTeam::USER_ROLE_ADMIN);
+
+        $I->login($manager);
+        $I->sendDELETE(sprintf('teams/%s/members/%s', $team->getId()->toString(), $admin->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
 
         $I->login($user);
         $I->sendDELETE(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()));
@@ -241,6 +260,11 @@ class MemberTest extends Unit
             'roles' => [User::ROLE_ADMIN],
         ]);
 
+        /** @var User $manager */
+        $manager = $I->have(User::class, [
+            'roles' => [User::ROLE_MANAGER],
+        ]);
+
         /** @var User $user */
         $user = $I->have(User::class);
 
@@ -251,10 +275,17 @@ class MemberTest extends Unit
         $I->addUserToTeam($team, $user);
         $I->addUserToTeam($team, $otherUser);
 
+        $I->login($manager);
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('teams/%s/members/%s', $team->getId()->toString(), $admin->getId()->toString()), [
+            'teamRole' => UserTeam::USER_ROLE_MEMBER,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
+
         $I->login($user);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'teamRole' => UserTeam::USER_ROLE_ADMIN,
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $this->assertEquals([HttpCode::FORBIDDEN], $I->grabDataFromResponseByJsonPath('$.error.code'));
@@ -262,7 +293,7 @@ class MemberTest extends Unit
         $I->login($admin);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()), [
-            'userRole' => UserTeam::USER_ROLE_ADMIN,
+            'teamRole' => UserTeam::USER_ROLE_ADMIN,
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 

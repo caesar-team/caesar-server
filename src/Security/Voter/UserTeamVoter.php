@@ -72,23 +72,25 @@ final class UserTeamVoter extends Voter
         return false;
     }
 
-    private function canEdit(UserTeam $userTeam, User $user): bool
+    private function canEdit(UserTeam $subject, User $user): bool
     {
-        return  $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN)
-            || $user->hasRole(User::ROLE_ADMIN)
-        ;
+        if ($subject->getUser()->hasRole(User::ROLE_ADMIN)) {
+            return false;
+        }
+
+        $userTeam = $subject->getTeam()->getUserTeamByUser($user);
+
+        return null !== $userTeam && $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN);
     }
 
-    private function canRemove(UserTeam $userTeam, User $user): bool
+    private function canRemove(UserTeam $subject, User $user): bool
     {
-        return $this->canEdit($userTeam, $user);
+        return $this->canEdit($subject, $user);
     }
 
     private function canView(UserTeam $userTeam, User $user): bool
     {
-        return in_array($userTeam->getUserRole(), self::ROLES_TO_VIEW)
-            || $user->hasRole(User::ROLE_ADMIN)
-        ;
+        return in_array($userTeam->getUserRole(), self::ROLES_TO_VIEW);
     }
 
     private function canInvite(UserTeam $userTeam, User $user): bool
