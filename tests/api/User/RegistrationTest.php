@@ -44,6 +44,14 @@ class RegistrationTest extends Unit
 
         $I->dontSeeInDatabase('user_group', ['group_id' => $team->getId()->toString(), 'user_id' => $userId]);
         $I->seeInDatabase('directory', ['label' => 'default', 'user_id' => $userId]);
+
+        $I->sendPOST('/auth/srpp/registration', [
+            'email' => $email,
+            'seed' => self::SEED,
+            'verifier' => self::VERIFIER,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('Wrong email');
     }
 
     /** @test */
