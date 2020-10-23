@@ -25,7 +25,7 @@ class UserTeamViewFactory
         $view->setType($team->getAlias() ?: Team::OTHER_TYPE);
         $view->setCreatedAt($userTeam->getCreatedAt());
         $view->setUpdatedAt($userTeam->getUpdatedAt());
-        $view->setUserRole($userTeam->getUserRole());
+        $view->setTeamRole($userTeam->getUserRole());
         $view->setIcon($team->getIcon());
         $view->setPinned($team->isPinned($user));
 

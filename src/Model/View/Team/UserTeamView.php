@@ -142,7 +142,7 @@ final class UserTeamView
     /**
      * @SWG\Property(type="string", enum=UserTeam::ROLES)
      */
-    private ?string $userRole;
+    private ?string $teamRole;
 
     /**
      * @SWG\Property(type="string", example="2020-06-26T11:14:41+00:00")
@@ -210,14 +210,14 @@ final class UserTeamView
         $this->type = $type;
     }
 
-    public function getUserRole(): ?string
+    public function getTeamRole(): ?string
     {
-        return $this->userRole;
+        return $this->teamRole;
     }
 
-    public function setUserRole(?string $userRole): void
+    public function setTeamRole(?string $teamRole): void
     {
-        $this->userRole = $userRole;
+        $this->teamRole = $teamRole;
     }
 
     public function getCreatedAt(): \DateTime

@@ -26,7 +26,7 @@ class MemberFactory
         $user = $request->getUser();
 
         $userTeam = $this->userTeamFactory->create();
-        $userTeam->setUserRole($request->getUserRole());
+        $userTeam->setUserRole($request->getTeamRole());
         $userTeam->setUser($user);
         $userTeam->setTeam($team);
 

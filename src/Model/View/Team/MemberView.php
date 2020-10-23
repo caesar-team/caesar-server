@@ -6,8 +6,10 @@ namespace App\Model\View\Team;
 
 use App\Entity\Team;
 use App\Entity\UserTeam;
+use App\Model\View\User\UserView;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 
 /**
@@ -16,7 +18,7 @@ use Swagger\Annotations as SWG;
  *     attributes={"method": "DELETE"},
  *     href=@Hateoas\Route(
  *         "api_team_member_remove",
- *         parameters={ "team": "expr(object.getTeamId())", "user": "expr(object.getId())" }
+ *         parameters={ "team": "expr(object.getTeamId())", "user": "expr(object.getUserId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\UserTeamVoter::REMOVE'), object.getUserTeam()))"
@@ -27,7 +29,7 @@ use Swagger\Annotations as SWG;
  *     attributes={"method": "PATCH"},
  *     href=@Hateoas\Route(
  *         "api_team_member_edit",
- *         parameters={ "team": "expr(object.getTeamId())", "user": "expr(object.getId())" }
+ *         parameters={ "team": "expr(object.getTeamId())", "user": "expr(object.getUserId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\UserTeamVoter::EDIT'), object.getUserTeam()))"
@@ -37,43 +39,27 @@ use Swagger\Annotations as SWG;
 final class MemberView
 {
     /**
-     * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
+     * @SWG\Property(type="string", example="a68833af-ab0f-4db3-acde-fccc47641b9e")
      */
     private string $id;
 
     /**
-     * @SWG\Property(type="string", example="some@email.com")
+     * @SWG\Property(type="string", example="a68833af-ab0f-4db3-acde-fccc47641b9e")
      */
-    private string $email;
+    private string $userId;
 
     /**
-     * @SWG\Property(type="string", example="Avatar data")
+     * @SWG\Property(@Model(type=UserView::class))
      */
-    private ?string $avatar;
-
-    /**
-     * @SWG\Property(type="string")
-     */
-    private ?string $publicKey;
-
-    /**
-     * @SWG\Property(type="string", example="Some name")
-     */
-    private string $name;
-
-    /**
-     * @deprecated
-     * @SWG\Property(type="string[]")
-     */
-    private array $teamIds;
+    private ?UserView $user;
 
     /**
      * @SWG\Property(type="string", enum=UserTeam::ROLES)
      */
-    private string $role;
+    private string $teamRole;
 
     /**
-     * @Serializer\Exclude
+     * @SWG\Property(type="string", example="a68833af-ab0f-4db3-acde-fccc47641b9e")
      */
     private string $teamId;
 
@@ -98,64 +84,34 @@ final class MemberView
         $this->id = $id;
     }
 
-    public function getEmail(): string
+    public function setUserId(string $userId): void
     {
-        return $this->email;
+        $this->userId = $userId;
     }
 
-    public function setEmail(string $email): void
+    public function getUserId(): string
     {
-        $this->email = $email;
+        return $this->userId;
     }
 
-    public function getAvatar(): ?string
+    public function getUser(): ?UserView
     {
-        return $this->avatar;
+        return $this->user;
     }
 
-    public function setAvatar(?string $avatar): void
+    public function setUser(?UserView $user): void
     {
-        $this->avatar = $avatar;
+        $this->user = $user;
     }
 
-    public function getPublicKey(): ?string
+    public function getTeamRole(): string
     {
-        return $this->publicKey;
+        return $this->teamRole;
     }
 
-    public function setPublicKey(?string $publicKey): void
+    public function setTeamRole(string $teamRole): void
     {
-        $this->publicKey = $publicKey;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): void
-    {
-        $this->name = $name;
-    }
-
-    public function getTeamIds(): array
-    {
-        return $this->teamIds;
-    }
-
-    public function setTeamIds(array $teamIds): void
-    {
-        $this->teamIds = $teamIds;
-    }
-
-    public function getRole(): string
-    {
-        return $this->role;
-    }
-
-    public function setRole(string $role): void
-    {
-        $this->role = $role;
+        $this->teamRole = $teamRole;
     }
 
     public function getUserTeam(): ?UserTeam

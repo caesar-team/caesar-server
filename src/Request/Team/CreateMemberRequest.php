@@ -14,7 +14,7 @@ final class CreateMemberRequest
     /**
      * @Assert\NotBlank()
      */
-    private ?string $userRole;
+    private ?string $teamRole;
 
     /**
      * @Assert\NotBlank()
@@ -33,14 +33,14 @@ final class CreateMemberRequest
         $this->team = $team;
     }
 
-    public function getUserRole(): ?string
+    public function getTeamRole(): ?string
     {
-        return $this->userRole;
+        return $this->teamRole;
     }
 
-    public function setUserRole(?string $userRole): void
+    public function setTeamRole(?string $teamRole): void
     {
-        $this->userRole = $userRole;
+        $this->teamRole = $teamRole;
     }
 
     public function getSecret(): ?string

@@ -17,8 +17,9 @@ class SelfUserInfoViewFactory
         $view->setEmail($user->getEmail());
         $view->setName($user->getUsername());
         $view->setAvatar($user->getAvatarLink());
-        $view->setRoles($user->getRoles());
+        $view->setDomainRoles($user->getRoles());
         $view->setTeamIds($user->getTeamsIds());
+        $view->setPublicKey($user->getPublicKey());
 
         return $view;
     }

@@ -222,12 +222,12 @@ final class MemberController extends AbstractController
         User $user,
         UserTeamRepository $userTeamRepository
     ): JsonResponse {
-        $this->denyAccessUnlessGranted(UserTeamVoter::REMOVE, $team->getUserTeamByUser($this->getUser()));
-
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
         if (!$userTeam instanceof UserTeam) {
             throw new NotFoundHttpException('User Team not found');
         }
+
+        $this->denyAccessUnlessGranted(UserTeamVoter::REMOVE, $userTeam);
 
         $userTeamRepository->remove($userTeam);
 
@@ -288,12 +288,12 @@ final class MemberController extends AbstractController
         MemberViewFactory $viewFactory,
         UserTeamRepository $userTeamRepository
     ): MemberView {
-        $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
-
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
         if (!$userTeam instanceof UserTeam) {
             throw new NotFoundHttpException('User Team not found');
         }
+
+        $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $userTeam);
 
         $editUserTeamRequest = new EditUserTeamRequest();
         $form = $this->createForm(EditUserTeamType::class, $editUserTeamRequest);
@@ -302,7 +302,7 @@ final class MemberController extends AbstractController
             throw new FormInvalidRequestException($form);
         }
 
-        $userTeam->setUserRole($editUserTeamRequest->getUserRole());
+        $userTeam->setUserRole($editUserTeamRequest->getTeamRole());
         $userTeamRepository->save($userTeam);
 
         return $viewFactory->createSingle($userTeam);

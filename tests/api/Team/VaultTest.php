@@ -138,7 +138,7 @@ class VaultTest extends Unit
         [$teamId] = $I->grabDataFromResponseByJsonPath('$.team.id');
 
         $I->sendPOST(sprintf('teams/%s/members', $teamId), [
-            'userRole' => UserTeam::USER_ROLE_MEMBER,
+            'teamRole' => UserTeam::USER_ROLE_MEMBER,
             'secret' => uniqid(),
             'userId' => $member->getId()->toString(),
         ]);

@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Factory\View\Team;
 
 use App\Entity\UserTeam;
+use App\Factory\View\User\UserViewFactory;
 use App\Model\View\Team\MemberView;
-use Symfony\Component\Security\Core\Security;
 
 class MemberViewFactory
 {
-    private Security $security;
+    private UserViewFactory $userViewFactory;
 
-    public function __construct(Security $security)
+    public function __construct(UserViewFactory $userViewFactory)
     {
-        $this->security = $security;
+        $this->userViewFactory = $userViewFactory;
     }
 
     public function createSingle(UserTeam $userTeam): MemberView
@@ -23,17 +23,13 @@ class MemberViewFactory
             throw new \BadMethodCallException('Incomplete UserTeam entity');
         }
 
-        $currentUserTeam = $userTeam->getTeam()->getUserTeamByUser($this->security->getUser());
         $user = $userTeam->getUser();
 
-        $view = new MemberView($currentUserTeam, $userTeam->getTeam());
-        $view->setId($user->getId()->toString());
-        $view->setName($user->getUsername());
-        $view->setEmail($user->getEmail());
-        $view->setAvatar($user->getAvatarLink());
-        $view->setPublicKey($user->getPublicKey());
-        $view->setRole($userTeam->getUserRole());
-        $view->setTeamIds($user->getTeamsIds());
+        $view = new MemberView($userTeam, $userTeam->getTeam());
+        $view->setUserId($user->getId()->toString());
+        $view->setId($userTeam->getId()->toString());
+        $view->setUser($this->userViewFactory->createSingle($user));
+        $view->setTeamRole($userTeam->getUserRole());
 
         return $view;
     }
