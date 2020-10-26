@@ -90,7 +90,9 @@ final class UserTeamVoter extends Voter
 
     private function canView(UserTeam $userTeam, User $user): bool
     {
-        return in_array($userTeam->getUserRole(), self::ROLES_TO_VIEW);
+        return $user->hasRole(User::ROLE_MANAGER)
+            || in_array($userTeam->getUserRole(), self::ROLES_TO_VIEW)
+        ;
     }
 
     private function canInvite(UserTeam $userTeam, User $user): bool
