@@ -18,6 +18,9 @@ final class CreateKeypairRequest implements AwareOwnerAndTeamInterface
 {
     private ?User $owner;
 
+    /**
+     * @Assert\NotBlank()
+     */
     private ?Team $team;
 
     /**
