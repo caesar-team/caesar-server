@@ -7,10 +7,10 @@ namespace App\Request\Item;
 use App\Entity\User;
 use Symfony\Component\Validator\Constraints as Assert;
 
-final class CreateBatchItemsRequest
+final class CreateBatchKeypairsRequest
 {
     /**
-     * @var CreateItemRequest[]
+     * @var CreateKeypairRequest[]
      *
      * @Assert\Valid
      */
@@ -25,7 +25,7 @@ final class CreateBatchItemsRequest
     }
 
     /**
-     * @return CreateItemRequest[]
+     * @return CreateKeypairRequest[]
      */
     public function getItems(): array
     {
@@ -33,7 +33,7 @@ final class CreateBatchItemsRequest
     }
 
     /**
-     * @param CreateItemRequest[] $items
+     * @param CreateKeypairRequest[] $items
      */
     public function setItems(array $items): void
     {

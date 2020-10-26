@@ -554,4 +554,20 @@ class Item implements ChildItemAwareInterface
     {
         $this->title = $title;
     }
+
+    public function getTeamKeypairGroupKey(): string
+    {
+        $groups = [];
+        if (null !== $this->team) {
+            $groups[] = $this->team->getId()->toString();
+        }
+        if (null !== $this->owner) {
+            $groups[] = $this->owner->getId()->toString();
+        }
+        if (null !== $this->relatedItem) {
+            $groups[] = $this->relatedItem->getId()->toString();
+        }
+
+        return implode('', $groups);
+    }
 }

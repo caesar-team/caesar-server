@@ -27,6 +27,9 @@ class ShareFactory
         $result = [];
         foreach ($request->getUsers() as $userRequest) {
             $user = $userRequest->getUser();
+            if (isset($result[$user->getId()->toString()])) {
+                continue;
+            }
 
             $item = $this->itemFactory->create();
             $item->setOwner($user);
@@ -36,9 +39,9 @@ class ShareFactory
             $item->setSecret($userRequest->getSecret());
             $item->setRelatedItem($relatedItem);
 
-            $result[] = new Share($user, $item);
+            $result[$user->getId()->toString()] = new Share($user, $item);
         }
 
-        return $result;
+        return array_values($result);
     }
 }

@@ -147,6 +147,7 @@ class ItemRepository extends ServiceEntityRepository
             ->setParameter('team', $team)
             ->setParameter('user', $user)
             ->setParameter('type', NodeEnumType::TYPE_KEYPAIR)
+            ->setMaxResults(1)
         ;
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
@@ -209,7 +210,8 @@ class ItemRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('item');
         $queryBuilder
             ->select('COUNT(1)')
-            ->where('item.originalItem IS NULL')
+            ->where('item.type != :type')
+            ->setParameter('type', NodeEnumType::TYPE_KEYPAIR)
         ;
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();

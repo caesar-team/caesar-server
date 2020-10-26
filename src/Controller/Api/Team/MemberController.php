@@ -150,11 +150,15 @@ final class MemberController extends AbstractController
 
         $result = [];
         foreach ($batchRequest->getMembers() as $memberRequest) {
+            if (isset($result[$memberRequest->getUser()->getId()->toString()])) {
+                continue;
+            }
+
             $member = $memberCreator->createAndSave($memberRequest);
-            $result[] = $member->getUserTeam();
+            $result[$memberRequest->getUser()->getId()->toString()] = $member->getUserTeam();
         }
 
-        return $viewFactory->createCollection($result);
+        return $viewFactory->createCollection(array_values($result));
     }
 
     /**
