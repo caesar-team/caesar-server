@@ -119,6 +119,44 @@ class ItemTest extends Unit
     }
 
     /** @test */
+    public function getFilteredAllItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        /** @var Item $item */
+        $item = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getDefaultDirectory(),
+        ]);
+
+        /** @var Item $item */
+        $item2 = $I->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getDefaultDirectory(),
+        ]);
+
+        $I->updateInDatabase(
+            'item',
+            ['last_updated' => (new \DateTimeImmutable('+10 days'))->format('Y-m-d H:i:s')],
+            ['id' => $item2->getId()->toString()]
+        );
+
+        $I->login($user);
+        $I->sendGET('/items/all');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.personals', ['id' => $item->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.personals', ['id' => $item2->getId()->toString()]);
+
+        $I->sendGET(sprintf('/items/all?lastUpdated=%s', time() + 3600));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->dontSeeResponseByJsonPathContainsJson('$.personals', ['id' => $item->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.personals', ['id' => $item2->getId()->toString()]);
+    }
+
+    /** @test */
     public function getItemList()
     {
         $I = $this->tester;

@@ -15,6 +15,8 @@ use App\Form\Type\Request\Item\CreateItemRequestType;
 use App\Limiter\Inspector\ItemCountInspector;
 use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
+use App\Model\DTO\GroupedUserItems;
+use App\Model\Query\ItemsAllQuery;
 use App\Model\View\Item\BatchItemsView;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
@@ -51,6 +53,12 @@ final class ItemController extends AbstractController
      *     description="Items data",
      *     @Model(type=BatchItemsView::class)
      * )
+     * @SWG\Parameter(
+     *     name="lastUpdated",
+     *     in="query",
+     *     description="Filter by unixtime",
+     *     type="string"
+     * )
      *
      * @SWG\Response(
      *     response=404,
@@ -68,9 +76,16 @@ final class ItemController extends AbstractController
      *     methods={"GET"}
      * )
      */
-    public function items(BatchItemViewFactory $factory): BatchItemsView
+    public function items(Request $request, ItemRepository $repository, BatchItemViewFactory $factory): BatchItemsView
     {
-        return $factory->createSingle($this->getUser());
+        return $factory->createSingle(
+            new GroupedUserItems(
+                $this->getUser(),
+                $repository->getAllUserItems(
+                    new ItemsAllQuery($this->getUser(), $request)
+                )
+            )
+        );
     }
 
     /**

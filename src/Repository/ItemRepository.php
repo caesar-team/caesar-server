@@ -10,6 +10,7 @@ use App\Entity\Team;
 use App\Entity\User;
 use App\Model\DTO\Share;
 use App\Model\Query\ItemListQuery;
+use App\Model\Query\ItemsAllQuery;
 use App\Request\Item\KeypairFilterRequest;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -30,6 +31,28 @@ class ItemRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Item::class);
         $this->logger = $logger;
+    }
+
+    /**
+     * @return Item[]
+     */
+    public function getAllUserItems(ItemsAllQuery $query): array
+    {
+        $queryBuilder = $this->createQueryBuilder('item');
+        $queryBuilder
+            ->where('item.owner = :user OR item.team IN (:teams)')
+            ->setParameter('user', $query->getUser())
+            ->setParameter('teams', $query->getUser()->getTeamsIds())
+            ->orderBy('item.lastUpdated', 'ASC')
+        ;
+
+        if (null !== $query->getLastUpdated()) {
+            $queryBuilder
+                ->andWhere('item.lastUpdated >= :lastUpdated')
+                ->setParameter('lastUpdated', $query->getLastUpdated());
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     public function getKeypairsByRequest(KeypairFilterRequest $request): array
