@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Factory\View\Item;
 
-use App\DBAL\Types\Enum\NodeEnumType;
-use App\Entity\User;
 use App\Factory\View\Team\TeamItemViewFactory;
+use App\Model\DTO\GroupedUserItems;
 use App\Model\View\Item\BatchItemsView;
 use App\Model\View\Item\ItemView;
 
@@ -22,60 +21,25 @@ class BatchItemViewFactory
         $this->teamFactory = $teamFactory;
     }
 
-    public function createSingle(User $user): BatchItemsView
+    public function createSingle(GroupedUserItems $userItems): BatchItemsView
     {
-        $items = $user->getPersonalItems();
-        foreach ($user->getTeams() as $team) {
-            $items = array_merge($items, $team->getOwnedItems());
-        }
-
-        $personalItems = $sharedItems = $keypairItems = $systemItems = $teamItems = [];
-        foreach ($items as $item) {
-            switch ($item->getType()) {
-                case NodeEnumType::TYPE_KEYPAIR:
-                    if (!$item->getSignedOwner()->equals($user)) {
-                        break;
-                    }
-
-                    $keypairItems[$item->getId()->toString()] = $item;
-                    if (null !== $item->getRelatedItem()) {
-                        $sharedItems[$item->getRelatedItem()->getId()->toString()] = $item->getRelatedItem();
-                    }
-                    break;
-                case NodeEnumType::TYPE_SYSTEM:
-                    $systemItems[$item->getId()->toString()] = $item;
-                    break;
-                default:
-                    if (null === $item->getTeam()) {
-                        $personalItems[$item->getId()->toString()] = $item;
-                    } else {
-                        $teamItems[$item->getId()->toString()] = $item;
-                    }
-                    break;
-            }
-        }
-
-        foreach (array_keys($sharedItems) as $id) {
-            unset($personalItems[$id]);
-        }
-
         $view = new BatchItemsView();
-        $view->setPersonals($this->itemFactory->createCollection(array_values($personalItems)));
+        $view->setPersonals($this->itemFactory->createCollection(array_values($userItems->getPersonalItems())));
         /** @psalm-suppress InvalidArgument */
         $view->setShares(
             // @todo remove after implemented inbox
             array_map(
-                static function (ItemView $view) use ($user) {
-                    $view->setListId($user->getInbox()->getId()->toString());
+                static function (ItemView $view) use ($userItems) {
+                    $view->setListId($userItems->getUser()->getInbox()->getId()->toString());
 
                     return $view;
                 },
-                $this->itemFactory->createCollection(array_values($sharedItems))
+                $this->itemFactory->createCollection(array_values($userItems->getSharedItems()))
             )
         );
-        $view->setTeams($this->itemFactory->createCollection(array_values($teamItems)));
-        $view->setSystems($this->itemFactory->createCollection(array_values($systemItems)));
-        $view->setKeypairs($this->itemFactory->createCollection(array_values($keypairItems)));
+        $view->setTeams($this->itemFactory->createCollection(array_values($userItems->getTeamItems())));
+        $view->setSystems($this->itemFactory->createCollection(array_values($userItems->getSystemItems())));
+        $view->setKeypairs($this->itemFactory->createCollection(array_values($userItems->getKeypairItems())));
 
         return $view;
     }
