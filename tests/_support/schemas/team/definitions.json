@@ -56,9 +56,6 @@
         "id": {
           "type": "string"
         },
-        "user": {
-          "$ref": "#/definitions/user"
-        },
         "userId": {
           "type": "string"
         },
@@ -71,7 +68,6 @@
       },
       "required": [
         "id",
-        "user",
         "userId",
         "teamId",
         "teamRole"
@@ -86,10 +82,10 @@
         "title": {
           "type": "string"
         },
-        "users": {
+        "members": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/team_short_member"
+            "$ref": "#/definitions/team_member"
           }
         },
         "icon": {
@@ -105,7 +101,7 @@
       "required": [
         "id",
         "title",
-        "users",
+        "members",
         "icon",
         "type",
         "pinned"

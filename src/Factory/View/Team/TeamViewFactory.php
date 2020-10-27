@@ -11,13 +11,13 @@ use Symfony\Component\Security\Core\Security;
 
 class TeamViewFactory
 {
-    private MemberShortViewFactory $memberShortViewFactory;
+    private MemberViewFactory $memberViewFactory;
 
     private Security $security;
 
-    public function __construct(Security $security, MemberShortViewFactory $memberShortViewFactory)
+    public function __construct(Security $security, MemberViewFactory $memberViewFactory)
     {
-        $this->memberShortViewFactory = $memberShortViewFactory;
+        $this->memberViewFactory = $memberViewFactory;
         $this->security = $security;
     }
 
@@ -28,9 +28,9 @@ class TeamViewFactory
 
         $view = new TeamView($team, $userTeam);
         $view->setId($team->getId()->toString());
-        $view->setUsers(
-            $this->memberShortViewFactory->createCollection(
-                $team->getUserTeamsWithoutPretender()
+        $view->setMembers(
+            $this->memberViewFactory->createCollection(
+                $team->getUserTeamsWithoutPretender(), false
             )
         );
         $view->setTitle($team->getTitle());

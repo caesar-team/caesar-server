@@ -136,11 +136,11 @@ class TeamView
     private ?string $title;
 
     /**
-     * @var MemberShortView[]
+     * @var MemberView[]
      *
-     * @SWG\Property(type="array", @Model(type=MemberShortView::class))
+     * @SWG\Property(type="array", @Model(type=MemberView::class))
      */
-    private array $users;
+    private array $members;
 
     /**
      * @SWG\Property(type="string", example="Data icon")
@@ -171,7 +171,7 @@ class TeamView
     {
         $this->team = $team;
         $this->userTeam = $currentUserTeam;
-        $this->users = [];
+        $this->members = [];
     }
 
     public function getId(): string
@@ -195,19 +195,19 @@ class TeamView
     }
 
     /**
-     * @return MemberShortView[]
+     * @return MemberView[]
      */
-    public function getUsers(): array
+    public function getMembers(): array
     {
-        return $this->users;
+        return $this->members;
     }
 
     /**
-     * @param MemberShortView[] $users
+     * @param MemberView[] $members
      */
-    public function setUsers(array $users): void
+    public function setMembers(array $members): void
     {
-        $this->users = $users;
+        $this->members = $members;
     }
 
     public function getIcon(): ?string
