@@ -74,7 +74,7 @@ use Swagger\Annotations as SWG;
  *         parameters={ "team": "expr(object.getId())", "user": "__USER__" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\UserTeamVoter::EDIT'), object.getUserTeam()))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\UserTeamVoter::ADD'), object.getUserTeam()))"
  *     )
  * )
  * @Hateoas\Relation(
@@ -85,7 +85,7 @@ use Swagger\Annotations as SWG;
  *         parameters={ "team": "expr(object.getId())"}
  *     ),
  *     exclusion=@Hateoas\Exclusion(
- *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\UserTeamVoter::EDIT'), object.getUserTeam()))"
+ *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\UserTeamVoter::ADD'), object.getUserTeam()))"
  *     )
  * )
  * @Hateoas\Relation(

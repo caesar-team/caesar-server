@@ -105,6 +105,7 @@ class GroupedUserItems
 
                     $this->keypairItems[$item->getId()->toString()] = $item;
                     if (null !== $item->getRelatedItem()) {
+                        /** @psalm-suppress InvalidPropertyAssignmentValue */
                         $this->sharedItems[$item->getRelatedItem()->getId()->toString()] = $item->getRelatedItem();
                     }
                     break;
