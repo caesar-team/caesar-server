@@ -89,26 +89,30 @@ class PermissionTest extends Unit
 
         $I->login($admin);
         $I->sendGET(sprintf('/teams/%s', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson(['_links' => self::DOMAIN_ADMIN_ACCESS]);
-        $I->seeResponseByJsonPathContainsJson('$.users[0]', [
+        $I->seeResponseByJsonPathContainsJson(sprintf('$.users[?(@.id=="%s")]', $manager->getId()->toString()), [
             '_links' => self::USER_TEAM_ACCESS,
         ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->dontSeeResponseByJsonPathContainsJson(sprintf('$.users[?(@.id=="%s")]', $admin->getId()->toString()), [
+            '_links' => self::USER_TEAM_ACCESS,
+        ]);
 
         $I->login($teamAdmin);
         $I->sendGET(sprintf('/teams/%s', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson(['_links' => self::TEAM_ADMIN_ACCESS]);
-        $I->seeResponseByJsonPathContainsJson('$.users[0]', [
+        $I->seeResponseByJsonPathContainsJson(sprintf('$.users[?(@.id=="%s")]', $manager->getId()->toString()), [
             '_links' => self::USER_TEAM_ACCESS,
         ]);
         $I->dontSeeResponseContainsJson(['_links' => array_diff_key(
             self::DOMAIN_ADMIN_ACCESS,
             self::TEAM_ADMIN_ACCESS
         )]);
-        $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->login($user);
         $I->sendGET(sprintf('/teams/%s', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson(['_links' => self::MEMBER_ACCESS]);
         $I->dontSeeResponseContainsJson(['_links' => array_diff_key(
             self::DOMAIN_ADMIN_ACCESS,
@@ -117,10 +121,10 @@ class PermissionTest extends Unit
         $I->dontSeeResponseByJsonPathContainsJson('$.users[0]', [
             '_links' => self::USER_TEAM_ACCESS,
         ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->login($manager);
         $I->sendGET(sprintf('/teams/%s', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson(['_links' => self::MEMBER_ACCESS]);
         $I->dontSeeResponseContainsJson(['_links' => array_diff_key(
             self::DOMAIN_ADMIN_ACCESS,
@@ -129,22 +133,21 @@ class PermissionTest extends Unit
         $I->dontSeeResponseByJsonPathContainsJson('$.users[0]', [
             '_links' => self::USER_TEAM_ACCESS,
         ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->login($guestUser);
         $I->sendGET('/teams');
-        $I->dontSeeResponseContainsJson(['_links' => self::DOMAIN_ADMIN_ACCESS]);
         $I->seeResponseCodeIs(HttpCode::OK);
+        $I->dontSeeResponseContainsJson(['_links' => self::DOMAIN_ADMIN_ACCESS]);
 
         $I->login($superAdmin);
         $I->sendGET('/teams');
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContains($adminTeam->getId()->toString());
         $I->seeResponseContains($team->getId()->toString());
         $I->dontSeeResponseContainsJson(['_links' => self::DOMAIN_ADMIN_ACCESS]);
         $I->dontSeeResponseByJsonPathContainsJson('$[0].users[0]', [
             '_links' => self::USER_TEAM_ACCESS,
         ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
     }
 
     /** @test */

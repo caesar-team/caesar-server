@@ -104,6 +104,7 @@ class MemberTest extends Unit
 
         $team = $I->createTeam($admin);
         $I->addUserToTeam($team, $user);
+        $I->addUserToTeam($team, $domainAdmin);
 
         $I->login($user);
         $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [

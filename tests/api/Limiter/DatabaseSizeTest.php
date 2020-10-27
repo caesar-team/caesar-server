@@ -33,7 +33,7 @@ class DatabaseSizeTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        $I->setLimiterSize(DatabaseSizeInspector::class, 250000); //in bytes
+        $I->setLimiterSize(DatabaseSizeInspector::class, 2500000); //in bytes
 
         $I->login($user);
         $I->haveHttpHeader('Content-Length', 1);

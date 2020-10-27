@@ -138,7 +138,7 @@ final class MemberController extends AbstractController
         MemberViewFactory $viewFactory,
         MemberCreator $memberCreator
     ): array {
-        $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
+        $this->denyAccessUnlessGranted(UserTeamVoter::ADD, $team->getUserTeamByUser($this->getUser()));
 
         $batchRequest = new BatchCreateMemberRequest($team);
 
@@ -188,7 +188,7 @@ final class MemberController extends AbstractController
         MemberCreator $memberCreator,
         MemberViewFactory $viewFactory
     ): MemberView {
-        $this->denyAccessUnlessGranted(UserTeamVoter::EDIT, $team->getUserTeamByUser($this->getUser()));
+        $this->denyAccessUnlessGranted(UserTeamVoter::ADD, $team->getUserTeamByUser($this->getUser()));
 
         $createRequest = new CreateMemberRequest($team);
 
