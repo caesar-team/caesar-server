@@ -30,11 +30,8 @@ class LoginTest extends Unit
             'email' => $user->getEmail(),
             'matcher' => self::DEFAULT_MATCHER,
         ]);
-
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('user/auth_srpp_login.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('user/auth_srpp_login.json'));
     }
 
     /** @test */

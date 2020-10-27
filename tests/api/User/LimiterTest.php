@@ -28,9 +28,7 @@ class LimiterTest extends Unit
         $I = $this->tester;
 
         /** @var User $user */
-        $user = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
+        $user = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
 
         $I->setLimiterSize(UserCountInspector::class, 2);
 
@@ -59,9 +57,7 @@ class LimiterTest extends Unit
         $I = $this->tester;
 
         /** @var User $user */
-        $user = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
+        $user = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
 
         $I->setLimiterSize(UserCountInspector::class, 2);
 

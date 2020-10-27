@@ -33,10 +33,10 @@ class DatabaseSizeTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        $I->setLimiterSize(DatabaseSizeInspector::class, 200000); //in bytes
+        $I->setLimiterSize(DatabaseSizeInspector::class, 250000); //in bytes
 
         $I->login($user);
-        $I->haveHttpHeader('Content-Length', 100);
+        $I->haveHttpHeader('Content-Length', 1);
         $I->sendPOST('items', $this->getItemBody($user));
         $I->seeResponseCodeIs(HttpCode::OK);
 
@@ -48,8 +48,8 @@ class DatabaseSizeTest extends Unit
 
         $I->setLimiterSize(DatabaseSizeInspector::class, -1); ///unlimited
 
-        // Try to send 3Mb data
-        $I->haveHttpHeader('Content-Length', 1024 * 1024 * 3);
+        // Try to send 30Mb data
+        $I->haveHttpHeader('Content-Length', 1024 * 1024 * 30);
         $I->sendPOST('items', $this->getItemBody($user));
         $I->seeResponseCodeIs(HttpCode::OK);
     }

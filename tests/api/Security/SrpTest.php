@@ -27,9 +27,7 @@ class SrpTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        $userWithoutSrp = $I->have(User::class, [
-            'srp' => null,
-        ]);
+        $userWithoutSrp = $I->have(User::class, ['srp' => null]);
 
         $I->sendPOST('/auth/srpp/login_prepare', [
             'email' => $user->getEmail(),
@@ -38,8 +36,7 @@ class SrpTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
         $this->assertEquals([self::SEED], $I->grabDataFromResponseByJsonPath('$.seed'));
 
-        $schema = $I->getSchema('security/prepare_srp.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('security/prepare_srp.json'));
 
         $I->sendPOST('/auth/srpp/login_prepare', [
             'email' => 'some-user',

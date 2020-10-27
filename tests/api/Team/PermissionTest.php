@@ -191,12 +191,10 @@ class PermissionTest extends Unit
         /** @var User $guestUser */
         $member2 = $I->have(User::class);
 
-        /** @var Team $team */
         $team = $I->createTeam($teamAdmin);
         $I->addUserToTeam($team, $member);
         $I->addUserToTeam($team, $member2);
-
-        $item = $I->createTeamItem($team, $member);
+        $I->createTeamItem($team, $member);
 
         $this->canAccessToEditItem($teamAdmin, $team->getDefaultDirectory());
         $this->canAccessToEditItem($member, $team->getDefaultDirectory());

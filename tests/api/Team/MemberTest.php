@@ -2,8 +2,6 @@
 
 namespace App\Tests\Team;
 
-use App\DBAL\Types\Enum\NodeEnumType;
-use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
@@ -26,9 +24,7 @@ class MemberTest extends Unit
         $I = $this->tester;
 
         /** @var User $admin */
-        $admin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
+        $admin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
 
         $team = $I->have(Team::class, [
             'alias' => Team::DEFAULT_GROUP_ALIAS,
@@ -41,8 +37,7 @@ class MemberTest extends Unit
         $I->sendGET('/teams/default/members');
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $schema = $I->getSchema('team/members.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/members.json'));
     }
 
     /** @test */
@@ -67,28 +62,20 @@ class MemberTest extends Unit
         $otherUser = $I->have(User::class);
 
         $team = $I->createTeam($admin);
-        $I->have(Item::class, [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $team->getDefaultDirectory(),
-            'owner' => $admin,
-            'team' => $team,
-        ]);
+        $I->createKeypairTeamItem($team, $admin);
         $I->addUserToTeam($team, $user);
         $I->addUserToTeam($team, $manager, UserTeam::USER_ROLE_ADMIN);
 
         $I->login($otherUser);
         $I->sendGET(sprintf('teams/%s/members', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($user);
         $I->sendGET(sprintf('teams/%s/members', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContains($admin->getId()->toString());
         $I->seeResponseContains($user->getId()->toString());
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('team/members.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/members.json'));
 
         $I->sendGET(sprintf('teams/%s/members?without_keypair=true', $team->getId()->toString()));
         $I->dontSeeResponseContains($admin->getId()->toString());
@@ -104,19 +91,14 @@ class MemberTest extends Unit
     {
         $I = $this->tester;
 
-        $domainAdmin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
-
+        /** @var User $domainAdmin */
+        $domainAdmin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
         /** @var User $admin */
         $admin = $I->have(User::class);
-
         /** @var User $user */
         $user = $I->have(User::class);
-
         /** @var User $member */
         $member = $I->have(User::class);
-
         /** @var User $otherUser */
         $otherUser = $I->have(User::class);
 
@@ -130,7 +112,6 @@ class MemberTest extends Unit
             'userId' => $otherUser->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([HttpCode::FORBIDDEN], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
         $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
@@ -139,9 +120,7 @@ class MemberTest extends Unit
             'userId' => $otherUser->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('team/member.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/member.json'));
 
         $I->sendPOST(sprintf('teams/%s/members', $team->getId()->toString()), [
             'userRole' => UserTeam::USER_ROLE_ADMIN,
@@ -157,9 +136,7 @@ class MemberTest extends Unit
             'userId' => $member->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('team/member.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/member.json'));
     }
 
     /** @test */
@@ -189,7 +166,6 @@ class MemberTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([HttpCode::FORBIDDEN], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
         $I->sendPOST(sprintf('teams/%s/members/batch', $team->getId()->toString()), [
@@ -217,9 +193,7 @@ class MemberTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('team/members.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/members.json'));
     }
 
     /** @test */
@@ -228,18 +202,11 @@ class MemberTest extends Unit
         $I = $this->tester;
 
         /** @var User $admin */
-        $admin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
-
+        $admin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
         /** @var User $manager */
-        $manager = $I->have(User::class, [
-            'roles' => [User::ROLE_MANAGER],
-        ]);
-
+        $manager = $I->have(User::class, ['roles' => [User::ROLE_MANAGER]]);
         /** @var User $user */
         $user = $I->have(User::class);
-
         /** @var User $otherUser */
         $otherUser = $I->have(User::class);
 
@@ -255,7 +222,6 @@ class MemberTest extends Unit
         $I->login($user);
         $I->sendDELETE(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([HttpCode::FORBIDDEN], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
         $I->sendDELETE(sprintf('teams/%s/members/%s', $team->getId()->toString(), $otherUser->getId()->toString()));
@@ -268,18 +234,11 @@ class MemberTest extends Unit
         $I = $this->tester;
 
         /** @var User $admin */
-        $admin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
-
+        $admin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
         /** @var User $manager */
-        $manager = $I->have(User::class, [
-            'roles' => [User::ROLE_MANAGER],
-        ]);
-
+        $manager = $I->have(User::class, ['roles' => [User::ROLE_MANAGER]]);
         /** @var User $user */
         $user = $I->have(User::class);
-
         /** @var User $otherUser */
         $otherUser = $I->have(User::class);
 
@@ -300,7 +259,6 @@ class MemberTest extends Unit
             'teamRole' => UserTeam::USER_ROLE_ADMIN,
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([HttpCode::FORBIDDEN], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
         $I->haveHttpHeader('Content-Type', 'application/json');
@@ -308,9 +266,7 @@ class MemberTest extends Unit
             'teamRole' => UserTeam::USER_ROLE_ADMIN,
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('team/member.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/member.json'));
     }
 
     /** @test */
@@ -320,7 +276,6 @@ class MemberTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-
         /** @var User $member */
         $member = $I->have(User::class);
 
@@ -335,13 +290,11 @@ class MemberTest extends Unit
 
         $I->sendPOST(sprintf('teams/%s/leave', $otherTeam->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-
         $I->seeInDatabase('groups', ['id' => $team->getId()->toString()]);
 
         $I->login($user);
         $I->sendPOST(sprintf('teams/%s/leave', $otherTeam->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
-
         $I->dontSeeInDatabase('groups', ['id' => $otherTeam->getId()->toString()]);
     }
 }

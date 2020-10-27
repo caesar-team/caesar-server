@@ -2,6 +2,7 @@
 
 namespace App\Tests;
 
+use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
@@ -82,12 +83,41 @@ class ApiTester extends \Codeception\Actor
         return $team;
     }
 
+    public function createUserItem(User $user): Item
+    {
+        return $this->have(Item::class, [
+            'owner' => $user,
+            'parent_list' => $user->getDefaultDirectory(),
+        ]);
+    }
+
     public function createTeamItem(Team $team, User $user): Item
     {
         return $this->have(Item::class, [
             'parent_list' => $team->getDefaultDirectory(),
             'owner' => $user,
             'team' => $team,
+        ]);
+    }
+
+    public function createKeypairTeamItem(Team $team, User $user, ?Item $item = null): Item
+    {
+        return $this->have(Item::class, [
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'parent_list' => $team->getDefaultDirectory(),
+            'owner' => $user,
+            'team' => $team,
+            'related_item' => $item,
+        ]);
+    }
+
+    public function createKeypairItem(User $user, Item $item): Item
+    {
+        return $this->have(Item::class, [
+            'type' => NodeEnumType::TYPE_KEYPAIR,
+            'parent_list' => $user->getInbox(),
+            'owner' => $user,
+            'related_item' => $item,
         ]);
     }
 

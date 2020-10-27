@@ -92,14 +92,8 @@ class PermissionTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        /** @var Directory $directory */
-        $directory = $I->have(Directory::class, [
-            'parent_list' => $user->getLists(),
-        ]);
-
         $I->login($user);
         $I->sendPOST('items', [
-            'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
             'title' => 'item title',

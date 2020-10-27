@@ -73,8 +73,8 @@ class ListTest extends Unit
         $I->sendPOST(sprintf('teams/%s/lists', $team->getId()->toString()), [
             'label' => $label,
         ]);
-        $I->seeResponseContains('List with such label already exists');
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('List with such label already exists');
 
         $I->sendPOST(sprintf('teams/%s/lists', $otherTeam->getId()->toString()), [
             'label' => $label,
@@ -83,8 +83,8 @@ class ListTest extends Unit
         $I->sendPOST(sprintf('teams/%s/lists', $otherTeam->getId()->toString()), [
             'label' => $label,
         ]);
-        $I->seeResponseContains('List with such label already exists');
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('List with such label already exists');
     }
 
     /** @test */
@@ -182,8 +182,7 @@ class ListTest extends Unit
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $schema = $I->getSchema('team/team_list.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/team_list.json'));
     }
 
     private function cantAccessToCreateTeamList(User $user, Team $team)
@@ -195,7 +194,6 @@ class ListTest extends Unit
             'label' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
     private function createListValidate(User $user, Team $team)
@@ -247,8 +245,7 @@ class ListTest extends Unit
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $schema = $I->getSchema('team/team_list.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/team_list.json'));
     }
 
     private function cantAccessToEditTeamList(User $user, Directory $list)
@@ -261,7 +258,6 @@ class ListTest extends Unit
             'label' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
     private function canDeleteTeamList(User $user, Directory $list)
@@ -280,6 +276,5 @@ class ListTest extends Unit
         $I->login($user);
         $I->sendDELETE(sprintf('teams/%s/lists/%s', $list->getTeam()->getId()->toString(), $list->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 }

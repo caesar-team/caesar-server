@@ -26,11 +26,9 @@ class SearchTest extends Unit
 
         $I->login($user);
         $I->sendGET(sprintf('/users/search?email=%s', $user->getEmail()));
-        $I->seeResponseContains($user->getEmail());
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('user/search.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseContains($user->getEmail());
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('user/search.json'));
     }
 
     /** @test */
@@ -43,7 +41,7 @@ class SearchTest extends Unit
 
         $I->login($user);
         $I->sendGET(sprintf('/users/search?email=%s', 'not-found@email'));
-        $I->cantSeeResponseContains('not-found@email');
         $I->seeResponseCodeIs(HttpCode::OK);
+        $I->cantSeeResponseContains('not-found@email');
     }
 }
