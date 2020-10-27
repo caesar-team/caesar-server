@@ -26,7 +26,6 @@ class LimiterTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-
         $I->setLimiterSize(ItemCountInspector::class, 1);
 
         $I->login($user);
@@ -51,7 +50,6 @@ class LimiterTest extends Unit
         $user = $I->have(User::class);
 
         $I->login($user);
-
         $I->setLimiterSize(ItemCountInspector::class, 3);
 
         $I->sendPOST('items/batch', [

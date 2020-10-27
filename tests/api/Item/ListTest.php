@@ -25,9 +25,6 @@ class ListTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        /** @var User $member */
-        $member = $I->have(User::class);
-
         $I->login($user);
         $I->sendGET('/list');
         $I->seeResponseContainsJson(['type' => Directory::LIST_INBOX]);
@@ -35,18 +32,7 @@ class ListTest extends Unit
         $I->seeResponseContainsJson(['type' => Directory::LIST_DEFAULT]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $schema = $I->getSchema('item/lists.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
-
-        $I->login($member);
-        $I->sendGET('/list');
-        $I->seeResponseContainsJson(['type' => Directory::LIST_INBOX]);
-        $I->seeResponseContainsJson(['type' => Directory::LIST_TRASH]);
-        $I->seeResponseContainsJson(['type' => Directory::LIST_DEFAULT]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('item/lists.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/lists.json'));
     }
 
     /** @test */
@@ -57,32 +43,34 @@ class ListTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        $I->login($user);
-        $I->sendPOST('list', ['label' => '4']);
-        [$fourthDirectory] = $I->grabDataFromResponseByJsonPath('$.id');
-        $I->sendPOST('list', ['label' => '3']);
-        [$thirdDirectory] = $I->grabDataFromResponseByJsonPath('$.id');
-        $I->sendPOST('list', ['label' => '2']);
-        [$secondDirectory] = $I->grabDataFromResponseByJsonPath('$.id');
-        $I->sendPOST('list', ['label' => '1']);
-        [$firstDirectory] = $I->grabDataFromResponseByJsonPath('$.id');
+        /** @var Directory $thirdDirectory */
+        $thirdDirectory = $I->have(Directory::class, [
+            'label' => '3',
+            'user' => $user,
+            'sort' => 1,
+            'parent_list' => $user->getLists(),
+        ]);
+        /** @var Directory $secondDirectory */
+        $secondDirectory = $I->have(Directory::class, [
+            'label' => '2',
+            'user' => $user,
+            'sort' => 1,
+            'parent_list' => $user->getLists(),
+        ]);
+        /** @var Directory $firstDirectory */
+        $firstDirectory = $I->have(Directory::class, [
+            'label' => '1',
+            'user' => $user,
+            'sort' => 1,
+            'parent_list' => $user->getLists(),
+        ]);
 
+        $I->login($user);
         $I->sendGET('/list');
-        self::assertEquals(
-            [$firstDirectory],
-            $I->grabDataFromResponseByJsonPath('$.[0].id')
-        );
-        self::assertEquals(
-            [$secondDirectory],
-            $I->grabDataFromResponseByJsonPath('$.[1].id')
-        );
-        self::assertEquals(
-            [$thirdDirectory],
-            $I->grabDataFromResponseByJsonPath('$.[2].id')
-        );
-        self::assertEquals(
-            [$fourthDirectory],
-            $I->grabDataFromResponseByJsonPath('$.[3].id')
-        );
+        $I->seeResponseContainsJson([
+            1 => ['id' => $firstDirectory->getId()->toString()],
+            2 => ['id' => $secondDirectory->getId()->toString()],
+            3 => ['id' => $thirdDirectory->getId()->toString()],
+        ]);
     }
 }

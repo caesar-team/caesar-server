@@ -2,7 +2,6 @@
 
 namespace App\Tests\User;
 
-use App\Entity\Team;
 use App\Entity\User;
 use App\Tests\ApiTester;
 use Codeception\Module\DataFactory;
@@ -31,17 +30,13 @@ class KeysTest extends Unit
 
         $I->login($admin);
         $I->sendGET(sprintf('/key/%s', $user->getEmail()));
-        $I->seeResponseContains($user->getPublicKey());
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('user/public_key.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseContains($user->getPublicKey());
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('user/public_key.json'));
 
         $I->sendGET(sprintf('/key/%s', $userWithoutKeys->getEmail()));
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('user/public_key.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('user/public_key.json'));
     }
 
     /** @test */
@@ -58,12 +53,10 @@ class KeysTest extends Unit
         $I->sendPOST('/key/batch', [
             'emails' => [$user->getEmail(), $otherUser->getEmail()],
         ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContains($user->getPublicKey());
         $I->seeResponseContains($otherUser->getPublicKey());
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('user/public_keys.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('user/public_keys.json'));
     }
 
     /** @test */
@@ -76,12 +69,11 @@ class KeysTest extends Unit
         $I->login($user);
         $I->sendGET('/keys');
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('user/keys.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('user/keys.json'));
 
         /** @var User $user */
         $user = $I->have(User::class);
+
         $I->login($user);
         $I->sendGET('/keys');
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
@@ -94,12 +86,6 @@ class KeysTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-
-        $team = $I->have(Team::class, [
-            'alias' => Team::DEFAULT_GROUP_ALIAS,
-            'title' => Team::DEFAULT_GROUP_TITLE,
-        ]);
-        $I->addUserToTeam($team, $user);
 
         $I->login($user);
         $I->sendPOST('/keys', [
@@ -116,7 +102,6 @@ class KeysTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-
         /** @var User $userWithoutKeys */
         $userWithoutKeys = $I->have(User::class);
 
@@ -132,6 +117,5 @@ class KeysTest extends Unit
             'publicKey' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 }

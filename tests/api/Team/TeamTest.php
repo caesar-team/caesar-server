@@ -2,7 +2,6 @@
 
 namespace App\Tests\Team;
 
-use App\Entity\Item;
 use App\Entity\User;
 use App\Entity\UserTeam;
 use App\Tests\ApiTester;
@@ -26,16 +25,13 @@ class TeamTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-
         $team = $I->createTeam($user);
 
         $I->login($user);
         $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
         $I->seeResponseContains($team->getId()->toString());
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('team/team.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/team.json'));
 
         $I->sendGET(sprintf('teams/%s', Uuid::uuid4()));
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
@@ -48,16 +44,13 @@ class TeamTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-
         $team = $I->createTeam($user);
 
         $I->login($user);
         $I->sendGET('teams');
         $I->seeResponseContains($team->getId()->toString());
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('team/teams.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/teams.json'));
     }
 
     /** @test */
@@ -67,21 +60,14 @@ class TeamTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-
         $team = $I->createTeam($user);
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $team->getDefaultDirectory(),
-        ]);
+        $item = $I->createTeamItem($team, $user);
 
         $I->login($user);
         $I->sendGET(sprintf('/teams/%s/lists', $team->getId()->toString()));
-        $I->canSeeResponseContains($item->getId()->toString());
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('team/team_lists.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->canSeeResponseContains($item->getId()->toString());
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/team_lists.json'));
     }
 
     /** @test */
@@ -92,9 +78,7 @@ class TeamTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
         /** @var User $admin */
-        $admin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
+        $admin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
 
         $team = $I->createTeam($admin);
         $otherTeam = $I->createTeam($user);
@@ -106,15 +90,14 @@ class TeamTest extends Unit
             'title' => 'Edited title',
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('teams/%s', $team->getId()->toString()), [
             'title' => 'Edited title',
         ]);
-        $I->seeResponseContains($team->getId()->toString());
         $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseContains($team->getId()->toString());
 
         $schema = $I->getSchema('team/team.json');
         $I->seeResponseIsValidOnJsonSchemaString($schema);
@@ -140,9 +123,7 @@ class TeamTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
         /** @var User $admin */
-        $admin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
+        $admin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
 
         $team = $I->createTeam($admin);
         $I->addUserToTeam($team, $user);
@@ -150,7 +131,6 @@ class TeamTest extends Unit
         $I->login($user);
         $I->sendDELETE(sprintf('teams/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->login($admin);
         $I->sendDELETE(sprintf('teams/%s', $team->getId()->toString()));
@@ -163,49 +143,40 @@ class TeamTest extends Unit
         $I = $this->tester;
 
         /** @var User $user */
-        $user = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
-
+        $user = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
         /** @var User $admin */
-        $admin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
+        $admin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
 
         $team = $I->createTeam($admin);
         $I->addUserToTeam($team, $user, UserTeam::USER_ROLE_ADMIN);
 
         $I->login($user);
-        $I->sendPOST(sprintf('teams/%s/pin', $team->getId()->toString()));
+        $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-        $this->assertEquals([true], $I->grabDataFromResponseByJsonPath('$.pinned'));
+        $I->seeResponseContainsJson(['pinned' => true]);
 
         $I->sendPOST(sprintf('teams/%s/pin', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-        $this->assertEquals([true], $I->grabDataFromResponseByJsonPath('$.pinned'));
+        $I->seeResponseContainsJson(['pinned' => true]);
+
+        $I->sendPOST(sprintf('teams/%s/unpin', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseContainsJson(['pinned' => false]);
 
         $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-        $this->assertEquals([true], $I->grabDataFromResponseByJsonPath('$.pinned'));
-
-        $I->sendPOST(sprintf('teams/%s/unpin', $team->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $this->assertEquals([false], $I->grabDataFromResponseByJsonPath('$.pinned'));
-
-        $I->sendPOST(sprintf('teams/%s/unpin', $team->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $this->assertEquals([false], $I->grabDataFromResponseByJsonPath('$.pinned'));
+        $I->seeResponseContainsJson(['pinned' => false]);
 
         $I->login($admin);
         $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-        $this->assertEquals([true], $I->grabDataFromResponseByJsonPath('$.pinned'));
+        $I->seeResponseContainsJson(['pinned' => true]);
 
         $I->sendPOST(sprintf('teams/%s/leave', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
 
         $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-        $this->assertEquals([false], $I->grabDataFromResponseByJsonPath('$.pinned'));
+        $I->seeResponseContainsJson(['pinned' => false]);
     }
 }

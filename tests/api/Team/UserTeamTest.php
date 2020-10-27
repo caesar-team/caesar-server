@@ -22,18 +22,13 @@ class UserTeamTest extends Unit
         $I = $this->tester;
 
         /** @var User $admin */
-        $admin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
-
+        $admin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
         $team = $I->createTeam($admin);
 
         $I->login($admin);
         $I->sendGET('/user/teams');
         $I->canSeeResponseContains($team->getId()->toString());
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('team/user_teams.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/user_teams.json'));
     }
 }

@@ -77,38 +77,4 @@ class RegistrationTest extends Unit
         ]);
         $I->releaseUsername($email);
     }
-
-    /** @todo investigate stty: standard input: Not a tty */
-    public function registrationByCommand()
-    {
-        $I = $this->tester;
-        $team = $I->createDefaultTeam();
-        $email = Faker::email()();
-
-        $I->runSymfonyConsoleCommand('app:user:create', [], [$email, $email, 'Qweqwe123!']);
-
-        $I->seeInDatabase('fos_user', ['username' => $email]);
-        $userId = $I->grabFromDatabase('fos_user', 'id', ['username' => $email]);
-        $I->dontSeeInDatabase('user_group', ['group_id' => $team->getId()->toString(), 'user_id' => $userId]);
-    }
-
-    /** @todo investigate stty: standard input: Not a tty */
-    public function registrationAdminByCommand()
-    {
-        $I = $this->tester;
-
-        $team = $I->createDefaultTeam();
-        $email = getenv('DOMAIN_ADMIN_EMAIL');
-
-        $I->runSymfonyConsoleCommand('app:user:create', [], [$email, $email, 'Qweqwe123!']);
-
-        $I->seeInDatabase('fos_user', ['username' => $email]);
-        $userId = $I->grabFromDatabase('fos_user', 'id', ['username' => $email]);
-        $I->seeInDatabase('user_group', [
-            'group_id' => $team->getId()->toString(),
-            'user_id' => $userId,
-            'user_role' => UserTeam::USER_ROLE_ADMIN,
-        ]);
-        $I->releaseUsername($email);
-    }
 }

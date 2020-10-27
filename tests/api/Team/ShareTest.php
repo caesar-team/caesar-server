@@ -23,10 +23,8 @@ class ShareTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-
         /** @var User $admin */
         $admin = $I->have(User::class);
-
         /** @var User $member */
         $member = $I->have(User::class);
 
@@ -59,6 +57,7 @@ class ShareTest extends Unit
         [$keypairItemId] = $I->grabDataFromResponseByJsonPath('$[0].keypairId');
 
         $I->sendGET(sprintf('items/%s', $item->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId]);
 
         $I->sendDELETE(sprintf('items/%s', $keypairItemId));

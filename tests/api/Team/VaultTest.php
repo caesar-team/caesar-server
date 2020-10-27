@@ -24,6 +24,8 @@ class VaultTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
+        /** @var User $admin */
+        $admin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
 
         $I->login($user);
         $I->sendPOST('/vault', [
@@ -36,12 +38,6 @@ class VaultTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
-
-        /** @var User $admin */
-        $admin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
 
         $I->login($admin);
         $I->sendPOST('/vault', [
@@ -54,9 +50,7 @@ class VaultTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('team/vault.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/vault.json'));
 
         $I->sendPOST('/vault', [
             'team' => [
@@ -68,6 +62,7 @@ class VaultTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('You already have a team with the same name. Choose another name.');
 
         $I->sendPOST('/vault', [
             'team' => [
@@ -79,6 +74,7 @@ class VaultTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('This value should not be blank.');
     }
 
     /** @test */
@@ -103,7 +99,6 @@ class VaultTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-
         $I->seeResponseByJsonPathContainsJson('$.team', [
             '_links' => [
                 'team_edit' => [],
@@ -118,9 +113,7 @@ class VaultTest extends Unit
         $I = $this->tester;
 
         /** @var User $user */
-        $user = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
+        $user = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
         /** @var User $member */
         $member = $I->have(User::class);
 
@@ -142,6 +135,7 @@ class VaultTest extends Unit
             'secret' => uniqid(),
             'userId' => $member->getId()->toString(),
         ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);

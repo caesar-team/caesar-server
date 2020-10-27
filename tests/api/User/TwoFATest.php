@@ -23,9 +23,7 @@ class TwoFATest extends Unit
     {
         $I = $this->tester;
 
-        $user = $I->haveUserWithKeys([
-            'google_authenticator_secret' => 'secret',
-        ]);
+        $user = $I->haveUserWithKeys(['google_authenticator_secret' => 'secret']);
 
         $I->haveInDatabase('fingerprint', [
             'id' => Uuid::uuid4(),
@@ -68,6 +66,7 @@ class TwoFATest extends Unit
         ]);
         $I->login($user);
         $I->sendPOST('logout');
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
 
         $I->dontSeeInDatabase('fingerprint', ['fingerprint' => $fingerprint]);
     }
@@ -90,7 +89,7 @@ class TwoFATest extends Unit
             'authCode' => $code,
             'fingerprint' => $fingerprint,
         ]);
-
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeInDatabase('fingerprint', ['fingerprint' => $fingerprint]);
     }
 
@@ -111,7 +110,7 @@ class TwoFATest extends Unit
         $I->sendPOST('auth/2fa', [
             'authCode' => $code,
         ]);
-
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->dontSeeInDatabase('fingerprint', ['fingerprint' => $fingerprint]);
     }
 
@@ -127,7 +126,6 @@ class TwoFATest extends Unit
             'flow_status' => User::FLOW_STATUS_INCOMPLETE,
             'google_authenticator_secret' => 'secret',
         ]);
-
         $activeUser = $I->haveUserWithKeys([
             'flow_status' => User::FLOW_STATUS_FINISHED,
         ]);
@@ -167,7 +165,6 @@ class TwoFATest extends Unit
 
         $I->sendPOST('auth/2fa/backups/accept');
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
-
         $I->seeInDatabase('fos_user', ['email' => $user->getEmail(), 'flow_status' => User::FLOW_STATUS_FINISHED]);
     }
 

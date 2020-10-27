@@ -2,7 +2,6 @@
 
 namespace App\Tests\Team;
 
-use App\Controller\Admin\ItemCrudController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Item;
@@ -27,13 +26,9 @@ class ItemTest extends Unit
         $I = $this->tester;
 
         /** @var User $superAdmin */
-        $superAdmin = $I->have(User::class, [
-            'roles' => [User::ROLE_SUPER_ADMIN],
-        ]);
+        $superAdmin = $I->have(User::class, ['roles' => [User::ROLE_SUPER_ADMIN]]);
         /** @var User $domainAdmin */
-        $domainAdmin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
+        $domainAdmin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
         /** @var User $teamAdmin */
         $teamAdmin = $I->have(User::class);
         /** @var User $member */
@@ -64,7 +59,7 @@ class ItemTest extends Unit
             'tags' => ['tag'],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-        $this->assertEquals([$member->getId()->toString()], $I->grabDataFromResponseByJsonPath('$.ownerId'));
+        $I->seeResponseContainsJson(['ownerId' => $member->getId()->toString()]);
     }
 
     /** @test */
@@ -88,16 +83,12 @@ class ItemTest extends Unit
 
         $I->login($teamAdmin);
         $I->sendGET(sprintf('items?listId=%s', $team->getDefaultDirectory()->getId()->toString()));
-        $I->canSeeResponseContainsJson([
-            'id' => $item->getId()->toString(),
-        ]);
+        $I->canSeeResponseContainsJson(['id' => $item->getId()->toString()]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->login($member2);
         $I->sendGET(sprintf('items?listId=%s', $team->getDefaultDirectory()->getId()->toString()));
-        $I->canSeeResponseContainsJson([
-            'id' => $item->getId()->toString(),
-        ]);
+        $I->canSeeResponseContainsJson(['id' => $item->getId()->toString()]);
         $I->seeResponseCodeIs(HttpCode::OK);
     }
 
@@ -225,9 +216,11 @@ class ItemTest extends Unit
         $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
         $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
 
         $this->dontBatchDeleteTeamItem($superAdmin, $item, $item2);
         $this->canBatchDeleteTeamItem($teamAdmin, $item, $item2);
@@ -240,9 +233,11 @@ class ItemTest extends Unit
         $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
         $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
 
         $this->canDeleteTeamItem($domainAdmin, $item);
 
@@ -254,122 +249,12 @@ class ItemTest extends Unit
         $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
         $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
         $this->canDeleteTeamItem($member, $item);
-    }
-
-    /** @test */
-    public function createBatchKeypairItem()
-    {
-        $I = $this->tester;
-
-        /** @var User $user */
-        $user = $I->have(User::class);
-        /** @var User $member */
-        $member = $I->have(User::class);
-
-        $team = $I->createTeam($user);
-        $I->addUserToTeam($team, $member);
-
-        $I->login($user);
-        $I->sendPOST('items/batch/keypairs', [
-            'items' => [
-                [
-                    'teamId' => $team->getId()->toString(),
-                    'secret' => uniqid(),
-                ],
-                [
-                    'teamId' => $team->getId()->toString(),
-                    'secret' => uniqid(),
-                ],
-                [
-                    'ownerId' => $member->getId()->toString(),
-                    'teamId' => $team->getId()->toString(),
-                    'secret' => uniqid(),
-                ],
-            ],
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-
-        $I->sendPOST('items/batch/keypairs', [
-            'items' => [
-                [
-                    'teamId' => $team->getId()->toString(),
-                    'secret' => uniqid(),
-                ],
-            ],
-        ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
-    }
-
-    /** @test */
-    public function removeTeamKeypairItem()
-    {
-        $I = $this->tester;
-
-        /** @var User $domainAdmin */
-        $domainAdmin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
-
-        /** @var User $user */
-        $user = $I->have(User::class);
-
-        /** @var User $member */
-        $member = $I->have(User::class);
-
-        /** @var User $removeMember */
-        $removeMember = $I->have(User::class);
-
-        $team = $I->createTeam($user);
-        $I->addUserToTeam($team, $member);
-        $I->addUserToTeam($team, $removeMember);
-
-        $userTeam = $team->getUserTeamByUser($removeMember);
-
-        $item = $I->createTeamItem($team, $removeMember);
-
-        $I->login($user);
-
-        /** @var Item $keypairItem */
-        $keypairItem = $I->have(Item::class, [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $team->getDefaultDirectory(),
-            'owner' => $user,
-            'team' => $team,
-        ]);
-
-        /** @var Item $memberKeypairItem */
-        $memberKeypairItem = $I->have(Item::class, [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $team->getDefaultDirectory(),
-            'owner' => $member,
-            'team' => $team,
-        ]);
-
-        /** @var Item $removeMemberKeypairItem */
-        $removeMemberKeypairItem = $I->have(Item::class, [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $team->getDefaultDirectory(),
-            'owner' => $removeMember,
-            'team' => $team,
-        ]);
-
-        $I->symfonyAuth($domainAdmin);
-        $I->deleteFromAdmin(ItemCrudController::class, $removeMemberKeypairItem->getId()->toString());
-
-        $I->dontSeeInDatabase('user_group', ['id' => $userTeam->getId()->toString()]);
-        $I->seeInDatabase('item', ['id' => $keypairItem->getId()->toString()]);
-        $I->seeInDatabase('item', ['id' => $memberKeypairItem->getId()->toString()]);
-        $I->seeInDatabase('item', ['id' => $item->getId()->toString()]);
-
-        $I->deleteFromAdmin(ItemCrudController::class, $keypairItem->getId()->toString());
-        $I->dontSeeInDatabase('user_group', ['id' => $user->getId()->toString()]);
-        $I->seeInDatabase('groups', ['id' => $team->getId()->toString()]);
-        $I->seeInDatabase('item', ['id' => $memberKeypairItem->getId()->toString()]);
-        $I->dontSeeInDatabase('item', ['id' => $keypairItem->getId()->toString()]);
     }
 
     private function canDeleteTeamItem(User $user, Item $item)
@@ -388,7 +273,6 @@ class ItemTest extends Unit
         $I->login($user);
         $I->sendDELETE(sprintf('items/%s', $item->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
     private function canBatchDeleteTeamItem(User $user, Item ...$items)
@@ -415,7 +299,6 @@ class ItemTest extends Unit
         $I->login($user);
         $I->sendDELETE(sprintf('items/batch?%s', implode('&', $itemsQuery)));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
     private function canEditTeamItem(User $user, Item $item)
@@ -430,8 +313,7 @@ class ItemTest extends Unit
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $schema = $I->getSchema('item/edit_item.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/edit_item.json'));
     }
 
     private function dontEditTeamItem(User $user, Item $item)
@@ -445,7 +327,6 @@ class ItemTest extends Unit
             'title' => 'item title (edited)',
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
     private function canCreateTeamItem(User $user, Directory $directory): void
@@ -462,9 +343,7 @@ class ItemTest extends Unit
             'tags' => ['tag'],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('item/create_item.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/create_item.json'));
     }
 
     private function dontCreateTeamItem(User $user, Directory $directory): void
@@ -481,6 +360,5 @@ class ItemTest extends Unit
             'tags' => ['tag'],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 }

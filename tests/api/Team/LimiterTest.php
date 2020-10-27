@@ -28,9 +28,7 @@ class LimiterTest extends Unit
         $I = $this->tester;
 
         /** @var User $user */
-        $user = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
+        $user = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
 
         $I->setLimiterSize(TeamCountInspector::class, 1);
 
@@ -45,6 +43,7 @@ class LimiterTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
+
         $I->sendPOST('/vault', [
             'team' => [
                 'title' => uniqid(),

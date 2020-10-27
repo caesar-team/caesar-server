@@ -28,18 +28,13 @@ class ItemTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $user->getLists(),
-        ]);
+        $item = $I->createUserItem($user);
 
         $I->login($user);
         $I->sendGET(sprintf('/items/%s', $item->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $schema = $I->getSchema('item/item.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/item.json'));
     }
 
     /** @test */
@@ -49,32 +44,17 @@ class ItemTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-
         /** @var User $member */
         $member = $I->have(User::class);
 
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $user->getLists(),
-        ]);
+        $item = $I->createUserItem($user);
 
         $team = $I->createTeam($user);
-        /** @var Item $userKeypairTeam */
-        $userKeypairTeam = $I->have(Item::class, [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $team->getDefaultDirectory(),
-            'owner' => $user,
-            'team' => $team,
-        ]);
         $I->addUserToTeam($team, $member);
-        /** @var Item $memberKeypairTeam */
-        $memberKeypairTeam = $I->have(Item::class, [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $team->getDefaultDirectory(),
-            'owner' => $member,
-            'team' => $team,
-        ]);
+
+        $userKeypairTeam = $I->createKeypairTeamItem($team, $user);
+        $userKeypairItem = $I->createKeypairItem($member, $item);
+        $memberKeypairTeam = $I->createKeypairTeamItem($team, $member);
         $teamItem = $I->createTeamItem($team, $user);
 
         $I->login($user);
@@ -82,37 +62,19 @@ class ItemTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseByJsonPathContainsJson('$.keypairs', ['id' => $userKeypairTeam->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.keypairs', ['id' => $memberKeypairTeam->getId()->toString()]);
-
         $I->seeResponseByJsonPathContainsJson('$.personals', ['id' => $item->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.personals', ['id' => $teamItem->getId()->toString()]);
-
         $I->seeResponseByJsonPathContainsJson('$.teams', ['id' => $teamItem->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.teams', ['id' => $item->getId()->toString()]);
 
-        $schema = $I->getSchema('item/batch_item.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
-
-        $I->have(Item::class, [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $user->getDefaultDirectory(),
-            'owner' => $user,
-            'related_item' => $item,
-        ]);
-
-        /** @var Item $userKeypairItem */
-        $userKeypairItem = $I->have(Item::class, [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $member->getInbox(),
-            'owner' => $member,
-            'related_item' => $item,
-        ]);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/batch_item.json'));
 
         $I->login($member);
         $I->sendGET('/items/all');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseByJsonPathContainsJson('$.keypairs', ['id' => $userKeypairItem->getId()->toString()]);
-        $I->dontSeeResponseByJsonPathContainsJson('$.keypairs', ['id' => $userKeypairTeam->getId()->toString()]);
         $I->seeResponseByJsonPathContainsJson('$.keypairs', ['id' => $memberKeypairTeam->getId()->toString()]);
+        $I->dontSeeResponseByJsonPathContainsJson('$.keypairs', ['id' => $userKeypairTeam->getId()->toString()]);
         $I->seeResponseByJsonPathContainsJson('$.shares', ['id' => $item->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.personals', ['id' => $item->getId()->toString()]);
         $I->seeResponseByJsonPathContainsJson('$.teams', ['id' => $teamItem->getId()->toString()]);
@@ -164,22 +126,18 @@ class ItemTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $user->getLists(),
-        ]);
+        $item = $I->createUserItem($user);
 
         $I->login($user);
         $I->sendGET('/items');
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('This value should not be blank.');
 
-        $I->sendGET(sprintf('/items?listId=%s', $user->getLists()->getId()->toString()));
+        $I->sendGET(sprintf('/items?listId=%s', $user->getDefaultDirectory()->getId()->toString()));
         $I->seeResponseContains($item->getId()->toString());
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $schema = $I->getSchema('item/item_list.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/item_list.json'));
     }
 
     /** @test */
@@ -190,56 +148,34 @@ class ItemTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        /** @var Item $thirdItem */
-        $thirdItem = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $user->getDefaultDirectory(),
-        ]);
-        sleep(1);
-        /** @var Item $secondItem */
-        $secondItem = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $user->getDefaultDirectory(),
-        ]);
-        sleep(1);
-        /** @var Item $firstItem */
-        $firstItem = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $user->getDefaultDirectory(),
-        ]);
+        $thirdItem = $I->createUserItem($user);
+        $secondItem = $I->createUserItem($user);
+        $firstItem = $I->createUserItem($user);
+
+        $this->modifyLastUpdatedItem(new \DateTime('+5 second'), $secondItem);
+        $this->modifyLastUpdatedItem(new \DateTime('+10 second'), $firstItem);
 
         $I->login($user);
 
         $I->sendGET(sprintf('/items?listId=%s', $user->getDefaultDirectory()->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-        self::assertEquals(
-            [$firstItem->getId()->toString()],
-            $I->grabDataFromResponseByJsonPath('$.[0].id')
-        );
-        self::assertEquals(
-            [$secondItem->getId()->toString()],
-            $I->grabDataFromResponseByJsonPath('$.[1].id')
-        );
-        self::assertEquals(
-            [$thirdItem->getId()->toString()],
-            $I->grabDataFromResponseByJsonPath('$.[2].id')
-        );
 
-        $I->updateInDatabase('item', ['last_updated' => (new \DateTimeImmutable('+10 minute'))->format('Y-m-d H:i:s')], ['id' => $thirdItem->getId()->toString()]);
+        $I->seeResponseContainsJson([
+            ['id' => $firstItem->getId()->toString()],
+            ['id' => $secondItem->getId()->toString()],
+            ['id' => $thirdItem->getId()->toString()],
+        ]);
+
+        $this->modifyLastUpdatedItem(new \DateTime('+10 minute'), $thirdItem);
+
         $I->sendGET(sprintf('/items?listId=%s', $user->getDefaultDirectory()->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-        self::assertEquals(
-            [$firstItem->getId()->toString()],
-            $I->grabDataFromResponseByJsonPath('$.[1].id')
-        );
-        self::assertEquals(
-            [$secondItem->getId()->toString()],
-            $I->grabDataFromResponseByJsonPath('$.[2].id')
-        );
-        self::assertEquals(
-            [$thirdItem->getId()->toString()],
-            $I->grabDataFromResponseByJsonPath('$.[0].id')
-        );
+
+        $I->seeResponseContainsJson([
+            ['id' => $thirdItem->getId()->toString()],
+            ['id' => $firstItem->getId()->toString()],
+            ['id' => $secondItem->getId()->toString()],
+        ]);
     }
 
     /** @test */
@@ -274,41 +210,15 @@ class ItemTest extends Unit
             'tags' => ['tag'],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/create_item.json'));
 
-        $schema = $I->getSchema('item/create_item.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
-    }
-
-    /** @test */
-    public function createItemWithoutList()
-    {
-        $I = $this->tester;
-
-        /** @var User $user */
-        $user = $I->have(User::class);
-        $team = $I->createTeam($user);
-
-        $I->login($user);
         $I->sendPOST('items', [
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
             'title' => 'item title',
-            'favorite' => false,
-            'tags' => ['tag'],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-        $this->assertEquals([$user->getDefaultDirectory()->getId()->toString()], $I->grabDataFromResponseByJsonPath('$.listId'));
-
-        $I->sendPOST('items', [
-            'listId' => $team->getDefaultDirectory()->getId()->toString(),
-            'type' => NodeEnumType::TYPE_CRED,
-            'secret' => uniqid(),
-            'title' => 'item title',
-            'favorite' => false,
-            'tags' => ['tag'],
-        ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $this->assertEquals([$team->getDefaultDirectory()->getId()->toString()], $I->grabDataFromResponseByJsonPath('$.listId'));
+        $I->seeResponseContainsJson(['listId' => $user->getDefaultDirectory()->getId()->toString()]);
     }
 
     /** @test */
@@ -318,10 +228,7 @@ class ItemTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-        ]);
+        $item = $I->createUserItem($user);
         /** @var Item $item */
         $otherItem = $I->have(Item::class);
 
@@ -338,7 +245,6 @@ class ItemTest extends Unit
             'title' => 'item title (edited)',
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
     /** @test */
@@ -348,10 +254,7 @@ class ItemTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-        ]);
+        $item = $I->createUserItem($user);
 
         /** @var Item $item */
         $otherItem = $I->have(Item::class);
@@ -372,7 +275,6 @@ class ItemTest extends Unit
 
         $I->sendDELETE(sprintf('/items/%s', $otherItem->getId()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
     /** @test */
@@ -382,35 +284,23 @@ class ItemTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
+        $item = $I->createUserItem($user);
+
+        /** @var Directory $moveDirectory */
+        $moveDirectory = $I->have(Directory::class, ['parent_list' => $user->getLists()]);
 
         /** @var Directory $otherDirectory */
         $otherDirectory = $I->have(Directory::class);
-
-        /** @var Directory $directory */
-        $directory = $I->have(Directory::class, [
-            'parent_list' => $user->getLists(),
-        ]);
-
         /** @var Item $otherItem */
         $otherItem = $I->have(Item::class);
-
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'parent_list' => $directory,
-            'owner' => $user,
-        ]);
-
-        /** @var Directory $moveDirectory */
-        $moveDirectory = $I->have(Directory::class, [
-            'parent_list' => $user->getLists(),
-        ]);
 
         $I->login($user);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/%s/move', $item->getId()), [
-            'listId' => $moveDirectory->getId()->toString(),
+            'listId' => $moveDirectory->getId(),
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+        $I->seeInDatabase('item', ['id' => $item->getId(), 'parent_list_id' => $moveDirectory->getId()]);
 
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/%s/move', $item->getId()), [
@@ -424,58 +314,49 @@ class ItemTest extends Unit
             'listId' => $moveDirectory->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
     /** @test */
-    public function batchMoveItem()
+    public function batchMoveItems()
     {
         $I = $this->tester;
 
         /** @var User $user */
         $user = $I->have(User::class);
 
+        $item = $I->createUserItem($user);
+        $item2 = $I->createUserItem($user);
+        /** @var Directory $moveDirectory */
+        $moveDirectory = $I->have(Directory::class, ['parent_list' => $user->getLists()]);
+
         /** @var Directory $otherDirectory */
         $otherDirectory = $I->have(Directory::class);
-        /** @var Directory $directory */
-        $directory = $I->have(Directory::class, [
-            'parent_list' => $user->getLists(),
-        ]);
-        /** @var Directory $moveDirectory */
-        $moveDirectory = $I->have(Directory::class, [
-            'parent_list' => $user->getLists(),
-        ]);
         /** @var Item $otherItem */
         $otherItem = $I->have(Item::class);
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'parent_list' => $directory,
-            'owner' => $user,
-        ]);
 
         $I->login($user);
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPATCH(sprintf('/items/batch/move/list/%s', $otherDirectory->getId()->toString()), [
-            'items' => [$item->getId()->toString()],
+        $I->sendPATCH(sprintf('/items/batch/move/list/%s', $otherDirectory->getId()), [
+            'items' => [$item->getId()],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
 
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPATCH(sprintf('/items/batch/move/list/%s', $moveDirectory->getId()->toString()), [
-            'items' => [$item->getId()->toString()],
+        $I->sendPATCH(sprintf('/items/batch/move/list/%s', $moveDirectory->getId()), [
+            'items' => [$item->getId(), $item2->getId()],
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+        $I->seeInDatabase('item', ['id' => $item->getId(), 'parent_list_id' => $moveDirectory->getId()]);
+        $I->seeInDatabase('item', ['id' => $item2->getId(), 'parent_list_id' => $moveDirectory->getId()]);
 
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPATCH(sprintf('/items/batch/move/list/%s', $otherDirectory->getId()->toString()), [
+        $I->sendPATCH(sprintf('/items/batch/move/list/%s', $otherDirectory->getId()), [
             'items' => [
-                $item->getId()->toString(),
-                $otherItem->getId()->toString(),
+                $item->getId(),
+                $otherItem->getId(),
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $this->assertEquals([403], $I->grabDataFromResponseByJsonPath('$.error.code'));
     }
 
     /** @test */
@@ -484,44 +365,27 @@ class ItemTest extends Unit
         $I = $this->tester;
 
         /** @var User $domainAdmin */
-        $domainAdmin = $I->have(User::class, [
-            'roles' => [User::ROLE_ADMIN],
-        ]);
+        $domainAdmin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
 
         /** @var User $user */
         $user = $I->have(User::class);
-
         /** @var User $shareUser */
         $shareUser = $I->have(User::class);
 
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $user->getDefaultDirectory(),
-        ]);
+        $item = $I->createUserItem($user);
 
-        $I->login($user);
-
-        /** @var Item $ownerKeypairItem */
-        $ownerKeypairItem = $I->have(Item::class, [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $user->getInbox(),
-            'owner' => $user,
-            'related_item' => $item,
-        ]);
-
-        /** @var Item $userKeypairItem */
-        $userKeypairItem = $I->have(Item::class, [
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $shareUser->getInbox(),
-            'owner' => $shareUser,
-            'related_item' => $item,
-        ]);
+        $ownerKeypairItem = $I->createKeypairItem($user, $item);
+        $userKeypairItem = $I->createKeypairItem($shareUser, $item);
 
         $I->symfonyAuth($domainAdmin);
         $I->deleteFromAdmin(ItemCrudController::class, $ownerKeypairItem->getId()->toString());
 
         $I->dontSeeInDatabase('item', ['id' => $userKeypairItem->getId()->toString()]);
         $I->dontSeeInDatabase('item', ['id' => $item->getId()->toString()]);
+    }
+
+    private function modifyLastUpdatedItem(\DateTimeInterface $dateTime, Item $item): void
+    {
+        $this->tester->updateInDatabase('item', ['last_updated' => $dateTime->format('Y-m-d H:i:s')], ['id' => $item->getId()->toString()]);
     }
 }

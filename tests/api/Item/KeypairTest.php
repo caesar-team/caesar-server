@@ -2,8 +2,6 @@
 
 namespace App\Tests\Item;
 
-use App\DBAL\Types\Enum\NodeEnumType;
-use App\Entity\Item;
 use App\Entity\User;
 use App\Request\Item\KeypairFilterRequest;
 use App\Tests\ApiTester;
@@ -26,12 +24,11 @@ class KeypairTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $user->getDefaultDirectory(),
-        ]);
+        /** @var User $member */
+        $member = $I->have(User::class);
+        /** @var User $otherMember */
+        $otherMember = $I->have(User::class);
+        $item = $I->createUserItem($user);
 
         $I->login($user);
         $I->sendPOST(sprintf('items/%s/share', $item->getId()->toString()), [
@@ -41,12 +38,26 @@ class KeypairTest extends Unit
                     'secret' => uniqid(),
                 ],
                 [
+                    'userId' => $member->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+                [
+                    'userId' => $otherMember->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+                [
                     'userId' => $user->getId()->toString(),
                     'secret' => uniqid(),
                 ],
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
+        [$keypairItemId1] = $I->grabDataFromResponseByJsonPath('$[1].keypairId');
+        [$keypairItemId2] = $I->grabDataFromResponseByJsonPath('$[2].keypairId');
+
+        $I->sendGET(sprintf('items/%s', $item->getId()->toString()));
+        $I->seeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId1]);
+        $I->seeResponseByJsonPathContainsJson('$.invited', ['id' => $keypairItemId2]);
 
         $I->sendPOST(sprintf('items/%s/share', $item->getId()->toString()), [
             'users' => [
@@ -66,44 +77,21 @@ class KeypairTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-
+        $item = $I->createUserItem($user);
         $team = $I->createTeam($user);
-        $item = $I->createTeamItem($team, $user);
+        $teamItem = $I->createTeamItem($team, $user);
 
-        /** @var Item $personalKeypair */
-        $personalKeypair = $I->have(Item::class, [
-            'owner' => $user,
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $user->getInbox(),
-        ]);
-
-        /** @var Item $teamKeypair */
-        $teamKeypair = $I->have(Item::class, [
-            'owner' => $user,
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'team' => $team,
-            'parent_list' => $team->getDefaultDirectory(),
-        ]);
-
-        /** @var Item $teamItemKeypair */
-        $teamItemKeypair = $I->have(Item::class, [
-            'owner' => $user,
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'team' => $team,
-            'related_item' => $item,
-            'parent_list' => $team->getDefaultDirectory(),
-        ]);
+        $personalKeypair = $I->createKeypairItem($user, $item);
+        $teamKeypair = $I->createKeypairTeamItem($team, $user);
+        $teamItemKeypair = $I->createKeypairTeamItem($team, $user, $teamItem);
 
         $I->login($user);
         $I->sendGET('/keypairs');
-
-        $schema = $I->getSchema('item/item_list.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
-
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContains($personalKeypair->getId()->toString());
         $I->seeResponseContains($teamKeypair->getId()->toString());
         $I->seeResponseContains($teamItemKeypair->getId()->toString());
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/item_list.json'));
 
         $I->sendGET(sprintf('/keypairs?type=%s', KeypairFilterRequest::TYPE_PERSONAL));
         $I->seeResponseCodeIs(HttpCode::OK);
@@ -137,30 +125,13 @@ class KeypairTest extends Unit
         $I->sendGET(sprintf('/keypairs/personal/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
 
-        $I->have(Item::class, [
-            'owner' => $user,
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'team' => $team,
-            'parent_list' => $team->getDefaultDirectory(),
-        ]);
-        $I->have(Item::class, [
-            'owner' => $user,
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'team' => $otherTeam,
-            'parent_list' => $otherTeam->getDefaultDirectory(),
-        ]);
-        $I->have(Item::class, [
-            'owner' => $member,
-            'type' => NodeEnumType::TYPE_KEYPAIR,
-            'team' => $team,
-            'parent_list' => $team->getDefaultDirectory(),
-        ]);
+        $I->createKeypairTeamItem($team, $user);
+        $I->createKeypairTeamItem($otherTeam, $user);
+        $I->createKeypairTeamItem($team, $member);
 
         $I->sendGET(sprintf('/keypairs/personal/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $schema = $I->getSchema('item/item.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/item.json'));
 
         $I->sendGET(sprintf('/keypairs/personal/%s', $otherTeam->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
