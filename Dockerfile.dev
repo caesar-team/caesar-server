@@ -35,7 +35,7 @@ RUN apk --update add \
 RUN mkdir -p /var/www/html /var/www/html/vendor /var/www/html/public/static /var/www/html/var/cache /var/www/html/var/log /var/www/html/var/sessions /var/www/html/var/jwt \
 && chown -R www-data /var/www/html /var/www/html/vendor /var/www/html/var/cache /var/www/html/var/jwt
 # Composer part
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+COPY --from=composer:1 /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_MEMORY_LIMIT -1
 # ENV COMPOSER_ALLOW_SUPERUSER 1
 RUN composer global require hirak/prestissimo  --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-interaction --no-plugins --no-scripts

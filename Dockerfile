@@ -30,7 +30,7 @@ RUN pecl install gnupg redis amqp \
     && docker-php-ext-enable redis amqp
 
 # Composer part
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+COPY --from=composer:1 /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_MEMORY_LIMIT -1
 # ENV COMPOSER_ALLOW_SUPERUSER 1
 RUN composer global require hirak/prestissimo  --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-interaction --no-plugins --no-scripts
