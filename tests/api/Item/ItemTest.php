@@ -67,7 +67,7 @@ class ItemTest extends Unit
         $I->seeResponseByJsonPathContainsJson('$.teams', ['id' => $teamItem->getId()->toString()]);
         $I->dontSeeResponseByJsonPathContainsJson('$.teams', ['id' => $item->getId()->toString()]);
 
-        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/batch_item.json'));
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/all_item.json'));
 
         $I->login($member);
         $I->sendGET('/items/all');
@@ -382,6 +382,25 @@ class ItemTest extends Unit
 
         $I->dontSeeInDatabase('item', ['id' => $userKeypairItem->getId()->toString()]);
         $I->dontSeeInDatabase('item', ['id' => $item->getId()->toString()]);
+    }
+
+    /** @test */
+    public function getBatchItems()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        $item1 = $I->createUserItem($user);
+        $item2 = $I->createUserItem($user);
+
+        $I->login($user);
+        $I->sendGET(sprintf('items/batch?items[]=%s&items[]=%s', $item1->getId()->toString(), $item2->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/batch_item.json'));
+        $I->seeResponseContains($item1->getId()->toString());
+        $I->seeResponseContains($item2->getId()->toString());
     }
 
     private function modifyLastUpdatedItem(\DateTimeInterface $dateTime, Item $item): void
