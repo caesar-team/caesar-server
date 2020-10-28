@@ -12,6 +12,7 @@ use App\Factory\View\Item\ItemViewFactory;
 use App\Form\Type\Request\Item\CreateBatchItemsRequestType;
 use App\Form\Type\Request\Item\CreateBatchKeypairsRequestType;
 use App\Form\Type\Request\Item\CreateItemRequestType;
+use App\Form\Type\Request\Item\ItemsCollectionRequestType;
 use App\Limiter\Inspector\ItemCountInspector;
 use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
@@ -23,6 +24,7 @@ use App\Repository\ItemRepository;
 use App\Request\Item\CreateBatchItemsRequest;
 use App\Request\Item\CreateBatchKeypairsRequest;
 use App\Request\Item\CreateItemRequest;
+use App\Request\Item\ItemsCollectionRequest;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\TeamItemVoter;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
@@ -45,7 +47,7 @@ use Symfony\Component\Routing\Annotation\Route;
 final class ItemController extends AbstractController
 {
     /**
-     * Get batch items information.
+     * Get all items information.
      *
      * @SWG\Tag(name="Item")
      * @SWG\Response(
@@ -66,11 +68,6 @@ final class ItemController extends AbstractController
      * )
      *
      * @Route(
-     *     path="/batch",
-     *     name="api_get_item_batch",
-     *     methods={"GET"}
-     * )
-     * @Route(
      *     path="/all",
      *     name="api_get_item_all",
      *     methods={"GET"}
@@ -86,6 +83,50 @@ final class ItemController extends AbstractController
                 )
             )
         );
+    }
+
+    /**
+     * Get batch items information.
+     *
+     * @SWG\Tag(name="Item")
+     * @SWG\Response(
+     *     response=200,
+     *     description="Items data",
+     *     @SWG\Schema(type="array", @Model(type=ItemView::class))
+     * )
+     * @SWG\Parameter(
+     *     name="items",
+     *     in="body",
+     *     @Model(type=ItemsCollectionRequestType::class)
+     * )
+     *
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such item"
+     * )
+     *
+     * @Route(
+     *     path="/batch",
+     *     name="api_get_item_batch",
+     *     methods={"GET"}
+     * )
+     */
+    public function batch(Request $request, ItemViewFactory $viewFactory): array
+    {
+        $query = $request->query->all();
+        if (empty($query)) {
+            $query = $request->request->all();
+        }
+
+        $batchRequest = new ItemsCollectionRequest();
+
+        $form = $this->createForm(ItemsCollectionRequestType::class, $batchRequest);
+        $form->submit($query);
+        if (!$form->isValid()) {
+            throw new FormInvalidRequestException($form);
+        }
+
+        return $viewFactory->createCollection($batchRequest->getItems());
     }
 
     /**

@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "personals": {
+      "type": "array",
+      "items": {
+        "$ref": "schemas://item/definitions.json#/definitions/item"
+      }
+    },
+    "shares": {
+      "type": "array",
+      "items": {
+        "$ref": "schemas://item/definitions.json#/definitions/item"
+      }
+    },
+    "teams": {
+      "type": "array",
+      "items": {
+        "$ref": "schemas://item/definitions.json#/definitions/item"
+      }
+    },
+    "systems": {
+      "type": "array",
+      "items": {
+        "$ref": "schemas://item/definitions.json#/definitions/item"
+      }
+    },
+    "keypairs": {
+      "type": "array",
+      "items": {
+        "$ref": "schemas://item/definitions.json#/definitions/item"
+      }
+    }
+  },
+  "required": [
+    "personals",
+    "teams",
+    "systems",
+    "keypairs",
+    "shares"
+  ]
+}
