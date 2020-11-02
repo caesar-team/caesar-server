@@ -28,26 +28,26 @@ class LimiterTest extends Unit
         $I = $this->tester;
 
         /** @var User $user */
-        $user = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
+        $user = $I->have(User::class, ['domainRoles' => [User::ROLE_ADMIN]]);
 
         $I->setLimiterSize(UserCountInspector::class, 2);
 
         $I->login($user);
-        $I->sendPOST('/user', $this->getUserRequestBody(['roles' => User::ROLE_ANONYMOUS_USER]));
+        $I->sendPOST('/user', $this->getUserRequestBody(['domainRoles' => User::ROLE_ANONYMOUS_USER]));
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $I->sendPOST('/user', $this->getUserRequestBody(['roles' => User::ROLE_ANONYMOUS_USER]));
+        $I->sendPOST('/user', $this->getUserRequestBody(['domainRoles' => User::ROLE_ANONYMOUS_USER]));
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $I->sendPOST('/user', $this->getUserRequestBody(['roles' => User::ROLE_USER]));
+        $I->sendPOST('/user', $this->getUserRequestBody(['domainRoles' => User::ROLE_USER]));
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        $I->sendPOST('/user', $this->getUserRequestBody(['roles' => User::ROLE_USER]));
+        $I->sendPOST('/user', $this->getUserRequestBody(['domainRoles' => User::ROLE_USER]));
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContains('Maximum number of users is reached. Contact your Administrator');
 
         $I->setLimiterSize(UserCountInspector::class, -1);
-        $I->sendPOST('/user', $this->getUserRequestBody(['roles' => User::ROLE_USER]));
+        $I->sendPOST('/user', $this->getUserRequestBody(['domainRoles' => User::ROLE_USER]));
         $I->seeResponseCodeIs(HttpCode::OK);
     }
 
@@ -57,25 +57,25 @@ class LimiterTest extends Unit
         $I = $this->tester;
 
         /** @var User $user */
-        $user = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
+        $user = $I->have(User::class, ['domainRoles' => [User::ROLE_ADMIN]]);
 
         $I->setLimiterSize(UserCountInspector::class, 2);
 
         $I->login($user);
         $I->sendPOST('/user/batch', [
             'users' => [
-                $this->getUserRequestBody(['roles' => User::ROLE_ANONYMOUS_USER]),
-                $this->getUserRequestBody(['roles' => User::ROLE_ANONYMOUS_USER]),
-                $this->getUserRequestBody(['roles' => User::ROLE_USER]),
+                $this->getUserRequestBody(['domainRoles' => User::ROLE_ANONYMOUS_USER]),
+                $this->getUserRequestBody(['domainRoles' => User::ROLE_ANONYMOUS_USER]),
+                $this->getUserRequestBody(['domainRoles' => User::ROLE_USER]),
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->sendPOST('/user/batch', [
             'users' => [
-                $this->getUserRequestBody(['roles' => User::ROLE_ANONYMOUS_USER]),
-                $this->getUserRequestBody(['roles' => User::ROLE_USER]),
-                $this->getUserRequestBody(['roles' => User::ROLE_USER]),
+                $this->getUserRequestBody(['domainRoles' => User::ROLE_ANONYMOUS_USER]),
+                $this->getUserRequestBody(['domainRoles' => User::ROLE_USER]),
+                $this->getUserRequestBody(['domainRoles' => User::ROLE_USER]),
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
@@ -84,9 +84,9 @@ class LimiterTest extends Unit
         $I->setLimiterSize(UserCountInspector::class, -1);
         $I->sendPOST('/user/batch', [
             'users' => [
-                $this->getUserRequestBody(['roles' => User::ROLE_ANONYMOUS_USER]),
-                $this->getUserRequestBody(['roles' => User::ROLE_USER]),
-                $this->getUserRequestBody(['roles' => User::ROLE_USER]),
+                $this->getUserRequestBody(['domainRoles' => User::ROLE_ANONYMOUS_USER]),
+                $this->getUserRequestBody(['domainRoles' => User::ROLE_USER]),
+                $this->getUserRequestBody(['domainRoles' => User::ROLE_USER]),
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
@@ -101,7 +101,7 @@ class LimiterTest extends Unit
             'publicKey' => 'public',
             'seed' => '123',
             'verifier' => '456',
-            'roles' => User::ROLE_USER,
+            'domainRoles' => User::ROLE_USER,
         ], $options);
     }
 }

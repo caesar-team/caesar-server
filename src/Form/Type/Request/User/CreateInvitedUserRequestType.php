@@ -24,7 +24,7 @@ class CreateInvitedUserRequestType extends AbstractType
             ->add('publicKey', TextType::class)
             ->add('seed', TextType::class)
             ->add('verifier', TextType::class)
-            ->add('roles', ChoiceType::class, [
+            ->add('domainRoles', ChoiceType::class, [
                 'choices' => User::AVAILABLE_ROLES,
                 'expanded' => true,
                 'multiple' => true,
