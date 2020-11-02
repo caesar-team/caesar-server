@@ -68,7 +68,7 @@ class UserFactory
         $user->setPlainPassword($request->getPlainPassword());
         $user->setEncryptedPrivateKey($request->getEncryptedPrivateKey());
         $user->setPublicKey($request->getPublicKey());
-        $user->setRoles($request->getRoles());
+        $user->setRoles($request->getDomainRoles());
         if ($user->hasRole(User::ROLE_READ_ONLY_USER)) {
             $user->setFlowStatus(User::FLOW_STATUS_CHANGE_PASSWORD);
         }

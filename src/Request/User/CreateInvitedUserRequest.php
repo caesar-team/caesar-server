@@ -18,7 +18,6 @@ final class CreateInvitedUserRequest implements SrpAwareRequestInterface
      * @AppAssert\UniqueEntityProperty(
      *     entityClass="App\Entity\User",
      *     field="email",
-     *     repositoryMethod="findWithoutPublicKey",
      *     message="app.exception.user_already_exists",
      *     lowercase=true
      * )
@@ -63,11 +62,11 @@ final class CreateInvitedUserRequest implements SrpAwareRequestInterface
     /**
      * @var string[]
      */
-    private array $roles;
+    private array $domainRoles;
 
     public function __construct()
     {
-        $this->roles = [];
+        $this->domainRoles = [];
     }
 
     public function getEmail(): ?string
@@ -133,16 +132,16 @@ final class CreateInvitedUserRequest implements SrpAwareRequestInterface
     /**
      * @return string[]
      */
-    public function getRoles(): array
+    public function getDomainRoles(): array
     {
-        return $this->roles;
+        return $this->domainRoles;
     }
 
     /**
-     * @param string[] $roles
+     * @param string[] $domainRoles
      */
-    public function setRoles(array $roles): void
+    public function setDomainRoles(array $domainRoles): void
     {
-        $this->roles = $roles;
+        $this->domainRoles = $domainRoles;
     }
 }
