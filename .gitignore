@@ -37,3 +37,4 @@ yarn-error.log
 codeception.yml
 ###< tests ###
 src/.preload.php
+.vscode/settings.json
