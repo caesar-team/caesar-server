@@ -45,6 +45,10 @@ class ShareTest extends Unit
         $I->sendPOST(sprintf('items/%s/share', $item->getId()->toString()), [
             'users' => [
                 [
+                    'userId' => $user->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+                [
                     'userId' => $member->getId()->toString(),
                     'secret' => uniqid(),
                 ],
@@ -67,5 +71,41 @@ class ShareTest extends Unit
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContains('Keypair is already exists');
+
+        $I->sendGET('/items/all');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->dontSeeResponseByJsonPathContainsJson('$.shares', ['id' => $item->getId()->toString()]);
+        $I->seeResponseByJsonPathContainsJson('$.personals', ['id' => $item->getId()->toString()]);
+    }
+
+    /** @test */
+    public function overridingRelatedItemData()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $this->tester->have(User::class);
+        /** @var User $member */
+        $member = $this->tester->have(User::class);
+
+        $item = $I->createUserItem($user);
+
+        $I->login($user);
+        $I->sendPOST(sprintf('/items/%s/favorite', $item->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->sendPOST(sprintf('items/%s/share', $item->getId()->toString()), [
+            'users' => [
+                [
+                    'userId' => $member->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->login($member);
+        $I->sendGET('/items/all');
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.shares.0', ['favorite' => false]);
     }
 }
