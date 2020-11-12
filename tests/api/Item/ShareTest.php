@@ -108,4 +108,51 @@ class ShareTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseByJsonPathContainsJson('$.shares.0', ['favorite' => false]);
     }
+
+    /** @test */
+    public function lastUpdatedRelatedItem()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $this->tester->have(User::class);
+        /** @var User $member */
+        $member = $this->tester->have(User::class);
+
+        $item = $I->createUserItem($user);
+
+        $I->login($user);
+        $I->sendPOST(sprintf('items/%s/share', $item->getId()->toString()), [
+            'users' => [
+                [
+                    'userId' => $user->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+                [
+                    'userId' => $member->getId()->toString(),
+                    'secret' => uniqid(),
+                ],
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $lastUpdatedTime = time() + 1;
+
+        sleep(2);
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
+            'secret' => 'secret-edit',
+            'title' => 'item title (edited)',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->sendGET(sprintf('/items/all?lastUpdated=%s', $lastUpdatedTime));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.personals', ['id' => $item->getId()->toString()]);
+
+        $I->login($member);
+        $I->sendGET(sprintf('/items/all?lastUpdated=%s', $lastUpdatedTime));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseByJsonPathContainsJson('$.shares', ['id' => $item->getId()->toString()]);
+    }
 }
