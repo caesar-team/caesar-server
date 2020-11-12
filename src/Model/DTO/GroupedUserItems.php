@@ -30,6 +30,11 @@ class GroupedUserItems
     /**
      * @var Item[]
      */
+    private array $sharedItemsKeypair = [];
+
+    /**
+     * @var Item[]
+     */
     private array $keypairItems = [];
 
     /**
@@ -94,6 +99,14 @@ class GroupedUserItems
         return $this->teamItems;
     }
 
+    /**
+     * @return Item[]
+     */
+    public function getSharedItemsKeypair(): array
+    {
+        return $this->sharedItemsKeypair;
+    }
+
     private function groupItems(): void
     {
         foreach ($this->items as $item) {
@@ -105,8 +118,13 @@ class GroupedUserItems
 
                     $this->keypairItems[$item->getId()->toString()] = $item;
                     if (null !== $item->getRelatedItem()) {
+                        if ($item->getRelatedItem()->getSignedOwner()->equals($this->user)) {
+                            break;
+                        }
+
                         /** @psalm-suppress InvalidPropertyAssignmentValue */
                         $this->sharedItems[$item->getRelatedItem()->getId()->toString()] = $item->getRelatedItem();
+                        $this->sharedItemsKeypair[$item->getRelatedItem()->getId()->toString()] = $item;
                     }
                     break;
                 case NodeEnumType::TYPE_SYSTEM:
