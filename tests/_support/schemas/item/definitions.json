@@ -36,6 +36,9 @@
               "userEmail": {
                 "type": "string"
               },
+              "userDomainRoles": {
+                "type": "array"
+              },
               "access": {
                 "type": "string"
               }

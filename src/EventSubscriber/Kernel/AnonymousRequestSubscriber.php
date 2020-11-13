@@ -20,6 +20,7 @@ class AnonymousRequestSubscriber implements EventSubscriberInterface
         'api_srp_login_prepare',
         'api_srp_login',
         'api_keys_list',
+        'api_get_item_all',
         'api_list_tree',
         'api_user_get_info',
         'api_show_item',
