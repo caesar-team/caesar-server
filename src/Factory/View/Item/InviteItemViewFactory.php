@@ -20,6 +20,7 @@ class InviteItemViewFactory
         $view->setUserName($owner->getUsername());
         $view->setUserAvatar($owner->getAvatarLink());
         $view->setUserEmail($owner->getEmail());
+        $view->setUserDomainRoles($owner->getRoles());
         $view->setAccess($item->getAccess() ?? AccessEnumType::TYPE_READ);
 
         return $view;
