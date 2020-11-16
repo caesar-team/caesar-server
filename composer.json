@@ -13,7 +13,7 @@
         "doctrine/doctrine-fixtures-bundle": "3.3.2",
         "doctrine/doctrine-migrations-bundle": "2.2.0",
         "easycorp/easyadmin-bundle": "3.1.6",
-        "fresh/doctrine-enum-bundle": "6.6.4",
+        "fresh/doctrine-enum-bundle": "7.1.1",
         "friendsofsymfony/rest-bundle": "3.0.3",
         "friendsofsymfony/user-bundle": "2.1.2",
         "guzzlehttp/guzzle": "6.5.5",
