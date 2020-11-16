@@ -1,4 +1,4 @@
-# Caesar.Team server application.
+# Caesar.Team server application
 
 Here you can find all information needed to istall and run the Caesar.Team server appliction on your own.
 
