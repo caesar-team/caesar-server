@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\DBAL\Types\Enum\NodeEnumType;
+use App\Entity\Embedded\ItemMeta;
 use App\Utils\ChildItemAwareInterface;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -63,6 +64,13 @@ class Item implements ChildItemAwareInterface
      * @ORM\Column(type="text")
      */
     protected $secret;
+
+    /**
+     * @var ItemMeta
+     *
+     * @ORM\Embedded(class="App\Entity\Embedded\ItemMeta")
+     */
+    protected $meta;
 
     /**
      * @var string
@@ -184,6 +192,7 @@ class Item implements ChildItemAwareInterface
         $this->sharedItems = new ArrayCollection();
         $this->keyPairItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
+        $this->meta = new ItemMeta();
         $this->owner = $user;
         if (null !== $user) {
             $this->parentList = $user->getDefaultDirectory();
@@ -218,6 +227,16 @@ class Item implements ChildItemAwareInterface
     public function setSecret(?string $secret): void
     {
         $this->secret = $secret;
+    }
+
+    public function getMeta(): ItemMeta
+    {
+        return $this->meta;
+    }
+
+    public function setMeta(ItemMeta $meta): void
+    {
+        $this->meta = $meta;
     }
 
     public function getLastUpdated(): DateTime

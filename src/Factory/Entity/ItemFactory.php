@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Factory\Entity;
 
 use App\DBAL\Types\Enum\NodeEnumType;
+use App\Entity\Embedded\ItemMeta;
 use App\Entity\Item;
 use App\Request\Item\CreateItemRequest;
 use App\Request\Item\CreateKeypairRequest;
@@ -48,6 +49,10 @@ class ItemFactory
         $item->setFavorite($request->isFavorite());
         $item->setTags(new ArrayCollection($this->transformer->transform($request->getTags())));
         $item->setTeam($request->getTeam());
+        $item->setMeta(new ItemMeta(
+            $request->getMeta()->getAttachCount() ?: 0,
+            $request->getMeta()->getWebSite()
+        ));
 
         return $item;
     }

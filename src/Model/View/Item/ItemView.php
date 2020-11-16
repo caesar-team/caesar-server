@@ -151,6 +151,11 @@ final class ItemView
     private ?string $secret;
 
     /**
+     * @SWG\Property(@Model(type=SharedChildItemView::class))
+     */
+    private ItemMetaView $meta;
+
+    /**
      * @var InviteItemView[]
      *
      * @SWG\Property(type="array", @Model(type=InviteItemView::class))
@@ -219,6 +224,7 @@ final class ItemView
         $this->teamId = null;
         $this->favorite = false;
         $this->isShared = false;
+        $this->meta = new ItemMetaView();
         $this->invited = [];
         $this->tags = [];
     }
@@ -397,5 +403,15 @@ final class ItemView
     public function setTitle(?string $title): void
     {
         $this->title = $title;
+    }
+
+    public function getMeta(): ItemMetaView
+    {
+        return $this->meta;
+    }
+
+    public function setMeta(ItemMetaView $meta): void
+    {
+        $this->meta = $meta;
     }
 }

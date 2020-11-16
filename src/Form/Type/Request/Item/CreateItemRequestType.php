@@ -44,6 +44,7 @@ class CreateItemRequestType extends AbstractType
             ])
             ->add('title', TextType::class)
             ->add('secret', TextType::class)
+            ->add('meta', ItemMetaType::class)
             ->add('favorite', CheckboxType::class)
             ->add('tags', CollectionType::class, [
                 'entry_type' => TextType::class,

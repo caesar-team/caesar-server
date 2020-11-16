@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modifier;
 
+use App\Entity\Embedded\ItemMeta;
 use App\Entity\Item;
 use App\Repository\ItemRepository;
 use App\Request\Item\EditItemRequest;
@@ -29,6 +30,10 @@ class ItemModifier
             $item->setOwner($request->getOwner());
         }
         $item->setSecret($request->getSecret());
+        $item->setMeta(new ItemMeta(
+            $request->getMeta()->getAttachCount() ?: 0,
+            $request->getMeta()->getWebSite()
+        ));
         $item->setTitle($request->getTitle());
         $item->setTags(new ArrayCollection($this->transformer->transform($request->getTags())));
         $this->repository->save($item);

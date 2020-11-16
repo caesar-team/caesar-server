@@ -16,6 +16,21 @@
         "secret": {
           "type": "string"
         },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "attachCount": {
+              "type": "integer"
+            },
+            "webSite": {
+              "type": ["null", "string"]
+            }
+          },
+          "required": [
+            "attachCount",
+            "webSite"
+          ]
+        },
         "invited": {
           "type": "array",
           "items": {
