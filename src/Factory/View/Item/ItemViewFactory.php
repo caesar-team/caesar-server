@@ -17,14 +17,18 @@ class ItemViewFactory
 
     private SharedItemViewFactory $sharedItemViewFactory;
 
+    private ItemMetaViewFactory $itemMetaViewFactory;
+
     public function __construct(
         Security $security,
         InviteItemViewFactory $inviteItemViewFactory,
-        SharedItemViewFactory $sharedItemViewFactory
+        SharedItemViewFactory $sharedItemViewFactory,
+        ItemMetaViewFactory $itemMetaViewFactory
     ) {
         $this->security = $security;
         $this->inviteItemViewFactory = $inviteItemViewFactory;
         $this->sharedItemViewFactory = $sharedItemViewFactory;
+        $this->itemMetaViewFactory = $itemMetaViewFactory;
     }
 
     public function createSingle(Item $item): ItemView
@@ -64,6 +68,7 @@ class ItemViewFactory
 
         $view->setIsShared($item->hasSystemItems());
         $view->setTeamId($item->getTeamId());
+        $view->setMeta($this->itemMetaViewFactory->createSingle($item->getMeta()));
 
         return $view;
     }

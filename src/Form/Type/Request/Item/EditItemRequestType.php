@@ -26,6 +26,7 @@ class EditItemRequestType extends AbstractType
             ])
             ->add('title', TextType::class)
             ->add('secret', TextType::class)
+            ->add('meta', ItemMetaType::class)
             ->add('tags', CollectionType::class, [
                 'entry_type' => TextType::class,
                 'entry_options' => ['label' => false],

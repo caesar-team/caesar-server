@@ -26,6 +26,11 @@ final class CreateItemRequest
     private ?string $title;
 
     /**
+     * @Assert\Valid
+     */
+    private ItemMetaRequest $meta;
+
+    /**
      * @Assert\NotBlank()
      */
     private ?string $secret;
@@ -44,6 +49,7 @@ final class CreateItemRequest
         $this->type = null;
         $this->secret = null;
         $this->favorite = false;
+        $this->meta = new ItemMetaRequest();
         $this->tags = [];
     }
 
@@ -125,5 +131,15 @@ final class CreateItemRequest
     public function setTitle(?string $title): void
     {
         $this->title = $title;
+    }
+
+    public function getMeta(): ItemMetaRequest
+    {
+        return $this->meta;
+    }
+
+    public function setMeta(ItemMetaRequest $meta): void
+    {
+        $this->meta = $meta;
     }
 }

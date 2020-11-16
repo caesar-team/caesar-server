@@ -22,6 +22,11 @@ final class EditItemRequest
      */
     private ?string $secret;
 
+    /**
+     * @Assert\Valid
+     */
+    private ItemMetaRequest $meta;
+
     private array $tags;
 
     private Item $item;
@@ -33,6 +38,9 @@ final class EditItemRequest
         $this->title = $item->getTitle();
         $this->owner = $item->getSignedOwner();
         $this->item = $item;
+        $this->meta = new ItemMetaRequest();
+        $this->meta->setAttachCount($item->getMeta()->getAttachCount());
+        $this->meta->setWebSite($item->getMeta()->getWebSite());
     }
 
     public function getOwner(): ?User
@@ -78,5 +86,15 @@ final class EditItemRequest
     public function setTitle(?string $title): void
     {
         $this->title = $title;
+    }
+
+    public function getMeta(): ItemMetaRequest
+    {
+        return $this->meta;
+    }
+
+    public function setMeta(ItemMetaRequest $meta): void
+    {
+        $this->meta = $meta;
     }
 }

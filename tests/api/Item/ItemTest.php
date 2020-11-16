@@ -207,6 +207,9 @@ class ItemTest extends Unit
             'secret' => uniqid(),
             'title' => 'item title',
             'favorite' => false,
+            'meta' => [
+                'attachCount' => 2,
+            ],
             'tags' => ['tag'],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
@@ -215,6 +218,9 @@ class ItemTest extends Unit
         $I->sendPOST('items', [
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
+            'meta' => [
+                'webSite' => 'http://examle.com',
+            ],
             'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
@@ -237,6 +243,10 @@ class ItemTest extends Unit
         $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
             'secret' => 'secret-edit',
             'title' => 'item title (edited)',
+            'meta' => [
+                'attachCount' => 3,
+                'webSite' => 'http://examle.com/login',
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
