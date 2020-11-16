@@ -20,7 +20,7 @@
         "hashids/hashids": "4.0.0",
         "hwi/oauth-bundle": "1.1.0",
         "lexik/jwt-authentication-bundle": "2.8.0",
-        "nelmio/api-doc-bundle": "3.7.4",
+        "nelmio/api-doc-bundle": "4.0.1",
         "nelmio/cors-bundle": "2.1.0",
         "pear/math_biginteger": "1.0.3",
         "php-http/guzzle6-adapter": "2.0.1",
