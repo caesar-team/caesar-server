@@ -3,13 +3,17 @@ security:
         FOS\UserBundle\Model\UserInterface: bcrypt
         Symfony\Component\Security\Core\User\User: bcrypt
     role_hierarchy:
+        ROLE_MANAGER:     ROLE_USER
         ROLE_ADMIN:       ROLE_USER
-        ROLE_SUPER_ADMIN: ROLE_ADMIN
+        ROLE_SUPER_ADMIN: ROLE_USER
+        ROLE_SYSTEM_USER: ROLE_USER
     providers:
         fos.user.provider:
             id: fos_user.user_provider.username_email
         hwi_oauth.user.provider:
             id: hwi_oauth.user.provider
+        cache_user_provider:
+            id: App\Security\Provider\SystemUserProvider
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -20,12 +24,20 @@ security:
         anonymous_area:
             pattern: ^/api/anonymous
             anonymous: true
-        doc:
-            pattern: ^/(api/doc|admin|api/srp_login_confirm)
+        admin:
+            pattern: ^/(admin|api/srp_login_confirm|2fa_check)
             logout: true
             stateless: false
             anonymous: false
             context: main
+            two_factor:
+                provider: fos.user.provider
+                auth_form_path: 2fa_login
+                check_path: 2fa_login_check
+                prepare_on_login: true
+                auth_code_parameter_name: authCode
+                success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
+                failure_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
             guard:
                 provider: fos.user.provider
                 authenticators:
@@ -53,12 +65,14 @@ security:
             anonymous: true
         api:
             pattern: ^/api
+            logout: true
             provider: fos.user.provider
             stateless: false
             anonymous: ~
             two_factor:
                 check_path: /api/auth/2fa
                 provider: fos.user.provider
+                prepare_on_login: true
                 auth_code_parameter_name: authCode
                 success_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
                 failure_handler: App\Security\Authentication\TwoFactorAuthenticationHandler
@@ -66,10 +80,15 @@ security:
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
+        json_rpc:
+            pattern: ^/json-rpc
+            stateless: true
+            provider: cache_user_provider
+            guard:
+                authenticators:
+                    - App\Security\Authentication\TokenAuthenticator
         main:
             pattern: ^/
-            form_login:
-                provider: fos.user.provider
             logout: true
             stateless: false
             anonymous: true
@@ -87,13 +106,14 @@ security:
                 failure_handler: App\Security\Authentication\OAuthFailureHandler
                 success_handler: App\Security\JwtRedirectHandler
     access_control:
+        - { path: ^/json-rpc, roles: [ROLE_SYSTEM_USER]}
         - { path: ^/api/share/messages, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/message, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/service, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/anonymous, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/srp_login_confirm, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/auth, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
-        - { path: ^/api/user/self, roles: [IS_AUTHENTICATED_ANONYMOUSLY], methods: [GET] }
-        - { path: ^/api/doc, roles: [ROLE_SUPER_ADMIN, ROLE_ADMIN]}
+        - { path: ^/api/users/self, roles: [IS_AUTHENTICATED_ANONYMOUSLY], methods: [GET] }
+        - { path: ^/api/doc, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}

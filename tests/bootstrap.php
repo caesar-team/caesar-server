@@ -21,7 +21,12 @@ if ('test' !== $_SERVER['APP_ENV']) {
     throw new \Exception('Only for test environment');
 }
 
-(new Dotenv())->load(__DIR__.'/../.env');
+$defaultEnvironment = __DIR__.'/../.env.dist';
+if (file_exists(__DIR__.'/../.env')) {
+    $defaultEnvironment = __DIR__.'/../.env';
+}
+
+(new Dotenv())->load($defaultEnvironment);
 
 echo 'Preparing database...'.PHP_EOL;
 $runCommand('bin/console doctrine:schema:drop --full-database --force');

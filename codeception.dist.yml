@@ -1,0 +1,36 @@
+namespace: App\Tests
+paths:
+    tests: tests
+    output: tests/_output
+    data: tests/_data
+    support: tests/_support
+    envs: tests/_envs
+actor_suffix: Tester
+extensions:
+    enabled:
+        - Codeception\Extension\RunFailed
+params:
+    envs: tests/_envs/.env.dist
+
+modules:
+    enabled:
+        - Symfony:
+              app_path: 'src'
+              environment: 'test'
+        - DataFactory:
+              factories: tests/_support/factories
+              depends: Doctrine2
+        - Doctrine2:
+              depends: Symfony
+              cleanup: false
+        - Db:
+              dsn: 'pgsql:host=%TEST_DATABASE_HOST%;port=5432;dbname=%TEST_POSTGRES_DB%'
+              user: '%TEST_POSTGRES_USER%'
+              password: '%TEST_POSTGRES_PASSWORD%'
+              initial_queries:
+                - 'TRUNCATE directory CASCADE;'
+                - 'TRUNCATE fos_user CASCADE;'
+                - 'TRUNCATE item CASCADE;'
+                - 'TRUNCATE groups CASCADE;'
+                - 'TRUNCATE srp CASCADE;'
+                - 'TRUNCATE message_history CASCADE;'

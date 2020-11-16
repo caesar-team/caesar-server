@@ -1,7 +1,13 @@
 actor: ApiTester
 modules:
   enabled:
+    - Symfony:
+        app_path: 'src'
+        environment: 'test'
     - REST:
         url: /api
         depends: Symfony
+#    - Doctrine2:
+#        depends: Symfony
     - \App\Tests\Helper\Api
+    - \App\Tests\Helper\Doctrine

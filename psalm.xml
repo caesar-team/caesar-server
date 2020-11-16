@@ -10,12 +10,16 @@
         <directory name="src"/>
         <ignoreFiles>
             <directory name="vendor"/>
+            <directory name="var"/>
             <directory name="src/Migrations"/>
             <file name="src/Kernel.php"/>
+            <file name="src/.preload.php"/>
             <file name="src/Services/SrpHandler.php"/>
         </ignoreFiles>
     </projectFiles>
     <issueHandlers>
+        <DeprecatedProperty errorLevel="info"/>
+        <DeprecatedMethod errorLevel="info"/>
         <InternalMethod errorLevel="suppress"/>
         <UndefinedDocblockClass errorLevel="suppress"/>
         <MissingReturnType errorLevel="suppress"/>
@@ -35,17 +39,13 @@
         <MoreSpecificReturnType errorLevel="suppress"/>
         <PropertyNotSetInConstructor errorLevel="suppress"/>
         <PossiblyInvalidMethodCall errorLevel="suppress"/>
+        <MissingClosureParamType errorLevel="suppress"/>
         <ForbiddenCode errorLevel="suppress"/>
         <PossiblyNullArgument errorLevel="info"/>
         <PossiblyNullReference errorLevel="info"/>
         <DeprecatedClass errorLevel="info"/>
         <DeprecatedInterface errorLevel="info"/>
         <MixedArrayOffset errorLevel="info"/>
-        <RedundantCondition>
-            <errorLevel type="suppress">
-                <file name="src/Services/Messenger.php"/>
-            </errorLevel>
-        </RedundantCondition>
         <LessSpecificImplementedReturnType errorLevel="suppress"/>
         <UndefinedClass>
             <errorLevel type="suppress">

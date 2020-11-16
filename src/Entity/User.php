@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Security\TwoFactor\BackUpCodesManager;
+use App\Security\AuthorizationManager\InvitationEncoder;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use FOS\UserBundle\Model\User as FOSUser;
 use Ramsey\Uuid\Uuid;
@@ -14,12 +15,14 @@ use Ramsey\Uuid\UuidInterface;
 use Scheb\TwoFactorBundle\Model\BackupCodeInterface;
 use Scheb\TwoFactorBundle\Model\Google\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * User.
  *
  * @ORM\Table(name="fos_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
+ * @UniqueEntity(fields={"email"}, message="Wrong email")
  */
 class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface, BackupCodeInterface
 {
@@ -29,9 +32,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public const DEFAULT_FLOW_STATUS = self::FLOW_STATUS_FINISHED;
     public const ROLE_USER = 'ROLE_USER';
     public const ROLE_ADMIN = 'ROLE_ADMIN';
+    public const ROLE_MANAGER = 'ROLE_MANAGER';
     public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
     public const ROLE_READ_ONLY_USER = 'ROLE_READ_ONLY_USER';
     public const ROLE_ANONYMOUS_USER = 'ROLE_ANONYMOUS_USER';
+    public const ROLE_SYSTEM_USER = 'ROLE_SYSTEM_USER';
     public const AVAILABLE_ROLES = [
         self::ROLE_USER => self::ROLE_USER,
         self::ROLE_READ_ONLY_USER => self::ROLE_READ_ONLY_USER,
@@ -150,32 +155,34 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @var Directory
      *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist"}
-     * )
+     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userInbox", cascade={"persist"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $inbox;
 
     /**
      * @var Directory
      *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist"}
-     * )
+     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userLists", cascade={"persist"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $lists;
 
     /**
      * @var Directory
      *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist"}
-     * )
+     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userTrash", cascade={"persist"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $trash;
+
+    /**
+     * @var Collection|Directory[]
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="user")
+     * @ORM\OrderBy({"sort": "ASC"})
+     */
+    protected $directories;
 
     /**
      * User constructor.
@@ -187,9 +194,13 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         parent::__construct();
         $this->id = Uuid::uuid4();
         $this->inbox = Directory::createInbox();
+        $this->inbox->setUser($this);
         $this->lists = Directory::createRootList();
+        $this->lists->setUser($this);
         $this->lists->addChildList(Directory::createDefaultList());
         $this->trash = Directory::createTrash();
+        $this->trash->setUser($this);
+
         $this->userTeams = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
         $this->ownedItems = new ArrayCollection();
@@ -197,7 +208,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
             $this->srp = $srp;
         }
         $this->flowStatus = self::FLOW_STATUS_INCOMPLETE;
-        BackUpCodesManager::generate($this);
+        $this->directories = new ArrayCollection();
     }
 
     public function getId(): UuidInterface
@@ -221,6 +232,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getAvatar(): ?Avatar
     {
         return $this->avatar;
+    }
+
+    public function getAvatarLink(): ?string
+    {
+        return null !== $this->avatar ? $this->avatar->getLink() : null;
     }
 
     public function setAvatar(?Avatar $avatar): void
@@ -311,12 +327,17 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->publicKey = $publicKey;
     }
 
+    public function hasKeys(): bool
+    {
+        return null !== $this->getEncryptedPrivateKey() && null !== $this->getPublicKey();
+    }
+
     public function getSrp(): ?Srp
     {
         return $this->srp;
     }
 
-    public function setSrp(Srp $srp): void
+    public function setSrp(?Srp $srp): void
     {
         $this->srp = $srp;
     }
@@ -340,6 +361,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     {
         if (false === $this->fingerprints->contains($fingerprint)) {
             $this->fingerprints->add($fingerprint);
+            $fingerprint->setUser($this);
         }
     }
 
@@ -349,6 +371,17 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getFingerprints(): array
     {
         return $this->fingerprints->toArray();
+    }
+
+    public function invalidateFingerprints(): void
+    {
+        foreach ($this->getFingerprints() as $fingerprint) {
+            if ($fingerprint->isValidExpired()) {
+                continue;
+            }
+
+            $this->removeFingerprint($fingerprint);
+        }
     }
 
     public function getFlowStatus(): string
@@ -361,24 +394,24 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         $this->flowStatus = $flowStatus;
     }
 
+    public function isAccepted(): bool
+    {
+        return self::FLOW_STATUS_FINISHED === $this->flowStatus;
+    }
+
     /**
-     * Check if it is a valid backup code.
+     * {@inheritdoc}
      */
     public function isBackupCode(string $code): bool
     {
-        $encoder = BackUpCodesManager::initEncoder();
-        $code = $encoder->encode($code);
-
         return in_array($code, $this->backupCodes);
     }
 
     /**
-     * Invalidate a backup code.
+     * {@inheritdoc}
      */
     public function invalidateBackupCode(string $code): void
     {
-        $encoder = BackUpCodesManager::initEncoder();
-        $code = $encoder->encode($code);
         $key = array_search($code, $this->backupCodes);
         if (false !== $key) {
             unset($this->backupCodes[$key]);
@@ -388,6 +421,11 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function setBackupCodes(array $backupCodes): void
     {
         $this->backupCodes = $backupCodes;
+    }
+
+    public function getBackupCodes(): array
+    {
+        return $this->backupCodes;
     }
 
     private function getBackupCodesCount(): int
@@ -400,23 +438,26 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return (bool) $this->getBackupCodesCount();
     }
 
-    public function getBackupCodes(): array
+    /**
+     * @return UserTeam[]
+     */
+    public function getUserTeams(): array
     {
-        $encoder = BackUpCodesManager::initEncoder();
-        $codes = [];
-        foreach ($this->backupCodes as $backupCode) {
-            $codes[] = current($encoder->decode($backupCode));
-        }
-
-        return $codes;
+        return $this->userTeams->toArray();
     }
 
-    /**
-     * @return UserTeam[]|Collection
-     */
-    public function getUserTeams(): Collection
+    public function getUserTeamByTeam(Team $team): ?UserTeam
     {
-        return $this->userTeams;
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('team', $team));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $userTeam = $this->userTeams->matching($criteria)->first();
+
+        return $userTeam instanceof UserTeam ? $userTeam : null;
     }
 
     public function addUserTeam(UserTeam $userTeam): void
@@ -442,12 +483,33 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return !$this->hasRole(self::ROLE_ANONYMOUS_USER) && !$this->hasRole(self::ROLE_READ_ONLY_USER);
     }
 
+    public function isAnonymous(): bool
+    {
+        return $this->hasRole(self::ROLE_ANONYMOUS_USER);
+    }
+
     /**
      * @return Item[]
      */
     public function getOwnedItems(): array
     {
         return $this->ownedItems->toArray();
+    }
+
+    /**
+     * @return Item[]
+     */
+    public function getPersonalItems(): array
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->isNull('team'));
+        $criteria->orderBy(['lastUpdated' => Criteria::ASC]);
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        return $this->ownedItems->matching($criteria)->toArray();
     }
 
     public function addOwnedItem(Item $item): void
@@ -475,16 +537,22 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 
     public function getInbox(): Directory
     {
+        $this->inbox->setRole(Directory::LIST_INBOX);
+
         return $this->inbox;
     }
 
     public function getLists(): Directory
     {
+        $this->lists->setRole(Directory::LIST_ROOT_LIST);
+
         return $this->lists;
     }
 
     public function getTrash(): Directory
     {
+        $this->trash->setRole(Directory::LIST_TRASH);
+
         return $this->trash;
     }
 
@@ -495,15 +563,115 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         });
     }
 
+    /**
+     * @return Team[]
+     */
     public function getTeams(): array
     {
-        return array_map(function (UserTeam $userTeam) {
+        return array_filter(array_map(function (UserTeam $userTeam) {
             return $userTeam->getTeam();
-        }, $this->userTeams->toArray());
+        }, $this->userTeams->toArray()));
     }
 
     public function equals(?User $user): bool
     {
         return null !== $user && $this->getId()->toString() === $user->getId()->toString();
+    }
+
+    public function getUserPersonalLists(): array
+    {
+        $lists = $this->getLists()->getChildLists()->toArray();
+        $lists[] = $this->getInbox();
+        $lists[] = $this->getTrash();
+
+        return $lists;
+    }
+
+    public function isOwnerByDirectory(?Directory $directory): bool
+    {
+        if (null === $directory) {
+            return false;
+        }
+
+        return $this->getInbox()->equals($directory)
+            || $this->getTrash()->equals($directory)
+            || $this->getLists()->equals($directory)
+            || $this->getLists()->hasChildListByDirectory($directory)
+        ;
+    }
+
+    public function getDefaultDirectory(): ?Directory
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('label', Directory::LIST_DEFAULT));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $directory = $this->getLists()->getChildLists()->matching($criteria)->first();
+
+        return $directory instanceof Directory ? $directory : null;
+    }
+
+    public function isIncomplete(): bool
+    {
+        return self::FLOW_STATUS_INCOMPLETE === $this->flowStatus;
+    }
+
+    /**
+     * @return Directory[]
+     */
+    public function getDirectories(): array
+    {
+        return $this->directories->toArray();
+    }
+
+    /**
+     * @param Directory[]|Collection $directories
+     */
+    public function setDirectories(Collection $directories): void
+    {
+        $this->directories = $directories;
+    }
+
+    public function addDirectory(Directory $directory): void
+    {
+        if (!$this->directories->contains($directory)) {
+            $this->directories->add($directory);
+            $directory->setUser($this);
+        }
+    }
+
+    public function getDirectoryByLabel(?string $label): ?Directory
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('label', $label));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $directory = $this->directories->matching($criteria)->first();
+
+        return $directory instanceof Directory ? $directory : null;
+    }
+
+    public function getHashEmail(): string
+    {
+        return (InvitationEncoder::initEncoder())->encode($this->getEmail());
+    }
+
+    public function canFinished(): bool
+    {
+        return $this->isGoogleAuthenticatorEnabled()
+            && User::FLOW_STATUS_INCOMPLETE === $this->getFlowStatus()
+            && $this->hasBackupCodes()
+        ;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getUsername();
     }
 }

@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "user": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": ["string", "null"]
+        },
+        "publicKey": {
+          "type": ["string", "null"]
+        },
+        "teamIds": {
+          "type": "array"
+        },
+        "domainRoles": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name",
+        "publicKey",
+        "teamIds",
+        "domainRoles"
+      ]
+    },
+    "directory": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "sort": {
+          "type": "integer"
+        },
+        "children": {
+          "type": "array"
+        },
+        "label": {
+          "type": "string"
+        },
+        "teamId": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "sort",
+        "children",
+        "label",
+        "teamId"
+      ]
+    },
+    "short_directory": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "teamId": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "label",
+        "teamId"
+      ]
+    },
+    "public_key": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId",
+        "publicKey",
+        "email"
+      ]
+    },
+    "keys": {
+      "type": "object",
+      "properties": {
+        "encryptedPrivateKey": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "encryptedPrivateKey",
+        "publicKey"
+      ]
+    }
+  }
+}

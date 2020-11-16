@@ -4,56 +4,38 @@ declare(strict_types=1);
 
 namespace App\Security\Voter;
 
-use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
-use App\Repository\UserTeamRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Symfony\Component\Security\Core\Security;
 
 final class UserTeamVoter extends Voter
 {
-    public const USER_TEAM_LEAVE = 'user_team_leave';
-    public const USER_TEAM_EDIT = 'user_team_edit';
-    public const USER_TEAM_VIEW = 'user_team_view';
-    public const USER_TEAM_REMOVE_MEMBER = 'user_team_remove_member';
+    public const INVITE = 'user_team_invite';
+    public const EDIT = 'user_team_edit';
+    public const ADD = 'user_team_add';
+    public const VIEW = 'user_team_view';
+    public const REMOVE = 'user_team_remove_member';
 
     private const ROLES_TO_VIEW = [
         UserTeam::USER_ROLE_ADMIN,
         UserTeam::USER_ROLE_MEMBER,
     ];
 
-    /**
-     * @var Security
-     */
-    private $security;
-    /**
-     * @var UserTeamRepository
-     */
-    private $userTeamRepository;
-
-    public function __construct(Security $security, UserTeamRepository $userTeamRepository)
-    {
-        $this->security = $security;
-        $this->userTeamRepository = $userTeamRepository;
-    }
+    public const AVAILABLE_ATTRIBUTES = [
+        self::INVITE,
+        self::EDIT,
+        self::ADD,
+        self::VIEW,
+        self::REMOVE,
+    ];
 
     /**
-     * Determines if the attribute and subject are supported by this voter.
-     *
-     * @param string $attribute An attribute
-     * @param mixed  $subject   The subject to secure, e.g. an object the user wants to access or any other PHP type
-     *
-     * @return bool True if the attribute and subject are supported, false otherwise
+     * {@inheritdoc}
      */
     protected function supports($attribute, $subject)
     {
-        if (!in_array($attribute, [self::USER_TEAM_LEAVE, self::USER_TEAM_EDIT, self::USER_TEAM_VIEW, self::USER_TEAM_REMOVE_MEMBER])) {
-            return false;
-        }
-
-        if (!$subject instanceof Team) {
+        if (!in_array($attribute, self::AVAILABLE_ATTRIBUTES)) {
             return false;
         }
 
@@ -61,37 +43,80 @@ final class UserTeamVoter extends Voter
     }
 
     /**
-     * Perform a single access check operation on a given attribute, subject and token.
-     * It is safe to assume that $attribute and $subject already passed the "supports()" method check.
-     *
-     * @param string $attribute
-     * @param Team   $subject
-     *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
-        $user = $this->security->getUser();
+        $user = $token->getUser();
         if (!$user instanceof User) {
             return false;
         }
 
-        $userTeam = $this->userTeamRepository->findOneByUserAndTeam($user, $subject);
+        if (self::VIEW === $attribute
+            && ($user->hasRole(User::ROLE_ADMIN) || $user->hasRole(User::ROLE_MANAGER))
+        ) {
+            return true;
+        }
 
-        if (!$userTeam instanceof UserTeam) {
+        if (!$subject instanceof UserTeam) {
             return false;
         }
 
         switch ($attribute) {
-            case self::USER_TEAM_REMOVE_MEMBER:
-            case self::USER_TEAM_EDIT:
-                return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole() || $user->hasRole(User::ROLE_ADMIN);
-            case self::USER_TEAM_VIEW:
-                return in_array($userTeam->getUserRole(), self::ROLES_TO_VIEW) || $user->hasRole(User::ROLE_ADMIN);
-            default:
-                return true;
+            case self::INVITE:
+                return $this->canInvite($subject, $user);
+            case self::REMOVE:
+                return $this->canRemove($subject, $user);
+            case self::EDIT:
+                return $this->canEdit($subject, $user);
+            case self::ADD:
+                return $this->canAdd($subject, $user);
+            case self::VIEW:
+                return $this->canView($subject, $user);
         }
+
+        return false;
+    }
+
+    private function canAdd(UserTeam $subject, User $user): bool
+    {
+        $userTeam = $subject->getTeam()->getUserTeamByUser($user);
+
+        return (null !== $userTeam && $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN))
+            || $user->hasRole(User::ROLE_ADMIN)
+        ;
+    }
+
+    private function canEdit(UserTeam $subject, User $user): bool
+    {
+        if ($subject->getUser()->hasRole(User::ROLE_ADMIN)) {
+            return false;
+        }
+
+        $userTeam = $subject->getTeam()->getUserTeamByUser($user);
+
+        return (null !== $userTeam && $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN))
+            || $user->hasRole(User::ROLE_ADMIN)
+        ;
+    }
+
+    private function canRemove(UserTeam $subject, User $user): bool
+    {
+        return $this->canEdit($subject, $user);
+    }
+
+    private function canView(UserTeam $userTeam, User $user): bool
+    {
+        return $user->hasRole(User::ROLE_MANAGER)
+            || $user->hasRole(User::ROLE_ADMIN)
+            || in_array($userTeam->getUserRole(), self::ROLES_TO_VIEW)
+        ;
+    }
+
+    private function canInvite(UserTeam $userTeam, User $user): bool
+    {
+        return $userTeam->hasRole(UserTeam::USER_ROLE_MEMBER)
+            || $user->hasRole(User::ROLE_ADMIN)
+        ;
     }
 }

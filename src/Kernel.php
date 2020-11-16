@@ -2,8 +2,6 @@
 
 namespace App;
 
-use App\DependencyInjection\Compiler\ShareFactoryContextCompilerPass;
-use App\DependencyInjection\Compiler\ViewFactoryContextCompilerPass;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Resource\FileResource;
@@ -45,8 +43,6 @@ class Kernel extends BaseKernel
         $container->setParameter('container.autowiring.strict_mode', true);
         $container->setParameter('container.dumper.inline_class_loader', true);
 
-        $container->addCompilerPass(new ViewFactoryContextCompilerPass());
-        $container->addCompilerPass(new ShareFactoryContextCompilerPass());
         $confDir = $this->getProjectDir().'/config';
 
         $loader->load($confDir.'/{packages}/*'.self::CONFIG_EXTS, 'glob');

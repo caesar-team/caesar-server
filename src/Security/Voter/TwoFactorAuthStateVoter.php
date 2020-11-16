@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Security\Voter;
 
 use App\Entity\User;
-use App\Security\Fingerprint\FingerprintManager;
+use App\Security\Fingerprint\FingerprintCheckerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Authentication\Token\JWTUserToken;
@@ -24,25 +24,19 @@ class TwoFactorAuthStateVoter extends Voter
         self::CREATE,
         self::CHECK,
     ];
-    /**
-     * @var FingerprintManager
-     */
-    private $fingerprintManager;
-    /**
-     * @var Security
-     */
-    private $security;
-    /**
-     * @var JWTEncoderInterface
-     */
-    private $encoder;
+
+    private FingerprintCheckerInterface $fingerprintChecker;
+
+    private Security $security;
+
+    private JWTEncoderInterface $encoder;
 
     public function __construct(
-        FingerprintManager $fingerprintManager,
+        FingerprintCheckerInterface $fingerprintChecker,
         Security $security,
         JWTEncoderInterface $encoder
     ) {
-        $this->fingerprintManager = $fingerprintManager;
+        $this->fingerprintChecker = $fingerprintChecker;
         $this->security = $security;
         $this->encoder = $encoder;
     }
@@ -66,27 +60,18 @@ class TwoFactorAuthStateVoter extends Voter
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
-        /** @var User $user */
         $user = $token->getUser();
+        if (!$user instanceof User) {
+            return false;
+        }
+
         switch ($attribute) {
             case self::SKIP:
-                if ($user->hasRole(User::ROLE_ANONYMOUS_USER) || !$user->isFullUser()) {
-                    return true;
-                }
-
-                return  $this->isCompleteJwt($user);
+                return $this->canSkip($user);
             case self::CREATE:
                 return !$user->isGoogleAuthenticatorEnabled();
             case self::CHECK:
-                if (
-                    $user->hasRole(User::ROLE_ANONYMOUS_USER)
-                    || !$user->isFullUser()
-                    || $this->fingerprintManager->hasValidFingerPrint($user)
-                ) {
-                    return false;
-                }
-
-                return true;
+                return $this->canCheck($user);
             default:
                 return false;
         }
@@ -106,5 +91,30 @@ class TwoFactorAuthStateVoter extends Voter
         }
 
         return false;
+    }
+
+    private function canSkip(User $user): bool
+    {
+        if ($user->hasRole(User::ROLE_ANONYMOUS_USER) || !$user->isFullUser()) {
+            return true;
+        }
+
+        if (!$user->isGoogleAuthenticatorEnabled()) {
+            return false;
+        }
+
+        return $this->isCompleteJwt($user);
+    }
+
+    private function canCheck(User $user): bool
+    {
+        if ($user->hasRole(User::ROLE_ANONYMOUS_USER)
+            || !$user->isFullUser()
+            || $this->fingerprintChecker->hasValidFingerprint($user)
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Security;
 
 use App\Entity\User;
-use App\Model\Event\AppEvents;
+use App\Event\User\RegistrationCompletedEvent;
 use App\Repository\UserRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Services\File\FileDownloader;
@@ -16,7 +16,6 @@ use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
 use HWI\Bundle\OAuthBundle\Security\Core\Exception\AccountNotLinkedException;
 use HWI\Bundle\OAuthBundle\Security\Core\User\FOSUBUserProvider as BaseUserProvider;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -85,7 +84,6 @@ class FOSUBUserProvider extends BaseUserProvider
                 $user->setUsername($response->getEmail());
                 $user->setEnabled(true);
                 if ($user instanceof User) {
-                    $this->groupManager->addTeamToUser($user);
                     $avatar = $this->downloader->createAvatarFromLink($response->getProfilePicture());
                     $user->setAvatar($avatar);
                 }
@@ -93,12 +91,11 @@ class FOSUBUserProvider extends BaseUserProvider
                 $this->userManager->updateCanonicalFields($user);
                 $this->userManager->updatePassword($user);
 
-                /**
-                 * @phpstan-ignore-next-line
-                 * @psalm-suppress InvalidArgument
-                 * @psalm-suppress TooManyArguments
-                 */
-                $this->eventDispatcher->dispatch(AppEvents::REGISTER_BY_GOOGLE, new GenericEvent($user));
+                if ($user instanceof  User) {
+                    $this->eventDispatcher->dispatch(
+                        new RegistrationCompletedEvent($user, RegistrationCompletedEvent::FROM_GOOGLE)
+                    );
+                }
             }
         }
 

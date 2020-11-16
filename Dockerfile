@@ -13,6 +13,8 @@ RUN apk --update add \
     gpgme \
     libzip-dev \
     postgresql-dev \
+    rabbitmq-c \
+    rabbitmq-c-dev \
     zip
 
 RUN docker-php-ext-install \
@@ -24,11 +26,11 @@ RUN docker-php-ext-install \
     zip \
     sockets
 
-RUN pecl install gnupg redis \
-    && docker-php-ext-enable redis
+RUN pecl install gnupg redis amqp \
+    && docker-php-ext-enable redis amqp
 
 # Composer part
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+COPY --from=composer:1 /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_MEMORY_LIMIT -1
 # ENV COMPOSER_ALLOW_SUPERUSER 1
 RUN composer global require hirak/prestissimo  --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-interaction --no-plugins --no-scripts
@@ -61,7 +63,7 @@ COPY tests/_scripts/init_db.sh /usr/local/bin
 COPY tests/_scripts/wait-for-it.sh /usr/local/bin
 
 COPY . .
-RUN composer install
+RUN APP_ENV=test composer install
 RUN vendor/bin/php-cs-fixer fix --config=.php_cs.dist -v --dry-run --using-cache=no
 
 RUN bash init_db.sh postgres & wait-for-it.sh 127.0.0.1:5432 -- echo "postgres is up" \
@@ -71,7 +73,7 @@ RUN bash init_db.sh postgres & wait-for-it.sh 127.0.0.1:5432 -- echo "postgres i
     && vendor/bin/codecept run api
 
 ## ---- Webpack Encore ----
-FROM node:8-alpine AS yarn-enc
+FROM node:10-alpine AS yarn-enc
 COPY . .
 RUN yarn install && yarn encore production
 ## ---- Dependencies ----

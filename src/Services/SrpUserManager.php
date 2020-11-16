@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Model\Request\LoginRequest;
-use App\Model\Request\SessionMatcher;
+use App\Model\DTO\SessionMatcher;
+use App\Request\Auth\LoginRequest;
 use Doctrine\ORM\EntityManagerInterface;
 
 class SrpUserManager

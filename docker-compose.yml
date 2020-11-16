@@ -1,60 +1,90 @@
-version: '3.2'
+version: "3.2"
 
 services:
-    php:
-        build: .
-        volumes:
-            - .:/var/www/html
-        expose:
-            - 9000
-        environment:
-            - PARENT_USER_ID
-            - APP_ENV
-        user: "$UID:$UID"
-        depends_on:
-            - db
-            - redis
-            - rabbitmq
-        entrypoint:
-            - "./entrypoint.sh"
-    nginx:
-        image: 4xxi/nginx:flex
-        depends_on:
-            - php
-        ports:
-            - "${SERVER_HTTP_PORT}:${SERVER_HTTP_PORT}"
-        volumes:
-            - .:/var/www/html
-            - ./var/log:/var/log/nginx
-    db:
-        image: "postgres:9"
-        ports:
-            - "${DATABASE_PORT}:${DATABASE_PORT}"
-        volumes:
-            - db:/var/lib/postgresql/data
-        environment:
-            - POSTGRES_DB
-            - POSTGRES_USER
-            - POSTGRES_PASSWORD
-    redis:
-        image: 'redis:5-alpine'
-        environment:
-            - REDIS_PORT=${REDIS_PORT}
-            - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
-        volumes:
-            - "redis:/etc/redis/database/caesarapp"
-    rabbitmq:
-        image: "rabbitmq:3-management-alpine"
-        environment:
-            - RABBITMQ_DEFAULT_USER
-            - RABBITMQ_DEFAULT_PASS
-            - RABBITMQ_VHOST
-        ports:
-          - "5672:5672"
-          - "15672:15672"
-        volumes:
-          - "rmq:/var/lib/rabbitmq"
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        APP_ENV: ${APP_ENV}
+        XDEBUG_REMOTE_HOST: ${XDEBUG_REMOTE_HOST}
+        XDEBUG_REMOTE_ENABLE: ${XDEBUG_REMOTE_ENABLE}
+        XDEBUG_REMOTE_AUTOSTART: ${XDEBUG_REMOTE_AUTOSTART}
+        XDEBUG_REMOTE_CONNECT_BACK: ${XDEBUG_REMOTE_CONNECT_BACK}
+        XDEBUG_IDEKEY: ${XDEBUG_IDEKEY}
+        XDEBUG_REMOTE_PORT: ${XDEBUG_REMOTE_PORT}
+        XDEBUG_PROFILER_ENABLE: ${XDEBUG_PROFILER_ENABLE}
+        XDEBUG_PROFILER_ENABLE_TRIGGER: ${XDEBUG_PROFILER_ENABLE_TRIGGER}
+    volumes:
+      - .:/var/www/html
+    expose:
+      - 9000
+    environment:
+      - PARENT_USER_ID
+      - APP_ENV
+      - PHP_IDE_CONFIG
+    user: "${UID}:${GID}"
+    depends_on:
+      - db
+      - db_test
+      - redis
+      - rabbitmq
+  nginx:
+    image: 4xxi/nginx:flex
+    depends_on:
+      - php
+    ports:
+      - "${SERVER_HTTP_PORT}:80"
+    volumes:
+      - .:/var/www/html
+      - ./var/log:/var/log/nginx
+  db:
+    image: "postgres:9"
+    ports:
+      - "${DATABASE_PORT}:${DATABASE_PORT}"
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+  db_test:
+    image: "postgres:9"
+    ports:
+      - "${TEST_DATABASE_PORT}:5432"
+    volumes:
+      - db_test:/var/lib/postgresql/data
+    environment:
+      - COMPOSER_AUTH
+      - POSTGRES_DB=${TEST_POSTGRES_DB}
+      - POSTGRES_USER=${TEST_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${TEST_POSTGRES_PASSWORD}
+  redis:
+    image: "redis:5-alpine"
+    environment:
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - 6379:6379
+    volumes:
+      - "redis:/etc/redis/database/caesarapp"
+  rabbitmq:
+    image: "rabbitmq:3-management-alpine"
+    environment:
+      - RABBITMQ_DEFAULT_USER
+      - RABBITMQ_DEFAULT_PASS
+      - RABBITMQ_VHOST
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - "rmq:/var/lib/rabbitmq"
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1080:8025"
 volumes:
-    db:
-    redis:
-    rmq:
+  db:
+  db_test:
+  redis:
+  rmq:

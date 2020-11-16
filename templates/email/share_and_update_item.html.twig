@@ -1,0 +1,5 @@
+{% extends 'email/layout.html.twig' %}
+
+{% block subject %}{{ 'mail.share_and_update.subject'|trans({'%app_name%': app_name})|raw }}{% endblock %}
+
+{% block body %}{{ 'mail.share_and_update.body'|trans({'%share_count%': share_count, '%update_count%': update_count, '%url%': url, '%app_name%': app_name})|raw }}{% endblock %}

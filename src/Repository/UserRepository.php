@@ -8,11 +8,10 @@ use App\Entity\Directory;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
-use App\Model\Query\UserQuery;
-use App\Model\Response\PaginatedList;
-use App\Traits\PaginatorTrait;
+use App\Model\Query\UserListQuery;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Ramsey\Uuid\Uuid;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -22,15 +21,22 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class UserRepository extends ServiceEntityRepository
 {
-    use PaginatorTrait;
-
     private DirectoryRepository $directoryRepository;
+    private array $domains;
 
-    public function __construct(ManagerRegistry $registry, DirectoryRepository $directoryRepository)
+    public function __construct(ManagerRegistry $registry, DirectoryRepository $directoryRepository, array $domains)
     {
         parent::__construct($registry, User::class);
 
         $this->directoryRepository = $directoryRepository;
+        $this->domains = $domains;
+    }
+
+    public function save(User $user): void
+    {
+        $this->_em->persist($user);
+        /** @psalm-suppress TooManyArguments */
+        $this->_em->flush($user);
     }
 
     /**
@@ -54,32 +60,6 @@ class UserRepository extends ServiceEntityRepository
         }
 
         return $this->directoryRepository->getUserByList($list);
-    }
-
-    public function getByQuery(UserQuery $query): PaginatedList
-    {
-        $teams = [];
-        foreach ($query->getUserTeams() as $userTeam) {
-            $teams[] = $userTeam->getTeam()->getId();
-        }
-        $queryBuilder = $this->createQueryBuilder('user');
-        $queryBuilder
-            ->join('user.userTeams', 'userTeams')
-            ->where($queryBuilder->expr()->neq('user', ':userId'))
-            ->andWhere('userTeams.team IN(:teams)')
-            ->andWhere($queryBuilder->expr()->isNotNull('user.publicKey'))
-            ->setParameter('teams', $teams)
-            ->setParameter('userId', $query->getUser())
-            ->setMaxResults($query->getPerPage())
-            ->setFirstResult($query->getFirstResult());
-
-        if ($query->name) {
-            $queryBuilder
-                ->andWhere('LOWER(user.username) LIKE :username')
-                ->setParameter('username', '%'.mb_strtolower($query->name).'%');
-        }
-
-        return $this->createPaginatedList($queryBuilder, $query);
     }
 
     /**
@@ -112,6 +92,23 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string[] $emails
+     *
+     * @return User[]
+     */
+    public function getUsersWithKeysByEmails(array $emails): array
+    {
+        $queryBuilder = $this->createQueryBuilder('user');
+
+        return $queryBuilder
+            ->where('LOWER(user.email) IN (:emails)')
+            ->setParameter('emails', array_map('mb_strtolower', $emails))
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findOneByEmail(string $email): ?User
@@ -140,10 +137,18 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array|User[]
+     * @return User[]
      */
     public function findByIds(array $ids): array
     {
+        $ids = array_filter($ids, static function (string $id) {
+            return Uuid::isValid($id);
+        });
+
+        if (empty($ids)) {
+            return [];
+        }
+
         $qb = $this->createQueryBuilder('user');
         $qb->where('user.id IN(:ids)');
         $qb->setParameter('ids', $ids);
@@ -167,13 +172,88 @@ class UserRepository extends ServiceEntityRepository
         return $queryBuilder->getQuery()->getResult();
     }
 
-    public function findAllExceptAnonymous(): array
+    public function findAllExceptAnonymous(?string $role = null): array
     {
         $queryBuilder = $this->createQueryBuilder('user');
         $queryBuilder
             ->andWhere('LOWER(user.roles) NOT LIKE :role')
             ->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%')
         ;
+
+        if (null !== $role) {
+            $queryBuilder
+                ->andWhere('LOWER(user.roles) LIKE :filter_role')
+                ->setParameter('filter_role', '%'.mb_strtolower($role).'%')
+            ;
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function getCountActiveUsers(): int
+    {
+        $queryBuilder = $this->createQueryBuilder('user');
+        $queryBuilder
+            ->select('COUNT(1)')
+            ->andWhere('LOWER(user.roles) NOT LIKE :role')
+            ->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%')
+        ;
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    public function findWithoutPublicKey(array $criteria): ?User
+    {
+        $queryBuilder = $this->createQueryBuilder('user');
+        $queryBuilder
+            ->where('user.publicKey IS NULL')
+            ->andWhere('LOWER(user.email) = :email')
+            ->setParameter('email', $criteria['email'] ?? '')
+        ;
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    public function findUsersByQuery(UserListQuery $query): array
+    {
+        $queryBuilder = $this->createQueryBuilder('user');
+
+        if (empty($query->getIds())) {
+            $queryBuilder
+                ->andWhere('LOWER(user.roles) NOT LIKE :role')
+                ->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%')
+            ;
+        }
+
+        if (null !== $query->getRole()) {
+            $queryBuilder
+                ->andWhere('LOWER(user.roles) LIKE :filter_role')
+                ->setParameter('filter_role', '%'.mb_strtolower($query->getRole()).'%')
+            ;
+        }
+
+        if (!empty($query->getIds())) {
+            $queryBuilder
+                ->andWhere('user.id IN(:ids)')
+                ->setParameter('ids', $query->getIds())
+            ;
+        }
+
+        if ($query->isDomain()) {
+            $domainQuery = [];
+            foreach ($this->domains as $domain) {
+                $domainQuery[] = $queryBuilder
+                    ->expr()
+                    ->like('user.email', $queryBuilder->expr()->literal('%@'.$domain))
+                ;
+            }
+
+            if (!empty($domainQuery)) {
+                $queryBuilder
+                    ->andWhere($queryBuilder->expr()->orX(...$domainQuery))
+                ;
+            }
+        }
 
         return $queryBuilder->getQuery()->getResult();
     }

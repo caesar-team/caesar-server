@@ -4,72 +4,81 @@ declare(strict_types=1);
 
 namespace App\Model\View\Team;
 
+use App\Entity\Team;
 use App\Entity\UserTeam;
+use JMS\Serializer\Annotation as Serializer;
+use Swagger\Annotations as SWG;
 
-final class MemberView
+class MemberView
 {
     /**
-     * @var string
+     * @SWG\Property(type="string", example="a68833af-ab0f-4db3-acde-fccc47641b9e")
      */
-    public $id;
+    private string $id;
 
     /**
-     * @var string
+     * @SWG\Property(type="string", example="a68833af-ab0f-4db3-acde-fccc47641b9e")
      */
-    public $email;
+    private string $userId;
 
     /**
-     * @var string|null
+     * @SWG\Property(type="string", enum=UserTeam::ROLES)
      */
-    public $avatar;
+    private string $teamRole;
 
     /**
-     * @var string|null
+     * @SWG\Property(type="string", example="a68833af-ab0f-4db3-acde-fccc47641b9e")
      */
-    public $publicKey;
+    private string $teamId;
 
     /**
-     * @var string
+     * @Serializer\Exclude
      */
-    public $name;
+    private ?UserTeam $userTeam;
 
-    /**
-     * @var string[]
-     */
-    public $teamIds;
-
-    /**
-     * @var string|null
-     */
-    public $role;
-
-    public static function create(UserTeam $userTeam): self
+    public function __construct(?UserTeam $currentUserTeam, Team $team)
     {
-        $view = new self();
-        $user = $userTeam->getUser();
-        $view->id = $user->getId()->toString();
-        $view->name = $user->getUsername();
-        $view->email = $user->getEmail();
-        $view->avatar = null === $user->getAvatar() ? null : $user->getAvatar()->getLink();
-        $view->publicKey = $user->getPublicKey();
-        $view->role = $userTeam->getUserRole();
-        $view->teamIds = $user->getTeamsIds();
-
-        return $view;
+        $this->userTeam = $currentUserTeam;
+        $this->teamId = $team->getId()->toString();
     }
 
-    /**
-     * @param array|UserTeam[] $usersTeams
-     *
-     * @return array|MemberView[]
-     */
-    public static function createMany(array $usersTeams): array
+    public function getId(): string
     {
-        $list = [];
-        foreach ($usersTeams as $usersTeam) {
-            $list[] = MemberView::create($usersTeam);
-        }
+        return $this->id;
+    }
 
-        return $list;
+    public function setId(string $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function setUserId(string $userId): void
+    {
+        $this->userId = $userId;
+    }
+
+    public function getUserId(): string
+    {
+        return $this->userId;
+    }
+
+    public function getTeamRole(): string
+    {
+        return $this->teamRole;
+    }
+
+    public function setTeamRole(string $teamRole): void
+    {
+        $this->teamRole = $teamRole;
+    }
+
+    public function getUserTeam(): ?UserTeam
+    {
+        return $this->userTeam;
+    }
+
+    public function getTeamId(): string
+    {
+        return $this->teamId;
     }
 }

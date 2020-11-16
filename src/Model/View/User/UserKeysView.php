@@ -4,37 +4,45 @@ declare(strict_types=1);
 
 namespace App\Model\View\User;
 
+use Hateoas\Configuration\Annotation as Hateoas;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Serializer\Annotation\Groups;
 
+/**
+ * @Hateoas\Relation(
+ *     "keys_save",
+ *     attributes={"method": "POST"},
+ *     href=@Hateoas\Route("api_keys_save")
+ * )
+ */
 class UserKeysView
 {
     /**
-     * @var string
-     * @SWG\Property(example="553d9b8d-fce0-4a53-8cba-f7d334160bc4")
-     * @Groups({"public"})
+     * @SWG\Property(type="string", example="asdfasdra34w56"))
      */
-    public $userId;
+    private ?string $encryptedPrivateKey;
 
     /**
-     * @var string|null
-     *
-     * @SWG\Property(example="asdfasdra34w56")
-     * @Groups({"key_detail_read"})
+     * @SWG\Property(type="string", example="asdfassdaaw46t4wesdra34w56")
      */
-    public $encryptedPrivateKey;
+    private ?string $publicKey;
 
-    /**
-     * @var string|null
-     *
-     * @SWG\Property(example="asdfassdaaw46t4wesdra34w56")
-     * @Groups({"key_detail_read", "public"})
-     */
-    public $publicKey;
+    public function getEncryptedPrivateKey(): ?string
+    {
+        return $this->encryptedPrivateKey;
+    }
 
-    /**
-     * @var string
-     * @Groups({"public"})
-     */
-    public $email;
+    public function setEncryptedPrivateKey(?string $encryptedPrivateKey): void
+    {
+        $this->encryptedPrivateKey = $encryptedPrivateKey;
+    }
+
+    public function getPublicKey(): ?string
+    {
+        return $this->publicKey;
+    }
+
+    public function setPublicKey(?string $publicKey): void
+    {
+        $this->publicKey = $publicKey;
+    }
 }

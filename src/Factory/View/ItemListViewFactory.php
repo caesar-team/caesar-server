@@ -6,20 +6,15 @@ namespace App\Factory\View;
 
 use App\Entity\Item;
 use App\Entity\User;
-use App\Model\View\CredentialsList\ItemView;
+use App\Factory\View\Item\ItemViewFactory;
+use App\Model\View\Item\ItemView;
 use Symfony\Component\Security\Core\Security;
 
 class ItemListViewFactory
 {
-    /**
-     * @var ItemViewFactory
-     */
-    private $secretViewFactory;
+    private ItemViewFactory $secretViewFactory;
 
-    /**
-     * @var User|null
-     */
-    private $currentUser;
+    private ?User $currentUser;
 
     public function __construct(ItemViewFactory $secretViewFactory, Security $security)
     {
@@ -40,11 +35,11 @@ class ItemListViewFactory
     {
         $viewCollection = [];
         foreach ($itemCollection as $item) {
-            if (!$item->getSignedOwner()->equals($this->currentUser)) {
+            if (!$item->getSignedOwner()->equals($this->currentUser) && null === $item->getTeam()) {
                 continue;
             }
 
-            $viewCollection[] = $this->secretViewFactory->create($item);
+            $viewCollection[] = $this->secretViewFactory->createSingle($item);
         }
 
         return $viewCollection;

@@ -14,26 +14,47 @@ class SecurityBootstrapView
     public const STATE_CHANGE = 'CHANGE';
 
     /**
-     * @var string
-     * @SWG\Property(example="SKIP|CREATE|CHECK")
+     * @SWG\Property(type="string", example="SKIP|CREATE|CHECK")
      */
-    public $twoFactorAuthState;
+    private string $twoFactorAuthState;
 
     /**
-     * @var string
-     * @SWG\Property(example="SKIP|CHANGE")
+     * @SWG\Property(type="string", example="SKIP|CHANGE")
      */
-    public $passwordState;
+    private string $passwordState;
 
     /**
-     * @var string
-     * @SWG\Property(example="CREATE|SKIP|CHANGE|CHECK_SHARED")
+     * @SWG\Property(type="string", example="CREATE|SKIP|CHANGE|CHECK_SHARED")
      */
-    public $masterPasswordState;
+    private string $masterPasswordState;
 
-    /**
-     * @var string
-     * @SWG\Property(example="SKIP|CHECK")
-     */
-    public $sharedItemsState;
+    public function getTwoFactorAuthState(): string
+    {
+        return $this->twoFactorAuthState;
+    }
+
+    public function setTwoFactorAuthState(string $twoFactorAuthState): void
+    {
+        $this->twoFactorAuthState = $twoFactorAuthState;
+    }
+
+    public function getPasswordState(): string
+    {
+        return $this->passwordState;
+    }
+
+    public function setPasswordState(string $passwordState): void
+    {
+        $this->passwordState = $passwordState;
+    }
+
+    public function getMasterPasswordState(): string
+    {
+        return $this->masterPasswordState;
+    }
+
+    public function setMasterPasswordState(string $masterPasswordState): void
+    {
+        $this->masterPasswordState = $masterPasswordState;
+    }
 }

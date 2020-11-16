@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\User;
+use App\Entity\UserTeam;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
@@ -44,5 +46,45 @@ class DirectoryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult()
         ;
+    }
+
+    public function getMovableListsByUser(User $user): array
+    {
+        $lists = array_merge($user->getUserPersonalLists(), $this->getTeamListsByUser($user));
+        $lists = array_filter($lists, static function (Directory $directory) {
+            return NodeEnumType::TYPE_LIST === $directory->getRole();
+        });
+
+        return array_values($lists);
+    }
+
+    public function getTeamListsByUser(User $user): array
+    {
+        $queryBuilder = $this->createQueryBuilder('list');
+        $queryBuilder
+            ->select('list')
+            ->innerJoin('list.team', 'team')
+            ->innerJoin('team.userTeams', 'user_teams')
+            ->where('list.team IS NOT NULL')
+            ->andWhere('user_teams.user = :user')
+            ->andWhere('user_teams.userRole IN (:roles)')
+            ->andWhere('list.parentList IS NOT NULL')
+            ->setParameter('user', $user)
+            ->setParameter('roles', [UserTeam::USER_ROLE_MEMBER, UserTeam::USER_ROLE_ADMIN])
+        ;
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function save(Directory $directory): void
+    {
+        $this->_em->persist($directory);
+        $this->_em->flush();
+    }
+
+    public function remove(Directory $directory): void
+    {
+        $this->_em->remove($directory);
+        $this->_em->flush();
     }
 }

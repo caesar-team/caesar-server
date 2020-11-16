@@ -9,8 +9,8 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(name="idx_fingerprint_string", columns={"string"})})
+ * @ORM\Entity(repositoryClass="App\Repository\FingerprintRepository")
+ * @ORM\Table(indexes={@ORM\Index(name="idx_fingerprint_string", columns={"fingerprint"})})
  */
 class Fingerprint
 {
@@ -23,11 +23,25 @@ class Fingerprint
     private $id;
 
     /**
+     * @var string|null
+     *
+     * @ORM\Column(nullable=true)
+     */
+    private $client;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(nullable=true)
+     */
+    private $lastIp;
+
+    /**
      * @var string
      *
      * @ORM\Column(type="string")
      */
-    private $string;
+    private $fingerprint;
 
     /**
      * @var \DateTimeImmutable
@@ -37,6 +51,13 @@ class Fingerprint
     private $createdAt;
 
     /**
+     * @var \DateTimeImmutable
+     *
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private $expiredAt;
+
+    /**
      * @var User
      *
      * @ORM\ManyToOne(targetEntity="User", inversedBy="fingerprints")
@@ -44,12 +65,10 @@ class Fingerprint
      */
     private $user;
 
-    public function __construct(User $user, string $string)
+    public function __construct()
     {
         $this->id = Uuid::uuid4();
         $this->createdAt = new \DateTimeImmutable();
-        $this->string = $string;
-        $this->user = $user;
     }
 
     public function getId(): UuidInterface
@@ -57,9 +76,34 @@ class Fingerprint
         return $this->id;
     }
 
-    public function getString(): string
+    public function getLastIp(): ?string
     {
-        return $this->string;
+        return $this->lastIp;
+    }
+
+    public function setLastIp(?string $lastIp): void
+    {
+        $this->lastIp = $lastIp;
+    }
+
+    public function getClient(): ?string
+    {
+        return $this->client;
+    }
+
+    public function setClient(?string $client): void
+    {
+        $this->client = $client;
+    }
+
+    public function getFingerprint(): string
+    {
+        return $this->fingerprint;
+    }
+
+    public function setFingerprint(string $fingerprint): void
+    {
+        $this->fingerprint = $fingerprint;
     }
 
     public function getUser(): User
@@ -67,8 +111,28 @@ class Fingerprint
         return $this->user;
     }
 
+    public function setUser(User $user): void
+    {
+        $this->user = $user;
+    }
+
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getExpiredAt(): \DateTimeImmutable
+    {
+        return $this->expiredAt;
+    }
+
+    public function setExpiredAt(\DateTimeImmutable $expiredAt): void
+    {
+        $this->expiredAt = $expiredAt;
+    }
+
+    public function isValidExpired(): bool
+    {
+        return $this->expiredAt >= new \DateTimeImmutable();
     }
 }

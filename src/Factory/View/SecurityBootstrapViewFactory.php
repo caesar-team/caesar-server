@@ -9,24 +9,15 @@ use App\Model\View\User\SecurityBootstrapView;
 use App\Repository\TeamRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Security\Voter\TwoFactorAuthStateVoter;
-use App\Utils\DirectoryHelper;
-use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class SecurityBootstrapViewFactory
 {
-    /**
-     * @var AuthorizationManager
-     */
-    private $authorizationManager;
-    /**
-     * @var TeamRepository
-     */
-    private $teamRepository;
-    /**
-     * @var AuthorizationCheckerInterface
-     */
-    private $authorizationChecker;
+    private AuthorizationManager $authorizationManager;
+
+    private TeamRepository $teamRepository;
+
+    private AuthorizationCheckerInterface $authorizationChecker;
 
     public function __construct(
         AuthorizationManager $authorizationManager,
@@ -38,17 +29,12 @@ class SecurityBootstrapViewFactory
         $this->authorizationChecker = $authorizationChecker;
     }
 
-    /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws JWTDecodeFailureException
-     */
-    public function create(User $user): SecurityBootstrapView
+    public function createSingle(User $user): SecurityBootstrapView
     {
         $securityBootstrapView = new SecurityBootstrapView();
-        $securityBootstrapView->twoFactorAuthState = $this->getTwoFactorAuthState($user);
-        $securityBootstrapView->passwordState = $this->getPasswordState($user);
-        $securityBootstrapView->masterPasswordState = $this->getMasterPasswordState($user);
-        $securityBootstrapView->sharedItemsState = $this->getSharedItemsStepState($user);
+        $securityBootstrapView->setTwoFactorAuthState($this->getTwoFactorAuthState($user));
+        $securityBootstrapView->setPasswordState($this->getPasswordState($user));
+        $securityBootstrapView->setMasterPasswordState($this->getMasterPasswordState($user));
 
         return $securityBootstrapView;
     }
@@ -70,9 +56,6 @@ class SecurityBootstrapViewFactory
         return SecurityBootstrapView::STATE_SKIP;
     }
 
-    /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
     private function getPasswordState(User $user): string
     {
         switch (true) {
@@ -89,9 +72,6 @@ class SecurityBootstrapViewFactory
         return $state;
     }
 
-    /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
     private function getMasterPasswordState(User $user): string
     {
         switch (true) {
@@ -105,26 +85,6 @@ class SecurityBootstrapViewFactory
             default:
                 $state = is_null($user->getEncryptedPrivateKey()) ? SecurityBootstrapView::STATE_CREATE : SecurityBootstrapView::STATE_CHECK;
                 break;
-        }
-
-        return $state;
-    }
-
-    /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    private function getSharedItemsStepState(User $user): string
-    {
-        switch (true) {
-            case $this->authorizationManager->hasInvitation($user) && SecurityBootstrapView::STATE_CREATE === $this->getMasterPasswordState($user):
-                $state = SecurityBootstrapView::STATE_CHECK;
-                break;
-            case $user->isFullUser():
-                $teams = $this->teamRepository->findByUser($user);
-                $state = DirectoryHelper::hasOfferedItems($user, $teams) ? SecurityBootstrapView::STATE_CHECK : SecurityBootstrapView::STATE_SKIP;
-                break;
-            default:
-                $state = SecurityBootstrapView::STATE_SKIP;
         }
 
         return $state;

@@ -7,64 +7,93 @@ namespace App\Controller\Api;
 use App\Controller\AbstractController;
 use App\Entity\Directory;
 use App\Entity\User;
-use App\Form\Request\CreateListType;
-use App\Form\Request\EditListType;
-use App\Form\Request\SortListType;
-use App\Security\ListVoter;
+use App\Factory\Entity\UserDirectoryFactory;
+use App\Factory\View\ListViewFactory;
+use App\Factory\View\ShortListViewFactory;
+use App\Form\Type\Request\User\CreateListRequestType;
+use App\Form\Type\Request\User\EditListRequestType;
+use App\Form\Type\Request\User\SortListRequestType;
+use App\Model\View\CredentialsList\ListView;
+use App\Model\View\CredentialsList\ShortListView;
+use App\Modifier\DirectoryModifier;
+use App\Repository\DirectoryRepository;
+use App\Request\User\CreateListRequest;
+use App\Request\User\EditListRequest;
+use App\Request\User\SortListRequest;
+use App\Security\Voter\ListVoter;
+use App\Security\Voter\TeamListVoter;
 use App\Services\ItemDisplacer;
 use Doctrine\ORM\EntityManagerInterface;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * @SWG\Response(
+ *     response=400,
+ *     description="Returns error",
+ *     @SWG\Schema(
+ *         type="object",
+ *         @SWG\Property(
+ *             type="object",
+ *             property="errors",
+ *             @SWG\Property(
+ *                 type="array",
+ *                 property="label",
+ *                 @SWG\Items(
+ *                     type="string",
+ *                     example="List with such label aleady exist"
+ *                 )
+ *             )
+ *         )
+ *     )
+ * )
+ * @SWG\Response(
+ *     response=401,
+ *     description="Unauthorized"
+ * )
+ */
 final class ListController extends AbstractController
 {
+    /**
+     * Get lists by user.
+     *
+     * @SWG\Tag(name="List")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Full list tree with items",
+     *     @SWG\Schema(type="array", @Model(type=ListView::class))
+     * )
+     *
+     * @Route(
+     *     path="/api/list",
+     *     name="api_list_tree",
+     *     methods={"GET"}
+     * )
+     *
+     * @return ListView[]
+     */
+    public function fullList(ListViewFactory $factory): array
+    {
+        return $factory->createCollection($this->getUser()->getUserPersonalLists());
+    }
+
     /**
      * @SWG\Tag(name="List")
      *
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\CreateListType::class)
+     *     @Model(type=CreateListRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Success item created",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="string",
-     *             property="id",
-     *             example="f553f7c5-591a-4aed-9148-2958b7d88ee5",
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns list creation error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="object",
-     *             property="errors",
-     *             @SWG\Property(
-     *                 type="array",
-     *                 property="label",
-     *                 @SWG\Items(
-     *                     type="string",
-     *                     example="List with such label aleady exist"
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
+     *     description="Success list created",
+     *     @Model(type=ListView::class)
      * )
      * @SWG\Response(
      *     response=403,
@@ -76,29 +105,27 @@ final class ListController extends AbstractController
      *     name="api_create_list",
      *     methods={"POST"}
      * )
-     *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     *
-     * @return FormInterface|JsonResponse
      */
-    public function createListAction(Request $request, EntityManagerInterface $manager)
-    {
-        $list = new Directory();
-        $form = $this->createForm(CreateListType::class, $list);
+    public function createListAction(
+        Request $request,
+        DirectoryRepository $repository,
+        UserDirectoryFactory $factory,
+        ListViewFactory $viewFactory
+    ): ListView {
+        $this->denyAccessUnlessGranted(ListVoter::CREATE);
 
-        $form->submit($request->request->all());
+        $createRequest = new CreateListRequest($this->getUser());
+
+        $form = $this->createForm(CreateListRequestType::class, $createRequest);
+        $form->submit($request->request->all(), false);
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
-        /** @var User $user */
-        $user = $this->getUser();
-        $list->setParentList($user->getLists());
-        $this->denyAccessUnlessGranted(ListVoter::EDIT, $list->getParentList());
 
-        $manager->persist($list);
-        $manager->flush();
+        $list = $factory->createFromRequest($createRequest);
+        $repository->save($list);
 
-        return JsonResponse::create(['id' => $list->getId()->toString()]);
+        return $viewFactory->createSingle($list);
     }
 
     /**
@@ -107,34 +134,12 @@ final class ListController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\EditListType::class)
+     *     @Model(type=EditListRequestType::class)
      * )
      * @SWG\Response(
-     *     response=204,
-     *     description="Success list edited",
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns list creation error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="object",
-     *             property="errors",
-     *             @SWG\Property(
-     *                 type="array",
-     *                 property="label",
-     *                 @SWG\Items(
-     *                     type="string",
-     *                     example="List with such label already exist"
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
+     *     response=200,
+     *     description="Success edited list of user",
+     *     @Model(type=ListView::class)
      * )
      * @SWG\Response(
      *     response=403,
@@ -151,24 +156,29 @@ final class ListController extends AbstractController
      *     methods={"PATCH"}
      * )
      */
-    public function editListAction(Directory $list, Request $request, EntityManagerInterface $manager): ?FormInterface
-    {
+    public function editListAction(
+        Request $request,
+        Directory $list,
+        ListViewFactory $viewFactory,
+        DirectoryModifier $modifier
+    ): ListView {
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
         if (null === $list->getParentList()) { //root list
             $message = $this->translator->trans('app.exception.cant_edit_root_list');
             throw new BadRequestHttpException($message);
         }
 
-        $form = $this->createForm(EditListType::class, $list);
+        $editRequest = new EditListRequest($list);
+
+        $form = $this->createForm(EditListRequestType::class, $editRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
-        $manager->persist($list);
-        $manager->flush();
+        $list = $modifier->modifyByRequest($editRequest);
 
-        return null;
+        return $viewFactory->createSingle($list);
     }
 
     /**
@@ -177,25 +187,6 @@ final class ListController extends AbstractController
      * @SWG\Response(
      *     response=204,
      *     description="Success list deleted"
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns list deletion error",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="array",
-     *             property="errors",
-     *             @SWG\Items(
-     *                 type="string",
-     *                 example="You can`t delete root list"
-     *             )
-     *         )
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
      * )
      * @SWG\Response(
      *     response=403,
@@ -216,7 +207,7 @@ final class ListController extends AbstractController
      */
     public function deleteListAction(Directory $list, ItemDisplacer $itemDisplacer, EntityManagerInterface $manager)
     {
-        $this->denyAccessUnlessGranted(ListVoter::DELETE_LIST, $list);
+        $this->denyAccessUnlessGranted(ListVoter::DELETE, $list);
 
         if (null === $list->getParentList()) { //root list
             $message = $this->translator->trans('app.exception.cant_delete_root_list');
@@ -239,19 +230,11 @@ final class ListController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\SortListType::class)
+     *     @Model(type=SortListRequestType::class)
      * )
      * @SWG\Response(
      *     response=204,
      *     description="List position changed",
-     * )
-     * @SWG\Response(
-     *     response=400,
-     *     description="Returns list creation error",
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
      * )
      * @SWG\Response(
      *     response=403,
@@ -268,23 +251,51 @@ final class ListController extends AbstractController
      *     methods={"PATCH"}
      * )
      */
-    public function sortList(Directory $list, Request $request, EntityManagerInterface $manager): ?FormInterface
+    public function sortList(Directory $list, Request $request, DirectoryModifier $modifier): void
     {
-        $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
+        if (null === $list->getTeam()) {
+            $this->denyAccessUnlessGranted(ListVoter::SORT, $list);
+        } else {
+            $this->denyAccessUnlessGranted(TeamListVoter::SORT, $list);
+        }
+
         if (null === $list->getParentList()) { //root list
             $message = $this->translator->trans('app.exception.cant_edit_root_list');
             throw new BadRequestHttpException($message);
         }
 
-        $form = $this->createForm(SortListType::class, $list);
+        $sortRequest = new SortListRequest($list);
+
+        $form = $this->createForm(SortListRequestType::class, $sortRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
-        $manager->persist($list);
-        $manager->flush();
+        $modifier->modifySortByRequest($sortRequest);
+    }
 
-        return null;
+    /**
+     * Get available to move lists.
+     *
+     * @SWG\Tag(name="List")
+     *
+     * @SWG\Response(
+     *     response=200,
+     *     description="Full list",
+     *     @SWG\Schema(type="array", @Model(type=ShortListView::class))
+     * )
+     *
+     * @Route(
+     *     path="/api/lists/movable",
+     *     name="api_list_movable",
+     *     methods={"GET"}
+     * )
+     *
+     * @return ShortListView[]
+     */
+    public function availableMoveLists(ShortListViewFactory $factory, DirectoryRepository $repository): array
+    {
+        return $factory->createCollection($repository->getMovableListsByUser($this->getUser()));
     }
 }

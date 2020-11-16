@@ -12,12 +12,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use LogicException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Table
  * @ORM\Entity(repositoryClass="App\Repository\DirectoryRepository")
- * @UniqueEntity(fields={"label"}, errorPath="label", message="list.create.label.already_exists")
  */
 class Directory
 {
@@ -37,7 +35,7 @@ class Directory
      * @var Collection|Directory[]
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList", cascade={"remove", "persist"})
-     * @ORM\OrderBy({"sort": "ASC"})
+     * @ORM\OrderBy({"sort": "ASC", "createdAt": "DESC"})
      */
     protected $childLists;
 
@@ -45,6 +43,7 @@ class Directory
      * @var Directory|null
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childLists")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      * @Gedmo\SortableGroup
      */
     protected $parentList;
@@ -53,7 +52,7 @@ class Directory
      * @var Collection|Item[]
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="parentList", cascade={"remove"})
-     * @ORM\OrderBy({"sort": "ASC", "lastUpdated": "DESC"})
+     * @ORM\OrderBy({"lastUpdated": "DESC"})
      */
     protected $childItems;
 
@@ -78,14 +77,63 @@ class Directory
      */
     protected $type = NodeEnumType::TYPE_LIST;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Team", inversedBy="directories")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+    private ?Team $team;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="directories")
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+    private ?User $user;
+
+    /**
+     * @var \DateTimeImmutable
+     *
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $createdAt;
+
+    /**
+     * @var User|null
+     *
+     * @ORM\OneToOne(targetEntity="App\Entity\User", mappedBy="inbox")
+     */
+    private $userInbox;
+
+    /**
+     * @var User|null
+     *
+     * @ORM\OneToOne(targetEntity="App\Entity\User", mappedBy="lists")
+     */
+    private $userLists;
+
+    /**
+     * @var User|null
+     *
+     * @ORM\OneToOne(targetEntity="App\Entity\User", mappedBy="trash")
+     */
+    private $userTrash;
+
+    /**
+     * @todo candidate to refactoring (inbox, trash, etc)
+     */
+    private string $role = NodeEnumType::TYPE_LIST;
+
     public function __construct(string $label = null)
     {
         $this->id = Uuid::uuid4();
+        $this->team = null;
+        $this->user = null;
+        $this->role = NodeEnumType::TYPE_LIST;
         $this->childLists = new ArrayCollection();
         $this->childItems = new ArrayCollection();
         if (null !== $label) {
             $this->label = $label;
         }
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public static function createTrash(): self
@@ -160,11 +208,17 @@ class Directory
         return $this->childLists;
     }
 
+    public function hasChildListByDirectory(Directory $directory): bool
+    {
+        return $this->childLists->contains($directory);
+    }
+
     public function addChildList(Directory $directory): void
     {
         if (false === $this->childLists->contains($directory)) {
             $this->childLists->add($directory);
             $directory->setParentList($this);
+            $directory->setUser($this->getUser());
         }
     }
 
@@ -186,6 +240,11 @@ class Directory
      */
     public function getLabel(): ?string
     {
+        // @todo remove after implemented inbox
+        if (null !== $this->getUserInbox()) {
+            return 'Shared with me';
+        }
+
         return $this->label;
     }
 
@@ -214,8 +273,137 @@ class Directory
         $this->sort = $sort;
     }
 
-    public function __toString()
+    public function equals(?Directory $directory): bool
     {
-        return $this->id->toString();
+        if (null === $directory) {
+            return false;
+        }
+
+        return $this->getId()->toString() === $directory->getId()->toString();
+    }
+
+    public function getRole(): string
+    {
+        return $this->role;
+    }
+
+    public function setRole(string $role): void
+    {
+        $this->role = $role;
+    }
+
+    public function getTeam(): ?Team
+    {
+        return $this->team;
+    }
+
+    public function setTeam(?Team $team): void
+    {
+        $this->team = $team;
+        $team->addDirectory($this);
+    }
+
+    public function isTeamTrashDirectory(): bool
+    {
+        $team = $this->getTeam();
+        if (null === $team) {
+            return false;
+        }
+
+        return $this->equals($team->getTrash());
+    }
+
+    public function isTeamDefaultDirectory(): bool
+    {
+        $team = $this->getTeam();
+        if (null === $team) {
+            return false;
+        }
+
+        return $this->equals($team->getDefaultDirectory());
+    }
+
+    public function getTeamRole(): string
+    {
+        if ($this->isTeamTrashDirectory()) {
+            return self::LIST_TRASH;
+        } elseif ($this->isTeamDefaultDirectory()) {
+            return self::LIST_DEFAULT;
+        }
+
+        return $this->getType();
+    }
+
+    public function getPersonalRole(): string
+    {
+        if (null !== $this->getUserInbox()) {
+            return self::LIST_INBOX;
+        } elseif (null !== $this->getUserTrash()) {
+            return self::LIST_TRASH;
+        } elseif (null !== $this->getUser() && $this->equals($this->getUser()->getDefaultDirectory())) {
+            return self::LIST_DEFAULT;
+        }
+
+        return $this->getType();
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): void
+    {
+        $this->createdAt = $createdAt;
+    }
+
+    public function getUserInbox(): ?User
+    {
+        return $this->userInbox;
+    }
+
+    public function setUserInbox(?User $userInbox): void
+    {
+        $this->userInbox = $userInbox;
+    }
+
+    public function getUserLists(): ?User
+    {
+        return $this->userLists;
+    }
+
+    public function setUserLists(?User $userLists): void
+    {
+        $this->userLists = $userLists;
+    }
+
+    public function getUserTrash(): ?User
+    {
+        return $this->userTrash;
+    }
+
+    public function setUserTrash(?User $userTrash): void
+    {
+        $this->userTrash = $userTrash;
+    }
+
+    public function __toString(): string
+    {
+        $type = 'personal';
+        if ($this->getTeam()) {
+            $type = 'team';
+        }
+
+        return sprintf('%s (%s)', $this->getLabel(), $type);
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): void
+    {
+        $this->user = $user;
     }
 }

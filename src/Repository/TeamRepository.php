@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\Directory;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Model\DTO\Vault;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
@@ -16,11 +17,17 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  * @method Team[]    findAll()
  * @method Team[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-final class TeamRepository extends ServiceEntityRepository
+class TeamRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Team::class);
+    }
+
+    public function save(Team $team): void
+    {
+        $this->getEntityManager()->persist($team);
+        $this->getEntityManager()->flush();
     }
 
     /**
@@ -36,11 +43,12 @@ final class TeamRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    public function findOneByDirectory(Directory $directory): ?Team
+    public function findOneByDirectory(?Directory $directory): ?Team
     {
+        if (null === $directory) {
+            return null;
+        }
+
         $qb = $this->createQueryBuilder('team');
         $qb->where('team.trash =:directory');
         $qb->setParameter('directory', $directory);
@@ -65,5 +73,29 @@ final class TeamRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    public function getDefaultTeam(): ?Team
+    {
+        return $this->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
+    }
+
+    public function getCountTeams(): int
+    {
+        $queryBuilder = $this
+            ->createQueryBuilder('team')
+            ->select('COUNT(team.id)')
+            ->where('team.alias != :alias OR team.alias IS NULL')
+            ->setParameter('alias', Team::DEFAULT_GROUP_ALIAS)
+        ;
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    public function saveVault(Vault $vault): void
+    {
+        $this->getEntityManager()->persist($vault->getTeam());
+        $this->getEntityManager()->persist($vault->getKeypair());
+        $this->getEntityManager()->flush();
     }
 }

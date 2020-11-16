@@ -9,12 +9,12 @@ use App\Model\View\Srp\PreparedSrpView;
 
 class SrpPrepareViewFactory
 {
-    public function create(Srp $srp): PreparedSrpView
+    public function createSingle(Srp $srp): PreparedSrpView
     {
         $view = new PreparedSrpView();
 
-        $view->publicEphemeralValue = $srp->getPublicServerEphemeralValue();
-        $view->seed = $srp->getSeed();
+        $view->setPublicEphemeralValue($srp->getPublicServerEphemeralValue());
+        $view->setSeed($srp->getSeed());
 
         return $view;
     }

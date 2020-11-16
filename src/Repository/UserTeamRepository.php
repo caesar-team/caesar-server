@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\DBAL\Types\Enum\NodeEnumType;
+use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
+use App\Model\DTO\Member;
+use App\Model\Query\MemberListQuery;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @method UserTeam|null find($id, $lockMode = null, $lockVersion = null)
@@ -26,20 +32,38 @@ class UserTeamRepository extends ServiceEntityRepository
     /**
      * @return array|UserTeam[]
      */
-    public function findMembers(Team $team, array $ids = []): array
+    public function findMembersByTeam(Team $team): array
     {
-        $qb = $this->createQueryBuilder('userTeam');
-        $qb->where('userTeam.team =:team');
-        $qb->andWhere('userTeam.userRole IN(:members)');
-        $qb->setParameter('team', $team);
-        $qb->setParameter('members', UserTeam::ROLES);
+        $queryBuilder = $this->getQueryBuilderByTeam($team);
 
-        if (0 < count($ids)) {
-            $qb->andWhere('userTeam.user IN(:ids)');
-            $qb->setParameter('ids', $ids);
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @return UserTeam[]
+     */
+    public function getMembersByQuery(MemberListQuery $query): array
+    {
+        $queryBuilder = $this->getQueryBuilderByTeam($query->getTeam());
+
+        if (!empty($query->getIds())) {
+            $queryBuilder
+                ->andWhere('userTeam.user IN(:ids)')
+                ->setParameter('ids', $query->getIds())
+            ;
         }
 
-        return $qb->getQuery()->getResult();
+        if ($query->isWithoutKeypair()) {
+            $queryBuilder
+                ->leftJoin(
+                    Item::class, 'item', Join::WITH,
+                    sprintf('item.team = userTeam.team AND item.owner = userTeam.user AND item.type = \'%s\'', NodeEnumType::TYPE_KEYPAIR)
+                )
+                ->andWhere('item.id IS NULL')
+            ;
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     public function remove(UserTeam $userTeam): void
@@ -67,5 +91,22 @@ class UserTeamRepository extends ServiceEntityRepository
     {
         $this->_em->persist($userTeam);
         $this->_em->flush();
+    }
+
+    public function saveMember(Member $member): void
+    {
+        $this->getEntityManager()->persist($member->getUserTeam());
+        $this->getEntityManager()->persist($member->getKeypair());
+        $this->getEntityManager()->flush();
+    }
+
+    private function getQueryBuilderByTeam(Team $team, string $alias = 'userTeam'): QueryBuilder
+    {
+        $queryBuilder = $this->createQueryBuilder($alias);
+        $queryBuilder->where(sprintf('%s.team =:team', $alias))
+            ->setParameter('team', $team)
+        ;
+
+        return $queryBuilder;
     }
 }

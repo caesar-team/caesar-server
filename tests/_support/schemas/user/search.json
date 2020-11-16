@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "publicKey": {
+        "type": ["string", "null"]
+      },
+      "avatar": {
+        "type": ["string", "null"]
+      },
+      "teamIds": {
+        "type": "array"
+      }
+    },
+    "required": [
+      "id",
+      "email",
+      "name",
+      "publicKey",
+      "avatar",
+      "teamIds"
+    ]
+  }
+}

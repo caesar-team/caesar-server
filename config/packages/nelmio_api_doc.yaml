@@ -1,7 +1,8 @@
 nelmio_api_doc:
+    models: { use_jms: true }
     areas:
         path_patterns:
-            - ^/api
+            - ^/api(?!/doc$)
     documentation:
         securityDefinitions:
             api_key:
@@ -15,11 +16,28 @@ nelmio_api_doc:
             title: Caesar app
             description: 'Crypto vault'
             version: 0.0.3
+        tags:
+            - name: Registration
+              description: ''
+            - name: User
+              description: ''
+            - name: Item
+              description: ''
+            - name: 'Item / Keypair'
+              description: ''
+            - name: 'Item / Favorite'
+              description: ''
+            - name: Team
+              description: ''
+            - name: 'Team / Member'
+              description: ''
+            - name: 'Team / List'
+              description: ''
         paths:
             /connect/google:
                 get:
                     tags:
-                        - register
+                        - Registration
                     description: Here is flow for auth through google ouath2 |
                         <div>1. From frontend go to <a href="#">/connect/google?redirect_uri=https://front_redirect_uri.com&fingerprint=as35t23t3eyt326t234ty</a></div>
                         <div>2. Redirect to https://accounts.google.com/o/oauth2/auth with get parameters(and ask user access first time)</div>

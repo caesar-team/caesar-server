@@ -1,4 +1,5 @@
 .idea
+docker-compose.override.yml
 
 ###> symfony/framework-bundle ###
 .env
@@ -33,4 +34,7 @@ yarn-error.log
 
 ###> tests ###
 !/tests/_envs
+codeception.yml
 ###< tests ###
+src/.preload.php
+.vscode/settings.json

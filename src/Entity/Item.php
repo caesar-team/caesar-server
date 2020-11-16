@@ -25,7 +25,7 @@ class Item implements ChildItemAwareInterface
     public const STATUS_FINISHED = 'finished';
     public const STATUS_OFFERED = 'offered';
     public const STATUS_DEFAULT = self::STATUS_FINISHED;
-    public const EXPIRATION_INTERVAL = '+ 1 day';
+
     /**
      * @var UuidInterface
      *
@@ -35,10 +35,10 @@ class Item implements ChildItemAwareInterface
     protected $id;
 
     /**
-     * @var Directory
+     * @var Directory|null
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childItems", cascade={"persist"}, fetch="EAGER")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     protected $parentList;
 
@@ -49,6 +49,13 @@ class Item implements ChildItemAwareInterface
      * @ORM\JoinColumn(nullable=true, referencedColumnName="id", onDelete="SET NULL")
      */
     protected $previousList;
+
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(type="text", nullable=true)
+     */
+    protected $title;
 
     /**
      * @var string|null
@@ -94,6 +101,13 @@ class Item implements ChildItemAwareInterface
     protected $favorite = false;
 
     /**
+     * @var array
+     *
+     * @ORM\Column(type="array", nullable=true)
+     */
+    protected $teamFavorite = [];
+
+    /**
      * @var Tag[]|Collection
      *
      * @ORM\ManyToMany(targetEntity="App\Entity\Tag", cascade={"persist"})
@@ -110,19 +124,6 @@ class Item implements ChildItemAwareInterface
      * @ORM\Column(type="AccessEnumType", nullable=true)
      */
     protected $access;
-
-    /**
-     * @var ItemUpdate|null
-     *
-     * @ORM\OneToOne(targetEntity="App\Entity\ItemUpdate", mappedBy="item", orphanRemoval=true, cascade={"persist"}, fetch="EXTRA_LAZY")
-     */
-    protected $update;
-
-    /**
-     * @var int
-     * @ORM\Column(type="integer", options={"default": 0}, nullable=false)
-     */
-    protected $sort = 0;
 
     /**
      * @var string|null
@@ -156,6 +157,21 @@ class Item implements ChildItemAwareInterface
     protected $team;
 
     /**
+     * @var Item|null
+     *
+     * @ORM\ManyToOne(targetEntity="App\Entity\Item", inversedBy="keyPairItems", cascade={"persist"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
+     */
+    protected $relatedItem;
+
+    /**
+     * @var Item[]|Collection
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="relatedItem")
+     */
+    protected $keyPairItems;
+
+    /**
      * Item constructor.
      *
      * @throws \Exception
@@ -166,8 +182,12 @@ class Item implements ChildItemAwareInterface
         $this->originalItem = null;
         $this->type = NodeEnumType::TYPE_CRED;
         $this->sharedItems = new ArrayCollection();
+        $this->keyPairItems = new ArrayCollection();
         $this->tags = new ArrayCollection();
         $this->owner = $user;
+        if (null !== $user) {
+            $this->parentList = $user->getDefaultDirectory();
+        }
     }
 
     public function getId(): UuidInterface
@@ -180,8 +200,13 @@ class Item implements ChildItemAwareInterface
         return $this->parentList;
     }
 
-    public function setParentList(Directory $parentList)
+    public function setParentList(?Directory $parentList)
     {
+        // Parent list could not null while create item
+        if (null === $parentList) {
+            return;
+        }
+
         $this->parentList = $parentList;
     }
 
@@ -214,6 +239,40 @@ class Item implements ChildItemAwareInterface
         return $this->originalItem;
     }
 
+    public function getOriginalItemId(): ?string
+    {
+        return null !== $this->originalItem ? $this->originalItem->getId()->toString() : null;
+    }
+
+    /**
+     * @return Item[]
+     */
+    public function getOwnerSharedItems(string $cause = Item::CAUSE_INVITE): array
+    {
+        $ownerItem = null !== $this->getOriginalItem() ? $this->getOriginalItem() : $this;
+
+        return $ownerItem->getSharedItems()
+            ->filter(function (ChildItemAwareInterface $childItem) use ($cause) {
+                return $cause === $childItem->getCause();
+            })
+            ->toArray()
+        ;
+    }
+
+    /**
+     * @return Item[]
+     */
+    public function getUniqueOwnerShareItems(string $cause = Item::CAUSE_INVITE): array
+    {
+        $uniqueUsers = [];
+        foreach ($this->getOwnerSharedItems($cause) as $childItem) {
+            $userId = $childItem->getSignedOwner()->getId()->toString();
+            $uniqueUsers[$userId] = $childItem;
+        }
+
+        return array_values($uniqueUsers);
+    }
+
     public function setOriginalItem(Item $originalItem): void
     {
         $this->originalItem = $originalItem;
@@ -242,6 +301,17 @@ class Item implements ChildItemAwareInterface
         $this->favorite = $favorite;
     }
 
+    public function toggleFavorite(User $user): void
+    {
+        if (null !== $this->getTeam()) {
+            $this->toggleTeamFavorite($user);
+
+            return;
+        }
+
+        $this->favorite = !$this->favorite;
+    }
+
     public function getType(): string
     {
         return $this->type;
@@ -250,6 +320,16 @@ class Item implements ChildItemAwareInterface
     public function setType(string $type): void
     {
         $this->type = $type;
+    }
+
+    public function isSystemType(): bool
+    {
+        return NodeEnumType::TYPE_SYSTEM === $this->type;
+    }
+
+    public function isKeyPairType(): bool
+    {
+        return NodeEnumType::TYPE_KEYPAIR === $this->type;
     }
 
     /**
@@ -290,26 +370,6 @@ class Item implements ChildItemAwareInterface
         $this->access = $access;
     }
 
-    public function getUpdate(): ?ItemUpdate
-    {
-        return $this->update;
-    }
-
-    public function setUpdate(?ItemUpdate $update): void
-    {
-        $this->update = $update;
-    }
-
-    public function getSort(): int
-    {
-        return $this->sort;
-    }
-
-    public function setSort(int $sort): void
-    {
-        $this->sort = $sort;
-    }
-
     public function getLink(): ?string
     {
         return $this->link;
@@ -345,6 +405,11 @@ class Item implements ChildItemAwareInterface
         return $this->previousList;
     }
 
+    public function getPreviousListId(): ?string
+    {
+        return null !== $this->previousList ? $this->previousList->getId()->toString() : null;
+    }
+
     public function setPreviousList(?Directory $previousList): void
     {
         $this->previousList = $previousList;
@@ -366,6 +431,10 @@ class Item implements ChildItemAwareInterface
 
     public function setOwner(?User $owner): void
     {
+        //Should not set owner as null
+        if (null === $owner && null !== $this->owner) {
+            return;
+        }
         $this->owner = $owner;
     }
 
@@ -374,8 +443,131 @@ class Item implements ChildItemAwareInterface
         return $this->team;
     }
 
+    public function getTeamId(): ?string
+    {
+        return null !== $this->team ? $this->team->getId()->toString() : null;
+    }
+
     public function setTeam(?Team $team): void
     {
         $this->team = $team;
+    }
+
+    public function getTeamFavorite(): array
+    {
+        /**
+         * @psalm-suppress RedundantConditionGivenDocblockType
+         * @psalm-suppress DocblockTypeContradiction
+         */
+        return null !== $this->teamFavorite ? $this->teamFavorite : [];
+    }
+
+    public function setTeamFavorite(array $teamFavorite): void
+    {
+        $this->teamFavorite = $teamFavorite;
+    }
+
+    public function toggleTeamFavorite(User $user): void
+    {
+        $teamFavorite = $this->getTeamFavorite();
+        if ($this->isTeamFavorite($user)) {
+            unset($teamFavorite[$user->getId()->toString()]);
+        } else {
+            $teamFavorite[$user->getId()->toString()] = $user->getId()->toString();
+        }
+
+        $this->setTeamFavorite($teamFavorite);
+    }
+
+    public function isTeamFavorite(User $user): bool
+    {
+        return in_array($user->getId()->toString(), $this->getTeamFavorite());
+    }
+
+    public function getRelatedItem(): ?Item
+    {
+        return $this->relatedItem;
+    }
+
+    public function setRelatedItem(?Item $relatedItem): void
+    {
+        $this->relatedItem = $relatedItem;
+    }
+
+    public function hasSystemItems(): bool
+    {
+        return 0 !== $this->keyPairItems->count();
+    }
+
+    /**
+     * @return Item[]
+     */
+    public function getKeyPairItems(): array
+    {
+        return $this->keyPairItems->toArray();
+    }
+
+    public function setKeyPairItems(Collection $sharedItems): void
+    {
+        $this->keyPairItems = $sharedItems;
+    }
+
+    public function getKeyPairItemByUser(User $user): ?Item
+    {
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         */
+        $systemItem = $this->keyPairItems->filter(function (Item $item) use ($user) {
+            return $item->getSignedOwner()->equals($user);
+        })->first();
+
+        return $systemItem instanceof Item ? $systemItem : null;
+    }
+
+    public function getKeyPairItemsWithoutRoot(): array
+    {
+        return $this->keyPairItems->filter(function (Item $item) {
+            return !$this->getOwner()->equals($item->getOwner());
+        })->toArray();
+    }
+
+    public function isNotDeletable(): bool
+    {
+        return NodeEnumType::TYPE_TRASH !== $this->getParentList()->getType()
+            && NodeEnumType::TYPE_KEYPAIR !== $this->getType()
+        ;
+    }
+
+    public function moveTo(Directory $directory): void
+    {
+        $this->setPreviousList($this->getParentList());
+        $this->setParentList($directory);
+        $this->setTeam($directory->getTeam());
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(?string $title): void
+    {
+        $this->title = $title;
+    }
+
+    public function getTeamKeypairGroupKey(): string
+    {
+        $groups = [];
+        if (null !== $this->team) {
+            $groups[] = $this->team->getId()->toString();
+        }
+        if (null !== $this->owner) {
+            $groups[] = $this->owner->getId()->toString();
+        }
+        if (null !== $this->relatedItem) {
+            $groups[] = $this->relatedItem->getId()->toString();
+        }
+
+        return implode('', $groups);
     }
 }

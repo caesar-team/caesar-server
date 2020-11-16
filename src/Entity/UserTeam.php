@@ -24,10 +24,10 @@ class UserTeam
     use TimestampableEntity;
 
     public const DEFAULT_USER_ROLE = self::USER_ROLE_MEMBER;
-    public const USER_ROLE_MEMBER = 'member';
-    public const USER_ROLE_ADMIN = 'admin';
-    public const USER_ROLE_GUEST = 'guest';
-    public const USER_ROLE_PRETENDER = 'pretender';
+    public const USER_ROLE_MEMBER = 'ROLE_MEMBER';
+    public const USER_ROLE_ADMIN = 'ROLE_ADMIN';
+    public const USER_ROLE_GUEST = 'ROLE_GUEST';
+    public const USER_ROLE_PRETENDER = 'ROLE_PRETENDER';
     public const ROLES = [
         self::USER_ROLE_MEMBER,
         self::USER_ROLE_ADMIN,
@@ -78,6 +78,12 @@ class UserTeam
         $this->user = $user;
         $this->team = $team;
         $this->userRole = $userRole;
+        if (null !== $user) {
+            $this->user->addUserTeam($this);
+        }
+        if (null !== $team) {
+            $this->team->addUserTeam($this);
+        }
     }
 
     public function getTeam(): ?Team
@@ -113,5 +119,15 @@ class UserTeam
     public function getId(): UuidInterface
     {
         return $this->id;
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $role === $this->userRole;
+    }
+
+    public function __toString(): string
+    {
+        return $this->getUser()->getUsername();
     }
 }

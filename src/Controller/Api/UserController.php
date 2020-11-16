@@ -4,237 +4,59 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
-use App\Context\ViewFactoryContext;
 use App\Controller\AbstractController;
 use App\Entity\Security\Invitation;
-use App\Entity\Srp;
-use App\Entity\Team;
 use App\Entity\User;
-use App\Entity\UserTeam;
+use App\Factory\Entity\UserFactory;
 use App\Factory\View\SecurityBootstrapViewFactory;
-use App\Factory\View\SelfUserInfoViewFactory;
-use App\Factory\View\UserKeysViewFactory;
-use App\Factory\View\UserListViewFactory;
-use App\Factory\View\UserSecurityInfoViewFactory;
-use App\Form\Query\UserQueryType;
-use App\Form\Request\CreateInvitedUserType;
-use App\Form\Request\Invite\PublicKeysRequestType;
-use App\Form\Request\SaveKeysType;
-use App\Form\Request\SendInvitesType;
-use App\Form\Request\SendInviteType;
+use App\Factory\View\User\UserViewFactory;
+use App\Form\Type\Request\Invite\SendInvitesType;
+use App\Form\Type\Request\Invite\SendInviteType;
+use App\Form\Type\Request\User\CreateBatchInvitedUserRequestType;
+use App\Form\Type\Request\User\CreateInvitedUserRequestType;
+use App\Invitation\InvitationReplacer;
+use App\Limiter\Inspector\UserCountInspector;
+use App\Limiter\LimiterInterface;
+use App\Limiter\Model\LimitCheck;
 use App\Mailer\MailRegistry;
-use App\Model\DTO\Message;
-use App\Model\Query\UserQuery;
-use App\Model\Request\PublicKeysRequest;
-use App\Model\Request\SendInviteRequest;
-use App\Model\Request\SendInviteRequests;
-use App\Model\View\User\SelfUserInfoView;
-use App\Model\View\User\UserKeysView;
+use App\Model\View\User\SecurityBootstrapView;
 use App\Model\View\User\UserView;
-use App\Repository\UserRepository;
-use App\Services\InvitationManager;
-use App\Services\Messenger;
-use App\Services\TeamManager;
+use App\Notification\MessengerInterface;
+use App\Notification\Model\Message;
+use App\Request\Invite\SendInviteRequest;
+use App\Request\Invite\SendInviteRequests;
+use App\Request\User\CreateBatchInvitedUserRequest;
+use App\Request\User\CreateInvitedUserRequest;
+use App\Security\Fingerprint\FingerprintRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use FOS\RestBundle\Controller\Annotations as Rest;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Psr\Log\LoggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Swagger\Annotations as SWG;
-use Symfony\Component\Form\FormInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 final class UserController extends AbstractController
 {
     /**
      * @SWG\Tag(name="User")
-     *
      * @SWG\Response(
      *     response=200,
-     *     description="User information response",
-     *     @Model(type="\App\Model\View\User\SelfUserInfoView")
+     *     description="Success user logout"
      * )
      * @SWG\Response(
      *     response=401,
      *     description="Unauthorized"
      * )
-     *
      * @Route(
-     *     path="/api/user/self",
-     *     name="api_user_get_info",
-     *     methods={"GET"}
-     * )
-     * @Rest\View(serializerGroups={"public"})
-     */
-    public function userInfo(SelfUserInfoViewFactory $viewFactory): ?SelfUserInfoView
-    {
-        $user = $this->getUser();
-
-        return $user ? $viewFactory->create($user) : null;
-    }
-
-    /**
-     * @SWG\Tag(name="Invitation")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="User public key",
-     *     @Model(type="App\Model\View\User\UserKeysView", groups={"public"})
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/key/{email}",
-     *     name="api_user_get_public_key",
-     *     methods={"GET"}
-     * )
-     * @Entity(
-     *     "user",
-     *     expr="repository.findByEmail(email)"
-     * )
-     * @Rest\View(serializerGroups={"public"})
-     */
-    public function publicKey(User $user, UserKeysViewFactory $viewFactory): ?UserKeysView
-    {
-        return $viewFactory->create($user);
-    }
-
-    /**
-     * @SWG\Tag(name="User")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="Users list",
-     *     @SWG\Schema(
-     *         type="array",
-     *         @Model(type="\App\Model\View\User\UserView")
-     *     )
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/user",
-     *     name="api_users_list",
-     *     methods={"GET"}
-     * )
-     *
-     * @return UserView[]|array|FormInterface
-     */
-    public function userList(Request $request, UserListViewFactory $factory, UserRepository $repository)
-    {
-        $userQuery = new UserQuery($this->getUser());
-
-        $form = $this->createForm(UserQueryType::class, $userQuery);
-        $form->submit($request->query->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        $userCollection = $repository->getByQuery($userQuery);
-
-        return $factory->create($userCollection);
-    }
-
-    /**
-     * @SWG\Tag(name="Keys")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="List of user keys",
-     *     @Model(type="\App\Model\View\User\UserKeysView", groups={"key_detail_read"})
-     * )
-     * @SWG\Response(
-     *     response=204,
-     *     description="User has no keys"
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/keys",
-     *     name="api_keys_list",
-     *     methods={"GET"}
-     * )
-     * @Rest\View(serializerGroups={"key_detail_read"})
-     *
-     * @return UserKeysView|null
-     */
-    public function keyList(UserKeysViewFactory $viewFactory)
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        return $viewFactory->create($user);
-    }
-
-    /**
-     * @SWG\Tag(name="Keys")
-     *
-     * @SWG\Parameter(
-     *     name="body",
-     *     in="body",
-     *     @Model(type=\App\Form\Request\SaveKeysType::class)
-     * )
-     * @SWG\Response(
-     *     response=204,
-     *     description="Success keys update",
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/keys",
-     *     name="api_keys_save",
+     *     path="/api/logout",
+     *     name="api_user_logout",
      *     methods={"POST"}
      * )
-     *
-     * @throws \Exception
-     *
-     * @return FormInterface|null
      */
-    public function saveKeys(Request $request, EntityManagerInterface $entityManager, TeamManager $teamManager)
+    public function logout(FingerprintRepositoryInterface $repository)
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        $form = $this->createForm(SaveKeysType::class, $user);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        /** @var User $oldUser */
-        $oldUser = $entityManager->getUnitOfWork()->getOriginalEntityData($user);
-        if (!$user->isFullUser()) {
-            $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
-        } else {
-            $this->setFlowStatusByPrivateKeys($oldUser, $user);
-        }
-
-        if ($user->isFullUser()) {
-            $this->removeInvitation($user, $entityManager);
-            $userTeam = $teamManager->findUserTeamByAlias($user, Team::DEFAULT_GROUP_ALIAS);
-            if (null !== $userTeam) {
-                $userTeam->setUserRole(UserTeam::USER_ROLE_MEMBER);
-            }
-        }
-
-        $entityManager->flush();
-
-        return null;
+        $repository->removeFingerprints($this->getUser());
     }
 
     /**
@@ -243,19 +65,12 @@ final class UserController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\CreateInvitedUserType::class)
+     *     @Model(type=CreateInvitedUserRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="Success user created update",
-     *     @SWG\Schema(
-     *         type="object",
-     *         @SWG\Property(
-     *             type="string",
-     *             property="user",
-     *             example="553d9b8d-fce0-4a53-8cba-f7d334160bc4"
-     *         )
-     *     )
+     *     description="Success user created or updated keys",
+     *     @Model(type=UserView::class)
      * )
      * @SWG\Response(
      *     response=401,
@@ -269,72 +84,35 @@ final class UserController extends AbstractController
      * )
      *
      * @throws \Exception
-     *
-     * @return array|FormInterface
      */
     public function createUser(
         Request $request,
-        UserRepository $userRepository,
+        UserFactory $factory,
+        UserViewFactory $viewFactory,
+        InvitationReplacer $invitationReplacer,
         EntityManagerInterface $entityManager,
-        TeamManager $teamManager
-    ) {
-        $user = $userRepository->findOneBy(['email' => $request->request->get('email')]);
-        if (null === $user) {
-            $user = new User(new Srp());
-        } elseif (null !== $user->getPublicKey()) {
-            $message = $this->translator->trans('app.exception.user_already_exists');
-            throw new BadRequestHttpException($message);
-        }
-
-        $form = $this->createForm(CreateInvitedUserType::class, $user);
+        LimiterInterface $limiter
+    ): UserView {
+        $createRequest = new CreateInvitedUserRequest();
+        $form = $this->createForm(CreateInvitedUserRequestType::class, $createRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
+        $user = $factory->createFromInvitedRequest($createRequest);
         if ($user->isFullUser()) {
-            $teamManager->addTeamToUser($user, UserTeam::USER_ROLE_PRETENDER);
-            $this->removeInvitation($user, $entityManager);
-            $invitation = new Invitation();
-            $invitation->setHash($user->getEmail());
-            $entityManager->persist($invitation);
+            $limiter->check([
+                new LimitCheck(UserCountInspector::class, 1),
+            ]);
+
+            $entityManager->persist($invitationReplacer->replaceByUser($user));
         }
 
         $entityManager->persist($user);
         $entityManager->flush();
 
-        return [
-            'user' => $user->getId()->toString(),
-        ];
-    }
-
-    /**
-     * @SWG\Tag(name="Security")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="User's permissions",
-     *     @Model(type="\App\Model\View\User\UserSecurityInfoView")
-     * )
-     * )
-     *
-     * @SWG\Response(
-     *     response=401,
-     *     description="Access denied"
-     * )
-     *
-     * @Route(
-     *     path="/api/user/permissions",
-     *     name="api_user_permissions",
-     *     methods={"GET"}
-     * )
-     */
-    public function permissions(UserSecurityInfoViewFactory $infoViewFactory): JsonResponse
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        return new JsonResponse($infoViewFactory->create($user));
+        return $viewFactory->createSingle($user);
     }
 
     /**
@@ -343,7 +121,7 @@ final class UserController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="User's security bootstrap",
-     *     @Model(type="\App\Model\View\User\SecurityBootstrapView")
+     *     @Model(type=SecurityBootstrapView::class)
      * )
      *
      * @SWG\Response(
@@ -356,16 +134,10 @@ final class UserController extends AbstractController
      *     name="api_user_security_bootstrap",
      *     methods={"GET"}
      * )
-     *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
      */
-    public function bootstrap(SecurityBootstrapViewFactory $bootstrapViewFactory): JsonResponse
+    public function bootstrap(SecurityBootstrapViewFactory $bootstrapViewFactory): SecurityBootstrapView
     {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        return new JsonResponse($bootstrapViewFactory->create($user));
+        return $bootstrapViewFactory->createSingle($this->getUser());
     }
 
     /**
@@ -397,25 +169,24 @@ final class UserController extends AbstractController
      *
      * @throws \Exception
      */
-    public function sendInvitation(Request $request, Messenger $messenger, LoggerInterface $logger): ?FormInterface
+    public function sendInvitation(Request $request, MessengerInterface $messenger, LoggerInterface $logger): void
     {
         $sendRequest = new SendInviteRequest();
 
         $form = $this->createForm(SendInviteType::class, $sendRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
-        $message = new Message($sendRequest->getUser()->getId()->toString(), $sendRequest->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
-            'url' => $sendRequest->getUrl(),
-        ]);
-        $messenger->send($sendRequest->getUser(), $message);
+        $messenger->send(Message::createFromUser(
+            $sendRequest->getUser(),
+            MailRegistry::INVITE_SEND_MESSAGE,
+            ['url' => $sendRequest->getUrl()]
+        ));
 
         $logger->debug('Registered in UserController::sendInvitation');
         $logger->debug(sprintf('Username: %s', $sendRequest->getUser()->getUsername()));
-
-        return null;
     }
 
     /**
@@ -435,234 +206,86 @@ final class UserController extends AbstractController
      *     description="Returns send mail errors",
      * )
      *
-     * @Route(
-     *     "/api/invitations",
-     *     name="api_send_invitations",
-     *     methods={"POST"}
-     * )
+     * @Route("/api/invitations", name="api_send_invitations", methods={"POST"})
      *
      * @throws \Exception
-     *
-     * @return FormInterface|null
      */
-    public function sendInvitations(Request $request, Messenger $messenger)
+    public function sendInvitations(Request $request, MessengerInterface $messenger): void
     {
         $sendRequests = new SendInviteRequests();
 
         $form = $this->createForm(SendInvitesType::class, $sendRequests);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
         foreach ($sendRequests->getMessages() as $requestMessage) {
-            $message = new Message($requestMessage->getUser()->getId()->toString(), $requestMessage->getUser()->getEmail(), MailRegistry::INVITE_SEND_MESSAGE, [
-                'url' => $requestMessage->getUrl(),
-            ]);
-            $messenger->send($requestMessage->getUser(), $message);
+            $messenger->send(Message::createFromUser(
+                $requestMessage->getUser(),
+                MailRegistry::INVITE_SEND_MESSAGE,
+                ['url' => $requestMessage->getUrl()]
+            ));
         }
-
-        return null;
     }
 
     /**
      * @SWG\Tag(name="Invitation")
+     *
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type="\App\Form\Request\Invite\PublicKeysRequestType")
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/key/batch",
-     *     methods={"POST"}
-     * )
-     * @Rest\View(serializerGroups={"public"})
-     *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     *
-     * @return array|FormInterface
-     */
-    public function batchPublicKeyAction(Request $request, UserKeysViewFactory $viewFactory, UserRepository $userRepository)
-    {
-        $keysRequest = new PublicKeysRequest();
-        $form = $this->createForm(PublicKeysRequestType::class, $keysRequest);
-        $form->submit($request->request->all());
-        if (!$form->isValid()) {
-            return $form;
-        }
-
-        $view = [];
-        foreach ($keysRequest->getEmails() as $email) {
-            if ($user = $userRepository->findOneWithPublicKeyByEmail($email)) {
-                $view[] = $viewFactory->create($user);
-            }
-        }
-
-        return $view;
-    }
-
-    /**
-     * @Route(
-     *     path="/api/user/batch",
-     *     methods={"POST"}
-     * )
-     *
-     * @throws \Exception
-     *
-     * @return array|FormInterface
-     */
-    public function batchCreateUser(
-        Request $request,
-        EntityManagerInterface $entityManager,
-        TeamManager $groupManager
-    ) {
-        $requestUsers = $request->request->get('users');
-        $users = [];
-        foreach ($requestUsers as $requestUser) {
-            $user = new User(new Srp());
-            $form = $this->createForm(CreateInvitedUserType::class, $user);
-            $form->submit($requestUser);
-
-            if (!$form->isValid()) {
-                return $form;
-            }
-
-            if ($user->isFullUser()) {
-                $groupManager->addTeamToUser($user, UserTeam::USER_ROLE_PRETENDER);
-                $this->removeInvitation($user, $entityManager);
-                $invitation = new Invitation();
-                $invitation->setHash($user->getEmail());
-                $entityManager->persist($invitation);
-            }
-
-            $entityManager->persist($user);
-            $users[] = $user->getId()->toString();
-        }
-
-        $entityManager->flush();
-
-        return ['users' => $users];
-    }
-
-    /**
-     * @SWG\Tag(name="User")
-     * @SWG\Parameter(
-     *     name="ids",
-     *     in="query",
-     *     description="users ids",
-     *     type="array",
-     *     @Model(type="App\Model\View\User\UserView")
+     *     @Model(type=CreateInvitedUserRequestType::class)
      * )
      * @SWG\Response(
      *     response=200,
-     *     description="List of users",
-     *     @SWG\Schema(
-     *         type="array",
-     *         @Model(type="App\Model\View\User\UserView")
-     *     )
+     *     description="Success user created update",
+     *     @SWG\Schema(type="array", @Model(type=UserView::class))
      * )
      * @SWG\Response(
      *     response=401,
      *     description="Unauthorized"
      * )
      *
-     * @Route(
-     *     path="/api/users",
-     *     methods={"GET"}
-     * )
+     * @Route(path="/api/user/batch", methods={"POST"}, name="api_user_batch_create")
      *
      * @return UserView[]
      */
-    public function users(Request $request, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext): array
-    {
-        $ids = $request->query->get('ids', []);
+    public function batchCreateUser(
+        Request $request,
+        UserFactory $factory,
+        UserViewFactory $viewFactory,
+        InvitationReplacer $invitationReplacer,
+        EntityManagerInterface $entityManager,
+        LimiterInterface $limiter
+    ): array {
+        $batchRequest = new CreateBatchInvitedUserRequest();
 
-        $users = 0 < count($ids) ? $userRepository->findByIds($ids) : $userRepository->findAllExceptAnonymous();
-
-        return $viewFactoryContext->viewList($users);
-    }
-
-    /**
-     * @SWG\Tag(name="User")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="User by email",
-     *     @Model(type="\App\Model\View\User\UserView", groups={"search_by_email"})
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/users/email/{email}",
-     *     methods={"GET"}
-     * )
-     * @Rest\View(serializerGroups={"search_by_email"})
-     *
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     *
-     * @return UserView|null
-     */
-    public function searchOneByEmail(string $email, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext)
-    {
-        $user = $userRepository->findOneByEmail($email);
-
-        return $user ? $viewFactoryContext->view($user) : null;
-    }
-
-    /**
-     * @SWG\Tag(name="User")
-     *
-     * @SWG\Response(
-     *     response=200,
-     *     description="User by part of email",
-     *     @Model(type="\App\Model\View\User\UserView", groups={"search_by_email"})
-     * )
-     * @SWG\Response(
-     *     response=401,
-     *     description="Unauthorized"
-     * )
-     *
-     * @Route(
-     *     path="/api/users/search/{partOfEmail}",
-     *     methods={"GET"}
-     * )
-     * @Rest\View(serializerGroups={"search_by_email"})
-     *
-     * @return UserView[]|array
-     */
-    public function autocompleteForEmail(string $partOfEmail, UserRepository $userRepository, ViewFactoryContext $viewFactoryContext): array
-    {
-        $users = $userRepository->findByPartOfEmail($partOfEmail);
-
-        return $viewFactoryContext->viewList($users);
-    }
-
-    private function setFlowStatus(string $currentFlowStatus): string
-    {
-        if (User::FLOW_STATUS_CHANGE_PASSWORD === $currentFlowStatus) {
-            return $currentFlowStatus;
+        $form = $this->createForm(CreateBatchInvitedUserRequestType::class, $batchRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            throw new FormInvalidRequestException($form);
         }
 
-        return User::FLOW_STATUS_FINISHED;
-    }
-
-    private function setFlowStatusByPrivateKeys($oldUser, User $user)
-    {
-        if ($oldUser['encryptedPrivateKey'] !== $user->getEncryptedPrivateKey()) {
-            $user->setFlowStatus($this->setFlowStatus($user->getFlowStatus()));
+        $users = [];
+        foreach ($batchRequest->getUsers() as $createRequest) {
+            $users[] = $factory->createFromInvitedRequest($createRequest);
         }
-    }
+        $fullUsers = array_filter($users, static function (User $user) {
+            return $user->isFullUser();
+        });
 
-    private function removeInvitation(User $user, EntityManagerInterface $entityManager)
-    {
-        InvitationManager::removeInvitation($user, $entityManager);
+        $limiter->check([
+            new LimitCheck(UserCountInspector::class, count($fullUsers)),
+        ]);
+
+        foreach ($fullUsers as $user) {
+            $entityManager->persist($invitationReplacer->replaceByUser($user));
+        }
+
+        array_map([$entityManager, 'persist'], $users);
+        $entityManager->flush();
+
+        return $viewFactory->createCollection($users);
     }
 }

@@ -9,6 +9,7 @@ mail.share.updated_item.message: 'You got update for your secure data. Follow th
 app.exception.update_user_password: 'You must update your password.'
 app.exception.delete_trash_only: 'You can fully delete item only from trash.'
 app.exception.item_has_no_update_to_accept: 'Item has no update to accept it.'
+app.exception.item_has_no_update_to_decline: 'Item has no update to decline it.'
 app.exception.cant_edit_root_list: 'You can`t edit root list.'
 app.exception.cant_delete_root_list: 'You can`t delete root list.'
 app.exception.user_not_found: 'No such user.'
@@ -19,6 +20,65 @@ app.exception.user_already_exists: 'User already exists.'
 app.exception.unavailable_request: 'Unavailable request: %route%.'
 mail.share.incomplete_authorization.message: "You may not have authorized by link yet"
 item.invite.user.already_invited: User already invited to this item
+limiter:
+  exception:
+    database_size: Free space in the database is reached. Contact your Administrator to expand it
+    item_count: Maximum number of items is reached. Contact your Administrator
+    team_count: Maximum number of teams is reached. Contact your Administrator
+    user_count: Maximum number of users is reached. Contact your Administrator
 admin:
   help:
     available_roles: 'Available roles: ROLE_USER, ROLE_ADMIN, ROLE_READ_ONLY_USER, ROLE_SUPER_ADMIN'
+
+mail:
+  resetting:
+    subject: Reset your password
+    body: |
+      <p>Hi!<br/>
+      Please click on this <a href="%confirmationUrl%" target="_blank">link</a> if you want to reset your current password!<br/>
+      If you did not request a password reset, please ignore this email.</p>
+  invite:
+    subject: You have been invited to join %app_name%
+    body: |
+      <p>Hi!<br/>
+      You've been invited to join %app_name%, a reliable system to store and manage your secrets.<br/>
+      Get started by creating an account for yourself.<br/>
+      Join <a href="%url%" target="_blank">%app_name%</a></p>
+  share:
+    subject: New %app_name% secrets are shared with you
+    body: |
+      <p>Hi!<br/>
+      You have %share_count% new secrets that have been shared with you.</p>
+      <p>If you do not want to see the secrets, you can reject them when you log into %app_name%.<br/>
+      After you log into %app_name% you will see accepted secrets in your Inbox.</p>
+
+      <p><a href="%url%" target="_blank">See what's new!</a></p>
+  update:
+    subject: You have updates on the %app_name% secrets
+    body: |
+      <p>Hi!<br/>
+      You have updates on %update_count% secrets that have been shared with you.<br/>
+      <a href="%url%" target="_blank">See what's new!</a></p>
+  share_and_update:
+    subject: You have new and updated %app_name% secrets
+    body: |
+      <p>Hi!<br/>
+      You have %share_count% new secrets and you have updates on %update_count% previously shared with you secrets.</p>
+
+      <p>If you do not want to see the secrets, you can reject them when you log into %app_name%.<br/>
+      After you log into %app_name% you will see accepted secrets in your Inbox.</p>
+
+      <p><a href="%url%" target="_blank">See what's new!</a></p>
+  add_user_to_team:
+    subject: You have been added to a team
+    body: |
+      <p>Hi!<br/>
+      You've been added to the team: %team_name%.<br/>
+      If you want to view and manage the team's secrets, you need to switch teams after logging in.<br/>
+      <a href="%url%" target="_blank">See what's new!</a></p>
+  new_registration:
+    subject: New users have been registered!
+    body: |
+      <p>Hi!</p>
+      <p>You have new users in the domain: %email%</p>
+      <p>Make sure to add them to the “<a href="%url%" target="_blank">%app_name%</a>” team.</p>

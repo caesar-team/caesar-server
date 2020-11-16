@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Utils\DefaultIcon;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Class Group.
@@ -24,11 +26,13 @@ use Ramsey\Uuid\UuidInterface;
  *         columns={"title"}),
  *     }
  * )
+ * @UniqueEntity(fields={"title"}, message="You already have a team with the same name. Choose another name.")
  */
 class Team
 {
     public const DEFAULT_GROUP_ALIAS = 'default';
     public const DEFAULT_GROUP_TITLE = 'Default';
+    public const OTHER_TYPE = 'other';
 
     /**
      * @var UuidInterface
@@ -91,6 +95,21 @@ class Team
     private $ownedItems;
 
     /**
+     * @var Collection|Directory[]
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="team", cascade={"persist"})
+     * @ORM\OrderBy({"sort": "ASC"})
+     */
+    protected $directories;
+
+    /**
+     * @var array
+     *
+     * @ORM\Column(type="array", nullable=true)
+     */
+    private $pinned = [];
+
+    /**
      * Group constructor.
      *
      * @throws \Exception
@@ -99,11 +118,8 @@ class Team
     {
         $this->id = Uuid::uuid4();
         $this->userTeams = new ArrayCollection();
-        $this->lists = Directory::createRootList();
-        $this->lists->addChildList(Directory::createDefaultList());
-        $this->trash = Directory::createTrash();
-        $this->icon = DefaultIcon::getDefaultIcon();
         $this->ownedItems = new ArrayCollection();
+        $this->directories = new ArrayCollection();
     }
 
     /**
@@ -112,6 +128,49 @@ class Team
     public function getUserTeams(): Collection
     {
         return $this->userTeams;
+    }
+
+    public function getUserTeamsWithoutPretender(): array
+    {
+        return $this->getUserTeams()->filter(static function (UserTeam $userTeam) {
+            return UserTeam::USER_ROLE_PRETENDER !== $userTeam->getUserRole();
+        })->toArray();
+    }
+
+    /**
+     * @return UserTeam[]
+     */
+    public function getAdminUserTeams(array $excludes = []): array
+    {
+        return $this->getUserTeams()->filter(static function (UserTeam $userTeam) use ($excludes) {
+            return UserTeam::USER_ROLE_ADMIN === $userTeam->getUserRole()
+                && !in_array($userTeam->getUser()->getId()->toString(), $excludes)
+            ;
+        })->toArray();
+    }
+
+    /**
+     * @return UserTeam[]
+     */
+    public function getMemberUserTeams(): array
+    {
+        return $this->getUserTeams()->filter(static function (UserTeam $userTeam) {
+            return UserTeam::USER_ROLE_MEMBER === $userTeam->getUserRole();
+        })->toArray();
+    }
+
+    public function getUserTeamByUser(?UserInterface $user): ?UserTeam
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('user', $user));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $userTeam = $this->userTeams->matching($criteria)->first();
+
+        return $userTeam instanceof UserTeam ? $userTeam : null;
     }
 
     public function addUserTeam(UserTeam $userTeam): void
@@ -180,6 +239,11 @@ class Team
         );
     }
 
+    public function setLists(Directory $lists): void
+    {
+        $this->lists = $lists;
+    }
+
     public function getLists(): Directory
     {
         return $this->lists;
@@ -219,5 +283,79 @@ class Team
     public function removeOwnedItem(Item $item): void
     {
         $this->ownedItems->removeElement($item);
+    }
+
+    /**
+     * @return Directory[]
+     */
+    public function getDirectories(): array
+    {
+        return $this->directories->toArray();
+    }
+
+    public function getDirectoryByLabel(?string $label): ?Directory
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('label', $label));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $directory = $this->directories->matching($criteria)->first();
+
+        return $directory instanceof Directory ? $directory : null;
+    }
+
+    /**
+     * @param Directory[]|Collection $directories
+     */
+    public function setDirectories(Collection $directories): void
+    {
+        $this->directories = $directories;
+    }
+
+    public function addDirectory(Directory $directory): void
+    {
+        if (!$this->directories->contains($directory)) {
+            $this->directories->add($directory);
+            $directory->setTeam($this);
+        }
+    }
+
+    public function getPinned(): array
+    {
+        /**
+         * @psalm-suppress RedundantConditionGivenDocblockType
+         * @psalm-suppress DocblockTypeContradiction
+         */
+        return null !== $this->pinned ? $this->pinned : [];
+    }
+
+    public function setPinned(array $pinned): void
+    {
+        $this->pinned = $pinned;
+    }
+
+    public function togglePinned(User $user, bool $pin = true): void
+    {
+        $pinned = $this->getPinned();
+        if ($this->hasPinned($user) && !$pin) {
+            unset($pinned[$user->getId()->toString()]);
+        } elseif (!$this->hasPinned($user) && $pin) {
+            $pinned[$user->getId()->toString()] = $user->getId()->toString();
+        }
+
+        $this->setPinned($pinned);
+    }
+
+    public function hasPinned(User $user): bool
+    {
+        return in_array($user->getId()->toString(), $this->getPinned());
+    }
+
+    public function isPinned(User $user): bool
+    {
+        return !in_array($user->getId()->toString(), $this->getPinned());
     }
 }

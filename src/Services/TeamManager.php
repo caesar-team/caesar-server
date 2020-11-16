@@ -34,20 +34,12 @@ class TeamManager
     public function addTeamToUser(User $user, string $role = UserTeam::DEFAULT_USER_ROLE, Team $team = null)
     {
         $team = $team ?: $this->findDefaultTeam();
+        if (null !== $user->getUserTeamByTeam($team)) {
+            return;
+        }
 
         $userTeam = new UserTeam($user, $team, $role);
         $this->entityManager->persist($userTeam);
-    }
-
-    private function findDefaultTeam(): Team
-    {
-        $team = $this->repository->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
-
-        if (is_null($team)) {
-            throw new LogicException('At least one team must exists');
-        }
-
-        return $team;
     }
 
     public function findUserTeamByAlias(User $user, string $alias): ?UserTeam
@@ -59,5 +51,16 @@ class TeamManager
         }
 
         return null;
+    }
+
+    private function findDefaultTeam(): Team
+    {
+        $team = $this->repository->findOneBy(['alias' => Team::DEFAULT_GROUP_ALIAS]);
+
+        if (is_null($team)) {
+            throw new LogicException('At least one team must exists');
+        }
+
+        return $team;
     }
 }

@@ -9,18 +9,11 @@ use App\Model\View\User\UserKeysView;
 
 class UserKeysViewFactory
 {
-    public function create(User $user): ?UserKeysView
+    public function createSingle(User $user): UserKeysView
     {
-        if (null === $user->getEncryptedPrivateKey() && null === $user->getPublicKey()) {
-            return null;
-        }
-
         $view = new UserKeysView();
-
-        $view->userId = $user->getId()->toString();
-        $view->encryptedPrivateKey = $user->getEncryptedPrivateKey();
-        $view->publicKey = $user->getPublicKey();
-        $view->email = $user->getEmail();
+        $view->setEncryptedPrivateKey($user->getEncryptedPrivateKey());
+        $view->setPublicKey($user->getPublicKey());
 
         return $view;
     }

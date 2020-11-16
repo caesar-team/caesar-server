@@ -14,6 +14,11 @@ class OAuthFailureHandler implements AuthenticationFailureHandlerInterface
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        return new RedirectResponse($request->getSession()->get('current_frontend_uri', '/'));
+        $url = $request->getSession()->get('current_frontend_uri', '/');
+        if (empty($url)) {
+            $url = '/';
+        }
+
+        return new RedirectResponse($url);
     }
 }

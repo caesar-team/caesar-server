@@ -6,8 +6,14 @@ namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
 use App\Entity\User;
-use App\Form\Request\TwoFactoryAuthEnableType;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Form\Type\Request\User\TwoFactoryAuthEnableRequestType;
+use App\Modifier\UserModifier;
+use App\Repository\UserRepository;
+use App\Request\User\TwoFactoryAuthEnableRequest;
+use App\Security\BackupCodes\BackupCodeCreator;
+use App\Security\TwoFactor\GoogleAuthenticator;
+use App\Security\Voter\BackupCodesVoter;
+use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use RuntimeException;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
@@ -28,7 +34,7 @@ final class TwoFactorAuthController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=\App\Form\Request\TwoFactoryAuthEnableType::class)
+     *     @Model(type=TwoFactoryAuthEnableRequestType::class)
      * )
      * @SWG\Response(
      *     response=201,
@@ -67,25 +73,24 @@ final class TwoFactorAuthController extends AbstractController
      *     name="api_security_2fa_activate",
      *     methods={"POST"}
      * )
-     *
-     * @return FormInterface|Response
      */
-    public function activateTwoFactor(Request $request, EntityManagerInterface $manager)
+    public function activateTwoFactor(Request $request, UserModifier $modifier): Response
     {
-        /** @var User $user */
         $user = $this->getUser();
         if ($user->getGoogleAuthenticatorSecret()) {
             return Response::create(null, Response::HTTP_CREATED);
         }
+        $user->setGoogleAuthenticatorSecret($request->get('secret'));
 
-        $form = $this->createForm(TwoFactoryAuthEnableType::class, $user);
+        $activateRequest = new TwoFactoryAuthEnableRequest($user);
+
+        $form = $this->createForm(TwoFactoryAuthEnableRequestType::class, $activateRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
-            return $form;
+            throw new FormInvalidRequestException($form);
         }
 
-        $manager->persist($user);
-        $manager->flush();
+        $modifier->modifyByRequest($activateRequest);
 
         return new Response();
     }
@@ -133,8 +138,15 @@ final class TwoFactorAuthController extends AbstractController
         $user = $this->getUser();
         $user->setGoogleAuthenticatorSecret($twoFactor->generateSecret());
 
+        if ($twoFactor instanceof GoogleAuthenticator) {
+            return new JsonResponse([
+                'qr' => $twoFactor->getUrl($user),
+                'code' => $user->getGoogleAuthenticatorSecret(),
+            ]);
+        }
+
         return new JsonResponse([
-            'qr' => $twoFactor->getUrl($user),
+            'qr' => $twoFactor->getQRContent($user),
             'code' => $user->getGoogleAuthenticatorSecret(),
         ]);
     }
@@ -227,11 +239,43 @@ final class TwoFactorAuthController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function getBackupCodes()
+    public function getBackupCodes(BackupCodeCreator $backupCodeCreator)
     {
         /** @var User $user */
         $user = $this->getUser();
+        $this->denyAccessUnlessGranted(BackupCodesVoter::GET, $user);
 
-        return new JsonResponse($user->getBackupCodes());
+        $codes = $backupCodeCreator->createAndSaveBackupCodes($user);
+
+        return new JsonResponse($codes);
+    }
+
+    /**
+     * Accept Backup codes.
+     *
+     * @SWG\Tag(name="Security")
+     *
+     * @SWG\Response(
+     *     response=204,
+     *     description="Accepted backupcodes",
+     * )
+     * @SWG\Response(
+     *     response=401,
+     *     description="Unauthorized"
+     * )
+     *
+     * @Route(
+     *     path="/api/auth/2fa/backups/accept",
+     *     name="api_security_2fa_backup_codes_accept",
+     *     methods={"POST"}
+     * )
+     */
+    public function accept(UserRepository $repository): void
+    {
+        $user = $this->getUser();
+        if ($user->canFinished()) {
+            $user->setFlowStatus(User::FLOW_STATUS_FINISHED);
+            $repository->save($user);
+        }
     }
 }

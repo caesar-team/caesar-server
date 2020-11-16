@@ -1,5 +1,6 @@
-imports:
-    - { resource: events.yaml }
+parameters:
+    'env(FINGERPRINT_LIFETIME)': 86400
+    'env(BACKUP_CODE_SALT)': ''
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -21,13 +22,6 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
-    App\Strategy\ViewFactory\:
-        resource: '../src/Strategy/ViewFactory'
-        tags: ['app.view_factory']
-
-    App\Strategy\ShareFactory\:
-        resource: '../src/Strategy/ShareFactory'
-        tags: ['app.share_factory']
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
@@ -39,10 +33,6 @@ services:
         arguments:
             $validUriCollection: '%frontend_uris%'
 
-    App\Controller\Admin\UserController:
-        arguments:
-            $userManager: '@fos_user.user_manager'
-
     App\Security\Voter\TwoFactorInProgressVoter:
         tags:
             - {name: security.voter, priority: 249 }
@@ -53,34 +43,30 @@ services:
             $authenticator: "@scheb_two_factor.security.google_authenticator"
             $formRenderer: "@scheb_two_factor.security.google.form_renderer"
 
-    mailer.rabbit_sender_adapter:
-        class: App\Mailer\RabbitMqMailerAdapter
-        arguments:
-            $producer: '@old_sound_rabbit_mq.send_message_producer'
-
     App\Mailer\Sender\MailSender:
         arguments:
-            - "@sylius.email_renderer.adapter"
-            - "@sylius.email_sender.adapter"
-            - "@sylius.email_provider"
-            - "@sylius.mailer.default_settings_provider"
+            - '@sylius.email_renderer.adapter'
+            - '@Sylius\Component\Mailer\Sender\Adapter\AdapterInterface'
+            - '@sylius.email_provider'
+            - '@sylius.mailer.default_settings_provider'
 
     Sylius\Component\Mailer\Sender\SenderInterface: '@App\Mailer\Sender\MailSender'
+    Sylius\Component\Mailer\Sender\Adapter\AdapterInterface: '@App\Mailer\Sender\Adapter\SwiftMailerAdapter'
 
     Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface: '@App\Security\TwoFactor\GoogleAuthenticator'
 
+    Sonata\GoogleAuthenticator\GoogleAuthenticator:
+        class: Sonata\GoogleAuthenticator\GoogleAuthenticator
+
     App\Security\TwoFactor\GoogleAuthenticator:
         arguments:
-            - "@scheb_two_factor.security.google"
+            - '@Sonata\GoogleAuthenticator\GoogleAuthenticator'
             - "%scheb_two_factor.google.server_name%"
             - "%scheb_two_factor.google.issuer%"
     app.fos_user_mailer:
         class: App\Mailer\FosUserMailer
     app.send_message_consumer:
         class: App\Consumer\SendMessageConsumer
-    App\Services\Messenger:
-        arguments:
-            $producer: '@old_sound_rabbit_mq.send_message_producer'
 
     FOS\UserBundle\Util\UserManipulator: ~
 
@@ -88,3 +74,107 @@ services:
         class: App\Services\SecurityMessage\Client
         arguments:
             - '@snc_redis.default'
+
+    App\EventSubscriber\System\PromoteAdminSubscriber:
+        arguments:
+            $domainAdminEmail: '%env(resolve:DOMAIN_ADMIN_EMAIL)%'
+
+    App\Notification\CompositeMessenger:
+        arguments:
+            - '@App\Notification\EmailSpoolMessenger'
+            - '@App\Notification\DatabaseMessenger'
+
+    App\Notification\MessengerInterface: '@App\Notification\CompositeMessenger'
+
+    App\Notification\MessageGrouper\MessageGrouperInterface: '@App\Notification\MessageGrouper\CompositeMessageGrouper'
+
+    App\Notification\MessageGrouper\CompositeMessageGrouper:
+        arguments:
+            - '@App\Notification\MessageGrouper\ShareMessageGrouper'
+            - '@App\Notification\MessageGrouper\UpdateMessageGrouper'
+            - '@App\Notification\MessageGrouper\ShareAndUpdateMessageGrouper'
+            - '@App\Notification\MessageGrouper\NewRegistrationMessageGrouper'
+            - '@App\Notification\MessageGrouper\DefaultMessageGrouper'
+
+    App\Limiter\Inspector\DatabaseSizeInspector:
+        arguments:
+            $databaseName: '%env(POSTGRES_DB)%'
+
+    App\Limiter\LimiterInspectorRegistry:
+        arguments:
+            - '@App\Limiter\Inspector\DatabaseSizeInspector'
+            - '@App\Limiter\Inspector\ItemCountInspector'
+            - '@App\Limiter\Inspector\TeamCountInspector'
+            - '@App\Limiter\Inspector\UserCountInspector'
+
+    App\Security\Authentication\TokenAuthenticator:
+        arguments:
+            $secret: '%env(JSON_RPC_SECRET)%'
+
+    App\JsonRpc\MappingCollector:
+        tags:
+            - { name: 'json_rpc_http_server.method_aware' }
+
+    App\JsonRpc\Method\ChangeUserKeysMethod:
+        tags:
+            - { method: 'changed-user-keys', name: 'json_rpc_http_server.jsonrpc_method' }
+
+    App\JsonRpc\Method\UpdateUserKeysMethod:
+        tags:
+            - { method: 'updated-user-keys', name: 'json_rpc_http_server.jsonrpc_method' }
+
+    App\JsonRpc\Method\UpdateSystemLimitMethod:
+        tags:
+            - { method: 'update-system-limit', name: 'json_rpc_http_server.jsonrpc_method' }
+    App\JsonRpc\Method\SystemLimitMethod:
+        tags:
+            - { method: 'system-limits', name: 'json_rpc_http_server.jsonrpc_method' }
+    App\JsonRpc\Method\AddSystemLimitMethod:
+        tags:
+            - { method: 'add-system-limit', name: 'json_rpc_http_server.jsonrpc_method' }
+
+    # Override provider because we can't use session if we use Authorization header
+    # Ignore TwoFactorProviderPreparationRecorder for google,
+    # because \Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorTwoFactorProvider::prepareAuthentication is not use
+    App\Security\Authentication\Provider\TwoFactorAuthenticationProvider:
+        arguments:
+            - ~
+            - ~
+            - '@scheb_two_factor.provider_registry'
+            - '@scheb_two_factor.backup_code_manager'
+            - '@scheb_two_factor.provider_preparation_recorder'
+
+    scheb_two_factor.security.authentication.provider: '@App\Security\Authentication\Provider\TwoFactorAuthenticationProvider'
+
+    App\Security\Fingerprint\FingerprintExtractorInterface: '@App\Security\Fingerprint\Extractor\CompositeExtractor'
+
+    App\Security\Fingerprint\Extractor\CompositeExtractor:
+        arguments:
+            - '@App\Security\Fingerprint\Extractor\HeaderExtractor'
+            - '@App\Security\Fingerprint\Extractor\QueryExtractor'
+            - '@App\Security\Fingerprint\Extractor\SessionExtractor'
+
+    App\Factory\Entity\FingerprintFactory:
+        arguments:
+            $lifetime: '%env(int:FINGERPRINT_LIFETIME)%'
+
+    App\Security\BackupCodes\NativeBackupCodesEncoder:
+        arguments:
+            $salt: '%env(BACKUP_CODE_SALT)%'
+            $hashLength: '%env(BACKUP_CODE_HASH_LENGTH)%'
+
+    App\Normalizer\InvalidRequestExceptionNormalizer:
+        decorates: Fourxxi\RestRequestError\Serializer\InvalidRequestExceptionNormalizer
+        arguments:
+            - '@App\Normalizer\InvalidRequestExceptionNormalizer.inner'
+        tags:
+            - { name: 'serializer.normalizer' }
+
+    App\EventSubscriber\Doctrine\FileListener:
+        arguments: [ '%kernel.project_dir%' ]
+        tags:
+            - { name: doctrine.orm.entity_listener }
+
+    App\Repository\UserRepository:
+        arguments:
+            $domains: '%env(csv:OAUTH_ALLOWED_DOMAINS)%'

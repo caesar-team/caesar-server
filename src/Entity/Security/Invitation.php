@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity\Security;
 
-use App\Security\AuthorizationManager\InvitationEncoder;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Ramsey\Uuid\Uuid;
@@ -56,10 +55,9 @@ class Invitation
         return $this->hash;
     }
 
-    public function setHash(string $email): void
+    public function setHash(string $hash): void
     {
-        $encoder = InvitationEncoder::initEncoder();
-        $this->hash = $encoder->encode($email);
+        $this->hash = $hash;
     }
 
     public function getShelfLife(): string

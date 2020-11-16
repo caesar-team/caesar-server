@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "list": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "sort": {
+          "type": "integer"
+        },
+        "label": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "teamId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "sort",
+        "label",
+        "children",
+        "teamId"
+      ]
+    },
+    "team_short_member": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "role"
+      ]
+    },
+    "team_member": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "teamId": {
+          "type": "string"
+        },
+        "teamRole": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "teamId",
+        "teamRole"
+      ]
+    },
+    "team": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/team_member"
+          }
+        },
+        "icon": {
+          "type": ["string", "null"]
+        },
+        "type": {
+          "type": "string"
+        },
+        "pinned": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "members",
+        "icon",
+        "type",
+        "pinned"
+      ]
+    },
+    "user_team": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": ["string", "null"]
+        },
+        "teamRole": {
+          "type": ["string", "null"]
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "icon": {
+          "type": ["string", "null"]
+        },
+        "pinned": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "type",
+        "teamRole",
+        "createdAt",
+        "updatedAt",
+        "icon",
+        "pinned"
+      ]
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": ["string", "null"]
+        },
+        "publicKey": {
+          "type": ["string", "null"]
+        },
+        "teamIds": {
+          "type": "array"
+        },
+        "domainRoles": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name",
+        "publicKey",
+        "teamIds",
+        "domainRoles"
+      ]
+    }
+  }
+}
