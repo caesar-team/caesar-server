@@ -73,6 +73,13 @@ class Item implements ChildItemAwareInterface
     protected $meta;
 
     /**
+     * @var string|null
+     *
+     * @ORM\Column(type="text", nullable=true)
+     */
+    protected $raws;
+
+    /**
      * @var string
      *
      * @ORM\Column(type="string", options={"default": \App\DBAL\Types\Enum\NodeEnumType::TYPE_CRED})
@@ -237,6 +244,16 @@ class Item implements ChildItemAwareInterface
     public function setMeta(ItemMeta $meta): void
     {
         $this->meta = $meta;
+    }
+
+    public function setRaws(?string $raws): void
+    {
+        $this->raws = $raws;
+    }
+
+    public function getRaws(): ?string
+    {
+        return $this->raws;
     }
 
     public function getLastUpdated(): DateTime

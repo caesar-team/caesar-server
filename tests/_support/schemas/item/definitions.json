@@ -137,6 +137,21 @@
         "previousListId"
       ]
     },
+    "item_raw": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "raws": {
+          "type": ["null", "string"]
+        }
+      },
+      "required": [
+        "id",
+        "raws"
+      ]
+    },
     "list": {
       "type": "object",
       "properties": {

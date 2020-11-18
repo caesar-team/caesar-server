@@ -35,6 +35,8 @@ final class CreateItemRequest
      */
     private ?string $secret;
 
+    private ?string $raws;
+
     private bool $favorite;
 
     private array $tags;
@@ -50,6 +52,7 @@ final class CreateItemRequest
         $this->secret = null;
         $this->favorite = false;
         $this->meta = new ItemMetaRequest();
+        $this->raws = null;
         $this->tags = [];
     }
 
@@ -141,5 +144,15 @@ final class CreateItemRequest
     public function setMeta(ItemMetaRequest $meta): void
     {
         $this->meta = $meta;
+    }
+
+    public function getRaws(): ?string
+    {
+        return $this->raws;
+    }
+
+    public function setRaws(?string $raws): void
+    {
+        $this->raws = $raws;
     }
 }
