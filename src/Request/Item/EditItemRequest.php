@@ -27,6 +27,8 @@ final class EditItemRequest
      */
     private ItemMetaRequest $meta;
 
+    private ?string $raws;
+
     private array $tags;
 
     private Item $item;
@@ -41,6 +43,7 @@ final class EditItemRequest
         $this->meta = new ItemMetaRequest();
         $this->meta->setAttachCount($item->getMeta()->getAttachCount());
         $this->meta->setWebSite($item->getMeta()->getWebSite());
+        $this->raws = $item->getRaws();
     }
 
     public function getOwner(): ?User
@@ -96,5 +99,15 @@ final class EditItemRequest
     public function setMeta(ItemMetaRequest $meta): void
     {
         $this->meta = $meta;
+    }
+
+    public function getRaws(): ?string
+    {
+        return $this->raws;
+    }
+
+    public function setRaws(?string $raws): void
+    {
+        $this->raws = $raws;
     }
 }

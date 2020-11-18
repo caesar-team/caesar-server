@@ -53,6 +53,7 @@ class ItemFactory
             $request->getMeta()->getAttachCount() ?: 0,
             $request->getMeta()->getWebSite()
         ));
+        $item->setRaws($request->getRaws());
 
         return $item;
     }

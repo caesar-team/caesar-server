@@ -35,6 +35,11 @@ class ItemTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/item.json'));
+
+        $I->sendGET(sprintf('/items/%s/raws', $item->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/item_raw.json'));
     }
 
     /** @test */
@@ -210,6 +215,7 @@ class ItemTest extends Unit
             'meta' => [
                 'attachCount' => 2,
             ],
+            'raws' => uniqid(),
             'tags' => ['tag'],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
@@ -247,6 +253,7 @@ class ItemTest extends Unit
                 'attachCount' => 3,
                 'webSite' => 'http://examle.com/login',
             ],
+            'raws' => uniqid(),
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 

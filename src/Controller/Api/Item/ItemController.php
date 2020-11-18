@@ -8,6 +8,7 @@ use App\Controller\AbstractController;
 use App\Entity\Item;
 use App\Factory\Entity\ItemFactory;
 use App\Factory\View\Item\BatchItemViewFactory;
+use App\Factory\View\Item\ItemRawsViewFactory;
 use App\Factory\View\Item\ItemViewFactory;
 use App\Form\Type\Request\Item\CreateBatchItemsRequestType;
 use App\Form\Type\Request\Item\CreateBatchKeypairsRequestType;
@@ -19,6 +20,7 @@ use App\Limiter\Model\LimitCheck;
 use App\Model\DTO\GroupedUserItems;
 use App\Model\Query\ItemsAllQuery;
 use App\Model\View\Item\BatchItemsView;
+use App\Model\View\Item\ItemRawsView;
 use App\Model\View\Item\ItemView;
 use App\Repository\ItemRepository;
 use App\Request\Item\CreateBatchItemsRequest;
@@ -83,6 +85,32 @@ final class ItemController extends AbstractController
                 )
             )
         );
+    }
+
+    /**
+     * Get single raws item.
+     *
+     * @SWG\Tag(name="Item")
+     * @SWG\Response(
+     *     response=200,
+     *     description="Item data",
+     *     @Model(type=ItemRawsView::class)
+     * )
+     *
+     * @SWG\Response(
+     *     response=404,
+     *     description="No such item"
+     * )
+     *
+     * @Route(
+     *     path="/{id}/raws",
+     *     name="api_show_item_raws",
+     *     methods={"GET"}
+     * )
+     */
+    public function raws(Item $item, ItemRawsViewFactory $factory): ItemRawsView
+    {
+        return $factory->createSingle($item);
     }
 
     /**
