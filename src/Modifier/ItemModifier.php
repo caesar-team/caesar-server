@@ -34,6 +34,7 @@ class ItemModifier
             $request->getMeta()->getAttachCount() ?: 0,
             $request->getMeta()->getWebSite()
         ));
+        $item->setRaws($request->getRaws());
         $item->setTitle($request->getTitle());
         $item->setTags(new ArrayCollection($this->transformer->transform($request->getTags())));
         $this->repository->save($item);

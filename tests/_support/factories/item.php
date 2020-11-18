@@ -12,6 +12,7 @@ $fm->define(Item::class)->setDefinitions([
     'parent_list' => 'entity|'.Directory::class,
     'secret' => Faker::word(),
     'title' => Faker::word(),
+    'raws' => Faker::word(),
     'original_item_id' => null,
     'favorite' => false,
     'type' => NodeEnumType::TYPE_CRED,
