@@ -24,7 +24,6 @@ class EditItemRequestType extends AbstractType
                 'choice_value' => 'id',
                 'property_path' => 'owner',
             ])
-            ->add('title', TextType::class)
             ->add('secret', TextType::class)
             ->add('raws', TextType::class)
             ->add('meta', ItemMetaType::class)

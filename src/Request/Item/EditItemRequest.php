@@ -15,11 +15,6 @@ final class EditItemRequest
     /**
      * @Assert\NotBlank()
      */
-    private ?string $title;
-
-    /**
-     * @Assert\NotBlank()
-     */
     private ?string $secret;
 
     /**
@@ -37,12 +32,12 @@ final class EditItemRequest
     {
         $this->tags = $item->getTags()->toArray();
         $this->secret = $item->getSecret();
-        $this->title = $item->getTitle();
         $this->owner = $item->getSignedOwner();
         $this->item = $item;
         $this->meta = new ItemMetaRequest();
-        $this->meta->setAttachCount($item->getMeta()->getAttachCount());
-        $this->meta->setWebSite($item->getMeta()->getWebSite());
+        $this->meta->setAttachmentsCount($item->getMeta()->getAttachmentsCount());
+        $this->meta->setWebsite($item->getMeta()->getWebsite());
+        $this->meta->setTitle($item->getMeta()->getTitle());
         $this->raws = $item->getRaws();
     }
 
@@ -79,16 +74,6 @@ final class EditItemRequest
     public function getItem(): Item
     {
         return $this->item;
-    }
-
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    public function setTitle(?string $title): void
-    {
-        $this->title = $title;
     }
 
     public function getMeta(): ItemMetaRequest

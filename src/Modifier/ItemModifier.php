@@ -31,11 +31,11 @@ class ItemModifier
         }
         $item->setSecret($request->getSecret());
         $item->setMeta(new ItemMeta(
-            $request->getMeta()->getAttachCount() ?: 0,
-            $request->getMeta()->getWebSite()
+            $request->getMeta()->getAttachmentsCount() ?: 0,
+            $request->getMeta()->getWebsite(),
+            $request->getMeta()->getTitle()
         ));
         $item->setRaws($request->getRaws());
-        $item->setTitle($request->getTitle());
         $item->setTags(new ArrayCollection($this->transformer->transform($request->getTags())));
         $this->repository->save($item);
 

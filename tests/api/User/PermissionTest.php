@@ -96,7 +96,9 @@ class PermissionTest extends Unit
         $I->sendPOST('items', [
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
-            'title' => 'item title',
+            'meta' => [
+                'title' => 'item title',
+            ],
             'favorite' => false,
             'tags' => ['tag'],
         ]);

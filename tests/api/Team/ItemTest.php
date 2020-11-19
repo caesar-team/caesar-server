@@ -54,7 +54,9 @@ class ItemTest extends Unit
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
-            'title' => 'item title',
+            'meta' => [
+                'title' => 'item title',
+            ],
             'favorite' => false,
             'tags' => ['tag'],
         ]);
@@ -309,7 +311,9 @@ class ItemTest extends Unit
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
             'secret' => 'secret-edit',
-            'title' => 'item title (edited)',
+            'meta' => [
+                'title' => 'item title (edited)',
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 
@@ -324,7 +328,9 @@ class ItemTest extends Unit
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
             'secret' => 'secret-edit',
-            'title' => 'item title (edited)',
+            'meta' => [
+                'title' => 'item title (edited)',
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
     }
@@ -338,7 +344,9 @@ class ItemTest extends Unit
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
-            'title' => 'item title',
+            'meta' => [
+                'title' => 'item title',
+            ],
             'favorite' => false,
             'tags' => ['tag'],
         ]);
@@ -355,7 +363,9 @@ class ItemTest extends Unit
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
-            'title' => 'item title',
+            'meta' => [
+                'title' => 'item title',
+            ],
             'favorite' => false,
             'tags' => ['tag'],
         ]);

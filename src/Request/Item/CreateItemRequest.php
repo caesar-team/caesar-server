@@ -21,11 +21,6 @@ final class CreateItemRequest
     private ?string $type;
 
     /**
-     * @Assert\NotBlank()
-     */
-    private ?string $title;
-
-    /**
      * @Assert\Valid
      */
     private ItemMetaRequest $meta;
@@ -124,16 +119,6 @@ final class CreateItemRequest
     public function getTeam(): ?Team
     {
         return null !== $this->getList() ? $this->getList()->getTeam() : null;
-    }
-
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    public function setTitle(?string $title): void
-    {
-        $this->title = $title;
     }
 
     public function getMeta(): ItemMetaRequest

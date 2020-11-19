@@ -34,6 +34,26 @@ class ItemRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param string[] $itemIds
+     *
+     * @return string[]
+     */
+    public function getDiffItems(array $itemIds): array
+    {
+        $queryBuilder = $this->createQueryBuilder('item');
+        $queryBuilder
+            ->select('item.id')
+            ->where('item.id IN (:items)')
+            ->setParameter('items', $itemIds)
+        ;
+
+        $existItems = $queryBuilder->getQuery()->getScalarResult();
+        $existItems = array_column($existItems, 'id');
+
+        return array_values(array_diff($itemIds, $existItems));
+    }
+
+    /**
      * @return Item[]
      */
     public function getAllUserItems(ItemsAllQuery $query): array

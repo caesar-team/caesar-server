@@ -12,6 +12,7 @@ use Codeception\Module\DataFactory;
 use Codeception\Module\REST;
 use Codeception\Test\Unit;
 use Codeception\Util\HttpCode;
+use Ramsey\Uuid\Uuid;
 
 class ItemTest extends Unit
 {
@@ -40,6 +41,34 @@ class ItemTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/item_raw.json'));
+    }
+
+    /** @test */
+    public function getUnExists()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+
+        $item = $I->createUserItem($user);
+        $item1 = $I->createUserItem($user);
+
+        $unexists = Uuid::uuid4()->toString();
+        $unexists1 = Uuid::uuid4()->toString();
+
+        $I->login($user);
+        $I->sendPOST('/items/unexists', ['items' => [
+            $item->getId()->toString(),
+            $item1->getId()->toString(),
+            $unexists,
+            $unexists1,
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseContains($unexists);
+        $I->seeResponseContains($unexists1);
+        $I->dontSeeResponseContains($item->getId()->toString());
+        $I->dontSeeResponseContains($item1->getId()->toString());
     }
 
     /** @test */
@@ -200,7 +229,8 @@ class ItemTest extends Unit
             'listId' => 'invalid-uuid',
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
-            'title' => 'item title',
+            'meta' => [
+            ],
             'favorite' => false,
             'tags' => ['tag'],
         ]);
@@ -210,10 +240,10 @@ class ItemTest extends Unit
             'listId' => $directory->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
-            'title' => 'item title',
             'favorite' => false,
             'meta' => [
-                'attachCount' => 2,
+                'attachmentsCount' => 2,
+                'title' => 'item title',
             ],
             'raws' => uniqid(),
             'tags' => ['tag'],
@@ -225,9 +255,9 @@ class ItemTest extends Unit
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
             'meta' => [
-                'webSite' => 'http://examle.com',
+                'website' => 'http://examle.com',
+                'title' => 'item title',
             ],
-            'title' => 'item title',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson(['listId' => $user->getDefaultDirectory()->getId()->toString()]);
@@ -248,10 +278,10 @@ class ItemTest extends Unit
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
             'secret' => 'secret-edit',
-            'title' => 'item title (edited)',
             'meta' => [
-                'attachCount' => 3,
-                'webSite' => 'http://examle.com/login',
+                'attachmentsCount' => 3,
+                'website' => 'http://examle.com/login',
+                'title' => 'item title (edited)',
             ],
             'raws' => uniqid(),
         ]);
@@ -259,7 +289,9 @@ class ItemTest extends Unit
 
         $I->sendPATCH(sprintf('/items/%s', $otherItem->getId()), [
             'secret' => 'secret-edit',
-            'title' => 'item title (edited)',
+            'meta' => [
+                'title' => 'item title (edited)',
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
     }
