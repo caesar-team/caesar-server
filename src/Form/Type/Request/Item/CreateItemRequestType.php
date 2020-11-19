@@ -42,7 +42,6 @@ class CreateItemRequestType extends AbstractType
                     NodeEnumType::TYPE_SYSTEM,
                 ],
             ])
-            ->add('title', TextType::class)
             ->add('secret', TextType::class)
             ->add('raws', TextType::class)
             ->add('meta', ItemMetaType::class)

@@ -25,11 +25,14 @@ class ItemFactory
     {
         $item = new Item($request->getOwner() ?: $request->getUser());
         $item->setParentList($request->getTeam()->getDefaultDirectory());
-        $item->setTitle(NodeEnumType::TYPE_KEYPAIR);
         $item->setType(NodeEnumType::TYPE_KEYPAIR);
         $item->setSecret($request->getSecret());
         $item->setRelatedItem($request->getRelatedItem());
         $item->setTeam($request->getTeam());
+
+        $meta = new ItemMeta();
+        $meta->setTitle(NodeEnumType::TYPE_KEYPAIR);
+        $item->setMeta($meta);
 
         return $item;
     }
@@ -45,13 +48,13 @@ class ItemFactory
         $item->setParentList($parentList);
         $item->setType($request->getType());
         $item->setSecret($request->getSecret());
-        $item->setTitle($request->getTitle());
         $item->setFavorite($request->isFavorite());
         $item->setTags(new ArrayCollection($this->transformer->transform($request->getTags())));
         $item->setTeam($request->getTeam());
         $item->setMeta(new ItemMeta(
-            $request->getMeta()->getAttachCount() ?: 0,
-            $request->getMeta()->getWebSite()
+            $request->getMeta()->getAttachmentsCount() ?: 0,
+            $request->getMeta()->getWebsite(),
+            $request->getMeta()->getTitle()
         ));
         $item->setRaws($request->getRaws());
 

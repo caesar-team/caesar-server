@@ -54,13 +54,6 @@ class Item implements ChildItemAwareInterface
     /**
      * @var string|null
      *
-     * @ORM\Column(type="text", nullable=true)
-     */
-    protected $title;
-
-    /**
-     * @var string|null
-     *
      * @ORM\Column(type="text")
      */
     protected $secret;
@@ -579,16 +572,6 @@ class Item implements ChildItemAwareInterface
         $this->setPreviousList($this->getParentList());
         $this->setParentList($directory);
         $this->setTeam($directory->getTeam());
-    }
-
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    public function setTitle(?string $title): void
-    {
-        $this->title = $title;
     }
 
     public function getTeamKeypairGroupKey(): string

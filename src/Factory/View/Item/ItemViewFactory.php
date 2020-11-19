@@ -41,8 +41,6 @@ class ItemViewFactory
         $view->setListId($item->getParentList()->getId()->toString());
         $view->setPreviousListId($item->getPreviousListId());
         $view->setSecret($item->getSecret());
-        $view->setTitle($item->getTitle());
-
         $view->setInvited($this->inviteItemViewFactory->createCollection($item->getKeyPairItemsWithoutRoot()));
         $view->setOwnerId($item->getOwner()->getId()->toString());
         if (null === $item->getTeam()) {
