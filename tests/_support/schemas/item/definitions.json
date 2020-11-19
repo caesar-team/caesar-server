@@ -19,16 +19,20 @@
         "meta": {
           "type": "object",
           "properties": {
-            "attachCount": {
+            "attachmentsCount": {
               "type": "integer"
             },
-            "webSite": {
+            "website": {
+              "type": ["null", "string"]
+            },
+            "title": {
               "type": ["null", "string"]
             }
           },
           "required": [
-            "attachCount",
-            "webSite"
+            "attachmentsCount",
+            "website",
+            "title"
           ]
         },
         "invited": {
@@ -115,16 +119,12 @@
         },
         "isShared": {
           "type": "boolean"
-        } ,
-        "title": {
-          "type": ["string", "null"]
         }
       },
       "required": [
         "id",
         "type",
         "listId",
-        "title",
         "secret",
         "invited",
         "shared",
@@ -134,7 +134,8 @@
         "favorite",
         "ownerId",
         "originalItemId",
-        "previousListId"
+        "previousListId",
+        "meta"
       ]
     },
     "item_raw": {

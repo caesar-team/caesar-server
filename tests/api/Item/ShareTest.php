@@ -142,7 +142,9 @@ class ShareTest extends Unit
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
             'secret' => 'secret-edit',
-            'title' => 'item title (edited)',
+            'meta' => [
+                'title' => 'item title (edited)',
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
 

@@ -4,35 +4,52 @@ declare(strict_types=1);
 
 namespace App\Request\Item;
 
+use Symfony\Component\Validator\Constraints as Assert;
+
 final class ItemMetaRequest
 {
-    private ?int $attachCount;
+    private ?int $attachmentsCount;
 
-    private ?string $webSite;
+    private ?string $website;
+
+    /**
+     * @Assert\NotBlank()
+     */
+    private ?string $title;
 
     public function __construct()
     {
-        $this->attachCount = null;
-        $this->webSite = null;
+        $this->attachmentsCount = null;
+        $this->website = null;
     }
 
-    public function getAttachCount(): ?int
+    public function getAttachmentsCount(): ?int
     {
-        return $this->attachCount;
+        return $this->attachmentsCount;
     }
 
-    public function setAttachCount(?int $attachCount): void
+    public function setAttachmentsCount(?int $attachmentsCount): void
     {
-        $this->attachCount = $attachCount;
+        $this->attachmentsCount = $attachmentsCount;
     }
 
-    public function getWebSite(): ?string
+    public function getWebsite(): ?string
     {
-        return $this->webSite;
+        return $this->website;
     }
 
-    public function setWebSite(?string $webSite): void
+    public function setWebsite(?string $website): void
     {
-        $this->webSite = $webSite;
+        $this->website = $website;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(?string $title): void
+    {
+        $this->title = $title;
     }
 }

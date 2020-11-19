@@ -11,30 +11,45 @@ final class ItemMetaView
     /**
      * @SWG\Property(type="integer", example=1)
      */
-    private int $attachCount;
+    private int $attachmentsCount;
 
     /**
      * @SWG\Property(type="string", example="http://example.com")
      */
-    private ?string $webSite;
+    private ?string $website;
 
-    public function getAttachCount(): int
+    /**
+     * @SWG\Property(type="string")
+     */
+    private ?string $title;
+
+    public function getAttachmentsCount(): int
     {
-        return $this->attachCount;
+        return $this->attachmentsCount;
     }
 
-    public function setAttachCount(int $attachCount): void
+    public function setAttachmentsCount(int $attachmentsCount): void
     {
-        $this->attachCount = $attachCount;
+        $this->attachmentsCount = $attachmentsCount;
     }
 
-    public function getWebSite(): ?string
+    public function getWebsite(): ?string
     {
-        return $this->webSite;
+        return $this->website;
     }
 
-    public function setWebSite(?string $webSite): void
+    public function setWebsite(?string $website): void
     {
-        $this->webSite = $webSite;
+        $this->website = $website;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(?string $title): void
+    {
+        $this->title = $title;
     }
 }

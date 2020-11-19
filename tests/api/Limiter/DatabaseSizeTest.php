@@ -60,7 +60,9 @@ class DatabaseSizeTest extends Unit
             'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
-            'title' => 'item title',
+            'meta' => [
+                'title' => 'item title',
+            ],
             'favorite' => false,
             'tags' => ['tag'],
         ], $options);

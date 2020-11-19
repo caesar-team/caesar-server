@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Factory\Entity;
 
 use App\DBAL\Types\Enum\NodeEnumType;
+use App\Entity\Embedded\ItemMeta;
 use App\Entity\UserTeam;
 use App\Model\DTO\Vault;
 use App\Request\Team\CreateVaultRequest;
@@ -43,10 +44,12 @@ class VaultFactory
         $item = $this->itemFactory->create();
         $item->setOwner($user);
         $item->setTeam($team);
-        $item->setTitle(NodeEnumType::TYPE_KEYPAIR);
         $item->setType(NodeEnumType::TYPE_KEYPAIR);
         $item->setParentList($team->getDefaultDirectory());
         $item->setSecret($keypairRequest->getSecret());
+        $meta = new ItemMeta();
+        $meta->setTitle(NodeEnumType::TYPE_KEYPAIR);
+        $item->setMeta($meta);
 
         return new Vault($team, $item);
     }

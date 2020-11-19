@@ -141,17 +141,12 @@ final class ItemView
     private ?string $listId;
 
     /**
-     * @SWG\Property(type="string", example="Title")
-     */
-    private ?string $title;
-
-    /**
      * @SWG\Property(type="string", example="-----BEGIN PGP MESSAGE----- Version: OpenPGP.js v4.2.2 ....")
      */
     private ?string $secret;
 
     /**
-     * @SWG\Property(@Model(type=SharedChildItemView::class))
+     * @SWG\Property(@Model(type=ItemMetaView::class))
      */
     private ItemMetaView $meta;
 
@@ -163,7 +158,7 @@ final class ItemView
     private array $invited;
 
     /**
-     * @SWG\Property(@Model(type=SharedChildItemView::class))
+     * @SWG\Property(@Model(type=SharedItemView::class))
      */
     private ?SharedItemView $shared;
 
@@ -393,16 +388,6 @@ final class ItemView
     public function setTeamId(?string $teamId): void
     {
         $this->teamId = $teamId;
-    }
-
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    public function setTitle(?string $title): void
-    {
-        $this->title = $title;
     }
 
     public function getMeta(): ItemMetaView

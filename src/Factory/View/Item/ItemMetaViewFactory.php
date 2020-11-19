@@ -12,8 +12,9 @@ class ItemMetaViewFactory
     public function createSingle(ItemMeta $meta): ItemMetaView
     {
         $view = new ItemMetaView();
-        $view->setAttachCount($meta->getAttachCount());
-        $view->setWebSite($meta->getWebSite());
+        $view->setAttachmentsCount($meta->getAttachmentsCount());
+        $view->setWebsite($meta->getWebsite());
+        $view->setTitle($meta->getTitle());
 
         return $view;
     }

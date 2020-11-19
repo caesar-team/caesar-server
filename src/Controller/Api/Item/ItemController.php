@@ -14,6 +14,7 @@ use App\Form\Type\Request\Item\CreateBatchItemsRequestType;
 use App\Form\Type\Request\Item\CreateBatchKeypairsRequestType;
 use App\Form\Type\Request\Item\CreateItemRequestType;
 use App\Form\Type\Request\Item\ItemsCollectionRequestType;
+use App\Form\Type\Request\Item\ItemsIdCollectionRequestType;
 use App\Limiter\Inspector\ItemCountInspector;
 use App\Limiter\LimiterInterface;
 use App\Limiter\Model\LimitCheck;
@@ -27,6 +28,7 @@ use App\Request\Item\CreateBatchItemsRequest;
 use App\Request\Item\CreateBatchKeypairsRequest;
 use App\Request\Item\CreateItemRequest;
 use App\Request\Item\ItemsCollectionRequest;
+use App\Request\Item\ItemsIdCollectionRequest;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\TeamItemVoter;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
@@ -85,6 +87,40 @@ final class ItemController extends AbstractController
                 )
             )
         );
+    }
+
+    /**
+     * Get all items information.
+     *
+     * @SWG\Tag(name="Item")
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     @Model(type=ItemsIdCollectionRequestType::class)
+     * )
+     * @SWG\Response(
+     *     response=200,
+     *     description="Success item created",
+     *     @SWG\Schema(type="array", @SWG\Items(type="string"))
+     * )
+     *
+     * @Route(
+     *     path="/unexists",
+     *     name="api_items_unexists",
+     *     methods={"POST"}
+     * )
+     */
+    public function unexists(Request $request, ItemRepository $repository): array
+    {
+        $collectionRequest = new ItemsIdCollectionRequest();
+
+        $form = $this->createForm(ItemsIdCollectionRequestType::class, $collectionRequest);
+        $form->submit($request->request->all());
+        if (!$form->isValid()) {
+            throw new FormInvalidRequestException($form);
+        }
+
+        return $repository->getDiffItems($collectionRequest->getItems());
     }
 
     /**

@@ -14,36 +14,52 @@ class ItemMeta
     /**
      * @ORM\Column(type="integer", options={"default"=0})
      */
-    private int $attachCount;
+    private int $attachmentsCount;
 
     /**
      * @ORM\Column(nullable=true)
      */
-    private ?string $webSite;
+    private ?string $website;
 
-    public function __construct(int $attachCount = 0, ?string $webSite = null)
+    /**
+     * @ORM\Column(nullable=true)
+     */
+    private ?string $title;
+
+    public function __construct(int $attachmentsCount = 0, ?string $website = null, ?string $title = null)
     {
-        $this->attachCount = $attachCount;
-        $this->webSite = $webSite;
+        $this->attachmentsCount = $attachmentsCount;
+        $this->website = $website;
+        $this->title = $title;
     }
 
-    public function getAttachCount(): int
+    public function getAttachmentsCount(): int
     {
-        return $this->attachCount;
+        return $this->attachmentsCount;
     }
 
-    public function setAttachCount(int $attachCount): void
+    public function setAttachmentsCount(int $attachmentsCount): void
     {
-        $this->attachCount = $attachCount;
+        $this->attachmentsCount = $attachmentsCount;
     }
 
-    public function getWebSite(): ?string
+    public function getWebsite(): ?string
     {
-        return $this->webSite;
+        return $this->website;
     }
 
-    public function setWebSite(?string $webSite): void
+    public function setWebsite(?string $website): void
     {
-        $this->webSite = $webSite;
+        $this->website = $website;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(?string $title): void
+    {
+        $this->title = $title;
     }
 }
