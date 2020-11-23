@@ -9,11 +9,13 @@ use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
 use App\Factory\View\Team\MemberViewFactory;
+use App\Factory\View\Team\TeamViewFactory;
 use App\Form\Type\Request\Team\BatchCreateMemberRequestType;
 use App\Form\Type\Request\Team\CreateMemberRequestType;
 use App\Form\Type\Request\Team\EditUserTeamType;
 use App\Model\Query\MemberListQuery;
 use App\Model\View\Team\MemberView;
+use App\Model\View\Team\TeamView;
 use App\Repository\UserTeamRepository;
 use App\Request\Team\BatchCreateMemberRequest;
 use App\Request\Team\CreateMemberRequest;
@@ -239,8 +241,9 @@ final class MemberController extends AbstractController
      *
      * @SWG\Tag(name="Team / Member")
      * @SWG\Response(
-     *     response=204,
-     *     description="Leave team member"
+     *     response=200,
+     *     description="Leave team member",
+     *     @Model(type=TeamView::class)
      * )
      *
      * @Route(
@@ -249,14 +252,14 @@ final class MemberController extends AbstractController
      *     methods={"POST"}
      * )
      */
-    public function leaveTeam(Team $team, UserTeamRepository $userTeamRepository): JsonResponse
+    public function leaveTeam(Team $team, TeamViewFactory $viewFactory, UserTeamRepository $userTeamRepository): TeamView
     {
         $this->denyAccessUnlessGranted(TeamVoter::LEAVE, $team);
         $userTeam = $team->getUserTeamByUser($this->getUser());
 
         $userTeamRepository->remove($userTeam);
 
-        return new JsonResponse([], Response::HTTP_NO_CONTENT);
+        return $viewFactory->createSingle($team);
     }
 
     /**
