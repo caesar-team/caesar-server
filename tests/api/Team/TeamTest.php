@@ -173,7 +173,7 @@ class TeamTest extends Unit
         $I->seeResponseContainsJson(['pinned' => true]);
 
         $I->sendPOST(sprintf('teams/%s/leave', $team->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+        $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->sendGET(sprintf('teams/%s', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);

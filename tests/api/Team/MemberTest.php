@@ -287,7 +287,7 @@ class MemberTest extends Unit
 
         $I->login($member);
         $I->sendPOST(sprintf('teams/%s/leave', $team->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+        $I->seeResponseCodeIs(HttpCode::OK);
 
         $I->sendPOST(sprintf('teams/%s/leave', $otherTeam->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
@@ -295,7 +295,7 @@ class MemberTest extends Unit
 
         $I->login($user);
         $I->sendPOST(sprintf('teams/%s/leave', $otherTeam->getId()->toString()));
-        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->dontSeeInDatabase('groups', ['id' => $otherTeam->getId()->toString()]);
     }
 }
