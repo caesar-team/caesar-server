@@ -283,9 +283,20 @@ class ItemTest extends Unit
                 'website' => 'http://examle.com/login',
                 'title' => 'item title (edited)',
             ],
-            'raws' => uniqid(),
+            'raws' => 'some-raws-data',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('items/%s', $item->getId()->toString()), [
+            'secret' => 'secret-edit (edited)',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseContainsJson(['secret' => 'secret-edit (edited)', 'meta' => ['title' => 'item title (edited)']]);
+
+        $I->sendGET(sprintf('/items/%s/raws', $item->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseContains('some-raws-data');
 
         $I->sendPATCH(sprintf('/items/%s', $otherItem->getId()), [
             'secret' => 'secret-edit',

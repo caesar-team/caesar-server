@@ -87,7 +87,7 @@ class TeamController extends AbstractController
 
         $editRequest = new EditTeamRequest($team);
         $form = $this->createForm(EditTeamRequestType::class, $editRequest);
-        $form->submit($request->request->all());
+        $form->handleRequest($request);
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }

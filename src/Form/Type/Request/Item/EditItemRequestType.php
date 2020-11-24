@@ -40,8 +40,14 @@ class EditItemRequestType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
+            'method' => 'PATCH',
             'data_class' => EditItemRequest::class,
             'csrf_protection' => false,
         ]);
+    }
+
+    public function getBlockPrefix()
+    {
+        return '';
     }
 }
