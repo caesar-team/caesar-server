@@ -22,8 +22,14 @@ class EditTeamRequestType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
+            'method' => 'PATCH',
             'data_class' => EditTeamRequest::class,
             'csrf_protection' => false,
         ]);
+    }
+
+    public function getBlockPrefix()
+    {
+        return '';
     }
 }

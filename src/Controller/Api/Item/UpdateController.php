@@ -87,7 +87,7 @@ final class UpdateController extends AbstractController
 
         $editRequest = new EditItemRequest($item);
         $form = $this->createForm(EditItemRequestType::class, $editRequest);
-        $form->submit($request->request->all());
+        $form->handleRequest($request);
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }

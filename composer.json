@@ -105,6 +105,11 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
+        ],
+        "analyse": [
+            "@php vendor/bin/php-cs-fixer fix --config=.php_cs.dist -vv",
+            "@php vendor/bin/phpstan analyse --memory-limit=-1",
+            "@php vendor/bin/psalm --show-info=false"
         ]
     },
     "conflict": {
