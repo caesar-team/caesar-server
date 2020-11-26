@@ -17,7 +17,7 @@ class ItemMeta
     private int $attachmentsCount;
 
     /**
-     * @ORM\Column(nullable=true)
+     * @ORM\Column(type="text", nullable=true)
      */
     private ?string $website;
 

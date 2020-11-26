@@ -14,6 +14,7 @@ final class ItemMetaRequest
 
     /**
      * @Assert\NotBlank()
+     * @Assert\Length(max="255")
      */
     private ?string $title;
 
