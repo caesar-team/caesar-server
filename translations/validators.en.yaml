@@ -5,6 +5,8 @@ item:
     unique: Keypair is already exists
 
 team:
+  title:
+    default: Could not change default team title.
   member:
     unique: User already exists as member.
   label:

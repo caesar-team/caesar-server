@@ -71,6 +71,30 @@ class TeamTest extends Unit
     }
 
     /** @test */
+    public function editDefaultTeam()
+    {
+        $I = $this->tester;
+
+        /** @var User $admin */
+        $admin = $I->have(User::class, ['roles' => [User::ROLE_ADMIN]]);
+        $team = $I->createDefaultTeam();
+
+        $I->login($admin);
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('teams/%s', $team->getId()->toString()), [
+            'title' => 'Edited title',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContainsJson(['title' => ['errors' => ['Could not change default team title.']]]);
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('teams/%s', $team->getId()->toString()), [
+            'icon' => 'Some icons',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+    }
+
+    /** @test */
     public function editTeam()
     {
         $I = $this->tester;
@@ -113,6 +137,14 @@ class TeamTest extends Unit
             'title' => $otherTeam->getTitle(),
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContainsJson(['title' => ['errors' => ['You already have a team with the same name. Choose another name.']]]);
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('teams/%s', $team->getId()->toString()), [
+            'title' => '',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContainsJson(['title' => ['errors' => ['This value should not be blank.']]]);
     }
 
     /** @test */
