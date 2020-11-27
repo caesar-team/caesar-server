@@ -24,7 +24,7 @@
         "nelmio/cors-bundle": "2.1.0",
         "pear/math_biginteger": "1.0.3",
         "php-http/guzzle6-adapter": "2.0.1",
-        "php-http/httplug-bundle": "1.18.0",
+        "php-http/httplug-bundle": "1.19.0",
         "predis/predis": "1.1.6",
         "psr/simple-cache": "1.0.1",
         "ramsey/uuid": "4.1.1",
