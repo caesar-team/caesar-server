@@ -70,10 +70,6 @@ class TeamVoter extends Voter
 
     private function canEdit(Team $team, User $user): bool
     {
-        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
-            return false;
-        }
-
         $userTeam = $team->getUserTeamByUser($user);
 
         return $user->hasRole(User::ROLE_ADMIN)
