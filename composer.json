@@ -52,7 +52,7 @@
         "symfony/webpack-encore-bundle": "1.7.3",
         "symfony/yaml": "4.4.15",
         "willdurand/hateoas-bundle": "2.1.0",
-        "yoanm/symfony-jsonrpc-http-server": "3.0.2",
+        "yoanm/symfony-jsonrpc-http-server": "3.0.3",
         "yoanm/symfony-jsonrpc-params-validator": "2.0.2"
     },
     "require-dev": {
