@@ -804,9 +804,6 @@
     "symfony/polyfill-php80": {
         "version": "v1.17.1"
     },
-    "symfony/polyfill-util": {
-        "version": "v1.9.0"
-    },
     "symfony/polyfill-uuid": {
         "version": "v1.18.1"
     },
