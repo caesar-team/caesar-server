@@ -191,7 +191,7 @@ globals:
 steps:
   - <<: *stepCheckBuild
     when:
-      branch: [feature/*]
+      branch: [feature/*, hotfix/*]
 
   - <<: *stepMainBuild
     when:
@@ -220,6 +220,7 @@ trigger:
     - master
     - develop
     - feature/*
+    - hotfix/*
   event:
     - tag
     - push
