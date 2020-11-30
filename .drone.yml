@@ -222,3 +222,4 @@ trigger:
     - feature/*
   event:
     - tag
+    - push
