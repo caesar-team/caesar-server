@@ -1,0 +1,12 @@
+# The address of your server
+localhost
+
+route {
+    mercure {
+        publisher_jwt {$MERCURE_JWT_SECRET}
+        subscriber_jwt {$MERCURE_JWT_SECRET}
+        cors_origins {$CORS_ALLOW_ORIGIN}
+    }
+
+    respond "Not Found" 404
+}

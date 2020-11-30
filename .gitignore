@@ -38,3 +38,7 @@ codeception.yml
 ###< tests ###
 src/.preload.php
 .vscode/settings.json
+
+###> symfony/mercure-bundle ###
+config/mercure/caddy
+###< symfony/mercure-bundle ###

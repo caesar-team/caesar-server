@@ -20,6 +20,13 @@
         <!-- MESSENGER_TRANSPORT_DSN=doctrine://default -->
         <!-- MESSENGER_TRANSPORT_DSN=redis://localhost:6379/messages -->
         <!-- ###- symfony/messenger ### -->
+
+        <!-- ###+ symfony/mercure-bundle ### -->
+        <!-- See https://symfony.com/doc/current/mercure.html#configuration -->
+        <env name="MERCURE_PUBLISH_URL" value="http://mercure/.well-known/mercure"/>
+        <!-- The default token is signed with the secret key: !ChangeMe! -->
+        <env name="MERCURE_JWT_TOKEN" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZXJjdXJlIjp7InB1Ymxpc2giOltdfX0.Oo0yg7y4yMa1vr_bziltxuTCqb8JVHKxp-f_FwwOim0"/>
+        <!-- ###- symfony/mercure-bundle ### -->
     </php>
     <testsuites>
         <testsuite name="Project Test Suite">

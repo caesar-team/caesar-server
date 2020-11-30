@@ -43,6 +43,7 @@
         "symfony/flex": "1.9.10",
         "symfony/framework-bundle": "4.4.15",
         "symfony/http-foundation": "4.4.15",
+        "symfony/mercure-bundle": "^0.2.6",
         "symfony/messenger": "4.4.15",
         "symfony/monolog-bundle": "3.6.0",
         "symfony/orm-pack": "1.2.0",
