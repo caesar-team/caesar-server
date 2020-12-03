@@ -192,14 +192,17 @@ steps:
   - <<: *stepCheckBuild
     when:
       branch: [feature/*]
+      event: [push]
 
   - <<: *stepMainBuild
     when:
       branch: [develop, master]
+      event: [push]
 
   - <<: *stepDevelopDeploy
     when:
       branch: [develop]
+      event: [push]
 
   - name: build tag
     <<: *stepTagBuild
