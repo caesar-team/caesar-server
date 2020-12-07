@@ -25,6 +25,7 @@ class MemberViewFactory
         $view->setUserId($user->getId()->toString());
         $view->setId($userTeam->getId()->toString());
         $view->setTeamRole($userTeam->getUserRole());
+        $view->setHasKeypair(null !== $user->getTeamKeypair($userTeam->getTeam()));
 
         return $view;
     }

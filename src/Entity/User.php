@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\DBAL\Types\Enum\NodeEnumType;
 use App\Security\AuthorizationManager\InvitationEncoder;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -510,6 +511,22 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
          * @phpstan-ignore-next-line
          */
         return $this->ownedItems->matching($criteria)->toArray();
+    }
+
+    public function getTeamKeypair(Team $team): ?Item
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('team', $team));
+        $criteria->andWhere(Criteria::expr()->eq('type', NodeEnumType::TYPE_KEYPAIR));
+        $criteria->orderBy(['lastUpdated' => Criteria::ASC]);
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $item = $this->ownedItems->matching($criteria)->first();
+
+        return $item instanceof Item ? $item : null;
     }
 
     public function addOwnedItem(Item $item): void
