@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <title>Caesar Admin Panel</title>
@@ -30,6 +30,11 @@
         {% if error is defined and error %}
             <span>{{ error }}</span>
         {% endif %}
+
+        {% for message in app.flashes('danger') %}
+            <div class="text-danger">{{ message }}</div>
+        {% endfor %}
+
         {% for owner in hwi_oauth_resource_owners() %}
             <p>Log in with
                 <a href="{{ hwi_oauth_login_url(owner) }}">{{ owner | trans({}, 'HWIOAuthBundle') | capitalize }}</a>

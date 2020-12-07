@@ -70,6 +70,8 @@ class FOSUBUserProvider extends BaseUserProvider
      */
     public function loadUserByOAuthUserResponse(UserResponseInterface $response)
     {
+        $this->checkEmailDomain($response->getEmail());
+
         try {
             $user = parent::loadUserByOAuthUserResponse($response);
         } catch (AccountNotLinkedException $e) {
@@ -132,6 +134,18 @@ class FOSUBUserProvider extends BaseUserProvider
 
         if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
             throw new AuthenticationException($this->translator->trans('authentication.user_restriction', ['%email%' => $email]));
+        }
+    }
+
+    /**
+     * @throws AuthenticationException
+     */
+    private function checkEmailDomain(?string $email): void
+    {
+        preg_match('/(?<=@)(.+)$/', $email, $matches);
+        $domain = $matches[1];
+        if (!in_array($domain, explode(',', (string) getenv('OAUTH_ALLOWED_DOMAINS')), true)) {
+            throw new AuthenticationException($this->translator->trans('authentication.email_domain_restriction', ['%domain%' => $domain]));
         }
     }
 }
