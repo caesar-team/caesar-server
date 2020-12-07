@@ -64,13 +64,17 @@
         },
         "teamRole": {
           "type": "string"
+        },
+        "hasKeypair": {
+          "type": "boolean"
         }
       },
       "required": [
         "id",
         "userId",
         "teamId",
-        "teamRole"
+        "teamRole",
+        "hasKeypair"
       ]
     },
     "team": {

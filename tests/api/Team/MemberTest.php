@@ -76,6 +76,8 @@ class MemberTest extends Unit
         $I->seeResponseContains($admin->getId()->toString());
         $I->seeResponseContains($user->getId()->toString());
         $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/members.json'));
+        $I->seeResponseContainsJson(['userId' => $admin->getId()->toString(), 'hasKeypair' => true]);
+        $I->seeResponseContainsJson(['userId' => $user->getId()->toString(), 'hasKeypair' => false]);
 
         $I->sendGET(sprintf('teams/%s/members?without_keypair=true', $team->getId()->toString()));
         $I->dontSeeResponseContains($admin->getId()->toString());
@@ -84,6 +86,7 @@ class MemberTest extends Unit
 
         $I->login($manager);
         $I->sendGET(sprintf('teams/%s/members', $team->getId()->toString()));
+        $I->seeResponseCodeIs(HttpCode::OK);
     }
 
     /** @test */

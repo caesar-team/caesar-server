@@ -32,6 +32,11 @@ class MemberView
     private string $teamId;
 
     /**
+     * @SWG\Property(type="boolean")
+     */
+    private bool $hasKeypair;
+
+    /**
      * @Serializer\Exclude
      */
     private ?UserTeam $userTeam;
@@ -40,6 +45,7 @@ class MemberView
     {
         $this->userTeam = $currentUserTeam;
         $this->teamId = $team->getId()->toString();
+        $this->hasKeypair = false;
     }
 
     public function getId(): string
@@ -80,5 +86,15 @@ class MemberView
     public function getTeamId(): string
     {
         return $this->teamId;
+    }
+
+    public function isHasKeypair(): bool
+    {
+        return $this->hasKeypair;
+    }
+
+    public function setHasKeypair(bool $hasKeypair): void
+    {
+        $this->hasKeypair = $hasKeypair;
     }
 }
