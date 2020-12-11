@@ -5,23 +5,30 @@ declare(strict_types=1);
 namespace App\Request\Item;
 
 use App\Entity\Directory;
+use App\Entity\Item;
 use App\Entity\User;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
-final class MoveItemRequest
+final class MoveItemRequest implements MoveItemRequestInterface
 {
     /**
      * @Assert\NotBlank
      */
     private ?Directory $list;
 
+    private ?string $secret;
+
     private User $user;
 
-    public function __construct(User $user)
+    private Item $item;
+
+    public function __construct(Item $item, User $user)
     {
         $this->list = null;
+        $this->secret = null;
         $this->user = $user;
+        $this->item = $item;
     }
 
     public function getList(): ?Directory
@@ -34,9 +41,19 @@ final class MoveItemRequest
         $this->list = $list;
     }
 
-    public function getUser(): User
+    public function getSecret(): ?string
     {
-        return $this->user;
+        return $this->secret;
+    }
+
+    public function setSecret(?string $secret): void
+    {
+        $this->secret = $secret;
+    }
+
+    public function getItem(): Item
+    {
+        return $this->item;
     }
 
     /**
