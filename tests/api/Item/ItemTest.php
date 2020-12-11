@@ -381,6 +381,8 @@ class ItemTest extends Unit
     {
         $I = $this->tester;
 
+        $changeSecret = uniqid();
+
         /** @var User $user */
         $user = $I->have(User::class);
 
@@ -397,23 +399,28 @@ class ItemTest extends Unit
         $I->login($user);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/batch/move/list/%s', $otherDirectory->getId()), [
-            'items' => [$item->getId()],
+            'items' => [
+                ['itemId' => $item->getId()],
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
 
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/batch/move/list/%s', $moveDirectory->getId()), [
-            'items' => [$item->getId(), $item2->getId()],
+            'items' => [
+                ['itemId' => $item->getId(), 'secret' => $changeSecret],
+                ['itemId' => $item2->getId()],
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
-        $I->seeInDatabase('item', ['id' => $item->getId(), 'parent_list_id' => $moveDirectory->getId()]);
-        $I->seeInDatabase('item', ['id' => $item2->getId(), 'parent_list_id' => $moveDirectory->getId()]);
+        $I->seeInDatabase('item', ['id' => $item->getId(), 'parent_list_id' => $moveDirectory->getId(), 'secret' => $changeSecret]);
+        $I->seeInDatabase('item', ['id' => $item2->getId(), 'parent_list_id' => $moveDirectory->getId(), 'secret' => $item2->getSecret()]);
 
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/batch/move/list/%s', $otherDirectory->getId()), [
             'items' => [
-                $item->getId(),
-                $otherItem->getId(),
+                ['itemId' => $item->getId()],
+                ['itemId' => $otherItem->getId()],
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
