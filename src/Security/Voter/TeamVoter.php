@@ -73,10 +73,7 @@ class TeamVoter extends Voter
         $userTeam = $team->getUserTeamByUser($user);
 
         return $user->hasRole(User::ROLE_ADMIN)
-            || ($user->hasRole(User::ROLE_MANAGER)
-                && null !== $userTeam
-                && $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN)
-            )
+            || (null !== $userTeam && $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN))
         ;
     }
 
