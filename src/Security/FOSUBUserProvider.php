@@ -8,6 +8,8 @@ use App\Entity\User;
 use App\Event\User\RegistrationCompletedEvent;
 use App\Repository\UserRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
+use App\Security\Domain\DomainCheckerInterface;
+use App\Security\Domain\Util\EmailParser;
 use App\Services\File\FileDownloader;
 use App\Services\TeamManager;
 use FOS\UserBundle\Model\UserInterface;
@@ -46,6 +48,8 @@ class FOSUBUserProvider extends BaseUserProvider
      */
     private $authorizationManager;
 
+    private DomainCheckerInterface $domainChecker;
+
     public function __construct(
         UserManagerInterface $userManager,
         FileDownloader $downloader,
@@ -54,7 +58,8 @@ class FOSUBUserProvider extends BaseUserProvider
         TranslatorInterface $translator,
         array $properties,
         TeamManager $groupManager,
-        AuthorizationManager $authorizationManager
+        AuthorizationManager $authorizationManager,
+        DomainCheckerInterface $domainChecker
     ) {
         parent::__construct($userManager, $properties);
         $this->eventDispatcher = $eventDispatcher;
@@ -63,6 +68,7 @@ class FOSUBUserProvider extends BaseUserProvider
         $this->translator = $translator;
         $this->groupManager = $groupManager;
         $this->authorizationManager = $authorizationManager;
+        $this->domainChecker = $domainChecker;
     }
 
     /**
@@ -70,7 +76,9 @@ class FOSUBUserProvider extends BaseUserProvider
      */
     public function loadUserByOAuthUserResponse(UserResponseInterface $response)
     {
-        $this->checkEmailDomain($response->getEmail());
+        if (!$this->domainChecker->check((string) $response->getEmail())) {
+            throw new AuthenticationException($this->translator->trans('authentication.email_domain_restriction', ['%domain%' => EmailParser::getEmailDomain($response->getEmail())]));
+        }
 
         try {
             $user = parent::loadUserByOAuthUserResponse($response);
@@ -130,22 +138,8 @@ class FOSUBUserProvider extends BaseUserProvider
             throw new AccessDeniedHttpException(json_encode($error), null, Response::HTTP_BAD_REQUEST);
         }
 
-        $this->authorizationManager->checkEmailDomain($email);
-
         if ($user->hasRole(User::ROLE_ANONYMOUS_USER)) {
             throw new AuthenticationException($this->translator->trans('authentication.user_restriction', ['%email%' => $email]));
-        }
-    }
-
-    /**
-     * @throws AuthenticationException
-     */
-    private function checkEmailDomain(?string $email): void
-    {
-        preg_match('/(?<=@)(.+)$/', $email, $matches);
-        $domain = $matches[1];
-        if (!in_array($domain, explode(',', (string) getenv('OAUTH_ALLOWED_DOMAINS')), true)) {
-            throw new AuthenticationException($this->translator->trans('authentication.email_domain_restriction', ['%domain%' => $domain]));
         }
     }
 }

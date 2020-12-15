@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Request\Srp;
 
 use App\Request\SrpAwareRequestInterface;
-use App\Validator\Constraints\UniqueEntityProperty;
+use App\Validator\Constraints as AppAssert;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class RegistrationRequest implements SrpAwareRequestInterface
@@ -13,7 +13,8 @@ final class RegistrationRequest implements SrpAwareRequestInterface
     /**
      * @Assert\NotBlank()
      * @Assert\Email()
-     * @UniqueEntityProperty(entityClass="App\Entity\User", field="email", message="user.email.unique")
+     * @AppAssert\UniqueEntityProperty(entityClass="App\Entity\User", field="email", message="user.email.unique")
+     * @AppAssert\AllowedDomain()
      */
     private ?string $email;
 
