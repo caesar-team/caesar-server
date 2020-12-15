@@ -9,7 +9,6 @@ use Codeception\Module\DataFactory;
 use Codeception\Module\REST;
 use Codeception\Test\Unit;
 use Codeception\Util\HttpCode;
-use League\FactoryMuffin\Faker\Facade as Faker;
 
 class RegistrationTest extends Unit
 {
@@ -26,7 +25,7 @@ class RegistrationTest extends Unit
     {
         $I = $this->tester;
         $team = $I->createDefaultTeam();
-        $email = Faker::email()();
+        $email = sprintf('%s@example.com', uniqid());
 
         $I->sendPOST('/auth/srpp/registration', [
             'email' => $email,
@@ -76,5 +75,20 @@ class RegistrationTest extends Unit
             'user_role' => UserTeam::USER_ROLE_ADMIN,
         ]);
         $I->releaseUsername($email);
+    }
+
+    /** @test */
+    public function cantRegistrationWithRestrictedDomain()
+    {
+        $I = $this->tester;
+        $email = sprintf('%s@restricted.com', uniqid());
+
+        $I->sendPOST('/auth/srpp/registration', [
+            'email' => $email,
+            'seed' => self::SEED,
+            'verifier' => self::VERIFIER,
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('Domain restricted.com is not allowed.');
     }
 }
