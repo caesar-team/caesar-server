@@ -4,4 +4,4 @@
 # su www-data -s /bin/sh -c "php-fpm -R"
 ./bin/genkeys.sh
 ./bin/cache.sh
-php-fpm -R
+php-fpm -F

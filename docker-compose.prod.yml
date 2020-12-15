@@ -1,0 +1,61 @@
+version: "3.2"
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    volumes:
+      - code:/var/www/html
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+  nginx:
+    image: 4xxi/nginx:flex
+    depends_on:
+      - php
+    ports:
+      - "${SERVER_HTTP_PORT}:80"
+    volumes:
+      - code:/var/www/html
+  db:
+    image: "postgres:9"
+    ports:
+      - "${DATABASE_PORT}:${DATABASE_PORT}"
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+  redis:
+    image: "redis:5-alpine"
+    environment:
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - 6379:6379
+    volumes:
+      - "redis:/etc/redis/database/caesarapp"
+  rabbitmq:
+    image: "rabbitmq:3-management-alpine"
+    environment:
+      - RABBITMQ_DEFAULT_USER
+      - RABBITMQ_DEFAULT_PASS
+      - RABBITMQ_VHOST
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - "rmq:/var/lib/rabbitmq"
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1080:8025"
+volumes:
+  db:
+  code:
+  redis:
+  rmq:
