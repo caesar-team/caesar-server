@@ -29,6 +29,14 @@ class UserTeamRepository extends ServiceEntityRepository
         parent::__construct($registry, UserTeam::class);
     }
 
+    public function deleteById(string $userTeamId)
+    {
+        $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery('DELETE FROM user_group WHERE id = :id', ['id' => $userTeamId])
+        ;
+    }
+
     /**
      * @return array|UserTeam[]
      */
