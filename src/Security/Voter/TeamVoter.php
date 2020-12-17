@@ -70,16 +70,30 @@ class TeamVoter extends Voter
 
     private function canEdit(Team $team, User $user): bool
     {
-        $userTeam = $team->getUserTeamByUser($user);
+        if ($user->hasRole(User::ROLE_ADMIN)) {
+            return true;
+        }
 
-        return $user->hasRole(User::ROLE_ADMIN)
-            || (null !== $userTeam && $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN))
-        ;
+        $userTeam = $team->getUserTeamByUser($user);
+        if (null === $userTeam) {
+            return false;
+        }
+
+        return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN);
     }
 
     private function canDelete(Team $team, User $user): bool
     {
-        return $this->canEdit($team, $user);
+        if ($user->hasRole(User::ROLE_ADMIN)) {
+            return true;
+        }
+
+        $userTeam = $team->getUserTeamByUser($user);
+        if (null === $userTeam) {
+            return false;
+        }
+
+        return $user->hasRole(User::ROLE_MANAGER) && $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN);
     }
 
     private function canPinned(Team $team, User $user): bool
