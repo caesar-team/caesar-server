@@ -13,7 +13,7 @@ final class CreateTeamRequest
      * @var string
      *
      * @Assert\NotBlank
-     * @Assert\Length(max="100")
+     * @Assert\Length(max="40")
      * @UniqueEntityProperty(entityClass="App\Entity\Team", field="title", message="team.label.unique")
      */
     private $title;
