@@ -90,9 +90,15 @@ final class ItemController extends AbstractController
     }
 
     /**
-     * Get all items information.
+     * Check unexists items information.
      *
      * @SWG\Tag(name="Item")
+     * @SWG\Parameter(
+     *     name="team",
+     *     in="query",
+     *     description="Team id",
+     *     type="string"
+     * )
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
@@ -120,7 +126,7 @@ final class ItemController extends AbstractController
             throw new FormInvalidRequestException($form);
         }
 
-        return $repository->getDiffItems($collectionRequest->getItems());
+        return $repository->getDiffItems($collectionRequest->getItems(), $request->query->get('team'));
     }
 
     /**

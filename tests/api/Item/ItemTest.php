@@ -72,6 +72,36 @@ class ItemTest extends Unit
     }
 
     /** @test */
+    public function getTeamUnExist()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+        $team = $I->createTeam($user);
+        $otherTeam = $I->createTeam($user);
+
+        $item = $I->createTeamItem($team, $user);
+        $item1 = $I->createUserItem($user);
+        $item2 = $I->createTeamItem($otherTeam, $user);
+
+        $unexists = Uuid::uuid4()->toString();
+
+        $I->login($user);
+        $I->sendPOST(sprintf('/items/unexists?team=%s', $team->getId()->toString()), ['items' => [
+            $item->getId()->toString(),
+            $item1->getId()->toString(),
+            $item2->getId()->toString(),
+            $unexists,
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseContains($unexists);
+        $I->seeResponseContains($item1->getId()->toString());
+        $I->seeResponseContains($item2->getId()->toString());
+        $I->dontSeeResponseContains($item->getId()->toString());
+    }
+
+    /** @test */
     public function getBatchItem()
     {
         $I = $this->tester;

@@ -16,6 +16,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
 
 /**
  * @method Item|null find($id, $lockMode = null, $lockVersion = null)
@@ -38,7 +39,7 @@ class ItemRepository extends ServiceEntityRepository
      *
      * @return string[]
      */
-    public function getDiffItems(array $itemIds): array
+    public function getDiffItems(array $itemIds, ?string $teamId = null): array
     {
         $queryBuilder = $this->createQueryBuilder('item');
         $queryBuilder
@@ -46,6 +47,13 @@ class ItemRepository extends ServiceEntityRepository
             ->where('item.id IN (:items)')
             ->setParameter('items', $itemIds)
         ;
+
+        if (null !== $teamId && Uuid::isValid($teamId)) {
+            $queryBuilder
+                ->andWhere('item.team = :team')
+                ->setParameter('team', $teamId)
+            ;
+        }
 
         $existItems = $queryBuilder->getQuery()->getScalarResult();
         $existItems = array_column($existItems, 'id');
