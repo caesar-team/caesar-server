@@ -84,6 +84,10 @@ class TeamVoter extends Voter
 
     private function canDelete(Team $team, User $user): bool
     {
+        if (Team::DEFAULT_GROUP_ALIAS === $team->getAlias()) {
+            return false;
+        }
+
         if ($user->hasRole(User::ROLE_ADMIN)) {
             return true;
         }
