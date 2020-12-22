@@ -8,6 +8,7 @@ use App\Controller\AbstractController;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
+use App\Event\Team\LeaveTeamEvent;
 use App\Factory\View\Team\MemberViewFactory;
 use App\Factory\View\Team\TeamViewFactory;
 use App\Form\Type\Request\Team\BatchCreateMemberRequestType;
@@ -26,6 +27,7 @@ use App\Team\MemberCreator;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -222,7 +224,8 @@ final class MemberController extends AbstractController
     public function removeMember(
         Team $team,
         User $user,
-        UserTeamRepository $userTeamRepository
+        UserTeamRepository $userTeamRepository,
+        EventDispatcherInterface $dispatcher
     ): JsonResponse {
         $userTeam = $userTeamRepository->findOneByUserAndTeam($user, $team);
         if (!$userTeam instanceof UserTeam) {
@@ -232,6 +235,7 @@ final class MemberController extends AbstractController
         $this->denyAccessUnlessGranted(UserTeamVoter::REMOVE, $userTeam);
 
         $userTeamRepository->remove($userTeam);
+        $dispatcher->dispatch(new LeaveTeamEvent($team, $user));
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
     }
@@ -252,12 +256,17 @@ final class MemberController extends AbstractController
      *     methods={"POST"}
      * )
      */
-    public function leaveTeam(Team $team, TeamViewFactory $viewFactory, UserTeamRepository $userTeamRepository): TeamView
-    {
+    public function leaveTeam(
+        Team $team,
+        TeamViewFactory $viewFactory,
+        UserTeamRepository $userTeamRepository,
+        EventDispatcherInterface $dispatcher
+    ): TeamView {
         $this->denyAccessUnlessGranted(TeamVoter::LEAVE, $team);
         $userTeam = $team->getUserTeamByUser($this->getUser());
 
         $userTeamRepository->remove($userTeam);
+        $dispatcher->dispatch(new LeaveTeamEvent($team, $this->getUser()));
 
         return $viewFactory->createSingle($team);
     }

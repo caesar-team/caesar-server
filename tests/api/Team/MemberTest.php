@@ -286,11 +286,16 @@ class MemberTest extends Unit
         $team = $I->createTeam($user);
         $I->addUserToTeam($team, $member);
 
+        $userKeypair = $I->createKeypairTeamItem($team, $user);
+        $memberKeypair = $I->createKeypairTeamItem($team, $member);
         $otherTeam = $I->createTeam($user);
+        $otherKeypair = $I->createKeypairTeamItem($otherTeam, $user);
 
         $I->login($member);
         $I->sendPOST(sprintf('teams/%s/leave', $team->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeInDatabase('item', ['id' => $userKeypair->getId()->toString()]);
+        $I->dontSeeInDatabase('item', ['id' => $memberKeypair->getId()->toString()]);
 
         $I->sendPOST(sprintf('teams/%s/leave', $otherTeam->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
@@ -300,5 +305,6 @@ class MemberTest extends Unit
         $I->sendPOST(sprintf('teams/%s/leave', $otherTeam->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->dontSeeInDatabase('groups', ['id' => $otherTeam->getId()->toString()]);
+        $I->dontSeeInDatabase('item', ['id' => $otherKeypair->getId()->toString()]);
     }
 }
