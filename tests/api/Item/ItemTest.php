@@ -88,7 +88,7 @@ class ItemTest extends Unit
         $unexists = Uuid::uuid4()->toString();
 
         $I->login($user);
-        $I->sendPOST(sprintf('/items/unexists?team=%s', $team->getId()->toString()), ['items' => [
+        $I->sendPOST(sprintf('/items/unexists?teamId=%s', $team->getId()->toString()), ['items' => [
             $item->getId()->toString(),
             $item1->getId()->toString(),
             $item2->getId()->toString(),

@@ -94,7 +94,7 @@ final class ItemController extends AbstractController
      *
      * @SWG\Tag(name="Item")
      * @SWG\Parameter(
-     *     name="team",
+     *     name="teamId",
      *     in="query",
      *     description="Team id",
      *     type="string"
@@ -126,7 +126,7 @@ final class ItemController extends AbstractController
             throw new FormInvalidRequestException($form);
         }
 
-        return $repository->getDiffItems($collectionRequest->getItems(), $request->query->get('team'));
+        return $repository->getDiffItems($collectionRequest->getItems(), $request->query->get('teamId'));
     }
 
     /**
