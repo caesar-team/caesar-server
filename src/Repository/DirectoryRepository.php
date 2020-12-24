@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\DBAL\Types\Enum\NodeEnumType;
+use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\Entity\Directory;
 use App\Entity\User;
 use App\Entity\UserTeam;
@@ -52,7 +52,7 @@ class DirectoryRepository extends ServiceEntityRepository
     {
         $lists = array_merge($user->getUserPersonalLists(), $this->getTeamListsByUser($user));
         $lists = array_filter($lists, static function (Directory $directory) {
-            return NodeEnumType::TYPE_LIST === $directory->getRole();
+            return DirectoryEnumType::LIST === $directory->getType();
         });
 
         return array_values($lists);

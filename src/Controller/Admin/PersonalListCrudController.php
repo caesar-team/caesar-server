@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Admin\Field\AssociationFieldWithSort;
+use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\Entity\Directory;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -31,8 +32,8 @@ class PersonalListCrudController extends AbstractCrudController
         $queryBuilder
             ->leftJoin('entity.user', '_user')
             ->andWhere('_user.id IS NOT NULL')
-            ->andWhere('entity.label != :list')
-            ->setParameter('list', Directory::LIST_ROOT_LIST)
+            ->andWhere('entity.type != :type')
+            ->setParameter('type', DirectoryEnumType::ROOT)
         ;
 
         return $queryBuilder;

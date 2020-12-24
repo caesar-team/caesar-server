@@ -49,7 +49,7 @@ class TeamItemVoter extends Voter
             return false;
         }
 
-        if ($subject instanceof Directory && $subject->isTeamTrashDirectory()) {
+        if ($subject instanceof Directory && $subject->isTrashDirectory()) {
             return false;
         }
 

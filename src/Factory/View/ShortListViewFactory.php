@@ -14,7 +14,7 @@ class ShortListViewFactory
         $view = new ShortListView($directory);
         $view->setId($directory->getId()->toString());
         $view->setLabel($directory->getLabel());
-        $view->setType($directory->getRole());
+        $view->setType($directory->getType());
         $view->setTeamId($directory->getTeam() ? $directory->getTeam()->getId()->toString() : null);
 
         return $view;

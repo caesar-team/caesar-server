@@ -25,7 +25,7 @@ class ListViewFactory
         $view = new ListView($directory);
         $view->setId($directory->getId()->toString());
         $view->setLabel($directory->getLabel());
-        $view->setType($directory->getPersonalRole());
+        $view->setType($directory->getType());
         $view->setChildren(array_map(function (Item $item) {
             return $item->getId()->toString();
         }, $directory->getChildItems()));
