@@ -52,7 +52,9 @@ class DirectoryRepository extends ServiceEntityRepository
     {
         $lists = array_merge($user->getUserPersonalLists(), $this->getTeamListsByUser($user));
         $lists = array_filter($lists, static function (Directory $directory) {
-            return DirectoryEnumType::LIST === $directory->getType();
+            return DirectoryEnumType::LIST === $directory->getType()
+                || DirectoryEnumType::DEFAULT === $directory->getType()
+            ;
         });
 
         return array_values($lists);
