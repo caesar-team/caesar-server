@@ -33,7 +33,7 @@ final class Version20190926093526 extends AbstractMigration
                     $root->getId()->toString(),
                     null,
                     $root->getLabel(),
-                    $root->getType(),
+                    'list',
                     $root->getSort(),
                 ]
             );
@@ -45,7 +45,7 @@ final class Version20190926093526 extends AbstractMigration
                     $default->getId()->toString(),
                     $default->getParentList()->getId()->toString(),
                     $default->getLabel(),
-                    $default->getType(),
+                    'list',
                     $default->getSort(),
                 ]
             );
@@ -56,7 +56,7 @@ final class Version20190926093526 extends AbstractMigration
                     $trash->getId()->toString(),
                     null,
                     $trash->getLabel(),
-                    $trash->getType(),
+                    'trash',
                     $trash->getSort(),
                 ]
             );
