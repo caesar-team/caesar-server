@@ -67,14 +67,14 @@ class TeamListVoter extends Voter
 
         if (self::MOVABLE !== $attribute
             && $subject instanceof Directory
-            && $subject->isTeamTrashDirectory()
+            && $subject->isTrashDirectory()
         ) {
             return false;
         }
 
-        if (!in_array($attribute, [self::MOVABLE, self::SORT])
+        if (!in_array($attribute, [self::MOVABLE, self::SORT, self::EDIT])
             && $subject instanceof Directory
-            && $subject->isTeamDefaultDirectory()
+            && $subject->isDefaultDirectory()
         ) {
             return false;
         }

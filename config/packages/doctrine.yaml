@@ -10,6 +10,7 @@ doctrine:
         types:
             uuid:  Ramsey\Uuid\Doctrine\UuidType
             NodeEnumType: App\DBAL\Types\Enum\NodeEnumType
+            DirectoryEnumType: App\DBAL\Types\Enum\DirectoryEnumType
             AccessEnumType: App\DBAL\Types\Enum\AccessEnumType
     orm:
         auto_generate_proxy_classes: '%kernel.debug%'

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Security\AuthorizationManager\InvitationEncoder;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -34,7 +35,6 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public const ROLE_USER = 'ROLE_USER';
     public const ROLE_ADMIN = 'ROLE_ADMIN';
     public const ROLE_MANAGER = 'ROLE_MANAGER';
-    public const ROLE_SUPER_ADMIN = 'ROLE_SUPER_ADMIN';
     public const ROLE_READ_ONLY_USER = 'ROLE_READ_ONLY_USER';
     public const ROLE_ANONYMOUS_USER = 'ROLE_ANONYMOUS_USER';
     public const ROLE_SYSTEM_USER = 'ROLE_SYSTEM_USER';
@@ -554,22 +554,16 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
 
     public function getInbox(): Directory
     {
-        $this->inbox->setRole(Directory::LIST_INBOX);
-
         return $this->inbox;
     }
 
     public function getLists(): Directory
     {
-        $this->lists->setRole(Directory::LIST_ROOT_LIST);
-
         return $this->lists;
     }
 
     public function getTrash(): Directory
     {
-        $this->trash->setRole(Directory::LIST_TRASH);
-
         return $this->trash;
     }
 
@@ -620,7 +614,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     public function getDefaultDirectory(): ?Directory
     {
         $criteria = Criteria::create();
-        $criteria->where(Criteria::expr()->eq('label', Directory::LIST_DEFAULT));
+        $criteria->where(Criteria::expr()->eq('type', DirectoryEnumType::DEFAULT));
 
         /**
          * @psalm-suppress UndefinedInterfaceMethod

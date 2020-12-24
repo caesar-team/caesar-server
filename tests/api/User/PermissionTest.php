@@ -2,6 +2,7 @@
 
 namespace App\Tests\User;
 
+use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\User;
@@ -35,19 +36,19 @@ class PermissionTest extends Unit
         $I->sendGET('/list');
         $I->seeResponseCodeIs(HttpCode::OK);
 
-        [$inbox] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', Directory::LIST_INBOX));
+        [$inbox] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', DirectoryEnumType::INBOX));
         self::assertTrue(!isset($inbox['_links']));
 
-        [$trash] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', Directory::LIST_TRASH));
+        [$trash] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', DirectoryEnumType::TRASH));
         self::assertTrue(!isset($trash['_links']));
 
-        $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
+        $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
             'sort_list' => [],
             'create_item' => [],
-        ]]);
-        $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
-            'delete_list' => [],
             'edit_list' => [],
+        ]]);
+        $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
+            'delete_list' => [],
         ]]);
 
         [$custom] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.label=="%s")]', $directory->getLabel()));

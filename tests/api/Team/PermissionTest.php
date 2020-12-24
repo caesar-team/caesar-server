@@ -2,6 +2,7 @@
 
 namespace App\Tests\Team;
 
+use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\Entity\Directory;
 use App\Entity\Team;
 use App\Entity\User;
@@ -190,6 +191,7 @@ class PermissionTest extends Unit
 
         $I->have(Directory::class, [
             'label' => Directory::LIST_DEFAULT,
+            'type' => DirectoryEnumType::DEFAULT,
             'team' => $team,
             'parent_list' => $team->getLists(),
         ]);
@@ -233,15 +235,15 @@ class PermissionTest extends Unit
         $I->login($user);
         $I->sendGET(sprintf('/teams/%s/lists', $team->getId()));
 
-        [$trash] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', Directory::LIST_TRASH));
+        [$trash] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', DirectoryEnumType::TRASH));
         self::assertTrue(!isset($trash['_links']));
 
-        $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
+        $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
             'team_create_item' => [],
             'team_sort_list' => [],
-        ]]);
-        $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
             'team_edit_list' => [],
+        ]]);
+        $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
             'team_delete_list' => [],
         ]]);
         $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', self::DEFAULT_LIST_NAME), ['_links' => [
@@ -260,15 +262,15 @@ class PermissionTest extends Unit
         $I->login($user);
         $I->sendGET(sprintf('/teams/%s/lists', $team->getId()));
 
-        [$trash] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', Directory::LIST_TRASH));
+        [$trash] = $I->grabDataFromResponseByJsonPath(sprintf('$[?(@.type=="%s")]', DirectoryEnumType::TRASH));
         self::assertTrue(!isset($trash['_links']));
 
-        $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
+        $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
             'team_create_item' => [],
         ]]);
-        $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', Directory::LIST_DEFAULT), ['_links' => [
-            'team_edit_list' => [],
+        $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
             'team_delete_list' => [],
+            'team_edit_list' => [],
             'team_sort_list' => [],
         ]]);
 

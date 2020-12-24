@@ -2,7 +2,7 @@
 
 namespace App\Tests\User;
 
-use App\DBAL\Types\Enum\NodeEnumType;
+use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\Entity\Directory;
 use App\Entity\User;
 use App\Tests\ApiTester;
@@ -198,10 +198,9 @@ class ListTest extends Unit
         $I->login($user);
         $I->sendGET('/lists/movable');
         $I->seeResponseCodeIs(HttpCode::OK);
-        $I->dontSeeResponseContainsJson(['type' => NodeEnumType::TYPE_TRASH]);
-        $I->dontSeeResponseContainsJson(['type' => NodeEnumType::TYPE_INBOX]);
-        $I->dontSeeResponseContainsJson(['label' => Directory::LIST_TRASH]);
-        $I->dontSeeResponseContainsJson(['label' => Directory::LIST_ROOT_LIST]);
+        $I->dontSeeResponseContainsJson(['type' => DirectoryEnumType::TRASH]);
+        $I->dontSeeResponseContainsJson(['type' => DirectoryEnumType::INBOX]);
+        $I->dontSeeResponseContainsJson(['type' => DirectoryEnumType::ROOT]);
         $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('user/short_directory_list.json'));
     }
 
