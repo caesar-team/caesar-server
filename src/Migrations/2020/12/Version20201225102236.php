@@ -55,6 +55,9 @@ final class Version20201225102236 extends AbstractMigration
         $this->addSql('ALTER TABLE groups DROP CONSTRAINT fk_f06d39702c87042f');
         $this->addSql('ALTER TABLE directory RENAME TO old_directory');
 
+        $this->addSql('DROP INDEX IDX_467844DAA76ED395');
+        $this->addSql('DROP INDEX IDX_467844DA296CD8AE');
+
         $this->addSql('CREATE TABLE directory (id UUID NOT NULL, parent_directory_id UUID DEFAULT NULL, user_id UUID DEFAULT NULL, team_id UUID DEFAULT NULL, label VARCHAR(255) NOT NULL, sort INT DEFAULT 0 NOT NULL, type VARCHAR(255) CHECK(type IN (\'default\', \'root\', \'list\', \'inbox\', \'trash\')) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, object VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_467844DA7CFA5BB1 ON directory (parent_directory_id)');
         $this->addSql('CREATE INDEX IDX_467844DAA76ED395 ON directory (user_id)');
