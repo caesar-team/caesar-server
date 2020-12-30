@@ -3,7 +3,7 @@
 namespace App\Tests\Team;
 
 use App\DBAL\Types\Enum\NodeEnumType;
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
@@ -57,7 +57,6 @@ class ItemTest extends Unit
             'meta' => [
                 'title' => 'item title',
             ],
-            'favorite' => false,
             'tags' => ['tag'],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
@@ -158,18 +157,18 @@ class ItemTest extends Unit
 
         $I->login($member);
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
+        $I->sendPATCH(sprintf('/teams/%s/items/%s/move', $team->getId()->toString(), $item->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
 
         $this->dontDeleteTeamItem($superAdmin, $item);
-
         $this->canDeleteTeamItem($teamAdmin, $item);
         $item = $I->createTeamItem($team, $member);
 
         $I->login($member);
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
+        $I->sendPATCH(sprintf('/teams/%s/items/%s/move', $team->getId()->toString(), $item->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
 
@@ -179,7 +178,7 @@ class ItemTest extends Unit
 
         $I->login($member);
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
+        $I->sendPATCH(sprintf('/teams/%s/items/%s/move', $team->getId()->toString(), $item->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
         $this->canDeleteTeamItem($member, $item);
@@ -215,11 +214,11 @@ class ItemTest extends Unit
 
         $I->login($member);
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
+        $I->sendPATCH(sprintf('/teams/%s/items/%s/move', $team->getId()->toString(), $item->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
-        $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()->toString()), [
+        $I->sendPATCH(sprintf('/teams/%s/items/%s/move', $team->getId()->toString(), $item2->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
@@ -232,11 +231,11 @@ class ItemTest extends Unit
 
         $I->login($member);
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
+        $I->sendPATCH(sprintf('/teams/%s/items/%s/move', $team->getId()->toString(), $item->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
-        $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()->toString()), [
+        $I->sendPATCH(sprintf('/teams/%s/items/%s/move', $team->getId()->toString(), $item2->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
@@ -248,11 +247,11 @@ class ItemTest extends Unit
 
         $I->login($member);
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPATCH(sprintf('/items/%s/move', $item->getId()->toString()), [
+        $I->sendPATCH(sprintf('/teams/%s/items/%s/move', $team->getId()->toString(), $item->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
-        $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()->toString()), [
+        $I->sendPATCH(sprintf('/teams/%s/items/%s/move', $team->getId()->toString(), $item2->getId()->toString()), [
             'listId' => $team->getTrash()->getId()->toString(),
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
@@ -335,7 +334,7 @@ class ItemTest extends Unit
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
     }
 
-    private function canCreateTeamItem(User $user, Directory $directory): void
+    private function canCreateTeamItem(User $user, AbstractDirectory $directory): void
     {
         $I = $this->tester;
 
@@ -347,14 +346,13 @@ class ItemTest extends Unit
             'meta' => [
                 'title' => 'item title',
             ],
-            'favorite' => false,
             'tags' => ['tag'],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/create_item.json'));
     }
 
-    private function dontCreateTeamItem(User $user, Directory $directory): void
+    private function dontCreateTeamItem(User $user, AbstractDirectory $directory): void
     {
         $I = $this->tester;
 
@@ -366,7 +364,6 @@ class ItemTest extends Unit
             'meta' => [
                 'title' => 'item title',
             ],
-            'favorite' => false,
             'tags' => ['tag'],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);

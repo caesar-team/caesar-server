@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Controller\Api\Item;
 
 use App\Controller\AbstractController;
+use App\Entity\FavoriteUserItem;
 use App\Entity\Item;
 use App\Factory\View\Item\FavoriteItemViewFactory;
+use App\Favorite\Repository\FavoriteUserItemRepositoryInterface;
 use App\Model\View\Item\FavoriteItemView;
-use App\Repository\ItemRepository;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\TeamItemVoter;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -47,12 +48,23 @@ final class FavoriteController extends AbstractController
      *     methods={"POST"}
      * )
      */
-    public function toggle(Item $item, ItemRepository $repository, FavoriteItemViewFactory $factory): FavoriteItemView
-    {
+    public function toggle(
+        Item $item,
+        FavoriteUserItemRepositoryInterface $repository,
+        FavoriteItemViewFactory $factory
+    ): FavoriteItemView {
         $this->denyAccessUnlessGranted([ItemVoter::FAVORITE, TeamItemVoter::FAVORITE], $item);
 
-        $item->toggleFavorite($this->getUser());
-        $repository->save($item);
+        $user = $this->getUser();
+
+        $favorite = $repository->findFavorite($user, $item);
+        if ($favorite) {
+            $repository->delete($favorite);
+        } else {
+            $favorite = new FavoriteUserItem($user, $item);
+
+            $repository->save($favorite);
+        }
 
         return $factory->createSingle($item);
     }

@@ -6,6 +6,7 @@ namespace App\Factory\Entity;
 
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Embedded\ItemMeta;
+use App\Factory\Entity\Directory\DirectoryItemFactory;
 use App\Model\DTO\Member;
 use App\Request\Team\CreateMemberRequest;
 
@@ -15,10 +16,13 @@ class MemberFactory
 
     private ItemFactory $itemFactory;
 
-    public function __construct(UserTeamFactory $userTeamFactory, ItemFactory $itemFactory)
+    private DirectoryItemFactory $directoryItemFactory;
+
+    public function __construct(UserTeamFactory $userTeamFactory, ItemFactory $itemFactory, DirectoryItemFactory $directoryItemFactory)
     {
         $this->userTeamFactory = $userTeamFactory;
         $this->itemFactory = $itemFactory;
+        $this->directoryItemFactory = $directoryItemFactory;
     }
 
     public function createFromRequest(CreateMemberRequest $request): Member
@@ -35,11 +39,12 @@ class MemberFactory
         $keypair->setOwner($user);
         $keypair->setTeam($team);
         $keypair->setType(NodeEnumType::TYPE_KEYPAIR);
-        $keypair->setParentList($team->getDefaultDirectory());
         $keypair->setSecret($request->getSecret());
         $meta = new ItemMeta();
         $meta->setTitle(NodeEnumType::TYPE_KEYPAIR);
         $keypair->setMeta($meta);
+
+        $this->directoryItemFactory->create($keypair, $team->getDefaultDirectory());
 
         return new Member($userTeam, $keypair);
     }

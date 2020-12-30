@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Security\Voter;
 
-use App\Entity\Directory;
+use App\Entity\Directory\TeamDirectory;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
-use App\Repository\TeamRepository;
-use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -30,18 +28,6 @@ class TeamListVoter extends Voter
         self::SORT,
         self::MOVABLE,
     ];
-
-    private UserRepository $userRepository;
-
-    private TeamRepository $teamRepository;
-
-    public function __construct(
-        UserRepository $userRepository,
-        TeamRepository $teamRepository
-    ) {
-        $this->userRepository = $userRepository;
-        $this->teamRepository = $teamRepository;
-    }
 
     /**
      * {@inheritdoc}
@@ -66,15 +52,15 @@ class TeamListVoter extends Voter
         }
 
         if (self::MOVABLE !== $attribute
-            && $subject instanceof Directory
-            && $subject->isTrashDirectory()
+            && $subject instanceof TeamDirectory
+            && $subject->isTrash()
         ) {
             return false;
         }
 
         if (!in_array($attribute, [self::MOVABLE, self::SORT, self::EDIT])
-            && $subject instanceof Directory
-            && $subject->isDefaultDirectory()
+            && $subject instanceof TeamDirectory
+            && $subject->isDefault()
         ) {
             return false;
         }
@@ -89,13 +75,13 @@ class TeamListVoter extends Voter
             case self::CREATE:
                 return $subject instanceof Team && $this->canCreate($subject, $user);
             case self::EDIT:
-                return $subject instanceof Directory && $this->canEdit($subject, $user);
+                return $subject instanceof TeamDirectory && $this->canEdit($subject, $user);
             case self::DELETE:
-                return $subject instanceof Directory && $this->canDelete($subject, $user);
+                return $subject instanceof TeamDirectory && $this->canDelete($subject, $user);
             case self::SORT:
-                return $subject instanceof Directory && $this->canSort($subject, $user);
+                return $subject instanceof TeamDirectory && $this->canSort($subject, $user);
             case self::MOVABLE:
-                return $subject instanceof Directory && $this->isMovable($subject, $user);
+                return $subject instanceof TeamDirectory && $this->isMovable($subject, $user);
         }
 
         return false;
@@ -123,7 +109,7 @@ class TeamListVoter extends Voter
         return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN);
     }
 
-    private function canEdit(Directory $subject, User $user): bool
+    private function canEdit(TeamDirectory $subject, User $user): bool
     {
         $userTeam = $subject->getTeam()->getUserTeamByUser($user);
         if (null === $userTeam) {
@@ -133,22 +119,18 @@ class TeamListVoter extends Voter
         return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN);
     }
 
-    private function canDelete(Directory $subject, User $user): bool
+    private function canDelete(TeamDirectory $subject, User $user): bool
     {
         return $this->canEdit($subject, $user);
     }
 
-    private function canSort(Directory $subject, User $user): bool
+    private function canSort(TeamDirectory $subject, User $user): bool
     {
         return $this->canEdit($subject, $user);
     }
 
-    private function isMovable(Directory $subject, User $user): bool
+    private function isMovable(TeamDirectory $subject, User $user): bool
     {
-        if (null === $subject->getTeam()) {
-            return false;
-        }
-
         $userTeam = $subject->getTeam()->getUserTeamByUser($user);
         if (null === $userTeam) {
             return false;

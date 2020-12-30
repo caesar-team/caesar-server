@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Model\View\Team;
 
 use App\DBAL\Types\Enum\DirectoryEnumType;
-use App\Entity\Directory;
+use App\Entity\Directory\TeamDirectory;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
 use Swagger\Annotations as SWG;
@@ -90,9 +90,9 @@ final class TeamListView
     /**
      * @Serializer\Exclude
      */
-    private Directory $directory;
+    private TeamDirectory $directory;
 
-    public function __construct(Directory $directory)
+    public function __construct(TeamDirectory $directory)
     {
         $this->children = [];
         $this->sort = 0;
@@ -165,12 +165,12 @@ final class TeamListView
         $this->teamId = $teamId;
     }
 
-    public function getDirectory(): Directory
+    public function getDirectory(): TeamDirectory
     {
         return $this->directory;
     }
 
-    public function setDirectory(Directory $directory): void
+    public function setDirectory(TeamDirectory $directory): void
     {
         $this->directory = $directory;
     }

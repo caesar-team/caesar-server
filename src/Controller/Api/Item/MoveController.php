@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace App\Controller\Api\Item;
 
 use App\Controller\AbstractController;
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
 use App\Entity\Item;
-use App\Form\Type\Request\Item\BatchMoveItemsCollectionRequestType;
-use App\Form\Type\Request\Item\MoveItemRequestType;
-use App\Request\Item\BatchMoveItemsCollectionRequest;
-use App\Request\Item\MoveItemRequest;
+use App\Form\Type\Request\Item\BatchMovePersonalItemsType;
+use App\Form\Type\Request\Item\MovePersonalItemType;
+use App\Item\ItemRelocatorInterface;
+use App\Request\Item\BatchMovePersonalItemsRequest;
+use App\Request\Item\MovePersonalItemRequest;
 use App\Security\Voter\ItemVoter;
 use App\Security\Voter\ListVoter;
-use App\Security\Voter\TeamItemVoter;
 use App\Security\Voter\TeamListVoter;
-use App\Services\ItemRelocator;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -41,7 +40,7 @@ final class MoveController extends AbstractController
      * @SWG\Parameter(
      *     name="body",
      *     in="body",
-     *     @Model(type=MoveItemRequestType::class)
+     *     @Model(type=MovePersonalItemType::class)
      * )
      * @SWG\Response(
      *     response=204,
@@ -80,23 +79,21 @@ final class MoveController extends AbstractController
      *
      * @throws \Exception
      */
-    public function moveItem(
-        Item $item,
-        Request $request,
-        ItemRelocator $itemRelocator
-    ): void {
-        $this->denyAccessUnlessGranted([ItemVoter::MOVE, TeamItemVoter::MOVE], $item);
+    public function move(Item $item, Request $request, ItemRelocatorInterface $relocator): void
+    {
+        $this->denyAccessUnlessGranted(ItemVoter::MOVE, $item);
 
-        $moveRequest = new MoveItemRequest($item, $this->getUser());
+        $moveRequest = new MovePersonalItemRequest($this->getUser());
+        $moveRequest->setItem($item);
 
-        $form = $this->createForm(MoveItemRequestType::class, $moveRequest);
+        $form = $this->createForm(MovePersonalItemType::class, $moveRequest);
         $form->submit($request->request->all());
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
-        $this->denyAccessUnlessGranted([ListVoter::MOVABLE, TeamListVoter::MOVABLE], $moveRequest->getList());
+        $this->denyAccessUnlessGranted([ListVoter::MOVABLE, TeamListVoter::MOVABLE], $moveRequest->getDirectory());
 
-        $itemRelocator->move($moveRequest->getList(), $moveRequest);
+        $relocator->movePersonalItem($moveRequest);
     }
 
     /**
@@ -104,7 +101,7 @@ final class MoveController extends AbstractController
      * @SWG\Parameter(
      *     name="items",
      *     in="body",
-     *     @Model(type=BatchMoveItemsCollectionRequestType::class)
+     *     @Model(type=BatchMovePersonalItemsType::class)
      * )
      * @SWG\Response(
      *     response=204,
@@ -123,23 +120,23 @@ final class MoveController extends AbstractController
      */
     public function batchMove(
         Request $request,
-        Directory $directory,
-        ItemRelocator $itemRelocator
+        AbstractDirectory $directory,
+        ItemRelocatorInterface $relocator
     ): void {
         $this->denyAccessUnlessGranted([ListVoter::MOVABLE, TeamListVoter::MOVABLE], $directory);
 
-        $batchRequest = new BatchMoveItemsCollectionRequest($directory);
+        $batchRequest = new BatchMovePersonalItemsRequest($directory, $this->getUser());
 
-        $form = $this->createForm(BatchMoveItemsCollectionRequestType::class, $batchRequest);
-        $form->submit($request->request->all());
+        $form = $this->createForm(BatchMovePersonalItemsType::class, $batchRequest);
+        $form->submit($request->request->all(), false);
         if (!$form->isValid()) {
             throw new FormInvalidRequestException($form);
         }
 
-        foreach ($batchRequest->getMoveItemRequests() as $itemRequest) {
-            $this->denyAccessUnlessGranted([ItemVoter::MOVE, TeamItemVoter::MOVE], $itemRequest->getItem());
-        }
+        foreach ($batchRequest->getMoveItemRequests() as $moveItemRequest) {
+            $this->denyAccessUnlessGranted(ItemVoter::MOVE, $moveItemRequest->getItem());
 
-        $itemRelocator->batchMove($batchRequest);
+            $relocator->movePersonalItem($moveItemRequest);
+        }
     }
 }

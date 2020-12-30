@@ -6,11 +6,16 @@ namespace App\Entity;
 
 use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
+use App\Entity\Directory\AbstractDirectory;
+use App\Entity\Directory\DirectoryItem;
+use App\Entity\Directory\TeamDirectory;
+use App\Entity\Directory\UserDirectory;
 use App\Entity\Embedded\ItemMeta;
 use App\Utils\ChildItemAwareInterface;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -34,58 +39,42 @@ class Item implements ChildItemAwareInterface
      * @ORM\Id
      * @ORM\Column(type="uuid", unique=true)
      */
-    protected $id;
-
-    /**
-     * @var Directory|null
-     *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Directory", inversedBy="childItems", cascade={"persist"}, fetch="EAGER")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    protected $parentList;
-
-    /**
-     * @var Directory|null
-     *
-     * @ORM\ManyToOne(targetEntity="App\Entity\Directory")
-     * @ORM\JoinColumn(nullable=true, referencedColumnName="id", onDelete="SET NULL")
-     */
-    protected $previousList;
+    private $id;
 
     /**
      * @var string|null
      *
      * @ORM\Column(type="text")
      */
-    protected $secret;
+    private $secret;
 
     /**
      * @var ItemMeta
      *
      * @ORM\Embedded(class="App\Entity\Embedded\ItemMeta")
      */
-    protected $meta;
+    private $meta;
 
     /**
      * @var string|null
      *
      * @ORM\Column(type="text", nullable=true)
      */
-    protected $raws;
+    private $raws;
 
     /**
      * @var string
      *
      * @ORM\Column(type="string", options={"default": \App\DBAL\Types\Enum\NodeEnumType::TYPE_CRED})
      */
-    protected $type;
+    private $type;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(type="datetime")
      */
-    protected $lastUpdated;
+    private $lastUpdated;
 
     /**
      * @var Item|null
@@ -93,28 +82,14 @@ class Item implements ChildItemAwareInterface
      * @ORM\ManyToOne(targetEntity="App\Entity\Item", inversedBy="sharedItems", cascade={"persist"})
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
-    protected $originalItem;
+    private $originalItem;
 
     /**
      * @var Item[]|Collection
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="originalItem", cascade={"remove"}, orphanRemoval=true, fetch="EAGER")
      */
-    protected $sharedItems;
-
-    /**
-     * @var bool
-     *
-     * @ORM\Column(type="boolean", options={"default": false})
-     */
-    protected $favorite = false;
-
-    /**
-     * @var array
-     *
-     * @ORM\Column(type="array", nullable=true)
-     */
-    protected $teamFavorite = [];
+    private $sharedItems;
 
     /**
      * @var Tag[]|Collection
@@ -125,45 +100,45 @@ class Item implements ChildItemAwareInterface
      *     inverseJoinColumns={@ORM\JoinColumn(name="tag_id", referencedColumnName="id", onDelete="CASCADE")}
      * )
      */
-    protected $tags;
+    private $tags;
 
     /**
      * @var string|null
      *
      * @ORM\Column(type="AccessEnumType", nullable=true)
      */
-    protected $access;
+    private $access;
 
     /**
      * @var string|null
      * @ORM\Column(type="string", length=510, nullable=true)
      */
-    protected $link;
+    private $link;
     /**
      * @var string|null
      * @ORM\Column(type="string", length=10, nullable=true, options={"default": "invite"})
      */
-    protected $cause;
+    private $cause;
 
     /**
      * @var string
      * @ORM\Column(type="string", nullable=false, options={"default": "finished"}, length=10)
      */
-    protected $status = self::STATUS_DEFAULT;
+    private $status = self::STATUS_DEFAULT;
 
     /**
      * @var User|null
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="ownedItems", cascade={"persist"})
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
-    protected $owner;
+    private $owner;
 
     /**
      * @var Team|null
      * @ORM\ManyToOne(targetEntity="App\Entity\Team", inversedBy="ownedItems", cascade={"persist"})
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
-    protected $team;
+    private $team;
 
     /**
      * @var Item|null
@@ -171,14 +146,35 @@ class Item implements ChildItemAwareInterface
      * @ORM\ManyToOne(targetEntity="App\Entity\Item", inversedBy="keyPairItems", cascade={"persist"})
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
-    protected $relatedItem;
+    private $relatedItem;
 
     /**
      * @var Item[]|Collection
      *
      * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="relatedItem")
      */
-    protected $keyPairItems;
+    private $keyPairItems;
+
+    /**
+     * @var Collection<int, FavoriteTeamItem>
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\FavoriteTeamItem", mappedBy="item", cascade={"remove"}, orphanRemoval=true, fetch="EAGER")
+     */
+    private Collection $teamFavorites;
+
+    /**
+     * @var Collection<int, FavoriteUserItem>
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\FavoriteUserItem", mappedBy="item", cascade={"persist", "remove"}, orphanRemoval=true, fetch="EAGER")
+     */
+    private Collection $userFavorites;
+
+    /**
+     * @var Collection<int, DirectoryItem>
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory\DirectoryItem", mappedBy="item", cascade={"persist", "remove"}, fetch="EAGER")
+     */
+    private Collection $directoryItems;
 
     /**
      * Item constructor.
@@ -195,29 +191,18 @@ class Item implements ChildItemAwareInterface
         $this->tags = new ArrayCollection();
         $this->meta = new ItemMeta();
         $this->owner = $user;
-        if (null !== $user) {
-            $this->parentList = $user->getDefaultDirectory();
-        }
+        $this->teamFavorites = new ArrayCollection();
+        $this->userFavorites = new ArrayCollection();
+        $this->directoryItems = new ArrayCollection();
+    }
+
+    public function getParentList()
+    {
     }
 
     public function getId(): UuidInterface
     {
         return $this->id;
-    }
-
-    public function getParentList(): ?Directory
-    {
-        return $this->parentList;
-    }
-
-    public function setParentList(?Directory $parentList)
-    {
-        // Parent list could not null while create item
-        if (null === $parentList) {
-            return;
-        }
-
-        $this->parentList = $parentList;
     }
 
     public function getSecret(): ?string
@@ -321,27 +306,6 @@ class Item implements ChildItemAwareInterface
         $this->sharedItems = $sharedItems;
     }
 
-    public function isFavorite(): bool
-    {
-        return $this->favorite;
-    }
-
-    public function setFavorite(bool $favorite): void
-    {
-        $this->favorite = $favorite;
-    }
-
-    public function toggleFavorite(User $user): void
-    {
-        if (null !== $this->getTeam()) {
-            $this->toggleTeamFavorite($user);
-
-            return;
-        }
-
-        $this->favorite = !$this->favorite;
-    }
-
     public function getType(): string
     {
         return $this->type;
@@ -430,21 +394,6 @@ class Item implements ChildItemAwareInterface
         $this->status = $status;
     }
 
-    public function getPreviousList(): ?Directory
-    {
-        return $this->previousList;
-    }
-
-    public function getPreviousListId(): ?string
-    {
-        return null !== $this->previousList ? $this->previousList->getId()->toString() : null;
-    }
-
-    public function setPreviousList(?Directory $previousList): void
-    {
-        $this->previousList = $previousList;
-    }
-
     public function getOwner(): ?User
     {
         return $this->originalItem ? $this->originalItem->getOwner() : $this->owner;
@@ -481,37 +430,6 @@ class Item implements ChildItemAwareInterface
     public function setTeam(?Team $team): void
     {
         $this->team = $team;
-    }
-
-    public function getTeamFavorite(): array
-    {
-        /**
-         * @psalm-suppress RedundantConditionGivenDocblockType
-         * @psalm-suppress DocblockTypeContradiction
-         */
-        return null !== $this->teamFavorite ? $this->teamFavorite : [];
-    }
-
-    public function setTeamFavorite(array $teamFavorite): void
-    {
-        $this->teamFavorite = $teamFavorite;
-    }
-
-    public function toggleTeamFavorite(User $user): void
-    {
-        $teamFavorite = $this->getTeamFavorite();
-        if ($this->isTeamFavorite($user)) {
-            unset($teamFavorite[$user->getId()->toString()]);
-        } else {
-            $teamFavorite[$user->getId()->toString()] = $user->getId()->toString();
-        }
-
-        $this->setTeamFavorite($teamFavorite);
-    }
-
-    public function isTeamFavorite(User $user): bool
-    {
-        return in_array($user->getId()->toString(), $this->getTeamFavorite());
     }
 
     public function getRelatedItem(): ?Item
@@ -561,20 +479,6 @@ class Item implements ChildItemAwareInterface
         })->toArray();
     }
 
-    public function isNotDeletable(): bool
-    {
-        return DirectoryEnumType::TRASH !== $this->getParentList()->getType()
-            && NodeEnumType::TYPE_KEYPAIR !== $this->getType()
-        ;
-    }
-
-    public function moveTo(Directory $directory): void
-    {
-        $this->setPreviousList($this->getParentList());
-        $this->setParentList($directory);
-        $this->setTeam($directory->getTeam());
-    }
-
     public function getTeamKeypairGroupKey(): string
     {
         $groups = [];
@@ -589,5 +493,173 @@ class Item implements ChildItemAwareInterface
         }
 
         return implode('', $groups);
+    }
+
+    public function isNotDeletable(): bool
+    {
+        if (null !== $this->getTeam()) {
+            $directory = $this->getTeamDirectory();
+        } else {
+            $directory = $this->getOwnerDirectory();
+        }
+
+        return NodeEnumType::TYPE_KEYPAIR !== $this->getType()
+            && (null === $directory || DirectoryEnumType::TRASH !== $directory->getType())
+        ;
+    }
+
+    /**
+     * @return FavoriteTeamItem[]
+     */
+    public function getTeamFavorites(): array
+    {
+        return $this->teamFavorites->toArray();
+    }
+
+    public function addTeamFavorite(FavoriteTeamItem $favoriteTeamItem): void
+    {
+        if (!$this->teamFavorites->contains($favoriteTeamItem)) {
+            $this->teamFavorites->add($favoriteTeamItem);
+        }
+    }
+
+    /**
+     * @return FavoriteUserItem[]
+     */
+    public function getUserFavorites(): array
+    {
+        return $this->userFavorites->toArray();
+    }
+
+    public function findUserFavorite(User $user): ?FavoriteUserItem
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('user', $user));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $favorite = $this->userFavorites->matching($criteria)->first();
+
+        return $favorite instanceof FavoriteUserItem ? $favorite : null;
+    }
+
+    public function isFavoriteByUser(User $user): bool
+    {
+        $favorite = $this->findUserFavorite($user);
+
+        return null !== $favorite;
+    }
+
+    public function addUserFavorite(FavoriteUserItem $favoriteUserItem): void
+    {
+        if (!$this->userFavorites->contains($favoriteUserItem)) {
+            $this->userFavorites->add($favoriteUserItem);
+            $favoriteUserItem->setItem($this);
+        }
+    }
+
+    /**
+     * @return DirectoryItem[]
+     */
+    public function getDirectoryItems(): array
+    {
+        return $this->directoryItems->toArray();
+    }
+
+    public function addDirectoryItem(DirectoryItem $directory): void
+    {
+        if (!$this->directoryItems->contains($directory)) {
+            $this->directoryItems->add($directory);
+            $directory->setItem($this);
+        }
+    }
+
+    /**
+     * @return DirectoryItem
+     */
+    public function getDirectoryItemByDirectory(AbstractDirectory $directory): ?DirectoryItem
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('directory', $directory));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        $directoryItem = $this->directoryItems->matching($criteria)->first();
+
+        return $directoryItem instanceof DirectoryItem ? $directoryItem : null;
+    }
+
+    public function getCurrentDirectoryItemByTeam(Team $team): ?DirectoryItem
+    {
+        $directoryItem = $this->directoryItems->filter(static function (DirectoryItem $directoryItem) use ($team) {
+            $teamDirectory = $directoryItem->getDirectory();
+            if (!$teamDirectory instanceof TeamDirectory) {
+                return false;
+            }
+
+            return $teamDirectory->getTeam()->equals($team);
+        })->first();
+
+        if (!$directoryItem instanceof DirectoryItem) {
+            return null;
+        }
+
+        return $directoryItem;
+    }
+
+    public function getCurrentDirectoryItemByUser(User $user): ?DirectoryItem
+    {
+        $directoryItem = $this->directoryItems->filter(static function (DirectoryItem $directoryItem) use ($user) {
+            $userDirectory = $directoryItem->getDirectory();
+            if (!$userDirectory instanceof UserDirectory) {
+                return false;
+            }
+
+            return $userDirectory->getUser()->equals($user);
+        })->first();
+
+        if (!$directoryItem instanceof DirectoryItem) {
+            return null;
+        }
+
+        return $directoryItem;
+    }
+
+    public function getCurrentDirectoryByUser(User $user): ?AbstractDirectory
+    {
+        $directoryItem = $this->getCurrentDirectoryItemByUser($user);
+        if (!$directoryItem instanceof DirectoryItem) {
+            return null;
+        }
+
+        return $directoryItem->getDirectory();
+    }
+
+    public function getOwnerDirectory(): ?AbstractDirectory
+    {
+        $directoryItem = $this->getCurrentDirectoryItemByUser($this->owner);
+        if (!$directoryItem instanceof DirectoryItem) {
+            return null;
+        }
+
+        return $directoryItem->getDirectory();
+    }
+
+    public function getTeamDirectory(): ?AbstractDirectory
+    {
+        if (null == $this->team) {
+            return null;
+        }
+
+        $directoryItem = $this->getCurrentDirectoryItemByTeam($this->team);
+        if (!$directoryItem instanceof DirectoryItem) {
+            return null;
+        }
+
+        return $directoryItem->getDirectory();
     }
 }

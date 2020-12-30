@@ -4,7 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Admin\Field\AssociationFieldWithSort;
 use App\DBAL\Types\Enum\DirectoryEnumType;
-use App\Entity\Directory;
+use App\Entity\Directory\TeamDirectory;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
@@ -23,7 +23,7 @@ class TeamListCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
-        return Directory::class;
+        return TeamDirectory::class;
     }
 
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder

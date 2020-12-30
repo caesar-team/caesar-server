@@ -5,6 +5,7 @@ namespace App\Tests\Item;
 use App\Controller\Admin\ItemCrudController;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
+use App\Entity\Directory\UserDirectory;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Tests\ApiTester;
@@ -249,10 +250,6 @@ class ItemTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-        /** @var Directory $directory */
-        $directory = $I->have(Directory::class, [
-            'parent_list' => $user->getLists(),
-        ]);
 
         $I->login($user);
         $I->sendPOST('items', [
@@ -261,16 +258,14 @@ class ItemTest extends Unit
             'secret' => uniqid(),
             'meta' => [
             ],
-            'favorite' => false,
             'tags' => ['tag'],
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
 
         $I->sendPOST('items', [
-            'listId' => $directory->getId()->toString(),
+            'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
-            'favorite' => false,
             'meta' => [
                 'attachmentsCount' => 2,
                 'title' => 'item title',
@@ -376,11 +371,14 @@ class ItemTest extends Unit
         $user = $I->have(User::class);
         $item = $I->createUserItem($user);
 
-        /** @var Directory $moveDirectory */
-        $moveDirectory = $I->have(Directory::class, ['parent_list' => $user->getLists()]);
+        /** @var UserDirectory $moveDirectory */
+        $moveDirectory = $I->have(UserDirectory::class, [
+            'parent_directory' => $user->getLists(),
+            'user' => $user,
+        ]);
 
-        /** @var Directory $otherDirectory */
-        $otherDirectory = $I->have(Directory::class);
+        /** @var UserDirectory $otherDirectory */
+        $otherDirectory = $I->have(UserDirectory::class);
         /** @var Item $otherItem */
         $otherItem = $I->have(Item::class);
 
@@ -390,14 +388,13 @@ class ItemTest extends Unit
             'listId' => $moveDirectory->getId(),
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
-        $I->seeInDatabase('item', ['id' => $item->getId(), 'parent_list_id' => $moveDirectory->getId()]);
+        $I->seeInDatabase('directory_item', ['item_id' => $item->getId(), 'directory_id' => $moveDirectory->getId()]);
 
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/%s/move', $item->getId()), [
             'listId' => $otherDirectory->getId()->toString(),
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
-        $I->seeResponseContains('You are not owner of list');
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
 
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/%s/move', $otherItem->getId()), [
@@ -418,11 +415,14 @@ class ItemTest extends Unit
 
         $item = $I->createUserItem($user);
         $item2 = $I->createUserItem($user);
-        /** @var Directory $moveDirectory */
-        $moveDirectory = $I->have(Directory::class, ['parent_list' => $user->getLists()]);
+        /** @var UserDirectory $moveDirectory */
+        $moveDirectory = $I->have(UserDirectory::class, [
+            'parent_directory' => $user->getLists(),
+            'user' => $user,
+        ]);
 
         /** @var Directory $otherDirectory */
-        $otherDirectory = $I->have(Directory::class);
+        $otherDirectory = $I->have(UserDirectory::class);
         /** @var Item $otherItem */
         $otherItem = $I->have(Item::class);
 
@@ -443,8 +443,10 @@ class ItemTest extends Unit
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
-        $I->seeInDatabase('item', ['id' => $item->getId(), 'parent_list_id' => $moveDirectory->getId(), 'secret' => $changeSecret]);
-        $I->seeInDatabase('item', ['id' => $item2->getId(), 'parent_list_id' => $moveDirectory->getId(), 'secret' => $item2->getSecret()]);
+        $I->seeInDatabase('item', ['id' => $item->getId(), 'secret' => $changeSecret]);
+        $I->seeInDatabase('item', ['id' => $item2->getId(), 'secret' => $item2->getSecret()]);
+        $I->seeInDatabase('directory_item', ['item_id' => $item->getId(), 'directory_id' => $moveDirectory->getId()]);
+        $I->seeInDatabase('directory_item', ['item_id' => $item2->getId(), 'directory_id' => $moveDirectory->getId()]);
 
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/batch/move/list/%s', $otherDirectory->getId()), [

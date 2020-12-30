@@ -3,6 +3,8 @@
 namespace App\Tests;
 
 use App\DBAL\Types\Enum\NodeEnumType;
+use App\Entity\Directory\AbstractDirectory;
+use App\Entity\Directory\DirectoryItem;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
@@ -83,42 +85,60 @@ class ApiTester extends \Codeception\Actor
         return $team;
     }
 
-    public function createUserItem(User $user): Item
+    public function createUserItem(User $user, ?AbstractDirectory $directory = null): Item
     {
-        return $this->have(Item::class, [
+        /** @var Item $item */
+        $item = $this->have(Item::class, [
             'owner' => $user,
-            'parent_list' => $user->getDefaultDirectory(),
         ]);
+        $directoryItem = $this->have(DirectoryItem::class, [
+            'item' => $item,
+            'directory' => $directory ?: $user->getDefaultDirectory(),
+        ]);
+        $item->addDirectoryItem($directoryItem);
+
+        return $item;
     }
 
-    public function createTeamItem(Team $team, User $user): Item
+    public function createTeamItem(Team $team, User $user, array $attrs = []): Item
     {
-        return $this->have(Item::class, [
-            'parent_list' => $team->getDefaultDirectory(),
+        /** @var Item $item */
+        $item = $this->have(Item::class, array_merge([
             'owner' => $user,
             'team' => $team,
+        ], $attrs));
+        $directoryItem = $this->have(DirectoryItem::class, [
+            'item' => $item,
+            'directory' => $team->getDefaultDirectory(),
         ]);
+        $item->addDirectoryItem($directoryItem);
+
+        return $item;
     }
 
     public function createKeypairTeamItem(Team $team, User $user, ?Item $item = null): Item
     {
-        return $this->have(Item::class, [
+        return $this->createTeamItem($team, $user, [
             'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $team->getDefaultDirectory(),
-            'owner' => $user,
-            'team' => $team,
             'related_item' => $item,
         ]);
     }
 
     public function createKeypairItem(User $user, Item $item): Item
     {
-        return $this->have(Item::class, [
+        /** @var Item $item */
+        $item = $this->have(Item::class, [
             'type' => NodeEnumType::TYPE_KEYPAIR,
-            'parent_list' => $user->getInbox(),
             'owner' => $user,
             'related_item' => $item,
         ]);
+        $directoryItem = $this->have(DirectoryItem::class, [
+            'item' => $item,
+            'directory' => $user->getInbox(),
+        ]);
+        $item->addDirectoryItem($directoryItem);
+
+        return $item;
     }
 
     public function addUserToTeam(Team $team, User $user, string $role = UserTeam::USER_ROLE_MEMBER): void

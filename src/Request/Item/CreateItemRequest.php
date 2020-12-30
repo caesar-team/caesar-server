@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Request\Item;
 
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
+use App\Entity\Directory\TeamDirectory;
 use App\Entity\Team;
 use App\Entity\User;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -13,7 +14,7 @@ final class CreateItemRequest
 {
     private ?User $owner;
 
-    private ?Directory $list;
+    private ?AbstractDirectory $list;
 
     /**
      * @Assert\NotBlank()
@@ -32,8 +33,6 @@ final class CreateItemRequest
 
     private ?string $raws;
 
-    private bool $favorite;
-
     private array $tags;
 
     private User $user;
@@ -45,7 +44,6 @@ final class CreateItemRequest
         $this->list = null;
         $this->type = null;
         $this->secret = null;
-        $this->favorite = false;
         $this->meta = new ItemMetaRequest();
         $this->raws = null;
         $this->tags = [];
@@ -61,12 +59,12 @@ final class CreateItemRequest
         $this->owner = $owner;
     }
 
-    public function getList(): ?Directory
+    public function getList(): ?AbstractDirectory
     {
         return $this->list;
     }
 
-    public function setList(?Directory $list): void
+    public function setList(?AbstractDirectory $list): void
     {
         $this->list = $list;
     }
@@ -91,16 +89,6 @@ final class CreateItemRequest
         $this->secret = $secret;
     }
 
-    public function isFavorite(): bool
-    {
-        return $this->favorite;
-    }
-
-    public function setFavorite(bool $favorite): void
-    {
-        $this->favorite = $favorite;
-    }
-
     public function getTags(): array
     {
         return $this->tags;
@@ -118,7 +106,9 @@ final class CreateItemRequest
 
     public function getTeam(): ?Team
     {
-        return null !== $this->getList() ? $this->getList()->getTeam() : null;
+        $list = $this->getList();
+
+        return $list instanceof TeamDirectory ? $list->getTeam() : null;
     }
 
     public function getMeta(): ItemMetaRequest

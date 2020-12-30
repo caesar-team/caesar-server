@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Security\Voter;
 
-use App\Entity\Directory;
+use App\Entity\Directory\UserDirectory;
 use App\Entity\User;
-use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -21,13 +20,6 @@ class ListVoter extends Voter
     public const AVAILABLE_ATTRIBUTES = [
         self::CREATE, self::EDIT, self::DELETE, self::SORT, self::MOVABLE,
     ];
-
-    private UserRepository $userRepository;
-
-    public function __construct(UserRepository $userRepository)
-    {
-        $this->userRepository = $userRepository;
-    }
 
     /**
      * {@inheritdoc}
@@ -50,9 +42,10 @@ class ListVoter extends Voter
         if (!$user instanceof User) {
             return false;
         }
+
         if (self::MOVABLE !== $attribute
-            && $subject instanceof Directory
-            && ($subject->equals($user->getInbox()) || $subject->equals($user->getTrash()))
+            && $subject instanceof UserDirectory
+            && ($subject->isInbox() || $subject->isTrash())
         ) {
             return false;
         }
@@ -61,13 +54,13 @@ class ListVoter extends Voter
             case self::CREATE:
                 return $this->canCreate($user);
             case self::EDIT:
-                return $subject instanceof Directory && $this->canEdit($subject, $user);
+                return $subject instanceof UserDirectory && $this->canEdit($subject, $user);
             case self::DELETE:
-                return $subject instanceof Directory && $this->canDelete($subject, $user);
+                return $subject instanceof UserDirectory && $this->canDelete($subject, $user);
             case self::SORT:
-                return $subject instanceof Directory && $this->canSort($subject, $user);
+                return $subject instanceof UserDirectory && $this->canSort($subject, $user);
             case self::MOVABLE:
-                return $subject instanceof Directory && $this->isMovable($subject, $user);
+                return $subject instanceof UserDirectory && $this->isMovable($subject, $user);
         }
 
         return false;
@@ -78,24 +71,22 @@ class ListVoter extends Voter
         return !$user->hasRole(User::ROLE_ANONYMOUS_USER);
     }
 
-    private function canEdit(Directory $subject, User $user): bool
+    private function canEdit(UserDirectory $subject, User $user): bool
     {
         return $this->canSort($subject, $user);
     }
 
-    private function canDelete(Directory $subject, User $user): bool
+    private function canDelete(UserDirectory $subject, User $user): bool
     {
-        return $this->canSort($subject, $user) && Directory::LIST_DEFAULT !== $subject->getLabel();
+        return $this->canSort($subject, $user) && !$subject->isDefault();
     }
 
-    private function canSort(Directory $subject, User $user): bool
+    private function canSort(UserDirectory $subject, User $user): bool
     {
-        $itemOwner = $this->userRepository->getByList($subject);
-
-        return $user->equals($itemOwner);
+        return $user->equals($subject->getUser());
     }
 
-    private function isMovable(Directory $subject, User $user): bool
+    private function isMovable(UserDirectory $subject, User $user): bool
     {
         return $this->canSort($subject, $user);
     }

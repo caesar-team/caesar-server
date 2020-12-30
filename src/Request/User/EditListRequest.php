@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Request\User;
 
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
+use App\Entity\Directory\UserDirectory;
 use App\Request\EditListRequestInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -18,9 +19,9 @@ final class EditListRequest implements EditListRequestInterface
      */
     private $label;
 
-    private Directory $directory;
+    private UserDirectory $directory;
 
-    public function __construct(Directory $directory)
+    public function __construct(UserDirectory $directory)
     {
         $this->directory = $directory;
     }
@@ -35,7 +36,7 @@ final class EditListRequest implements EditListRequestInterface
         $this->label = $label;
     }
 
-    public function getDirectory(): Directory
+    public function getDirectory(): AbstractDirectory
     {
         return $this->directory;
     }
@@ -45,7 +46,7 @@ final class EditListRequest implements EditListRequestInterface
      */
     public function uniqueValidation(ExecutionContextInterface $context)
     {
-        $list = $this->getDirectory()->getUser()->getDirectoryByLabel($this->getLabel());
+        $list = $this->directory->getUser()->getDirectoryByLabel($this->getLabel());
 
         if ($list && !$this->getDirectory()->equals($list)) {
             $context->buildViolation('list.create.label.already_exists')

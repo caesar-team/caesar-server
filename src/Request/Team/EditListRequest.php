@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Request\Team;
 
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
+use App\Entity\Directory\TeamDirectory;
 use App\Request\EditListRequestInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -16,9 +17,9 @@ final class EditListRequest implements EditListRequestInterface
      */
     private ?string $label;
 
-    private Directory $directory;
+    private AbstractDirectory $directory;
 
-    public function __construct(Directory $directory)
+    public function __construct(AbstractDirectory $directory)
     {
         $this->directory = $directory;
         $this->label = $directory->getLabel();
@@ -39,8 +40,12 @@ final class EditListRequest implements EditListRequestInterface
      */
     public function uniqueValidation(ExecutionContextInterface $context)
     {
-        $list = $this->getDirectory()->getTeam()->getDirectoryByLabel($this->getLabel());
+        $directory = $this->getDirectory();
+        if (!$directory instanceof TeamDirectory) {
+            return null;
+        }
 
+        $list = $directory->getTeam()->getDirectoryByLabel($this->getLabel());
         if ($list && !$this->getDirectory()->equals($list)) {
             $context->buildViolation('list.create.label.already_exists')
                 ->atPath('label')
@@ -49,7 +54,7 @@ final class EditListRequest implements EditListRequestInterface
         }
     }
 
-    public function getDirectory(): Directory
+    public function getDirectory(): AbstractDirectory
     {
         return $this->directory;
     }
