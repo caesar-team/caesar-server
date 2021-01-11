@@ -542,6 +542,11 @@ class Item implements ChildItemAwareInterface
         $this->keyPairItems = $sharedItems;
     }
 
+    public function removeKeypairItem(Item $item): void
+    {
+        $this->keyPairItems->removeElement($item);
+    }
+
     public function getKeyPairItemByUser(User $user): ?Item
     {
         /**
@@ -589,5 +594,10 @@ class Item implements ChildItemAwareInterface
         }
 
         return implode('', $groups);
+    }
+
+    public function hasAnonymousUser(): bool
+    {
+        return $this->owner->hasRole(User::ROLE_ANONYMOUS_USER);
     }
 }
