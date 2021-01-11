@@ -8,6 +8,7 @@ use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
+use App\Event\Item\ItemsDateRefreshEvent;
 use App\Model\DTO\Share;
 use App\Model\Query\ItemListQuery;
 use App\Model\Query\ItemsAllQuery;
@@ -17,6 +18,7 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query\Expr\Join;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @method Item|null find($id, $lockMode = null, $lockVersion = null)
@@ -28,10 +30,13 @@ class ItemRepository extends ServiceEntityRepository
 {
     private LoggerInterface $logger;
 
-    public function __construct(ManagerRegistry $registry, LoggerInterface $logger)
+    private EventDispatcherInterface $dispatcher;
+
+    public function __construct(ManagerRegistry $registry, LoggerInterface $logger, EventDispatcherInterface $dispatcher)
     {
         parent::__construct($registry, Item::class);
         $this->logger = $logger;
+        $this->dispatcher = $dispatcher;
     }
 
     /**
@@ -202,6 +207,8 @@ class ItemRepository extends ServiceEntityRepository
         $this->_em->persist($item);
         $this->_em->flush();
 
+        $this->dispatcher->dispatch(new ItemsDateRefreshEvent(...[$item]));
+
         return $item;
     }
 
@@ -251,16 +258,20 @@ class ItemRepository extends ServiceEntityRepository
     public function saveShares(Share ...$shares): array
     {
         $result = [];
+        $items = [];
         foreach ($shares as $share) {
             try {
                 $this->getEntityManager()->persist($share->getKeypair());
                 $this->getEntityManager()->flush();
 
+                $items[] = $share->getKeypair();
                 $result[] = $share;
             } catch (\Exception $exception) {
                 $this->logger->critical(sprintf('Could not save share, reason: %s', $exception->getMessage()));
             }
         }
+
+        $this->dispatcher->dispatch(new ItemsDateRefreshEvent(...$items));
 
         return $result;
     }

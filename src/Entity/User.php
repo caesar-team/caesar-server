@@ -156,7 +156,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @var Directory
      *
-     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userInbox", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userInbox", cascade={"persist", "remove"})
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $inbox;
@@ -164,7 +164,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @var Directory
      *
-     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userLists", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userLists", cascade={"persist", "remove"})
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $lists;
@@ -172,7 +172,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @var Directory
      *
-     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userTrash", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userTrash", cascade={"persist", "remove"})
      * @ORM\JoinColumn(onDelete="CASCADE")
      */
     protected $trash;
