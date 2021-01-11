@@ -157,7 +157,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     /**
      * @var Collection<int, UserDirectory>
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Directory\UserDirectory", mappedBy="user", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory\UserDirectory", mappedBy="user", cascade={"persist", "remove"})
      * @ORM\OrderBy({"sort": "ASC"})
      */
     private Collection $directories;
