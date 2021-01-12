@@ -112,7 +112,10 @@ class GroupedUserItems
         foreach ($this->items as $item) {
             switch ($item->getType()) {
                 case NodeEnumType::TYPE_KEYPAIR:
-                    if (!$item->getSignedOwner()->equals($this->user)) {
+                    if (null !== $item->getTeam()
+                        && null === $item->getRelatedItem()
+                        && !$item->getSignedOwner()->equals($this->user)
+                    ) {
                         break;
                     }
 

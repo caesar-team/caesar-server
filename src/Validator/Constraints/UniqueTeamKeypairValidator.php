@@ -29,6 +29,10 @@ class UniqueTeamKeypairValidator extends ConstraintValidator
             return;
         }
 
+        if (null !== $value->getRelatedItem()) {
+            return;
+        }
+
         if (null === $value->getOwner() || null === $value->getTeam()) {
             return;
         }
