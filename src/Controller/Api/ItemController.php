@@ -57,6 +57,7 @@ final class ItemController extends AbstractController
             throw new FormInvalidRequestException($form);
         }
 
+        $refreshItems = [];
         foreach ($batchRequest->getItems() as $item) {
             $this->denyAccessUnlessGranted([ItemVoter::DELETE, TeamItemVoter::DELETE], $item);
             if ($item->isNotDeletable()) {
@@ -64,12 +65,20 @@ final class ItemController extends AbstractController
                 throw new BadRequestHttpException($message);
             }
 
+            $relatedItem = $item->getRelatedItem();
+            if ($item->hasAnonymousUser()) {
+                $manager->remove($item->getSignedOwner());
+            }
+            if (null !== $relatedItem) {
+                $refreshItems[] = $relatedItem;
+            }
+
             $manager->remove($item);
         }
 
         $manager->flush();
 
-        $dispatcher->dispatch(new ItemsDateRefreshEvent(...$batchRequest->getItems()));
+        $dispatcher->dispatch(new ItemsDateRefreshEvent(...$refreshItems));
     }
 
     /**
@@ -122,8 +131,8 @@ final class ItemController extends AbstractController
             $message = $this->translator->trans('app.exception.delete_trash_only');
             throw new BadRequestHttpException($message);
         }
-        $relatedItem = $item->getRelatedItem();
 
+        $relatedItem = $item->getRelatedItem();
         if ($item->hasAnonymousUser()) {
             $manager->remove($item->getSignedOwner());
         }
