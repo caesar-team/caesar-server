@@ -360,6 +360,51 @@ class ItemTest extends Unit
 
         $I->sendDELETE(sprintf('/items/%s', $otherItem->getId()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
+
+        $I->dontSeeInDatabase('item', ['id' => $item->getId()->toString()]);
+    }
+
+    /** @test */
+    public function deleteBatchItems()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+        $item1 = $I->createUserItem($user);
+        $item2 = $I->createUserItem($user);
+        /** @var Item $otherItem */
+        $otherItem = $I->have(Item::class);
+
+        $I->login($user);
+        $I->sendDELETE('/items/batch', ['items' => [
+            $item1->getId()->toString(), $item2->getId()->toString(),
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('You can fully delete item only from trash.');
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('/items/%s/move', $item1->getId()), [
+            'listId' => $user->getTrash()->getId()->toString(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+        $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()), [
+            'listId' => $user->getTrash()->getId()->toString(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
+        $I->sendDELETE('/items/batch', ['items' => [
+            $item1->getId()->toString(), $otherItem->getId()->toString(),
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
+
+        $I->sendDELETE('/items/batch', ['items' => [
+            $item1->getId()->toString(), $item2->getId()->toString(),
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
+        $I->dontSeeInDatabase('item', ['id' => $item1->getId()->toString()]);
+        $I->dontSeeInDatabase('item', ['id' => $item2->getId()->toString()]);
     }
 
     /** @test */

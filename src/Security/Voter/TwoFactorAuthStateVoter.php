@@ -80,14 +80,12 @@ class TwoFactorAuthStateVoter extends Voter
     /**
      * @throws JWTDecodeFailureException
      */
-    private function isCompleteJwt(User $user): bool
+    private function isCompleteJwt(): bool
     {
         if ($this->security->getToken() instanceof JWTUserToken) {
             $decodedToken = $this->encoder->decode($this->security->getToken()->getCredentials());
 
-            $isCompleteFlow = User::FLOW_STATUS_FINISHED === $user->getFlowStatus();
-
-            return $isCompleteFlow && !isset($decodedToken[TwoFactorInProgressVoter::CHECK_KEY_NAME]);
+            return !isset($decodedToken[TwoFactorInProgressVoter::CHECK_KEY_NAME]);
         }
 
         return false;
@@ -103,7 +101,7 @@ class TwoFactorAuthStateVoter extends Voter
             return false;
         }
 
-        return $this->isCompleteJwt($user);
+        return $this->isCompleteJwt();
     }
 
     private function canCheck(User $user): bool
