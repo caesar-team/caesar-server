@@ -55,7 +55,7 @@ class UserMasterSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::RESPONSE => ['onKernelResponse', 16]
+            KernelEvents::RESPONSE => ['onKernelResponse', 16],
         ];
     }
 
@@ -81,7 +81,7 @@ class UserMasterSubscriber implements EventSubscriberInterface
                 $response = $event->getResponse();
 
                 $message = $this->translator->trans('app.exception.update_user_password');
-                $errorResponse =  new JsonResponse(['errors' => [$message], 'route' => $request->get('_route')], Response::HTTP_UNAUTHORIZED);
+                $errorResponse = new JsonResponse(['errors' => [$message], 'route' => $request->get('_route')], Response::HTTP_UNAUTHORIZED);
                 $errorResponse->headers->set('Access-Control-Allow-Origin', $response->headers->get('Access-Control-Allow-Origin'));
                 if ($response->headers->has('Access-Control-Allow-Credentials')) {
                     $errorResponse->headers->set('Access-Control-Allow-Credentials', $response->headers->get('Access-Control-Allow-Credentials'));
@@ -89,7 +89,7 @@ class UserMasterSubscriber implements EventSubscriberInterface
                 if ($response->headers->has('Access-Control-Expose-Headers')) {
                     $errorResponse->headers->set('Access-Control-Expose-Headers', $response->headers->get('Access-Control-Expose-Headers'));
                 }
-                
+
                 $event->setResponse($errorResponse);
             }
         }
