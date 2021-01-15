@@ -93,9 +93,10 @@ class ItemRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('item');
         $queryBuilder
             ->where('item.type = :type')
-            ->andWhere('item.owner = :user')
+            ->andWhere('item.owner = :user OR (item.team IN (:teams) AND item.relatedItem IS NOT NULL)')
             ->setParameter('type', NodeEnumType::TYPE_KEYPAIR)
             ->setParameter('user', $request->getUser())
+            ->setParameter('teams', $request->getUser()->getTeamsIds())
         ;
 
         if ($request->hasPersonalType()) {
