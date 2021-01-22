@@ -115,5 +115,6 @@ security:
         - { path: ^/api/auth, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api/users/self, roles: [IS_AUTHENTICATED_ANONYMOUSLY], methods: [GET] }
         - { path: ^/api/doc, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
+        - { path: ^/api/config, roles: [IS_AUTHENTICATED_ANONYMOUSLY]}
         - { path: ^/api, roles: [ROLE_USER]}
         - { path: ^/admin, roles: [ROLE_ADMIN]}
