@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Embedded\ItemMeta;
 use App\Utils\ChildItemAwareInterface;
@@ -541,6 +542,11 @@ class Item implements ChildItemAwareInterface
         $this->keyPairItems = $sharedItems;
     }
 
+    public function removeKeypairItem(Item $item): void
+    {
+        $this->keyPairItems->removeElement($item);
+    }
+
     public function getKeyPairItemByUser(User $user): ?Item
     {
         /**
@@ -562,7 +568,7 @@ class Item implements ChildItemAwareInterface
 
     public function isNotDeletable(): bool
     {
-        return NodeEnumType::TYPE_TRASH !== $this->getParentList()->getType()
+        return DirectoryEnumType::TRASH !== $this->getParentList()->getType()
             && NodeEnumType::TYPE_KEYPAIR !== $this->getType()
         ;
     }
@@ -588,5 +594,10 @@ class Item implements ChildItemAwareInterface
         }
 
         return implode('', $groups);
+    }
+
+    public function hasAnonymousUser(): bool
+    {
+        return $this->owner->hasRole(User::ROLE_ANONYMOUS_USER);
     }
 }

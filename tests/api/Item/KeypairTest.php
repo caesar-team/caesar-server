@@ -77,13 +77,16 @@ class KeypairTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
+        /** @var User $member */
+        $member = $I->have(User::class);
         $item = $I->createUserItem($user);
         $team = $I->createTeam($user);
+        $I->addUserToTeam($team, $member);
         $teamItem = $I->createTeamItem($team, $user);
 
         $personalKeypair = $I->createKeypairItem($user, $item);
         $teamKeypair = $I->createKeypairTeamItem($team, $user);
-        $teamItemKeypair = $I->createKeypairTeamItem($team, $user, $teamItem);
+        $teamItemKeypair = $I->createKeypairTeamItem($team, $member, $teamItem);
 
         $I->login($user);
         $I->sendGET('/keypairs');

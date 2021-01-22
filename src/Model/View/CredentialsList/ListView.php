@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Model\View\CredentialsList;
 
-use App\DBAL\Types\Enum\NodeEnumType;
+use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\Entity\Directory;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
@@ -61,7 +61,7 @@ class ListView
     private string $id;
 
     /**
-     * @SWG\Property(type="string", enum=NodeEnumType::AVAILABLE_TYPES)
+     * @SWG\Property(type="string", enum=DirectoryEnumType::AVAILABLE_TYPES)
      */
     private string $type;
 

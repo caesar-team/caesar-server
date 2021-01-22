@@ -1,6 +1,6 @@
 <?php
 
-use App\DBAL\Types\Enum\NodeEnumType;
+use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\Entity\Directory;
 use League\FactoryMuffin\FactoryMuffin;
 use League\FactoryMuffin\Faker\Facade as Faker;
@@ -9,6 +9,6 @@ use League\FactoryMuffin\Faker\Facade as Faker;
 $fm->define(Directory::class)->setDefinitions([
     'parent_list' => null,
     'label' => Faker::text(20),
-    'type' => NodeEnumType::TYPE_LIST,
+    'type' => DirectoryEnumType::LIST,
     'sort' => Faker::numberBetween(0, 20),
 ]);

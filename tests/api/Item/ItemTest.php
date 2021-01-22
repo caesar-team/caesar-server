@@ -72,6 +72,36 @@ class ItemTest extends Unit
     }
 
     /** @test */
+    public function getTeamUnExist()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+        $team = $I->createTeam($user);
+        $otherTeam = $I->createTeam($user);
+
+        $item = $I->createTeamItem($team, $user);
+        $item1 = $I->createUserItem($user);
+        $item2 = $I->createTeamItem($otherTeam, $user);
+
+        $unexists = Uuid::uuid4()->toString();
+
+        $I->login($user);
+        $I->sendPOST(sprintf('/items/unexists?teamId=%s', $team->getId()->toString()), ['items' => [
+            $item->getId()->toString(),
+            $item1->getId()->toString(),
+            $item2->getId()->toString(),
+            $unexists,
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseContains($unexists);
+        $I->seeResponseContains($item1->getId()->toString());
+        $I->seeResponseContains($item2->getId()->toString());
+        $I->dontSeeResponseContains($item->getId()->toString());
+    }
+
+    /** @test */
     public function getBatchItem()
     {
         $I = $this->tester;
@@ -335,6 +365,51 @@ class ItemTest extends Unit
 
         $I->sendDELETE(sprintf('/items/%s', $otherItem->getId()));
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
+
+        $I->dontSeeInDatabase('item', ['id' => $item->getId()->toString()]);
+    }
+
+    /** @test */
+    public function deleteBatchItems()
+    {
+        $I = $this->tester;
+
+        /** @var User $user */
+        $user = $I->have(User::class);
+        $item1 = $I->createUserItem($user);
+        $item2 = $I->createUserItem($user);
+        /** @var Item $otherItem */
+        $otherItem = $I->have(Item::class);
+
+        $I->login($user);
+        $I->sendDELETE('/items/batch', ['items' => [
+            $item1->getId()->toString(), $item2->getId()->toString(),
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContains('You can fully delete item only from trash.');
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPATCH(sprintf('/items/%s/move', $item1->getId()), [
+            'listId' => $user->getTrash()->getId()->toString(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+        $I->sendPATCH(sprintf('/items/%s/move', $item2->getId()), [
+            'listId' => $user->getTrash()->getId()->toString(),
+        ]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
+        $I->sendDELETE('/items/batch', ['items' => [
+            $item1->getId()->toString(), $otherItem->getId()->toString(),
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
+
+        $I->sendDELETE('/items/batch', ['items' => [
+            $item1->getId()->toString(), $item2->getId()->toString(),
+        ]]);
+        $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
+
+        $I->dontSeeInDatabase('item', ['id' => $item1->getId()->toString()]);
+        $I->dontSeeInDatabase('item', ['id' => $item2->getId()->toString()]);
     }
 
     /** @test */
@@ -381,6 +456,8 @@ class ItemTest extends Unit
     {
         $I = $this->tester;
 
+        $changeSecret = uniqid();
+
         /** @var User $user */
         $user = $I->have(User::class);
 
@@ -397,23 +474,28 @@ class ItemTest extends Unit
         $I->login($user);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/batch/move/list/%s', $otherDirectory->getId()), [
-            'items' => [$item->getId()],
+            'items' => [
+                ['itemId' => $item->getId()],
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
 
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/batch/move/list/%s', $moveDirectory->getId()), [
-            'items' => [$item->getId(), $item2->getId()],
+            'items' => [
+                ['itemId' => $item->getId(), 'secret' => $changeSecret],
+                ['itemId' => $item2->getId()],
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
-        $I->seeInDatabase('item', ['id' => $item->getId(), 'parent_list_id' => $moveDirectory->getId()]);
-        $I->seeInDatabase('item', ['id' => $item2->getId(), 'parent_list_id' => $moveDirectory->getId()]);
+        $I->seeInDatabase('item', ['id' => $item->getId(), 'parent_list_id' => $moveDirectory->getId(), 'secret' => $changeSecret]);
+        $I->seeInDatabase('item', ['id' => $item2->getId(), 'parent_list_id' => $moveDirectory->getId(), 'secret' => $item2->getSecret()]);
 
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('/items/batch/move/list/%s', $otherDirectory->getId()), [
             'items' => [
-                $item->getId(),
-                $otherItem->getId(),
+                ['itemId' => $item->getId()],
+                ['itemId' => $otherItem->getId()],
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);

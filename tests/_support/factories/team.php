@@ -1,33 +1,33 @@
 <?php
 
-use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Directory;
 use App\Entity\Team;
 use League\FactoryMuffin\FactoryMuffin;
 use League\FactoryMuffin\Faker\Facade as Faker;
 
 /* @var $fm FactoryMuffin */
-$fm->define(Team::class)->setDefinitions([
-    'alias' => null,
-    'title' => Faker::text(20),
-])->setCallback(function ($object, $saved) {
-    if (!$object instanceof Team) {
-        return;
-    }
+$fm->define(Team::class)
+    ->setMaker(static function ($class) use ($fm) {
+        $object = new $class();
 
-    $lists = Directory::createRootList();
-    $lists->setTeam($object);
+        $lists = Directory::createRootList();
+        $lists->setTeam($object);
 
-    $defaultList = Directory::createDefaultList();
-    $defaultList->setTeam($object);
+        $defaultList = Directory::createDefaultList();
+        $defaultList->setTeam($object);
 
-    $lists->addChildList($defaultList);
+        $lists->addChildList($defaultList);
 
-    $trash = Directory::createTrash();
+        $trash = Directory::createTrash();
+        $trash->setTeam($object);
 
-    $trash->setTeam($object);
-    $trash->setType(NodeEnumType::TYPE_TRASH);
+        $object->setLists($lists);
+        $object->setTrash($trash);
 
-    $object->setLists($lists);
-    $object->setTrash($trash);
-});
+        return $object;
+    })
+    ->setDefinitions([
+        'alias' => null,
+        'title' => Faker::text(20),
+    ])
+;

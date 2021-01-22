@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\DBAL\Types\Enum\NodeEnumType;
+use App\DBAL\Types\Enum\DirectoryEnumType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -23,13 +23,14 @@ class Directory
     public const LIST_TRASH = 'trash';
     public const LIST_ROOT_LIST = 'lists';
     public const LIST_INBOX = 'inbox';
+
     /**
      * @var UuidInterface
      *
      * @ORM\Id
      * @ORM\Column(type="uuid", unique=true)
      */
-    protected $id;
+    private $id;
 
     /**
      * @var Collection|Directory[]
@@ -37,7 +38,7 @@ class Directory
      * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="parentList", cascade={"remove", "persist"})
      * @ORM\OrderBy({"sort": "ASC", "createdAt": "DESC"})
      */
-    protected $childLists;
+    private $childLists;
 
     /**
      * @var Directory|null
@@ -46,7 +47,7 @@ class Directory
      * @ORM\JoinColumn(onDelete="CASCADE")
      * @Gedmo\SortableGroup
      */
-    protected $parentList;
+    private $parentList;
 
     /**
      * @var Collection|Item[]
@@ -54,28 +55,28 @@ class Directory
      * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="parentList", cascade={"remove"})
      * @ORM\OrderBy({"lastUpdated": "DESC"})
      */
-    protected $childItems;
+    private $childItems;
 
     /**
      * @var string
      *
      * @ORM\Column
      */
-    protected $label;
+    private $label;
 
     /**
      * @var int
      * @ORM\Column(type="integer", options={"default": 0}, nullable=false)
      * @Gedmo\SortablePosition
      */
-    protected $sort = 0;
+    private $sort = 0;
 
     /**
      * @var string
      *
-     * @ORM\Column(type="NodeEnumType")
+     * @ORM\Column(type="DirectoryEnumType")
      */
-    protected $type = NodeEnumType::TYPE_LIST;
+    private $type;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Team", inversedBy="directories")
@@ -117,17 +118,12 @@ class Directory
      */
     private $userTrash;
 
-    /**
-     * @todo candidate to refactoring (inbox, trash, etc)
-     */
-    private string $role = NodeEnumType::TYPE_LIST;
-
     public function __construct(string $label = null)
     {
         $this->id = Uuid::uuid4();
         $this->team = null;
         $this->user = null;
-        $this->role = NodeEnumType::TYPE_LIST;
+        $this->type = DirectoryEnumType::LIST;
         $this->childLists = new ArrayCollection();
         $this->childItems = new ArrayCollection();
         if (null !== $label) {
@@ -139,7 +135,7 @@ class Directory
     public static function createTrash(): self
     {
         $list = new self(self::LIST_TRASH);
-        $list->type = NodeEnumType::TYPE_TRASH;
+        $list->type = DirectoryEnumType::TRASH;
 
         return $list;
     }
@@ -147,7 +143,7 @@ class Directory
     public static function createRootList(): self
     {
         $list = new self(self::LIST_ROOT_LIST);
-        $list->type = NodeEnumType::TYPE_LIST;
+        $list->type = DirectoryEnumType::ROOT;
 
         return $list;
     }
@@ -155,7 +151,7 @@ class Directory
     public static function createDefaultList(): self
     {
         $list = new self(self::LIST_DEFAULT);
-        $list->type = NodeEnumType::TYPE_LIST;
+        $list->type = DirectoryEnumType::DEFAULT;
 
         return $list;
     }
@@ -163,7 +159,7 @@ class Directory
     public static function createInbox(): self
     {
         $list = new self(self::LIST_INBOX);
-        $list->type = NodeEnumType::TYPE_LIST;
+        $list->type = DirectoryEnumType::INBOX;
 
         return $list;
     }
@@ -282,16 +278,6 @@ class Directory
         return $this->getId()->toString() === $directory->getId()->toString();
     }
 
-    public function getRole(): string
-    {
-        return $this->role;
-    }
-
-    public function setRole(string $role): void
-    {
-        $this->role = $role;
-    }
-
     public function getTeam(): ?Team
     {
         return $this->team;
@@ -303,48 +289,14 @@ class Directory
         $team->addDirectory($this);
     }
 
-    public function isTeamTrashDirectory(): bool
+    public function isTrashDirectory(): bool
     {
-        $team = $this->getTeam();
-        if (null === $team) {
-            return false;
-        }
-
-        return $this->equals($team->getTrash());
+        return DirectoryEnumType::TRASH === $this->getType();
     }
 
-    public function isTeamDefaultDirectory(): bool
+    public function isDefaultDirectory(): bool
     {
-        $team = $this->getTeam();
-        if (null === $team) {
-            return false;
-        }
-
-        return $this->equals($team->getDefaultDirectory());
-    }
-
-    public function getTeamRole(): string
-    {
-        if ($this->isTeamTrashDirectory()) {
-            return self::LIST_TRASH;
-        } elseif ($this->isTeamDefaultDirectory()) {
-            return self::LIST_DEFAULT;
-        }
-
-        return $this->getType();
-    }
-
-    public function getPersonalRole(): string
-    {
-        if (null !== $this->getUserInbox()) {
-            return self::LIST_INBOX;
-        } elseif (null !== $this->getUserTrash()) {
-            return self::LIST_TRASH;
-        } elseif (null !== $this->getUser() && $this->equals($this->getUser()->getDefaultDirectory())) {
-            return self::LIST_DEFAULT;
-        }
-
-        return $this->getType();
+        return DirectoryEnumType::DEFAULT === $this->getType();
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable

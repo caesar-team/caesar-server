@@ -8,6 +8,7 @@ use App\Entity\Directory;
 use App\Request\Item\MoveItemRequest;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -20,6 +21,9 @@ class MoveItemRequestType extends AbstractType
                 'class' => Directory::class,
                 'choice_value' => 'id',
                 'property_path' => 'list',
+            ])
+            ->add('secret', TextType::class, [
+                'required' => false,
             ])
         ;
     }

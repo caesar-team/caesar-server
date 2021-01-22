@@ -47,6 +47,18 @@ final class PromoteUserSubscriber implements EventSubscriberInterface
         $unitOfWork = $this->entityManager->getUnitOfWork();
         $unitOfWork->computeChangeSets();
         $changes = $unitOfWork->getEntityChangeSet($entity);
+
+        if (empty($changes)) {
+            return;
+        }
+
+        if (!isset($changes['roles'][0]) || !isset($changes['roles'][1])) {
+            return;
+        }
+        if (!is_array($changes['roles'][0]) || !is_array($changes['roles'][1])) {
+            return;
+        }
+
         if (!in_array(User::ROLE_ADMIN, $changes['roles'][0])
             && in_array(User::ROLE_ADMIN, $changes['roles'][1])) {
             $teams = $this->teamRepository->findAll();

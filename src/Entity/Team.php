@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\DBAL\Types\Enum\DirectoryEnumType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
@@ -57,7 +58,7 @@ class Team
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=50, nullable=false)
+     * @ORM\Column(type="string", length=100, nullable=false)
      */
     private $title;
 
@@ -234,7 +235,7 @@ class Team
                     return $currDir;
                 }
 
-                return Directory::LIST_DEFAULT === $prevDir->getLabel() ? $prevDir : $currDir;
+                return DirectoryEnumType::DEFAULT === $prevDir->getType() ? $prevDir : $currDir;
             }
         );
     }

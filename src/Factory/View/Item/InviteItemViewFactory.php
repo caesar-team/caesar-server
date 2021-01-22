@@ -33,6 +33,6 @@ class InviteItemViewFactory
      */
     public function createCollection(array $items): array
     {
-        return array_map([$this, 'createSingle'], $items);
+        return array_values(array_map([$this, 'createSingle'], $items));
     }
 }

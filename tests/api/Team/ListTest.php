@@ -123,7 +123,7 @@ class ListTest extends Unit
         $this->editListValidate($teamAdmin, $list);
         $this->canEditTeamList($teamAdmin, $list, self::DEFAULT_LIST_NAME);
         $this->canEditTeamList($domainAdmin, $list, uniqid());
-        $this->cantAccessToEditTeamList($teamAdmin, $team->getDefaultDirectory());
+        $this->canEditTeamList($teamAdmin, $team->getDefaultDirectory(), uniqid());
         $this->cantAccessToEditTeamList($superAdmin, $list);
         $this->cantAccessToEditTeamList($member, $list);
         $this->cantAccessToEditTeamList($teamAdmin, $otherList);

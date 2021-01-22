@@ -6,6 +6,7 @@ namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
 use App\Entity\Item;
+use App\Event\Item\ItemsDateRefreshEvent;
 use App\Form\Type\Request\Item\ItemsCollectionRequestType;
 use App\Request\Item\ItemsCollectionRequest;
 use App\Security\Voter\ItemVoter;
@@ -14,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -39,7 +41,7 @@ final class ItemController extends AbstractController
      *     methods={"DELETE"}
      * )
      */
-    public function batchDelete(Request $request, EntityManagerInterface $manager): void
+    public function batchDelete(Request $request, EntityManagerInterface $manager, EventDispatcherInterface $dispatcher): void
     {
         //@todo @frontend candidate to refactoring, stay only request (body)
         $query = $request->query->all();
@@ -55,6 +57,7 @@ final class ItemController extends AbstractController
             throw new FormInvalidRequestException($form);
         }
 
+        $refreshItems = [];
         foreach ($batchRequest->getItems() as $item) {
             $this->denyAccessUnlessGranted([ItemVoter::DELETE, TeamItemVoter::DELETE], $item);
             if ($item->isNotDeletable()) {
@@ -62,10 +65,20 @@ final class ItemController extends AbstractController
                 throw new BadRequestHttpException($message);
             }
 
+            $relatedItem = $item->getRelatedItem();
+            if ($item->hasAnonymousUser()) {
+                $manager->remove($item->getSignedOwner());
+            }
+            if (null !== $relatedItem) {
+                $refreshItems[] = $relatedItem;
+            }
+
             $manager->remove($item);
         }
 
         $manager->flush();
+
+        $dispatcher->dispatch(new ItemsDateRefreshEvent(...$refreshItems));
     }
 
     /**
@@ -111,7 +124,7 @@ final class ItemController extends AbstractController
      *
      * @return null
      */
-    public function deleteItem(Item $item, EntityManagerInterface $manager)
+    public function deleteItem(Item $item, EntityManagerInterface $manager, EventDispatcherInterface $dispatcher)
     {
         $this->denyAccessUnlessGranted([ItemVoter::DELETE, TeamItemVoter::DELETE], $item);
         if ($item->isNotDeletable()) {
@@ -119,8 +132,16 @@ final class ItemController extends AbstractController
             throw new BadRequestHttpException($message);
         }
 
+        $relatedItem = $item->getRelatedItem();
+        if ($item->hasAnonymousUser()) {
+            $manager->remove($item->getSignedOwner());
+        }
         $manager->remove($item);
         $manager->flush();
+        if (null !== $relatedItem) {
+            $relatedItem->removeKeypairItem($item);
+            $dispatcher->dispatch(new ItemsDateRefreshEvent(...[$relatedItem]));
+        }
 
         return null;
     }
