@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Form\Type\Request\Item;
 
 use App\DBAL\Types\Enum\NodeEnumType;
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
 use App\Entity\User;
 use App\Request\Item\CreateItemRequest;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -31,7 +30,7 @@ class CreateItemRequestType extends AbstractType
                 'property_path' => 'owner',
             ])
             ->add('listId', EntityType::class, [
-                'class' => Directory::class,
+                'class' => AbstractDirectory::class,
                 'choice_value' => 'id',
                 'property_path' => 'list',
             ])
@@ -45,7 +44,6 @@ class CreateItemRequestType extends AbstractType
             ->add('secret', TextType::class)
             ->add('raws', TextType::class)
             ->add('meta', ItemMetaType::class)
-            ->add('favorite', CheckboxType::class)
             ->add('tags', CollectionType::class, [
                 'entry_type' => TextType::class,
                 'entry_options' => ['label' => false],

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Model\View\CredentialsList;
 
 use App\DBAL\Types\Enum\DirectoryEnumType;
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
 use Hateoas\Configuration\Annotation as Hateoas;
 use JMS\Serializer\Annotation as Serializer;
 use Swagger\Annotations as SWG;
@@ -95,12 +95,15 @@ class ListView
     /**
      * @Serializer\Exclude
      */
-    private Directory $directory;
+    private AbstractDirectory $directory;
 
-    public function __construct(Directory $directory)
+    public function __construct(AbstractDirectory $directory)
     {
         $this->directory = $directory;
         $this->sort = 0;
+        $this->teamId = null;
+        $this->createdAt = null;
+        $this->label = null;
         $this->children = [];
     }
 
@@ -170,7 +173,7 @@ class ListView
         $this->teamId = $teamId;
     }
 
-    public function getDirectory(): Directory
+    public function getDirectory(): AbstractDirectory
     {
         return $this->directory;
     }

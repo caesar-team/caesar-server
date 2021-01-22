@@ -3,7 +3,6 @@
 namespace App\Tests\Item;
 
 use App\DBAL\Types\Enum\NodeEnumType;
-use App\Entity\Directory;
 use App\Entity\User;
 use App\Limiter\Inspector\ItemCountInspector;
 use App\Tests\ApiTester;
@@ -80,19 +79,13 @@ class LimiterTest extends Unit
 
     private function getItemBody(User $user, array $options = []): array
     {
-        /** @var Directory $directory */
-        $directory = $this->tester->have(Directory::class, [
-            'parent_list' => $user->getLists(),
-        ]);
-
         return array_merge([
-            'listId' => $directory->getId()->toString(),
+            'listId' => $user->getDefaultDirectory()->getId()->toString(),
             'type' => NodeEnumType::TYPE_CRED,
             'secret' => uniqid(),
             'meta' => [
                 'title' => 'item title',
             ],
-            'favorite' => false,
             'tags' => ['tag'],
         ], $options);
     }

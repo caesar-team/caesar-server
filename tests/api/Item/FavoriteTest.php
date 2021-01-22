@@ -29,19 +29,15 @@ class FavoriteTest extends Unit
         $I->login($user);
         $I->sendPOST(sprintf('/items/%s/favorite', $item->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/favorite.json'));
         $I->seeResponseContainsJson(['favorite' => true]);
-        $I->seeInDatabase('item', ['id' => $item->getId()->toString(), 'favorite' => true]);
-
-        $schema = $I->getSchema('item/favorite.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
+        $I->seeInDatabase('favorite_user_item', ['item_id' => $item->getId()->toString(), 'user_id' => $user->getId()->toString()]);
 
         $I->sendPOST(sprintf('/items/%s/favorite', $item->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/favorite.json'));
         $I->seeResponseContainsJson(['favorite' => false]);
-        $schema = $I->getSchema('item/favorite.json');
-        $I->seeResponseIsValidOnJsonSchemaString($schema);
-
-        $I->seeInDatabase('item', ['id' => $item->getId()->toString(), 'favorite' => false]);
+        $I->dontSeeInDatabase('favorite_user_item', ['item_id' => $item->getId()->toString(), 'user_id' => $user->getId()->toString()]);
     }
 
     /** @test */
@@ -62,10 +58,9 @@ class FavoriteTest extends Unit
         $I->login($user);
         $I->sendPOST(sprintf('/items/%s/favorite', $item->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseContainsJson(['favorite' => true]);
-        $I->seeInDatabase('item', ['id' => $item->getId()->toString(), 'team_favorite like' => '%'.$user->getId()->toString().'%']);
-
         $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/favorite.json'));
+        $I->seeResponseContainsJson(['favorite' => true]);
+        $I->seeInDatabase('favorite_user_item', ['item_id' => $item->getId()->toString(), 'user_id' => $user->getId()->toString()]);
 
         $I->login($member);
         $I->sendGET(sprintf('/items?listId=%s', $team->getDefaultDirectory()->getId()->toString()));
@@ -75,9 +70,8 @@ class FavoriteTest extends Unit
         $I->login($user);
         $I->sendPOST(sprintf('/items/%s/favorite', $item->getId()->toString()));
         $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseContainsJson(['favorite' => false]);
-        $I->dontSeeInDatabase('item', ['id' => $item->getId()->toString(), 'team_favorite like' => '%'.$user->getId()->toString().'%']);
-
         $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('item/favorite.json'));
+        $I->seeResponseContainsJson(['favorite' => false]);
+        $I->dontSeeInDatabase('favorite_user_item', ['item_id' => $item->getId()->toString(), 'user_id' => $user->getId()->toString()]);
     }
 }

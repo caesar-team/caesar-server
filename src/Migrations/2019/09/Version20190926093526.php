@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace DoctrineMigrations;
 
-use App\Entity\Directory;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Auto-generated Migration: Please modify to your needs!
@@ -22,45 +22,26 @@ final class Version20190926093526 extends AbstractMigration
     {
         $teams = $this->connection->fetchAll('SELECT id, lists_id, trash_id FROM groups WHERE lists_id IS NULL OR trash_id IS NULL');
         foreach ($teams as $team) {
-            $root = Directory::createRootList();
-            $default = Directory::createDefaultList();
-            $default->setParentList($root);
-            $trash = Directory::createTrash();
+            $rootId = Uuid::uuid4();
+            $defaultId = Uuid::uuid4();
+            $trashId = Uuid::uuid4();
 
             $this->addSql(
                 'INSERT INTO directory (id, parent_list_id, label, type, sort) VALUES (?,?,?,?,?)',
-                [
-                    $root->getId()->toString(),
-                    null,
-                    $root->getLabel(),
-                    'list',
-                    $root->getSort(),
-                ]
+                [ $rootId,  null,  'lists',  'list', 0 ]
             );
-            $this->addSql('UPDATE groups SET lists_id = ? WHERE id = ?', [$root->getId()->toString(), $team['id']]);
+            $this->addSql('UPDATE groups SET lists_id = ? WHERE id = ?', [$rootId, $team['id']]);
 
             $this->addSql(
                 'INSERT INTO directory (id, parent_list_id, label, type, sort) VALUES (?,?,?,?,?)',
-                [
-                    $default->getId()->toString(),
-                    $default->getParentList()->getId()->toString(),
-                    $default->getLabel(),
-                    'list',
-                    $default->getSort(),
-                ]
+                [ $defaultId, $rootId, 'default', 'list', 0 ]
             );
 
             $this->addSql(
                 'INSERT INTO directory (id, parent_list_id, label, type, sort) VALUES (?,?,?,?,?)',
-                [
-                    $trash->getId()->toString(),
-                    null,
-                    $trash->getLabel(),
-                    'trash',
-                    $trash->getSort(),
-                ]
+                [ $trashId, null, 'trash', 'trash', 1 ]
             );
-            $this->addSql('UPDATE groups SET trash_id = ? WHERE id = ?', [$trash->getId()->toString(), $team['id']]);
+            $this->addSql('UPDATE groups SET trash_id = ? WHERE id = ?', [$trashId, $team['id']]);
         }
     }
 

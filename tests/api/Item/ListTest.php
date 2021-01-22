@@ -3,7 +3,7 @@
 namespace App\Tests\Item;
 
 use App\DBAL\Types\Enum\DirectoryEnumType;
-use App\Entity\Directory;
+use App\Entity\Directory\UserDirectory;
 use App\Entity\User;
 use App\Tests\ApiTester;
 use Codeception\Module\DataFactory;
@@ -44,34 +44,34 @@ class ListTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        /** @var Directory $thirdDirectory */
-        $thirdDirectory = $I->have(Directory::class, [
+        /** @var UserDirectory $thirdDirectory */
+        $thirdDirectory = $I->have(UserDirectory::class, [
             'label' => '3',
             'user' => $user,
             'sort' => 1,
-            'parent_list' => $user->getLists(),
+            'parent_directory' => $user->getLists(),
         ]);
-        /** @var Directory $secondDirectory */
-        $secondDirectory = $I->have(Directory::class, [
+        /** @var UserDirectory $secondDirectory */
+        $secondDirectory = $I->have(UserDirectory::class, [
             'label' => '2',
             'user' => $user,
             'sort' => 1,
-            'parent_list' => $user->getLists(),
+            'parent_directory' => $user->getLists(),
         ]);
-        /** @var Directory $firstDirectory */
-        $firstDirectory = $I->have(Directory::class, [
+        /** @var UserDirectory $firstDirectory */
+        $firstDirectory = $I->have(UserDirectory::class, [
             'label' => '1',
             'user' => $user,
             'sort' => 1,
-            'parent_list' => $user->getLists(),
+            'parent_directory' => $user->getLists(),
         ]);
 
         $I->login($user);
         $I->sendGET('/list');
         $I->seeResponseContainsJson([
-            1 => ['id' => $firstDirectory->getId()->toString()],
-            2 => ['id' => $secondDirectory->getId()->toString()],
-            3 => ['id' => $thirdDirectory->getId()->toString()],
+           ['id' => $firstDirectory->getId()->toString(), 'sort' => 1],
+           ['id' => $secondDirectory->getId()->toString(), 'sort' => 2],
+           ['id' => $thirdDirectory->getId()->toString(), 'sort' => 3],
         ]);
     }
 }

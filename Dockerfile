@@ -53,7 +53,7 @@ ENV TEST_POSTGRES_PASSWORD=test
 ENV TEST_DATABASE_HOST=127.0.0.1
 ENV TEST_POSTGRES_DB=test
 
-RUN apk --update add su-exec bash postgresql postgresql-client
+RUN apk --update add su-exec bash postgresql postgresql-client postgresql-contrib
 # this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
 RUN mkdir -p "$PGDATA" \
     && chown -R postgres:postgres "$PGDATA" \

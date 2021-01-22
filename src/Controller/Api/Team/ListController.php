@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Controller\Api\Team;
 
 use App\Controller\AbstractController;
-use App\Entity\Directory;
+use App\Entity\Directory\TeamDirectory;
 use App\Entity\Team;
-use App\Factory\Entity\TeamDirectoryFactory;
+use App\Factory\Entity\Directory\TeamDirectoryFactory;
 use App\Factory\View\Team\TeamListViewFactory;
 use App\Form\Type\Request\Team\CreateListRequestType;
 use App\Form\Type\Request\Team\EditListRequestType;
+use App\Item\ItemRelocatorInterface;
 use App\Model\View\Team\TeamListView;
 use App\Modifier\DirectoryModifier;
 use App\Repository\DirectoryRepository;
@@ -21,6 +22,7 @@ use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -50,12 +52,7 @@ final class ListController extends AbstractController
     {
         $this->denyAccessUnlessGranted(TeamListVoter::SHOW, $team);
 
-        return $viewFactory->createCollection(
-            array_merge(
-                [$team->getTrash()],
-                $team->getLists()->getChildLists()->toArray()
-            )
-        );
+        return $viewFactory->createCollection($team->getDirectoriesWithoutRoot());
     }
 
     /**
@@ -107,7 +104,7 @@ final class ListController extends AbstractController
      */
     public function edit(
         Request $request,
-        Directory $list,
+        TeamDirectory $list,
         DirectoryModifier $modifier,
         TeamListViewFactory $viewFactory
     ): TeamListView {
@@ -131,17 +128,23 @@ final class ListController extends AbstractController
      *
      * @SWG\Tag(name="Team / List")
      * @SWG\Response(
-     *     response=200,
-     *     description="Success edited list of team",
-     *     @Model(type=TeamListView::class)
+     *     response=204,
+     *     description="Success list deleted"
      * )
      *
      * @Route(path="/{team}/lists/{list}", name="api_team_remove_list", methods={"DELETE"})
      */
-    public function remove(Directory $list, DirectoryRepository $repository): void
-    {
+    public function remove(
+        TeamDirectory $list,
+        ItemRelocatorInterface $relocator,
+        DirectoryRepository $repository
+    ): void {
         $this->denyAccessUnlessGranted(TeamListVoter::DELETE, $list);
+        if ($list->isRoot()) {
+            throw new BadRequestHttpException($this->translator->trans('app.exception.cant_delete_root_list'));
+        }
 
+        $relocator->moveChildItems($list, $list->getTeam()->getTrash());
         $repository->remove($list);
     }
 }

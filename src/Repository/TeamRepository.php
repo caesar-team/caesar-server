@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\Entity\Directory;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Model\DTO\Vault;
@@ -41,24 +40,6 @@ class TeamRepository extends ServiceEntityRepository
         $qb->setParameter('user', $user);
 
         return $qb->getQuery()->getResult();
-    }
-
-    public function findOneByDirectory(?Directory $directory): ?Team
-    {
-        if (null === $directory) {
-            return null;
-        }
-
-        $qb = $this->createQueryBuilder('team');
-        $qb->where('team.trash =:directory');
-        $qb->setParameter('directory', $directory);
-        if ($directory->getParentList() instanceof Directory) {
-            $qb->orWhere('team.lists =:parentList');
-            $qb->setParameter('parentList', $directory->getParentList());
-        }
-        $qb->setMaxResults(1);
-
-        return $qb->getQuery()->getOneOrNullResult();
     }
 
     public function findAllExcept(array $memberships): array

@@ -38,22 +38,26 @@ class ItemViewFactory
         $view->setId($item->getId()->toString());
         $view->setType($item->getType());
         $view->setLastUpdated($item->getLastUpdated());
-        $view->setListId($item->getParentList()->getId()->toString());
-        $view->setPreviousListId($item->getPreviousListId());
         $view->setSecret($item->getSecret());
         $view->setInvited($this->inviteItemViewFactory->createCollection($item->getKeyPairItemsWithoutRoot()));
         $view->setOwnerId($item->getOwner()->getId()->toString());
-        if (null === $item->getTeam()) {
-            $view->setFavorite($item->isFavorite());
-        } else {
-            $user = $this->security->getUser();
-            if ($user instanceof User) {
-                $view->setFavorite($item->isTeamFavorite($user));
-            }
-        }
         $view->setOriginalItemId($item->getOriginalItemId());
         if ($item->getRelatedItem()) {
             $view->setRelatedItemId($item->getRelatedItem()->getId()->toString());
+        }
+        $user = $this->security->getUser();
+        if ($user instanceof User) {
+            $view->setFavorite($item->isFavoriteByUser($user));
+
+            $directory = $item->getCurrentDirectoryByUser($user);
+            if (null !== $directory) {
+                $view->setListId($directory->getId()->toString());
+            }
+
+            $teamDirectory = $item->getTeamDirectory();
+            if (null !== $teamDirectory) {
+                $view->setTeamListId($teamDirectory->getId()->toString());
+            }
         }
 
         $sharedItems = $item->getUniqueOwnerShareItems(Item::CAUSE_SHARE);

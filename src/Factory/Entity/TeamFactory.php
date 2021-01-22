@@ -4,29 +4,26 @@ declare(strict_types=1);
 
 namespace App\Factory\Entity;
 
-use App\Entity\Directory;
 use App\Entity\Team;
+use App\Factory\Entity\Directory\TeamDirectoryFactory;
 use App\Utils\DefaultIcon;
 
 class TeamFactory
 {
+    private TeamDirectoryFactory $directoryFactory;
+
+    public function __construct(TeamDirectoryFactory $directoryFactory)
+    {
+        $this->directoryFactory = $directoryFactory;
+    }
+
     public function create(): Team
     {
         $team = new Team();
-
-        $defaultList = Directory::createDefaultList();
-        $defaultList->setTeam($team);
-
-        $lists = Directory::createRootList();
-        $lists->setTeam($team);
-        $lists->addChildList($defaultList);
-
-        $trash = Directory::createTrash();
-        $trash->setTeam($team);
-
-        $team->setLists($lists);
-        $team->setTrash($trash);
         $team->setIcon(DefaultIcon::getDefaultIcon());
+        foreach ($this->directoryFactory->createDefaultDirectories($team) as $directory) {
+            $team->addDirectory($directory);
+        }
 
         return $team;
     }
