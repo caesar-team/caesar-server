@@ -17,6 +17,11 @@ class ShortListView
     private string $id;
 
     /**
+     * @SWG\Property(type="string", example=0)
+     */
+    private int $sort;
+
+    /**
      * @SWG\Property(type="string", enum=DirectoryEnumType::AVAILABLE_TYPES)
      */
     private string $type;
@@ -41,6 +46,7 @@ class ShortListView
         $this->directory = $directory;
         $this->label = null;
         $this->teamId = null;
+        $this->sort = 0;
     }
 
     public function getId(): string
@@ -51,6 +57,16 @@ class ShortListView
     public function setId(string $id): void
     {
         $this->id = $id;
+    }
+
+    public function getSort(): int
+    {
+        return $this->sort;
+    }
+
+    public function setSort(int $sort): void
+    {
+        $this->sort = $sort;
     }
 
     public function getType(): string

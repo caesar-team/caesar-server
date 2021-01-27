@@ -72,6 +72,9 @@
         "id": {
           "type": "string"
         },
+        "sort": {
+          "type": "integer"
+        },
         "type": {
           "type": "string"
         },
@@ -84,6 +87,7 @@
       },
       "required": [
         "id",
+        "sort",
         "type",
         "label",
         "teamId"
