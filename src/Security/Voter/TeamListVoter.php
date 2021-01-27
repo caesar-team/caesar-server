@@ -130,7 +130,7 @@ class TeamListVoter extends Voter
             return false;
         }
 
-        return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN);
+        return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN) && Directory::LIST_DEFAULT !== $subject->getLabel();
     }
 
     private function canDelete(Directory $subject, User $user): bool
@@ -140,7 +140,12 @@ class TeamListVoter extends Voter
 
     private function canSort(Directory $subject, User $user): bool
     {
-        return $this->canEdit($subject, $user);
+        $userTeam = $subject->getTeam()->getUserTeamByUser($user);
+        if (null === $userTeam) {
+            return false;
+        }
+
+        return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN);
     }
 
     private function isMovable(Directory $subject, User $user): bool

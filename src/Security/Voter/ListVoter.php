@@ -80,7 +80,7 @@ class ListVoter extends Voter
 
     private function canEdit(Directory $subject, User $user): bool
     {
-        return $this->canSort($subject, $user);
+        return $this->canSort($subject, $user) && Directory::LIST_DEFAULT !== $subject->getLabel();
     }
 
     private function canDelete(Directory $subject, User $user): bool
