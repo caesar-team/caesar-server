@@ -46,7 +46,7 @@ class PermissionTest extends Unit
         $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
             'sort_list' => [],
             'create_item' => [],
-            //'edit_list' => [],
+            'edit_list' => [],
         ]]);
         $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
             'delete_list' => [],

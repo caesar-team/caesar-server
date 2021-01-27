@@ -116,12 +116,12 @@ class TeamListVoter extends Voter
             return false;
         }
 
-        return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN) && Directory::LIST_DEFAULT !== $subject->getLabel();
+        return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN);
     }
 
     private function canDelete(TeamDirectory $subject, User $user): bool
     {
-        return $this->canEdit($subject, $user);
+        return $this->canEdit($subject, $user) && !$subject->isDefault();
     }
 
     private function canSort(TeamDirectory $subject, User $user): bool
