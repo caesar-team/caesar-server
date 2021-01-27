@@ -19,6 +19,8 @@ final class MoveItemRequest implements MoveItemRequestInterface
 
     private ?string $secret;
 
+    private ?string $raws;
+
     private User $user;
 
     private Item $item;
@@ -27,6 +29,7 @@ final class MoveItemRequest implements MoveItemRequestInterface
     {
         $this->list = null;
         $this->secret = null;
+        $this->raws = null;
         $this->user = $user;
         $this->item = $item;
     }
@@ -49,6 +52,16 @@ final class MoveItemRequest implements MoveItemRequestInterface
     public function setSecret(?string $secret): void
     {
         $this->secret = $secret;
+    }
+
+    public function getRaws(): ?string
+    {
+        return $this->raws;
+    }
+
+    public function setRaws(?string $raws): void
+    {
+        $this->raws = $raws;
     }
 
     public function getItem(): Item

@@ -24,6 +24,9 @@ class ItemRelocator
         if (null !== $request->getSecret()) {
             $item->setSecret($request->getSecret());
         }
+        if (null !== $request->getRaws()) {
+            $item->setRaws($request->getRaws());
+        }
         $item->moveTo($directory);
         $this->repository->save($item);
     }
