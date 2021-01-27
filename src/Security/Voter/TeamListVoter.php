@@ -121,12 +121,17 @@ class TeamListVoter extends Voter
 
     private function canDelete(TeamDirectory $subject, User $user): bool
     {
-        return $this->canEdit($subject, $user);
+        return $this->canEdit($subject, $user) && !$subject->isDefault();
     }
 
     private function canSort(TeamDirectory $subject, User $user): bool
     {
-        return $this->canEdit($subject, $user);
+        $userTeam = $subject->getTeam()->getUserTeamByUser($user);
+        if (null === $userTeam) {
+            return false;
+        }
+
+        return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN);
     }
 
     private function isMovable(TeamDirectory $subject, User $user): bool
