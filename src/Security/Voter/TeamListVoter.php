@@ -140,7 +140,12 @@ class TeamListVoter extends Voter
 
     private function canSort(Directory $subject, User $user): bool
     {
-        return $this->canEdit($subject, $user);
+        $userTeam = $subject->getTeam()->getUserTeamByUser($user);
+        if (null === $userTeam) {
+            return false;
+        }
+
+        return $userTeam->hasRole(UserTeam::USER_ROLE_ADMIN);
     }
 
     private function isMovable(Directory $subject, User $user): bool
