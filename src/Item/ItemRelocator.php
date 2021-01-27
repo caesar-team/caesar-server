@@ -6,6 +6,7 @@ namespace App\Item;
 
 use App\Entity\Directory\AbstractDirectory;
 use App\Entity\Directory\TeamDirectory;
+use App\Entity\Directory\UserDirectory;
 use App\Request\Item\MovePersonalItemRequestInterface;
 use App\Request\Team\MoveTeamItemRequestInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,6 +34,7 @@ class ItemRelocator implements ItemRelocatorInterface
     {
         $directory = $request->getDirectory();
         $item = $request->getItem();
+        $item->refreshLastUpdated();
         $user = $request->getUser();
         if (null !== $request->getSecret()) {
             $item->setSecret($request->getSecret());
@@ -61,6 +63,7 @@ class ItemRelocator implements ItemRelocatorInterface
     {
         $directory = $request->getDirectory();
         $item = $request->getItem();
+        $item->refreshLastUpdated();
         $team = $request->getTeam();
         if (null !== $request->getSecret()) {
             $item->setSecret($request->getSecret());
@@ -77,7 +80,8 @@ class ItemRelocator implements ItemRelocatorInterface
 
         if ($directory instanceof TeamDirectory) {
             $item->setTeam($directory->getTeam());
-        } else {
+        } elseif ($directory instanceof UserDirectory) {
+            $item->setOwner($directory->getUser());
             $item->setTeam(null);
         }
 
