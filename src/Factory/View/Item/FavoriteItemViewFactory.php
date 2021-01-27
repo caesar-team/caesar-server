@@ -21,15 +21,9 @@ class FavoriteItemViewFactory
     public function createSingle(Item $item): FavoriteItemView
     {
         $view = new FavoriteItemView();
-        $view->setListId($item->getParentList()->getId()->toString());
-
-        if (null === $item->getTeam()) {
-            $view->setFavorite($item->isFavorite());
-        } else {
-            $user = $this->security->getUser();
-            if ($user instanceof User) {
-                $view->setFavorite($item->isTeamFavorite($user));
-            }
+        $user = $this->security->getUser();
+        if ($user instanceof User) {
+            $view->setFavorite($item->isFavoriteByUser($user));
         }
 
         return $view;

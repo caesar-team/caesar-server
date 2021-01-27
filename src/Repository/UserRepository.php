@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\Entity\Directory;
-use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Model\Query\UserListQuery;
@@ -37,29 +35,6 @@ class UserRepository extends ServiceEntityRepository
         $this->_em->persist($user);
         /** @psalm-suppress TooManyArguments */
         $this->_em->flush($user);
-    }
-
-    /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    public function getByItem(Item $item): ?User
-    {
-        $list = $item->getParentList();
-
-        return $this->getByList($list);
-    }
-
-    /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    public function getByList(Directory $list): ?User
-    {
-        $parent = $list->getParentList();
-        if (null !== $parent) {
-            return $this->getByList($parent);
-        }
-
-        return $this->directoryRepository->getUserByList($list);
     }
 
     /**

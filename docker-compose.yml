@@ -44,6 +44,7 @@ services:
       - "${DATABASE_PORT}:5432"
     volumes:
       - db:/var/lib/postgresql/data
+      - ./backup:/home
     environment:
       - POSTGRES_DB
       - POSTGRES_USER

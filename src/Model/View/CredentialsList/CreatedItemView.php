@@ -78,10 +78,10 @@ use Swagger\Annotations as SWG;
  * )
  * @Hateoas\Relation(
  *     "team_move_item",
- *     attributes={"method": "DELETE"},
+ *     attributes={"method": "MOVE"},
  *     href=@Hateoas\Route(
- *         "api_delete_item",
- *         parameters={ "id": "expr(object.getId())" }
+ *         "api_move_team_item",
+ *         parameters={ "id": "expr(object.getId())", "team": "expr(object.getTeamId())" }
  *     ),
  *     exclusion=@Hateoas\Exclusion(
  *         excludeIf="expr(not is_granted(constant('App\\Security\\Voter\\TeamItemVoter::MOVE'), object.getItem()))"
@@ -119,6 +119,16 @@ class CreatedItemView
     public function __construct(Item $item)
     {
         $this->item = $item;
+    }
+
+    public function getTeamId(): string
+    {
+        $team = $this->item->getTeam();
+        if (null == $team) {
+            return 'undefined';
+        }
+
+        return $team->getId()->toString();
     }
 
     /**

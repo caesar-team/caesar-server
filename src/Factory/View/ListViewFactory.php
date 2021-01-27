@@ -4,40 +4,35 @@ declare(strict_types=1);
 
 namespace App\Factory\View;
 
-use App\Entity\Directory;
-use App\Entity\Item;
+use App\Entity\Directory\AbstractDirectory;
+use App\Entity\Directory\DirectoryItem;
+use App\Entity\Directory\TeamDirectory;
 use App\Model\View\CredentialsList\ListView;
-use App\Repository\TeamRepository;
 
 class ListViewFactory
 {
-    private TeamRepository $teamRepository;
-
-    public function __construct(TeamRepository $teamRepository)
+    public function createSingle(AbstractDirectory $directory): ListView
     {
-        $this->teamRepository = $teamRepository;
-    }
-
-    public function createSingle(Directory $directory): ListView
-    {
-        $team = $this->teamRepository->findOneByDirectory($directory);
-
         $view = new ListView($directory);
         $view->setId($directory->getId()->toString());
         $view->setLabel($directory->getLabel());
         $view->setType($directory->getType());
-        $view->setChildren(array_map(function (Item $item) {
-            return $item->getId()->toString();
-        }, $directory->getChildItems()));
+        $view->setChildren(array_map(function (DirectoryItem $item) {
+            return $item->getItem()->getId()->toString();
+        }, $directory->getDirectoryItems()));
         $view->setSort($directory->getSort());
-        $view->setTeamId($team ? $team->getId()->toString() : null);
+
+        if ($directory instanceof TeamDirectory) {
+            $view->setTeamId($directory->getTeam()->getId()->toString());
+        }
+
         $view->setCreatedAt($directory->getCreatedAt());
 
         return $view;
     }
 
     /**
-     * @param Directory[] $users
+     * @param AbstractDirectory[] $users
      *
      * @return ListView[]
      */

@@ -3,7 +3,7 @@
 namespace App\Tests\User;
 
 use App\DBAL\Types\Enum\DirectoryEnumType;
-use App\Entity\Directory;
+use App\Entity\Directory\UserDirectory;
 use App\Entity\User;
 use App\Tests\ApiTester;
 use Codeception\Module\DataFactory;
@@ -212,15 +212,15 @@ class ListTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        /** @var Directory $otherList */
-        $otherList = $I->have(Directory::class, [
+        /** @var UserDirectory $otherList */
+        $otherList = $I->have(UserDirectory::class, [
             'user' => $user,
-            'parent_list' => $user->getLists(),
+            'parent_directory' => $user->getLists(),
         ]);
-        /** @var Directory $list */
-        $list = $I->have(Directory::class, [
+        /** @var UserDirectory $list */
+        $list = $I->have(UserDirectory::class, [
             'user' => $user,
-            'parent_list' => $user->getLists(),
+            'parent_directory' => $user->getLists(),
         ]);
 
         $I->login($user);
@@ -259,22 +259,22 @@ class ListTest extends Unit
         /** @var User $user */
         $user = $I->have(User::class);
 
-        /** @var Directory $list1 */
-        $list1 = $I->have(Directory::class, [
+        /** @var UserDirectory $list1 */
+        $list1 = $I->have(UserDirectory::class, [
             'user' => $user,
-            'parent_list' => $user->getLists(),
+            'parent_directory' => $user->getLists(),
             'sort' => 0,
         ]);
-        /** @var Directory $list2 */
-        $list2 = $I->have(Directory::class, [
+        /** @var UserDirectory $list2 */
+        $list2 = $I->have(UserDirectory::class, [
             'user' => $user,
-            'parent_list' => $user->getLists(),
+            'parent_directory' => $user->getLists(),
             'sort' => 1,
         ]);
-        /** @var Directory $list2 */
-        $list3 = $I->have(Directory::class, [
+        /** @var UserDirectory $list2 */
+        $list3 = $I->have(UserDirectory::class, [
             'user' => $user,
-            'parent_list' => $user->getLists(),
+            'parent_directory' => $user->getLists(),
             'sort' => 2,
         ]);
 

@@ -2,7 +2,8 @@
 
 namespace App\Tests\Team;
 
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
+use App\Entity\Directory\TeamDirectory;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Tests\ApiTester;
@@ -107,17 +108,17 @@ class ListTest extends Unit
         /** @var Team $otherTeam */
         $otherTeam = $I->createTeam($domainAdmin);
 
-        /** @var Directory $list */
-        $list = $I->have(Directory::class, [
+        /** @var TeamDirectory $list */
+        $list = $I->have(TeamDirectory::class, [
             'label' => self::DEFAULT_LIST_NAME,
             'team' => $team,
-            'parent_list' => $team->getLists(),
+            'parent_directory' => $team->getLists(),
         ]);
-        /** @var Directory $otherList */
-        $otherList = $I->have(Directory::class, [
+        /** @var TeamDirectory $otherList */
+        $otherList = $I->have(TeamDirectory::class, [
             'label' => self::DEFAULT_LIST_NAME,
             'team' => $otherTeam,
-            'parent_list' => $otherTeam->getLists(),
+            'parent_directory' => $otherTeam->getLists(),
         ]);
 
         $this->editListValidate($teamAdmin, $list);
@@ -149,17 +150,17 @@ class ListTest extends Unit
         /** @var Team $otherTeam */
         $otherTeam = $I->createTeam($domainAdmin);
 
-        /** @var Directory $list */
-        $list = $I->have(Directory::class, [
+        /** @var TeamDirectory $list */
+        $list = $I->have(TeamDirectory::class, [
             'label' => self::DEFAULT_LIST_NAME,
             'team' => $team,
-            'parent_list' => $team->getLists(),
+            'parent_directory' => $team->getLists(),
         ]);
-        /** @var Directory $otherList */
-        $otherList = $I->have(Directory::class, [
+        /** @var TeamDirectory $otherList */
+        $otherList = $I->have(TeamDirectory::class, [
             'label' => self::DEFAULT_LIST_NAME,
             'team' => $otherTeam,
-            'parent_list' => $otherTeam->getLists(),
+            'parent_directory' => $otherTeam->getLists(),
         ]);
 
         $this->cantAccessToDeleteTeamList($member, $list);
@@ -214,14 +215,14 @@ class ListTest extends Unit
         $I->seeResponseContains('This value should not be blank.');
     }
 
-    private function editListValidate(User $user, Directory $list)
+    private function editListValidate(User $user, TeamDirectory $list)
     {
         $I = $this->tester;
 
         $I->login($user);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPATCH(sprintf('teams/%s/lists/%s', $list->getTeam()->getId()->toString(), $list->getId()->toString()), [
-            'label' => Directory::LIST_DEFAULT,
+            'label' => AbstractDirectory::LABEL_DEFAULT,
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContains('List with such label already exists');
@@ -234,7 +235,7 @@ class ListTest extends Unit
         $I->seeResponseContains('This value should not be blank.');
     }
 
-    private function canEditTeamList(User $user, Directory $list, string $label)
+    private function canEditTeamList(User $user, TeamDirectory $list, string $label)
     {
         $I = $this->tester;
 
@@ -248,7 +249,7 @@ class ListTest extends Unit
         $I->seeResponseIsValidOnJsonSchemaString($I->getSchema('team/team_list.json'));
     }
 
-    private function cantAccessToEditTeamList(User $user, Directory $list)
+    private function cantAccessToEditTeamList(User $user, TeamDirectory $list)
     {
         $I = $this->tester;
 
@@ -260,7 +261,7 @@ class ListTest extends Unit
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
     }
 
-    private function canDeleteTeamList(User $user, Directory $list)
+    private function canDeleteTeamList(User $user, TeamDirectory $list)
     {
         $I = $this->tester;
 
@@ -269,7 +270,7 @@ class ListTest extends Unit
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
     }
 
-    private function cantAccessToDeleteTeamList(User $user, Directory $list)
+    private function cantAccessToDeleteTeamList(User $user, TeamDirectory $list)
     {
         $I = $this->tester;
 

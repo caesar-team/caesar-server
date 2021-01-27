@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\Item;
 
 use App\Controller\AbstractController;
+use App\Entity\Directory\TeamDirectory;
 use App\Entity\Item;
 use App\Factory\Entity\ItemFactory;
 use App\Factory\View\Item\BatchItemViewFactory;
@@ -269,7 +270,12 @@ final class ItemController extends AbstractController
         ]);
 
         $item = $factory->createFromRequest($createRequest);
-        $this->denyAccessUnlessGranted([TeamItemVoter::CREATE, ItemVoter::CREATE], $item->getParentList());
+        $list = $createRequest->getList();
+        if ($list instanceof TeamDirectory) {
+            $this->denyAccessUnlessGranted(TeamItemVoter::CREATE, $list);
+        } else {
+            $this->denyAccessUnlessGranted(ItemVoter::CREATE, $item->getOwnerDirectory());
+        }
         $itemRepository->save($item);
 
         return $viewFactory->createSingle($item);
@@ -318,7 +324,12 @@ final class ItemController extends AbstractController
         $items = [];
         foreach ($itemsRequest->getItems() as $createItemRequest) {
             $item = $factory->createFromRequest($createItemRequest);
-            $this->denyAccessUnlessGranted([TeamItemVoter::CREATE, ItemVoter::CREATE], $item->getParentList());
+            $list = $createItemRequest->getList();
+            if ($list instanceof TeamDirectory) {
+                $this->denyAccessUnlessGranted(TeamItemVoter::CREATE, $list);
+            } else {
+                $this->denyAccessUnlessGranted(ItemVoter::CREATE, $item->getOwnerDirectory());
+            }
             $itemRepository->save($item);
 
             $items[] = $item;
@@ -363,7 +374,7 @@ final class ItemController extends AbstractController
         $items = [];
         foreach ($itemsRequest->getItems() as $createItemRequest) {
             $item = $factory->createTeamKeypairFromRequest($createItemRequest);
-            $this->denyAccessUnlessGranted(TeamItemVoter::CREATE, $item->getParentList());
+            $this->denyAccessUnlessGranted(TeamItemVoter::CREATE, $item->getTeamDirectory());
             if (isset($items[$item->getTeamKeypairGroupKey()])) {
                 continue;
             }

@@ -141,6 +141,11 @@ final class ItemView
     private ?string $listId;
 
     /**
+     * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
+     */
+    private ?string $teamListId;
+
+    /**
      * @SWG\Property(type="string", example="-----BEGIN PGP MESSAGE----- Version: OpenPGP.js v4.2.2 ....")
      */
     private ?string $secret;
@@ -188,11 +193,6 @@ final class ItemView
     private ?string $originalItemId;
 
     /**
-     * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d46")
-     */
-    private ?string $previousListId;
-
-    /**
      * @SWG\Property(type="string", example="4fcc6aef-3fd6-4c16-9e4b-5c37486c7d4")
      */
     private ?string $relatedItemId;
@@ -217,6 +217,8 @@ final class ItemView
         $this->shared = null;
         $this->relatedItemId = null;
         $this->teamId = null;
+        $this->listId = null;
+        $this->teamListId = null;
         $this->favorite = false;
         $this->isShared = false;
         $this->meta = new ItemMetaView();
@@ -345,16 +347,6 @@ final class ItemView
         $this->originalItemId = $originalItemId;
     }
 
-    public function getPreviousListId(): ?string
-    {
-        return $this->previousListId;
-    }
-
-    public function setPreviousListId(?string $previousListId): void
-    {
-        $this->previousListId = $previousListId;
-    }
-
     public function getItem(): Item
     {
         return $this->item;
@@ -398,5 +390,15 @@ final class ItemView
     public function setMeta(ItemMetaView $meta): void
     {
         $this->meta = $meta;
+    }
+
+    public function getTeamListId(): ?string
+    {
+        return $this->teamListId;
+    }
+
+    public function setTeamListId(?string $teamListId): void
+    {
+        $this->teamListId = $teamListId;
     }
 }

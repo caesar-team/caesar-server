@@ -15,7 +15,6 @@ use App\Model\Query\ItemsAllQuery;
 use App\Request\Item\KeypairFilterRequest;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\Query\Expr\Join;
 use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -130,44 +129,14 @@ class ItemRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('item');
 
         return $qb
-            ->join('item.parentList', 'parentList')
-            ->where($qb->expr()->eq('parentList', ':list'))
+            ->join('item.directoryItems', 'directory_items')
+            ->where('directory_items.directory = :list')
             ->andWhere('item.status =:status')
             ->setParameter('list', $query->list)
             ->setParameter('status', Item::STATUS_FINISHED)
             ->orderBy('item.lastUpdated', 'DESC')
             ->getQuery()
             ->getResult();
-    }
-
-    /**
-     * @return Item[]
-     */
-    public function getFavoritesItems(User $user, ?Team $team = null): iterable
-    {
-        $queryBuilder = $this->createQueryBuilder('item');
-        $queryBuilder
-            ->innerJoin('item.parentList', 'list')
-        ;
-
-        if (null === $team) {
-            $queryBuilder
-                ->innerJoin(User::class, 'user', Join::WITH, 'user.lists = list OR user.inbox = list OR user.trash = list OR user = item.owner')
-                ->where('user.id = :user')
-                ->andWhere('item.team IS NULL')
-                ->andWhere('item.favorite = true')
-                ->setParameter('user', $user->getId())
-            ;
-        } else {
-            $queryBuilder
-                ->andWhere('item.team = :team')
-                ->andWhere('item.teamFavorite LIKE :user_like')
-                ->setParameter('user_like', '%'.$user->getId()->toString().'%')
-                ->setParameter('team', $team)
-            ;
-        }
-
-        return $queryBuilder->getQuery()->getResult();
     }
 
     public function getTeamKeyPairByUser(User $user, Team $team): ?Item

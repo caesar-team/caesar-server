@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Type\Query;
 
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
 use App\Model\Query\ItemListQuery;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -22,7 +22,7 @@ class ItemListQueryType extends AbstractType
                 'constraints' => [
                     new NotBlank(),
                 ],
-                'class' => Directory::class,
+                'class' => AbstractDirectory::class,
                 'choice_value' => 'id',
                 'property_path' => 'list',
             ]);

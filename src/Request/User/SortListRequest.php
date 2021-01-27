@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Request\User;
 
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
 
 final class SortListRequest
 {
@@ -13,9 +13,9 @@ final class SortListRequest
      */
     private $sort;
 
-    private Directory $directory;
+    private AbstractDirectory $directory;
 
-    public function __construct(Directory $directory)
+    public function __construct(AbstractDirectory $directory)
     {
         $this->directory = $directory;
     }
@@ -30,7 +30,7 @@ final class SortListRequest
         $this->sort = $sort;
     }
 
-    public function getDirectory(): Directory
+    public function getDirectory(): AbstractDirectory
     {
         return $this->directory;
     }

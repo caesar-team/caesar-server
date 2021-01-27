@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Security\Voter;
 
 use App\DBAL\Types\Enum\AccessEnumType;
-use App\Entity\Directory;
+use App\Entity\Directory\UserDirectory;
 use App\Entity\Item;
 use App\Entity\User;
-use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -31,14 +30,11 @@ class ItemVoter extends Voter
 
     private AuthorizationCheckerInterface $authorizationChecker;
 
-    private UserRepository $userRepository;
-
     private TeamItemVoter $teamItemVoter;
 
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, UserRepository $userRepository, TeamItemVoter $teamItemVoter)
+    public function __construct(AuthorizationCheckerInterface $authorizationChecker, TeamItemVoter $teamItemVoter)
     {
         $this->authorizationChecker = $authorizationChecker;
-        $this->userRepository = $userRepository;
         $this->teamItemVoter = $teamItemVoter;
     }
 
@@ -64,17 +60,13 @@ class ItemVoter extends Voter
             return false;
         }
 
-        if ($subject instanceof Directory && null !== $subject->getTeam()) {
-            return false;
-        }
-
         if ($subject instanceof Item && null !== $subject->getTeam()) {
             return false;
         }
 
         switch ($attribute) {
             case self::CREATE:
-                return $subject instanceof Directory && $this->canCreate($subject, $user);
+                return $subject instanceof UserDirectory && $this->canCreate($subject, $user);
             case self::EDIT:
                 return $subject instanceof Item && $this->canEdit($subject, $user);
             case self::DELETE:
@@ -90,20 +82,16 @@ class ItemVoter extends Voter
 
     private function canMove(Item $item, User $currentUser): bool
     {
-        return $currentUser->equals($item->getSignedOwner());
+        return $currentUser->equals($item->getSignedOwner()) && null === $item->getTeam();
     }
 
-    private function canCreate(Directory $list, User $user): bool
+    private function canCreate(UserDirectory $list, User $user): bool
     {
-        if ($list->getUserInbox() && !$list->getUser()->equals($user)) {
+        if ($list->isInbox() && !$list->getUser()->equals($user)) {
             return true;
         }
 
-        $itemOwner = $this->userRepository->getByList($list);
-
-        return $user->equals($itemOwner)
-            && !($list->equals($user->getInbox()) || $list->equals($user->getTrash()))
-        ;
+        return $user->equals($list->getUser()) && !($list->isInbox() || $list->isTrash());
     }
 
     private function canEdit(Item $item, User $user): bool
@@ -136,6 +124,8 @@ class ItemVoter extends Voter
 
     private function canFavorite(Item $item, User $user): bool
     {
-        return $user->equals($item->getSignedOwner());
+        return $user->equals($item->getSignedOwner())
+            || null !== $item->getKeyPairItemByUser($user)
+        ;
     }
 }

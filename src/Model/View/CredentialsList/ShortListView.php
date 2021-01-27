@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Model\View\CredentialsList;
 
 use App\DBAL\Types\Enum\DirectoryEnumType;
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
 use JMS\Serializer\Annotation as Serializer;
 use Swagger\Annotations as SWG;
 
@@ -34,11 +34,13 @@ class ShortListView
     /**
      * @Serializer\Exclude
      */
-    private Directory $directory;
+    private AbstractDirectory $directory;
 
-    public function __construct(Directory $directory)
+    public function __construct(AbstractDirectory $directory)
     {
         $this->directory = $directory;
+        $this->label = null;
+        $this->teamId = null;
     }
 
     public function getId(): string
@@ -81,7 +83,7 @@ class ShortListView
         $this->teamId = $teamId;
     }
 
-    public function getDirectory(): Directory
+    public function getDirectory(): AbstractDirectory
     {
         return $this->directory;
     }

@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
+use App\Entity\Directory\UserDirectory;
 use App\Security\AuthorizationManager\InvitationEncoder;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -154,62 +155,34 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     private $ownedItems;
 
     /**
-     * @var Directory
+     * @var Collection<int, UserDirectory>
      *
-     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userInbox", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(onDelete="CASCADE")
-     */
-    protected $inbox;
-
-    /**
-     * @var Directory
-     *
-     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userLists", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(onDelete="CASCADE")
-     */
-    protected $lists;
-
-    /**
-     * @var Directory
-     *
-     * @ORM\OneToOne(targetEntity="App\Entity\Directory", inversedBy="userTrash", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(onDelete="CASCADE")
-     */
-    protected $trash;
-
-    /**
-     * @var Collection|Directory[]
-     *
-     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="user")
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory\UserDirectory", mappedBy="user", cascade={"persist", "remove"})
      * @ORM\OrderBy({"sort": "ASC"})
      */
-    protected $directories;
+    private Collection $directories;
 
     /**
-     * User constructor.
+     * @var Collection<int, FavoriteUserItem>
      *
-     * @throws \Exception
+     * @ORM\OneToMany(targetEntity="App\Entity\FavoriteUserItem", mappedBy="user", cascade={"remove"}, orphanRemoval=true, fetch="EAGER")
      */
+    private Collection $itemFavorites;
+
     public function __construct(Srp $srp = null)
     {
         parent::__construct();
-        $this->id = Uuid::uuid4();
-        $this->inbox = Directory::createInbox();
-        $this->inbox->setUser($this);
-        $this->lists = Directory::createRootList();
-        $this->lists->setUser($this);
-        $this->lists->addChildList(Directory::createDefaultList());
-        $this->trash = Directory::createTrash();
-        $this->trash->setUser($this);
 
+        $this->id = Uuid::uuid4();
         $this->userTeams = new ArrayCollection();
         $this->fingerprints = new ArrayCollection();
         $this->ownedItems = new ArrayCollection();
+        $this->flowStatus = self::FLOW_STATUS_INCOMPLETE;
+        $this->directories = new ArrayCollection();
+        $this->itemFavorites = new ArrayCollection();
         if (null !== $srp) {
             $this->srp = $srp;
         }
-        $this->flowStatus = self::FLOW_STATUS_INCOMPLETE;
-        $this->directories = new ArrayCollection();
     }
 
     public function getId(): UuidInterface
@@ -552,19 +525,40 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }, $this->userTeams->toArray());
     }
 
-    public function getInbox(): Directory
+    public function getInbox(): UserDirectory
     {
-        return $this->inbox;
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('type', DirectoryEnumType::INBOX));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        return $this->directories->matching($criteria)->first();
     }
 
-    public function getLists(): Directory
+    public function getLists(): UserDirectory
     {
-        return $this->lists;
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('type', DirectoryEnumType::ROOT));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        return $this->directories->matching($criteria)->first();
     }
 
-    public function getTrash(): Directory
+    public function getTrash(): UserDirectory
     {
-        return $this->trash;
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('type', DirectoryEnumType::TRASH));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        return $this->directories->matching($criteria)->first();
     }
 
     public function hasOneOfRoles(array $roles): bool
@@ -589,29 +583,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         return null !== $user && $this->getId()->toString() === $user->getId()->toString();
     }
 
-    public function getUserPersonalLists(): array
-    {
-        $lists = $this->getLists()->getChildLists()->toArray();
-        $lists[] = $this->getInbox();
-        $lists[] = $this->getTrash();
-
-        return $lists;
-    }
-
-    public function isOwnerByDirectory(?Directory $directory): bool
-    {
-        if (null === $directory) {
-            return false;
-        }
-
-        return $this->getInbox()->equals($directory)
-            || $this->getTrash()->equals($directory)
-            || $this->getLists()->equals($directory)
-            || $this->getLists()->hasChildListByDirectory($directory)
-        ;
-    }
-
-    public function getDefaultDirectory(): ?Directory
+    public function getDefaultDirectory(): ?UserDirectory
     {
         $criteria = Criteria::create();
         $criteria->where(Criteria::expr()->eq('type', DirectoryEnumType::DEFAULT));
@@ -620,9 +592,9 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
          * @psalm-suppress UndefinedInterfaceMethod
          * @phpstan-ignore-next-line
          */
-        $directory = $this->getLists()->getChildLists()->matching($criteria)->first();
+        $directory = $this->directories->matching($criteria)->first();
 
-        return $directory instanceof Directory ? $directory : null;
+        return $directory instanceof UserDirectory ? $directory : null;
     }
 
     public function isIncomplete(): bool
@@ -631,22 +603,29 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
     }
 
     /**
-     * @return Directory[]
+     * @return UserDirectory[]
+     */
+    public function getDirectoriesWithoutRoot(): array
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->neq('type', DirectoryEnumType::ROOT));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        return $this->directories->matching($criteria)->toArray();
+    }
+
+    /**
+     * @return UserDirectory[]
      */
     public function getDirectories(): array
     {
         return $this->directories->toArray();
     }
 
-    /**
-     * @param Directory[]|Collection $directories
-     */
-    public function setDirectories(Collection $directories): void
-    {
-        $this->directories = $directories;
-    }
-
-    public function addDirectory(Directory $directory): void
+    public function addDirectory(UserDirectory $directory): void
     {
         if (!$this->directories->contains($directory)) {
             $this->directories->add($directory);
@@ -654,7 +633,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
         }
     }
 
-    public function getDirectoryByLabel(?string $label): ?Directory
+    public function getDirectoryByLabel(?string $label): ?UserDirectory
     {
         $criteria = Criteria::create();
         $criteria->where(Criteria::expr()->eq('label', $label));
@@ -665,7 +644,7 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
          */
         $directory = $this->directories->matching($criteria)->first();
 
-        return $directory instanceof Directory ? $directory : null;
+        return $directory instanceof UserDirectory ? $directory : null;
     }
 
     public function getHashEmail(): string
@@ -679,6 +658,22 @@ class User extends FOSUser implements TwoFactorInterface, TrustedDeviceInterface
             && User::FLOW_STATUS_INCOMPLETE === $this->getFlowStatus()
             && $this->hasBackupCodes()
         ;
+    }
+
+    /**
+     * @return FavoriteUserItem[]
+     */
+    public function getItemFavorites(): array
+    {
+        return $this->itemFavorites->toArray();
+    }
+
+    public function addItemFavorite(FavoriteUserItem $favoriteUserItem): void
+    {
+        if (!$this->itemFavorites->contains($favoriteUserItem)) {
+            $this->itemFavorites->add($favoriteUserItem);
+            $favoriteUserItem->setUser($this);
+        }
     }
 
     public function __toString(): string
