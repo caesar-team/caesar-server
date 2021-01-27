@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Form\Type\Request\Team;
 
 use App\Entity\Directory\AbstractDirectory;
+use App\Entity\Item;
 use App\Request\Team\MoveTeamItemRequest;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -18,12 +19,21 @@ class MoveTeamItemType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder
-            ->add('listId', EntityType::class, [
+        if (null !== $options['directory']) {
+            $builder->add('itemId', EntityType::class, [
+                'class' => Item::class,
+                'choice_value' => 'id',
+                'property_path' => 'item',
+            ]);
+        } else {
+            $builder->add('listId', EntityType::class, [
                 'class' => AbstractDirectory::class,
                 'choice_value' => 'id',
                 'property_path' => 'directory',
-            ])
+            ]);
+        }
+
+        $builder
             ->add('secret', TextType::class, [
                 'required' => false,
             ])
