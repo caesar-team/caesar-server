@@ -20,7 +20,7 @@ final class ConfigController extends AbstractController
      * @SWG\Response(
      *     response=200,
      *     description="Configs, returned key=>value config",
-     *     @SWG\Schema(type="array")
+     *     @SWG\Schema(type="array", @SWG\Items(type="string"))
      * )
      * @SWG\Response(
      *     response=400,

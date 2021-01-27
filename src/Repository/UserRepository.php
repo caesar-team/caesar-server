@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Model\Query\UserListQuery;
+use App\Security\Domain\Repository\AllowedDomainRepositoryInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Ramsey\Uuid\Uuid;
@@ -20,14 +21,18 @@ use Ramsey\Uuid\Uuid;
 class UserRepository extends ServiceEntityRepository
 {
     private DirectoryRepository $directoryRepository;
-    private array $domains;
 
-    public function __construct(ManagerRegistry $registry, DirectoryRepository $directoryRepository, array $domains)
-    {
+    private AllowedDomainRepositoryInterface $domainRepository;
+
+    public function __construct(
+        ManagerRegistry $registry,
+        DirectoryRepository $directoryRepository,
+        AllowedDomainRepositoryInterface $domainRepository
+    ) {
         parent::__construct($registry, User::class);
 
         $this->directoryRepository = $directoryRepository;
-        $this->domains = $domains;
+        $this->domainRepository = $domainRepository;
     }
 
     public function save(User $user): void
@@ -216,7 +221,7 @@ class UserRepository extends ServiceEntityRepository
 
         if ($query->isDomain()) {
             $domainQuery = [];
-            foreach ($this->domains as $domain) {
+            foreach ($this->domainRepository->getAllowedDomains() as $domain) {
                 $domainQuery[] = $queryBuilder
                     ->expr()
                     ->like('user.email', $queryBuilder->expr()->literal('%@'.$domain))
