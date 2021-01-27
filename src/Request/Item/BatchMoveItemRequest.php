@@ -12,6 +12,8 @@ final class BatchMoveItemRequest implements MoveItemRequestInterface
 
     private ?string $secret = null;
 
+    private ?string $raws = null;
+
     public function getItem(): Item
     {
         return $this->item;
@@ -30,5 +32,15 @@ final class BatchMoveItemRequest implements MoveItemRequestInterface
     public function setSecret(?string $secret): void
     {
         $this->secret = $secret;
+    }
+
+    public function getRaws(): ?string
+    {
+        return $this->raws;
+    }
+
+    public function setRaws(?string $raws): void
+    {
+        $this->raws = $raws;
     }
 }

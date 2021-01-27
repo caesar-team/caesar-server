@@ -11,4 +11,6 @@ interface MoveItemRequestInterface
     public function getItem(): Item;
 
     public function getSecret(): ?string;
+
+    public function getRaws(): ?string;
 }
