@@ -18,6 +18,8 @@ final class MovePersonalItemRequest implements MovePersonalItemRequestInterface
 
     private ?string $secret;
 
+    private ?string $raws;
+
     private User $user;
 
     private Item $item;
@@ -25,6 +27,7 @@ final class MovePersonalItemRequest implements MovePersonalItemRequestInterface
     public function __construct(User $user)
     {
         $this->secret = null;
+        $this->raws = null;
         $this->user = $user;
     }
 
@@ -46,6 +49,16 @@ final class MovePersonalItemRequest implements MovePersonalItemRequestInterface
     public function setSecret(?string $secret): void
     {
         $this->secret = $secret;
+    }
+
+    public function getRaws(): ?string
+    {
+        return $this->raws;
+    }
+
+    public function setRaws(?string $raws): void
+    {
+        $this->raws = $raws;
     }
 
     public function getUser(): User

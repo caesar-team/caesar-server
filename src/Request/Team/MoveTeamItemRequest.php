@@ -18,6 +18,8 @@ final class MoveTeamItemRequest implements MoveTeamItemRequestInterface
 
     private ?string $secret;
 
+    private ?string $raws;
+
     private Team $team;
 
     private Item $item;
@@ -25,6 +27,7 @@ final class MoveTeamItemRequest implements MoveTeamItemRequestInterface
     public function __construct(Team $team)
     {
         $this->secret = null;
+        $this->raws = null;
         $this->team = $team;
     }
 
@@ -46,6 +49,16 @@ final class MoveTeamItemRequest implements MoveTeamItemRequestInterface
     public function setSecret(?string $secret): void
     {
         $this->secret = $secret;
+    }
+
+    public function getRaws(): ?string
+    {
+        return $this->raws;
+    }
+
+    public function setRaws(?string $raws): void
+    {
+        $this->raws = $raws;
     }
 
     public function getTeam(): Team

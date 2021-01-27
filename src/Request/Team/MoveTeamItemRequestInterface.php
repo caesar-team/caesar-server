@@ -17,4 +17,6 @@ interface MoveTeamItemRequestInterface
     public function getDirectory(): AbstractDirectory;
 
     public function getSecret(): ?string;
+
+    public function getRaws(): ?string;
 }

@@ -27,6 +27,9 @@ class MoveTeamItemType extends AbstractType
             ->add('secret', TextType::class, [
                 'required' => false,
             ])
+            ->add('raws', TextType::class, [
+                'required' => false,
+            ])
         ;
     }
 

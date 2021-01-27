@@ -37,6 +37,9 @@ class ItemRelocator implements ItemRelocatorInterface
         if (null !== $request->getSecret()) {
             $item->setSecret($request->getSecret());
         }
+        if (null !== $request->getRaws()) {
+            $item->setRaws($request->getRaws());
+        }
 
         $directoryItem = $item->getCurrentDirectoryItemByUser($user);
         if (null === $directoryItem) {
@@ -61,6 +64,9 @@ class ItemRelocator implements ItemRelocatorInterface
         $team = $request->getTeam();
         if (null !== $request->getSecret()) {
             $item->setSecret($request->getSecret());
+        }
+        if (null !== $request->getRaws()) {
+            $item->setRaws($request->getRaws());
         }
 
         $directoryItem = $item->getCurrentDirectoryItemByTeam($team);
