@@ -16,6 +16,7 @@ class ShortListViewFactory
         $view->setId($directory->getId()->toString());
         $view->setLabel($directory->getLabel());
         $view->setType($directory->getType());
+        $view->setSort($directory->getSort());
 
         if ($directory instanceof TeamDirectory) {
             $view->setTeamId($directory->getTeam()->getId()->toString());
