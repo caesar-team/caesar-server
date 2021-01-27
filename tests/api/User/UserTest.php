@@ -3,8 +3,8 @@
 namespace App\Tests\User;
 
 use App\Controller\Admin\UserCrudController;
-use App\Entity\Directory;
-use App\Entity\Item;
+use App\Entity\Directory\TeamDirectory;
+use App\Entity\Directory\UserDirectory;
 use App\Entity\User;
 use App\Tests\ApiTester;
 use App\Tests\Helper\Doctrine;
@@ -93,16 +93,12 @@ class UserTest extends Unit
             'flow_status' => User::FLOW_STATUS_INCOMPLETE,
         ]);
 
-        /** @var Directory $directory */
-        $directory = $I->have(Directory::class, [
-            'parent_list' => $user->getLists(),
+        /** @var UserDirectory $directory */
+        $directory = $I->have(UserDirectory::class, [
+            'parent_directory' => $user->getLists(),
             'user' => $user,
         ]);
-        /** @var Item $item */
-        $item = $I->have(Item::class, [
-            'owner' => $user,
-            'parent_list' => $directory,
-        ]);
+        $item = $I->createUserItem($user, $directory);
         $defaultItem = $I->createUserItem($user);
         $personalItem = $I->createUserItem($user);
         $shareItem = $I->createKeypairItem($member, $personalItem);
@@ -111,9 +107,9 @@ class UserTest extends Unit
         $team = $I->createTeam($user);
         $I->addUserToTeam($team, $member);
         $teamItem = $I->createTeamItem($team, $user);
-        /** @var Directory $teamList */
-        $teamList = $I->have(Directory::class, [
-            'parent_list' => $team->getLists(),
+        /** @var TeamDirectory $teamList */
+        $teamList = $I->have(TeamDirectory::class, [
+            'parent_directory' => $team->getLists(),
             'team' => $team,
         ]);
 

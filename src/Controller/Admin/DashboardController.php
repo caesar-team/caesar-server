@@ -2,7 +2,9 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Directory;
+use App\Entity\Config;
+use App\Entity\Directory\TeamDirectory;
+use App\Entity\Directory\UserDirectory;
 use App\Entity\Item;
 use App\Entity\Team;
 use App\Entity\User;
@@ -49,9 +51,11 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Users Teams', 'far fa-address-book', UserTeam::class);
         yield MenuItem::linkToCrud('Teams', 'fas fa-users', Team::class);
         yield MenuItem::linkToCrud('Items', 'fas fa-key', Item::class);
-        yield MenuItem::linkToCrud('Personal lists', 'fas fa-folder', Directory::class)
+        yield MenuItem::linkToCrud('Personal lists', 'fas fa-folder', UserDirectory::class)
             ->setController(PersonalListCrudController::class);
-        yield MenuItem::linkToCrud('Team lists', 'fas fa-folder', Directory::class)
+        yield MenuItem::linkToCrud('Team lists', 'fas fa-folder', TeamDirectory::class)
             ->setController(TeamListCrudController::class);
+        yield MenuItem::linkToCrud('Config', 'fa fa-cog', Config::class)
+            ->setController(ConfigCrudController::class);
     }
 }

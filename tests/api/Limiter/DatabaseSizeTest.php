@@ -63,7 +63,6 @@ class DatabaseSizeTest extends Unit
             'meta' => [
                 'title' => 'item title',
             ],
-            'favorite' => false,
             'tags' => ['tag'],
         ], $options);
     }

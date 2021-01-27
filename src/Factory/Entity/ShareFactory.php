@@ -6,6 +6,7 @@ namespace App\Factory\Entity;
 
 use App\DBAL\Types\Enum\NodeEnumType;
 use App\Entity\Embedded\ItemMeta;
+use App\Factory\Entity\Directory\DirectoryItemFactory;
 use App\Model\DTO\Share;
 use App\Request\Item\ShareBatchItemRequest;
 
@@ -13,9 +14,12 @@ class ShareFactory
 {
     private ItemFactory $itemFactory;
 
-    public function __construct(ItemFactory $itemFactory)
+    private DirectoryItemFactory $directoryItemFactory;
+
+    public function __construct(ItemFactory $itemFactory, DirectoryItemFactory $directoryItemFactory)
     {
         $this->itemFactory = $itemFactory;
+        $this->directoryItemFactory = $directoryItemFactory;
     }
 
     /**
@@ -35,12 +39,14 @@ class ShareFactory
             $item = $this->itemFactory->create();
             $item->setOwner($user);
             $item->setType(NodeEnumType::TYPE_KEYPAIR);
-            $item->setParentList($user->getInbox());
             $item->setSecret($userRequest->getSecret());
             $item->setRelatedItem($relatedItem);
             $meta = new ItemMeta();
             $meta->setTitle(NodeEnumType::TYPE_KEYPAIR);
             $item->setMeta($meta);
+
+            $this->directoryItemFactory->create($relatedItem, $user->getInbox());
+            $this->directoryItemFactory->create($item, $user->getInbox());
 
             $result[$user->getId()->toString()] = new Share($user, $item);
         }

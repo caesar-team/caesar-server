@@ -4,7 +4,7 @@ namespace App\Tests\User;
 
 use App\DBAL\Types\Enum\DirectoryEnumType;
 use App\DBAL\Types\Enum\NodeEnumType;
-use App\Entity\Directory;
+use App\Entity\Directory\UserDirectory;
 use App\Entity\User;
 use App\Tests\ApiTester;
 use Codeception\Module\DataFactory;
@@ -27,9 +27,10 @@ class PermissionTest extends Unit
 
         /** @var User $user */
         $user = $I->have(User::class);
-        /** @var Directory $directory */
-        $directory = $I->have(Directory::class, [
-            'parent_list' => $user->getLists(),
+        /** @var UserDirectory $directory */
+        $directory = $I->have(UserDirectory::class, [
+            'user' => $user,
+            'parent_directory' => $user->getLists(),
         ]);
         $I->login($user);
 
@@ -45,7 +46,7 @@ class PermissionTest extends Unit
         $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
             'sort_list' => [],
             'create_item' => [],
-            //'edit_list' => [],
+            'edit_list' => [],
         ]]);
         $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.label=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
             'delete_list' => [],
@@ -100,7 +101,6 @@ class PermissionTest extends Unit
             'meta' => [
                 'title' => 'item title',
             ],
-            'favorite' => false,
             'tags' => ['tag'],
         ]);
         [$itemId] = $I->grabDataFromResponseByJsonPath('$.id');

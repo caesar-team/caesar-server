@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DataFixtures;
 
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
 use App\Entity\Item;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\ORMFixtureInterface;
@@ -53,7 +53,7 @@ abstract class AbstractFixture extends DoctrineAbstractFixture implements ORMFix
     }
 
     /**
-     * @return User|Directory|Item|object
+     * @return User|AbstractDirectory|Item|object
      */
     protected function getRef(string $className, string $uniqueName)
     {

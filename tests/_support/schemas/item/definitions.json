@@ -11,7 +11,10 @@
           "type": "string"
         },
         "listId": {
-          "type": "string"
+          "type": ["null", "string"]
+        },
+        "teamListId": {
+          "type": ["null", "string"]
         },
         "secret": {
           "type": "string"
@@ -114,9 +117,6 @@
         "originalItemId": {
           "type": ["string", "null"]
         },
-        "previousListId": {
-          "type": ["string", "null"]
-        },
         "isShared": {
           "type": "boolean"
         }
@@ -125,6 +125,7 @@
         "id",
         "type",
         "listId",
+        "teamListId",
         "secret",
         "invited",
         "shared",
@@ -134,7 +135,6 @@
         "favorite",
         "ownerId",
         "originalItemId",
-        "previousListId",
         "meta"
       ]
     },

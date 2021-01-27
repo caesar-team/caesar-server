@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Security\Voter;
 
-use App\Entity\Directory;
+use App\Entity\Directory\TeamDirectory;
 use App\Entity\Item;
 use App\Entity\User;
 use App\Entity\UserTeam;
@@ -49,11 +49,7 @@ class TeamItemVoter extends Voter
             return false;
         }
 
-        if ($subject instanceof Directory && $subject->isTrashDirectory()) {
-            return false;
-        }
-
-        if ($subject instanceof Directory && null === $subject->getTeam()) {
+        if ($subject instanceof TeamDirectory && $subject->isTrash()) {
             return false;
         }
 
@@ -63,7 +59,7 @@ class TeamItemVoter extends Voter
 
         switch ($attribute) {
             case self::CREATE:
-                return $subject instanceof Directory && $this->canCreate($subject, $user);
+                return $subject instanceof TeamDirectory && $this->canCreate($subject, $user);
             case self::EDIT:
                 return $subject instanceof Item && $this->canEdit($subject, $user);
             case self::DELETE:
@@ -77,17 +73,13 @@ class TeamItemVoter extends Voter
         return false;
     }
 
-    private function canCreate(Directory $subject, User $user): bool
+    private function canCreate(TeamDirectory $directory, User $user): bool
     {
-        if (null == $subject->getTeam()) {
-            return false;
-        }
-
         if ($user->hasRole(User::ROLE_ADMIN)) {
             return true;
         }
 
-        $userTeam = $subject->getTeam()->getUserTeamByUser($user);
+        $userTeam = $directory->getTeam()->getUserTeamByUser($user);
         if (null === $userTeam) {
             return false;
         }

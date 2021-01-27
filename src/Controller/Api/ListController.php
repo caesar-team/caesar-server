@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Controller\AbstractController;
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
+use App\Entity\Directory\UserDirectory;
 use App\Entity\User;
-use App\Factory\Entity\UserDirectoryFactory;
+use App\Factory\Entity\Directory\UserDirectoryFactory;
 use App\Factory\View\ListViewFactory;
 use App\Factory\View\ShortListViewFactory;
 use App\Form\Type\Request\User\CreateListRequestType;
 use App\Form\Type\Request\User\EditListRequestType;
 use App\Form\Type\Request\User\SortListRequestType;
+use App\Item\ItemRelocatorInterface;
 use App\Model\View\CredentialsList\ListView;
 use App\Model\View\CredentialsList\ShortListView;
 use App\Modifier\DirectoryModifier;
@@ -22,8 +24,6 @@ use App\Request\User\EditListRequest;
 use App\Request\User\SortListRequest;
 use App\Security\Voter\ListVoter;
 use App\Security\Voter\TeamListVoter;
-use App\Services\ItemDisplacer;
-use Doctrine\ORM\EntityManagerInterface;
 use Fourxxi\RestRequestError\Exception\FormInvalidRequestException;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -79,7 +79,7 @@ final class ListController extends AbstractController
      */
     public function fullList(ListViewFactory $factory): array
     {
-        return $factory->createCollection($this->getUser()->getUserPersonalLists());
+        return $factory->createCollection($this->getUser()->getDirectoriesWithoutRoot());
     }
 
     /**
@@ -158,12 +158,12 @@ final class ListController extends AbstractController
      */
     public function editListAction(
         Request $request,
-        Directory $list,
+        UserDirectory $list,
         ListViewFactory $viewFactory,
         DirectoryModifier $modifier
     ): ListView {
         $this->denyAccessUnlessGranted(ListVoter::EDIT, $list);
-        if (null === $list->getParentList()) { //root list
+        if (null === $list->getParentDirectory()) { //root list
             $message = $this->translator->trans('app.exception.cant_edit_root_list');
             throw new BadRequestHttpException($message);
         }
@@ -202,24 +202,19 @@ final class ListController extends AbstractController
      *     name="api_delete_list",
      *     methods={"DELETE"}
      * )
-     *
-     * @return null
      */
-    public function deleteListAction(Directory $list, ItemDisplacer $itemDisplacer, EntityManagerInterface $manager)
-    {
+    public function deleteListAction(
+        UserDirectory $list,
+        ItemRelocatorInterface $relocator,
+        DirectoryRepository $repository
+    ): void {
         $this->denyAccessUnlessGranted(ListVoter::DELETE, $list);
-
-        if (null === $list->getParentList()) { //root list
-            $message = $this->translator->trans('app.exception.cant_delete_root_list');
-            throw new BadRequestHttpException($message);
+        if ($list->isRoot()) {
+            throw new BadRequestHttpException($this->translator->trans('app.exception.cant_delete_root_list'));
         }
 
-        $itemDisplacer->moveChildItemsToTrash($list, $this->getUser());
-
-        $manager->remove($list);
-        $manager->flush();
-
-        return null;
+        $relocator->moveChildItems($list, $list->getUser()->getTrash());
+        $repository->remove($list);
     }
 
     /**
@@ -251,15 +246,10 @@ final class ListController extends AbstractController
      *     methods={"PATCH"}
      * )
      */
-    public function sortList(Directory $list, Request $request, DirectoryModifier $modifier): void
+    public function sortList(AbstractDirectory $list, Request $request, DirectoryModifier $modifier): void
     {
-        if (null === $list->getTeam()) {
-            $this->denyAccessUnlessGranted(ListVoter::SORT, $list);
-        } else {
-            $this->denyAccessUnlessGranted(TeamListVoter::SORT, $list);
-        }
-
-        if (null === $list->getParentList()) { //root list
+        $this->denyAccessUnlessGranted([ListVoter::SORT, TeamListVoter::SORT], $list);
+        if (null === $list->getParentDirectory()) { //root list
             $message = $this->translator->trans('app.exception.cant_edit_root_list');
             throw new BadRequestHttpException($message);
         }

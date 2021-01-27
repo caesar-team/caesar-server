@@ -1,30 +1,38 @@
 <?php
 
-use App\Entity\Directory;
+use App\DBAL\Types\Enum\DirectoryEnumType;
+use App\Entity\Directory\AbstractDirectory;
+use App\Entity\Directory\TeamDirectory;
 use App\Entity\Team;
 use League\FactoryMuffin\FactoryMuffin;
 use League\FactoryMuffin\Faker\Facade as Faker;
 
 /* @var $fm FactoryMuffin */
 $fm->define(Team::class)
-    ->setMaker(static function ($class) use ($fm) {
-        $object = new $class();
+    ->setMaker(static function ($class) {
+        /** @var Team $team */
+        $team = new $class();
 
-        $lists = Directory::createRootList();
-        $lists->setTeam($object);
+        $trash = new TeamDirectory(AbstractDirectory::LABEL_TRASH);
+        $trash->setType(DirectoryEnumType::TRASH);
+        $trash->setTeam($team);
 
-        $defaultList = Directory::createDefaultList();
-        $defaultList->setTeam($object);
+        $root = new TeamDirectory(AbstractDirectory::LABEL_TRASH);
+        $root->setType(DirectoryEnumType::ROOT);
+        $root->setTeam($team);
 
-        $lists->addChildList($defaultList);
+        $default = new TeamDirectory(AbstractDirectory::LABEL_DEFAULT);
+        $default->setType(DirectoryEnumType::DEFAULT);
+        $default->setTeam($team);
 
-        $trash = Directory::createTrash();
-        $trash->setTeam($object);
+        $root->addChildDirectory($default);
+        $default->setParentDirectory($root);
 
-        $object->setLists($lists);
-        $object->setTrash($trash);
+        $team->addDirectory($trash);
+        $team->addDirectory($root);
+        $team->addDirectory($default);
 
-        return $object;
+        return $team;
     })
     ->setDefinitions([
         'alias' => null,

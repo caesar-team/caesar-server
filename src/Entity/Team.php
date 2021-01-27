@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\DBAL\Types\Enum\DirectoryEnumType;
+use App\Entity\Directory\TeamDirectory;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
@@ -21,10 +22,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * @ORM\Entity(repositoryClass="App\Repository\TeamRepository")
  * @ORM\Table(name="groups",
  *     uniqueConstraints={
- *         @UniqueConstraint(name="unique_alias",
- *         columns={"alias"}),
- *         @UniqueConstraint(name="unique_title",
- *         columns={"title"}),
+ *         @UniqueConstraint(name="unique_alias", columns={"alias"}),
+ *         @UniqueConstraint(name="unique_title", columns={"title"}),
  *     }
  * )
  * @UniqueEntity(fields={"title"}, message="You already have a team with the same name. Choose another name.")
@@ -70,38 +69,18 @@ class Team
     private $icon;
 
     /**
-     * @var Directory
-     *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist"}
-     * )
-     */
-    protected $lists;
-
-    /**
-     * @var Directory
-     *
-     * @ORM\OneToOne(
-     *     targetEntity="App\Entity\Directory",
-     *     cascade={"persist"}
-     * )
-     */
-    protected $trash;
-
-    /**
      * @var Collection|Item[]
      * @ORM\OneToMany(targetEntity="App\Entity\Item", mappedBy="team")
      */
     private $ownedItems;
 
     /**
-     * @var Collection|Directory[]
+     * @var Collection<int, TeamDirectory>
      *
-     * @ORM\OneToMany(targetEntity="App\Entity\Directory", mappedBy="team", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="App\Entity\Directory\TeamDirectory", mappedBy="team", cascade={"persist"})
      * @ORM\OrderBy({"sort": "ASC"})
      */
-    protected $directories;
+    private Collection $directories;
 
     /**
      * @var array
@@ -111,6 +90,13 @@ class Team
     private $pinned = [];
 
     /**
+     * @var Collection<int, FavoriteTeamItem>
+     *
+     * @ORM\OneToMany(targetEntity="App\Entity\FavoriteTeamItem", mappedBy="team", cascade={"remove"}, orphanRemoval=true, fetch="EAGER")
+     */
+    private Collection $itemFavorites;
+
+    /**
      * Group constructor.
      *
      * @throws \Exception
@@ -118,9 +104,11 @@ class Team
     public function __construct()
     {
         $this->id = Uuid::uuid4();
+        $this->title = '';
         $this->userTeams = new ArrayCollection();
         $this->ownedItems = new ArrayCollection();
         $this->directories = new ArrayCollection();
+        $this->itemFavorites = new ArrayCollection();
     }
 
     /**
@@ -227,42 +215,40 @@ class Team
         $this->icon = $icon;
     }
 
-    public function getDefaultDirectory(): Directory
+    public function getDefaultDirectory(): TeamDirectory
     {
-        return array_reduce($this->getLists()->getChildLists()->toArray(),
-            function (?Directory $prevDir, Directory $currDir) {
-                if (is_null($prevDir)) {
-                    return $currDir;
-                }
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('type', DirectoryEnumType::DEFAULT));
 
-                return DirectoryEnumType::DEFAULT === $prevDir->getType() ? $prevDir : $currDir;
-            }
-        );
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        return $this->directories->matching($criteria)->first();
     }
 
-    public function setLists(Directory $lists): void
+    public function getLists(): TeamDirectory
     {
-        $this->lists = $lists;
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('type', DirectoryEnumType::ROOT));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        return $this->directories->matching($criteria)->first();
     }
 
-    public function getLists(): Directory
+    public function getTrash(): TeamDirectory
     {
-        return $this->lists;
-    }
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->eq('type', DirectoryEnumType::TRASH));
 
-    public function getTrash(): Directory
-    {
-        return $this->trash;
-    }
-
-    public function setTrash(Directory $trash): void
-    {
-        $this->trash = $trash;
-    }
-
-    public function __toString()
-    {
-        return $this->title;
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        return $this->directories->matching($criteria)->first();
     }
 
     /**
@@ -287,14 +273,29 @@ class Team
     }
 
     /**
-     * @return Directory[]
+     * @return TeamDirectory[]
      */
     public function getDirectories(): array
     {
         return $this->directories->toArray();
     }
 
-    public function getDirectoryByLabel(?string $label): ?Directory
+    /**
+     * @return TeamDirectory[]
+     */
+    public function getDirectoriesWithoutRoot(): array
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->neq('type', DirectoryEnumType::ROOT));
+
+        /**
+         * @psalm-suppress UndefinedInterfaceMethod
+         * @phpstan-ignore-next-line
+         */
+        return $this->directories->matching($criteria)->toArray();
+    }
+
+    public function getDirectoryByLabel(?string $label): ?TeamDirectory
     {
         $criteria = Criteria::create();
         $criteria->where(Criteria::expr()->eq('label', $label));
@@ -305,18 +306,10 @@ class Team
          */
         $directory = $this->directories->matching($criteria)->first();
 
-        return $directory instanceof Directory ? $directory : null;
+        return $directory instanceof TeamDirectory ? $directory : null;
     }
 
-    /**
-     * @param Directory[]|Collection $directories
-     */
-    public function setDirectories(Collection $directories): void
-    {
-        $this->directories = $directories;
-    }
-
-    public function addDirectory(Directory $directory): void
+    public function addDirectory(TeamDirectory $directory): void
     {
         if (!$this->directories->contains($directory)) {
             $this->directories->add($directory);
@@ -358,5 +351,31 @@ class Team
     public function isPinned(User $user): bool
     {
         return !in_array($user->getId()->toString(), $this->getPinned());
+    }
+
+    /**
+     * @return FavoriteTeamItem[]
+     */
+    public function getItemFavorites(): array
+    {
+        return $this->itemFavorites->toArray();
+    }
+
+    public function addItemFavorite(FavoriteTeamItem $favoriteUserItem): void
+    {
+        if (!$this->itemFavorites->contains($favoriteUserItem)) {
+            $this->itemFavorites->add($favoriteUserItem);
+            $favoriteUserItem->setTeam($this);
+        }
+    }
+
+    public function equals(?Team $team): bool
+    {
+        return null !== $team && $this->getId()->toString() === $team->getId()->toString();
+    }
+
+    public function __toString(): string
+    {
+        return $this->title;
     }
 }

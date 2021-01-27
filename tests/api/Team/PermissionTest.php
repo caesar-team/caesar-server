@@ -3,7 +3,8 @@
 namespace App\Tests\Team;
 
 use App\DBAL\Types\Enum\DirectoryEnumType;
-use App\Entity\Directory;
+use App\Entity\Directory\AbstractDirectory;
+use App\Entity\Directory\TeamDirectory;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Entity\UserTeam;
@@ -189,16 +190,16 @@ class PermissionTest extends Unit
         $team = $I->createTeam($teamAdmin);
         $I->addUserToTeam($team, $member);
 
-        $I->have(Directory::class, [
-            'label' => Directory::LIST_DEFAULT,
+        $I->have(TeamDirectory::class, [
+            'label' => AbstractDirectory::LABEL_DEFAULT,
             'type' => DirectoryEnumType::DEFAULT,
             'team' => $team,
-            'parent_list' => $team->getLists(),
+            'parent_directory' => $team->getLists(),
         ]);
-        $I->have(Directory::class, [
+        $I->have(TeamDirectory::class, [
             'label' => self::DEFAULT_LIST_NAME,
             'team' => $team,
-            'parent_list' => $team->getLists(),
+            'parent_directory' => $team->getLists(),
         ]);
 
         $this->canAccessToList($domainAdmin, $team);
@@ -241,7 +242,7 @@ class PermissionTest extends Unit
         $I->seeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
             'team_create_item' => [],
             'team_sort_list' => [],
-            //'team_edit_list' => [],
+            'team_edit_list' => [],
         ]]);
         $I->dontSeeResponseByJsonPathContainsJson(sprintf('$[?(@.type=="%s")]', DirectoryEnumType::DEFAULT), ['_links' => [
             'team_delete_list' => [],
@@ -285,7 +286,7 @@ class PermissionTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
     }
 
-    private function canAccessToEditItem(User $user, Directory $list)
+    private function canAccessToEditItem(User $user, AbstractDirectory $list)
     {
         $I = $this->tester;
 
@@ -300,7 +301,7 @@ class PermissionTest extends Unit
         $I->seeResponseCodeIs(HttpCode::OK);
     }
 
-    private function dontAccessToEditItem(User $user, Directory $list)
+    private function dontAccessToEditItem(User $user, AbstractDirectory $list)
     {
         $I = $this->tester;
 

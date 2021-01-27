@@ -6,6 +6,7 @@ namespace App\Factory\Entity;
 
 use App\Entity\Srp;
 use App\Entity\User;
+use App\Factory\Entity\Directory\UserDirectoryFactory;
 use App\Repository\UserRepository;
 use App\Request\Srp\RegistrationRequest;
 use App\Request\SrpAwareRequestInterface;
@@ -17,6 +18,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UserFactory
 {
+    private UserDirectoryFactory $directoryFactory;
+
     private UserRepository $repository;
 
     private UserManagerInterface $userManager;
@@ -26,11 +29,13 @@ class UserFactory
     private TranslatorInterface $translator;
 
     public function __construct(
+        UserDirectoryFactory $directoryFactory,
         UserRepository $repository,
         UserManagerInterface $userManager,
         AuthorizationManager $authorizationManager,
         TranslatorInterface $translator
     ) {
+        $this->directoryFactory = $directoryFactory;
         $this->repository = $repository;
         $this->userManager = $userManager;
         $this->authorizationManager = $authorizationManager;
@@ -49,6 +54,9 @@ class UserFactory
         $user->setUsername($request->getEmail());
         $user->setPlainPassword(uniqid());
         $user->setEnabled(true);
+        foreach ($this->directoryFactory->createDefaultDirectories($user) as $directory) {
+            $user->addDirectory($directory);
+        }
 
         $this->setSrp($user, $request);
 
@@ -61,7 +69,12 @@ class UserFactory
             'email' => $request->getEmail(),
         ]);
 
-        $user = $user ?? new User(new Srp());
+        if (null === $user) {
+            $user = new User(new Srp());
+            foreach ($this->directoryFactory->createDefaultDirectories($user) as $directory) {
+                $user->addDirectory($directory);
+            }
+        }
         $user->setEmail($request->getEmail());
         $user->setUsername($request->getEmail());
         $user->setEnabled(true);
