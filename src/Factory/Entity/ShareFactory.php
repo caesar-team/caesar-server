@@ -45,7 +45,9 @@ class ShareFactory
             $meta->setTitle(NodeEnumType::TYPE_KEYPAIR);
             $item->setMeta($meta);
 
-            $this->directoryItemFactory->create($relatedItem, $user->getInbox());
+            if (!$relatedItem->getOwner()->equals($user)) {
+                $this->directoryItemFactory->create($relatedItem, $user->getInbox());
+            }
             $this->directoryItemFactory->create($item, $user->getInbox());
 
             $result[$user->getId()->toString()] = new Share($user, $item);
