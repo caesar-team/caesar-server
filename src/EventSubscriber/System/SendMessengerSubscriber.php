@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\EventSubscriber\System;
 
 use App\Event\User\RegistrationCompletedEvent;
+use App\Mailer\FosUserMailer;
 use App\Mailer\MailRegistry;
 use App\Notification\MessengerInterface;
 use App\Notification\Model\Message;
@@ -21,11 +22,18 @@ class SendMessengerSubscriber implements EventSubscriberInterface
 
     private RouterInterface $router;
 
-    public function __construct(MessengerInterface $messenger, TeamRepository $repository, RouterInterface $router)
-    {
+    private FosUserMailer $fosUserMailer;
+
+    public function __construct(
+        MessengerInterface $messenger,
+        TeamRepository $repository,
+        RouterInterface $router,
+        FosUserMailer $fosUserMailer
+    ) {
         $this->messenger = $messenger;
         $this->repository = $repository;
         $this->router = $router;
+        $this->fosUserMailer = $fosUserMailer;
     }
 
     /**
@@ -62,6 +70,10 @@ class SendMessengerSubscriber implements EventSubscriberInterface
             );
 
             $this->messenger->send($message);
+        }
+
+        if (!$user->isEnabled()) {
+            $this->fosUserMailer->sendConfirmationEmailMessage($user);
         }
     }
 }

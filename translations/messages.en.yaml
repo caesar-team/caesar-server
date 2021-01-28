@@ -31,6 +31,11 @@ admin:
     available_roles: 'Available roles: ROLE_USER, ROLE_ADMIN, ROLE_READ_ONLY_USER, ROLE_SUPER_ADMIN'
 
 mail:
+  confirm:
+    subject: Welcome to %app_name%!
+    body: |
+      <p>Welcome to %app_name%!<br/>
+      To get started please complete the registration: <a href="%confirmationUrl%" target="_blank">%confirmationUrl%</a></p>
   resetting:
     subject: Reset your password
     body: |

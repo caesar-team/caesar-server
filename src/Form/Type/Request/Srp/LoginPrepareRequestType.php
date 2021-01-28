@@ -6,6 +6,7 @@ namespace App\Form\Type\Request\Srp;
 
 use App\Entity\User;
 use App\Request\Srp\LoginPrepareRequest;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -21,9 +22,16 @@ class LoginPrepareRequestType extends AbstractType
                 'choice_value' => 'email',
                 'class' => User::class,
                 'required' => false,
+                'query_builder' => static function (EntityRepository $repository) {
+                    return $repository
+                        ->createQueryBuilder('user')
+                        ->where('user.enabled = true')
+                    ;
+                },
                 'invalid_message' => 'app.exception.user_not_found',
             ])
-            ->add('publicEphemeralValue');
+            ->add('publicEphemeralValue')
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver)

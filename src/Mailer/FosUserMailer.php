@@ -24,6 +24,21 @@ class FosUserMailer extends Mailer implements MailerInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function sendConfirmationEmailMessage(UserInterface $user)
+    {
+        $url = $this->router->generate('fos_user_registration_confirm', ['token' => $user->getConfirmationToken()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $rendered = $this->templating->render('email/confirmation.html.twig', [
+            'user' => $user,
+            'confirmationUrl' => $url,
+        ]);
+
+        $senderAddress = getenv('SENDER_ADDRESS') ?: self::FROM_EMAIL;
+        $this->sendEmailMessage($rendered, $senderAddress, (string) $user->getEmail());
+    }
+
+    /**
      * Send an email to a user to confirm the password reset.
      */
     public function sendResettingEmailMessage(UserInterface $user): void

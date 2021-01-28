@@ -1,0 +1,5 @@
+{% extends 'email/layout.html.twig' %}
+
+{% block subject %}{{ 'mail.confirm.subject'|trans({'%app_name%': app_name})|raw }}{% endblock %}
+
+{% block body %}{{ 'mail.confirm.body'|trans({'%confirmationUrl%': confirmationUrl, '%app_name%': app_name})|raw }}{% endblock %}

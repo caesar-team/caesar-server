@@ -20,6 +20,10 @@ fos_user_resetting_reset:
     path: /api/auth/srpp/reset/{token}
     defaults: { _controller: App\Controller\Api\SrpController:resetPassword }
     methods: ["PATCH"]
+fos_user_registration_confirm:
+    path: /api/auth/srpp/confirm/{token}
+    defaults: { _controller: App\Controller\Api\AuthController:confirm }
+    methods: [ "GET" ]
 fos_user_resetting_request:
     path: /api/auth/request
     defaults: { _controller: fos_user.resetting.controller:requestAction }

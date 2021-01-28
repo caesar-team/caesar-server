@@ -176,6 +176,7 @@ class UserRepository extends ServiceEntityRepository
         $queryBuilder
             ->select('COUNT(1)')
             ->andWhere('LOWER(user.roles) NOT LIKE :role')
+            ->andWhere('user.enabled = true')
             ->setParameter('role', '%'.mb_strtolower(User::ROLE_ANONYMOUS_USER).'%')
         ;
 

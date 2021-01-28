@@ -1,2 +1,6 @@
 front_setting_team:
   path: /settings/team/{team}
+front_error_page:
+  path: /error/{code}
+front_sing_in:
+  path: /signin
