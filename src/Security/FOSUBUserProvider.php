@@ -6,6 +6,10 @@ namespace App\Security;
 
 use App\Entity\User;
 use App\Event\User\RegistrationCompletedEvent;
+use App\Limiter\Exception\RestrictedException;
+use App\Limiter\Inspector\UserCountInspector;
+use App\Limiter\LimiterInterface;
+use App\Limiter\Model\LimitCheck;
 use App\Repository\UserRepository;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use App\Security\Domain\DomainCheckerInterface;
@@ -50,6 +54,8 @@ class FOSUBUserProvider extends BaseUserProvider
 
     private DomainCheckerInterface $domainChecker;
 
+    private LimiterInterface $limiter;
+
     public function __construct(
         UserManagerInterface $userManager,
         FileDownloader $downloader,
@@ -59,7 +65,8 @@ class FOSUBUserProvider extends BaseUserProvider
         array $properties,
         TeamManager $groupManager,
         AuthorizationManager $authorizationManager,
-        DomainCheckerInterface $domainChecker
+        DomainCheckerInterface $domainChecker,
+        LimiterInterface $limiter
     ) {
         parent::__construct($userManager, $properties);
         $this->eventDispatcher = $eventDispatcher;
@@ -69,6 +76,7 @@ class FOSUBUserProvider extends BaseUserProvider
         $this->groupManager = $groupManager;
         $this->authorizationManager = $authorizationManager;
         $this->domainChecker = $domainChecker;
+        $this->limiter = $limiter;
     }
 
     /**
@@ -88,6 +96,12 @@ class FOSUBUserProvider extends BaseUserProvider
             $this->denyAccessUnlessGranted($response, $user);
 
             if (!$user) {
+                try {
+                    $this->limiter->check([new LimitCheck(UserCountInspector::class, 1)]);
+                } catch (RestrictedException $exception) {
+                    throw new AuthenticationException($this->translator->trans($exception->getMessage()));
+                }
+
                 $user = $this->userManager->createUser();
                 $user->setEmail($response->getEmail());
                 $user->setPlainPassword(md5(uniqid('', true)));

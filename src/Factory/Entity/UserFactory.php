@@ -13,6 +13,7 @@ use App\Request\SrpAwareRequestInterface;
 use App\Request\User\CreateInvitedUserRequest;
 use App\Security\AuthorizationManager\AuthorizationManager;
 use FOS\UserBundle\Model\UserManagerInterface;
+use FOS\UserBundle\Util\TokenGeneratorInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -28,18 +29,22 @@ class UserFactory
 
     private TranslatorInterface $translator;
 
+    private TokenGeneratorInterface $tokenGenerator;
+
     public function __construct(
         UserDirectoryFactory $directoryFactory,
         UserRepository $repository,
         UserManagerInterface $userManager,
         AuthorizationManager $authorizationManager,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        TokenGeneratorInterface $tokenGenerator
     ) {
         $this->directoryFactory = $directoryFactory;
         $this->repository = $repository;
         $this->userManager = $userManager;
         $this->authorizationManager = $authorizationManager;
         $this->translator = $translator;
+        $this->tokenGenerator = $tokenGenerator;
     }
 
     public function createFromRegistrationRequest(RegistrationRequest $request): User
@@ -50,10 +55,11 @@ class UserFactory
         }
 
         $user = new User();
+        $user->setConfirmationToken($this->tokenGenerator->generateToken());
         $user->setEmail($request->getEmail());
         $user->setUsername($request->getEmail());
         $user->setPlainPassword(uniqid());
-        $user->setEnabled(true);
+        $user->setEnabled(false);
         foreach ($this->directoryFactory->createDefaultDirectories($user) as $directory) {
             $user->addDirectory($directory);
         }
