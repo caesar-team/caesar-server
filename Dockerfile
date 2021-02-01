@@ -63,6 +63,7 @@ COPY tests/_scripts/init_db.sh /usr/local/bin
 COPY tests/_scripts/wait-for-it.sh /usr/local/bin
 
 COPY . .
+COPY --chown=www-data:www-data --from=4xxi/php-security-checker /usr/local/bin/local-php-security-checker /usr/local/bin/local-php-security-checker
 RUN APP_ENV=test composer install
 RUN vendor/bin/php-cs-fixer fix --config=.php_cs.dist -v --dry-run --using-cache=no
 
@@ -77,26 +78,11 @@ FROM node:10-alpine AS yarn-enc
 COPY . .
 RUN yarn install && yarn encore production
 
-## ---- security-checker ----
-FROM base AS security-checker
-## install vendors
-RUN apk add --no-cache git make musl-dev go
-# Configure Go
-ENV GOROOT /usr/lib/go
-ENV GOPATH /usr/src/go
-ENV PATH /usr/src/go/bin:$PATH
-RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin /usr/src/go /usr/src/security-checker
-RUN curl -Lo /usr/src/security-checker.tar.gz https://github.com/fabpot/local-php-security-checker/archive/v1.0.0.tar.gz
-RUN tar -xvzf /usr/src/security-checker.tar.gz -C /usr/src/
-RUN cd /usr/src/local-php-security-checker-1.0.0 && go build
-RUN chmod +x /usr/src/local-php-security-checker-1.0.0/local-php-security-checker && cp /usr/src/local-php-security-checker-1.0.0/local-php-security-checker /usr/local/bin/
-
-
 ## ---- Dependencies ----
 FROM base AS dependencies
 ## install vendors
 USER www-data
-COPY --chown=www-data:www-data --from=security-checker /usr/local/bin/local-php-security-checker /usr/local/bin/local-php-security-checker
+COPY --chown=www-data:www-data --from=4xxi/php-security-checker /usr/local/bin/local-php-security-checker /usr/local/bin/local-php-security-checker
 RUN APP_ENV=prod composer install --prefer-dist --no-plugins --no-scripts --no-dev --optimize-autoloader
 #
 ## ---- Release ----
