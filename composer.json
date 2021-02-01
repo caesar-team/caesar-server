@@ -99,7 +99,7 @@
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd",
-            "security:check": "symfony-cmd"
+            "local-php-security-checker --path=/var/www/html/composer.lock --format=ansi": "script"
         },
         "post-install-cmd": [
             "@auto-scripts"
