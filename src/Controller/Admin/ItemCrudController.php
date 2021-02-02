@@ -27,9 +27,6 @@ class ItemCrudController extends AbstractCrudController
         return [
             IdField::new('id'),
             TextField::new('type'),
-            AssociationFieldWithSort::new('parentList')
-                ->setSortField('label')
-                ->setLabel('List'),
             AssociationFieldWithSort::new('team')
                 ->setSortField('title'),
             TextField::new('signedOwner')
