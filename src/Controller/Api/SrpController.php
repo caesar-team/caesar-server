@@ -14,6 +14,9 @@ use App\Form\Type\Request\Srp\LoginPrepareRequestType;
 use App\Form\Type\Request\Srp\LoginType;
 use App\Form\Type\Request\Srp\RegistrationRequestType;
 use App\Form\Type\Srp\UpdatePasswordType;
+use App\Limiter\Inspector\UserCountInspector;
+use App\Limiter\LimiterInterface;
+use App\Limiter\Model\LimitCheck;
 use App\Model\View\Srp\PreparedSrpView;
 use App\Modifier\SrpModifier;
 use App\Request\Auth\LoginRequest;
@@ -89,8 +92,11 @@ final class SrpController extends AbstractController
         Request $request,
         UserManagerInterface $userManager,
         UserFactory $factory,
+        LimiterInterface $limiter,
         EventDispatcherInterface $eventDispatcher
     ): void {
+        $limiter->check([new LimitCheck(UserCountInspector::class, 1)]);
+
         $registerRequest = new RegistrationRequest();
 
         $form = $this->createForm(RegistrationRequestType::class, $registerRequest);
