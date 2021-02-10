@@ -6,6 +6,7 @@ namespace App\Security;
 
 use App\Entity\User;
 use App\Event\User\RegistrationCompletedEvent;
+use App\Factory\Entity\UserFactory;
 use App\Limiter\Exception\RestrictedException;
 use App\Limiter\Inspector\UserCountInspector;
 use App\Limiter\LimiterInterface;
@@ -56,8 +57,11 @@ class FOSUBUserProvider extends BaseUserProvider
 
     private LimiterInterface $limiter;
 
+    private UserFactory $userFactory;
+
     public function __construct(
         UserManagerInterface $userManager,
+        UserFactory $userFactory,
         FileDownloader $downloader,
         EventDispatcherInterface $eventDispatcher,
         UserRepository $userRepository,
@@ -77,6 +81,7 @@ class FOSUBUserProvider extends BaseUserProvider
         $this->authorizationManager = $authorizationManager;
         $this->domainChecker = $domainChecker;
         $this->limiter = $limiter;
+        $this->userFactory = $userFactory;
     }
 
     /**
@@ -102,7 +107,7 @@ class FOSUBUserProvider extends BaseUserProvider
                     throw new AuthenticationException($this->translator->trans($exception->getMessage()));
                 }
 
-                $user = $this->userManager->createUser();
+                $user = $this->userFactory->create();
                 $user->setEmail($response->getEmail());
                 $user->setPlainPassword(md5(uniqid('', true)));
                 $user->setUsername($response->getEmail());
