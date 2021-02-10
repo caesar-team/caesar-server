@@ -47,6 +47,16 @@ class UserFactory
         $this->tokenGenerator = $tokenGenerator;
     }
 
+    public function create(): User
+    {
+        $user = new User();
+        foreach ($this->directoryFactory->createDefaultDirectories($user) as $directory) {
+            $user->addDirectory($directory);
+        }
+
+        return $user;
+    }
+
     public function createFromRegistrationRequest(RegistrationRequest $request): User
     {
         $user = $this->userManager->findUserByEmail($request->getEmail());
