@@ -19,7 +19,7 @@
         "guzzlehttp/guzzle": "6.5.5",
         "hashids/hashids": "4.0.0",
         "hwi/oauth-bundle": "1.1.0",
-        "lexik/jwt-authentication-bundle": "2.8.0",
+        "lexik/jwt-authentication-bundle": "2.10.7",
         "nelmio/api-doc-bundle": "3.7.4",
         "nelmio/cors-bundle": "2.1.0",
         "pear/math_biginteger": "1.0.3",
