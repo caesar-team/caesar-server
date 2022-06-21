@@ -16,7 +16,7 @@
         "fresh/doctrine-enum-bundle": "6.6.4",
         "friendsofsymfony/rest-bundle": "3.0.3",
         "friendsofsymfony/user-bundle": "2.1.2",
-        "guzzlehttp/guzzle": "6.5.5",
+        "guzzlehttp/guzzle": "6.5.8",
         "hashids/hashids": "4.0.0",
         "hwi/oauth-bundle": "1.1.0",
         "lexik/jwt-authentication-bundle": "2.8.0",
